@@ -11,7 +11,7 @@
 #
 # Further, nuclei were dilated using multiple values of pixel dilation. Here we use data for the 50 pixel dialation
 
-# In[ ]:
+# In[2]:
 
 
 import sys
@@ -20,19 +20,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-# import seaborn as sns
-# import matplotlib.pyplot as plt
 get_ipython().run_line_magic("matplotlib", "inline")
-# import plotly_express as px
-# import plotly.graph_objs as go
-# import chart_studio.plotly as py
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
 
 sys.path.append("..")
 from ..utils.utils import *
 
-# In[ ]:
+# In[3]:
 
 
 # Import data with low memory arg as the data are large
@@ -42,14 +37,14 @@ df = pd.read_csv(
 )
 
 
-# In[ ]:
+# In[4]:
 
 
 # Call function to display df shape and # of replicates present
 df_stats(df)
 
 
-# In[ ]:
+# In[5]:
 
 
 # Drop na and reindex accordingly
@@ -59,14 +54,14 @@ df.reindex()
 df_stats(df)
 
 
-# In[ ]:
+# In[6]:
 
 
 # Understand categorical data such as treatment and dosing
 df[["Metadata_treatment", "Metadata_dose"]].drop_duplicates()
 
 
-# In[ ]:
+# In[7]:
 
 
 # create a list with only columns from the data frame that start with "Metadata"
@@ -82,7 +77,7 @@ df_values = df_subset.drop(columns=df_metadata)
 treatment_ids = df_descriptive["Metadata_treatment"]
 
 
-# In[ ]:
+# In[8]:
 
 
 # Cluster data
@@ -102,7 +97,7 @@ dftsneFull["Treatment"] = (
 )
 
 
-# In[ ]:
+# In[9]:
 
 
 # Figure Showing tSNE of Clusters vs Treatment
@@ -121,7 +116,7 @@ df_values["cluster"] = clustering_ori
 
 # Above tSNE shows that based on dimensionality reduction, there is no observable difference in treated cells. More sensitive methods such as machine learning models will need to be employed to achieve such.
 
-# In[ ]:
+# In[10]:
 
 
 # callable function for graphing features that contribute most to each cluster's grouping

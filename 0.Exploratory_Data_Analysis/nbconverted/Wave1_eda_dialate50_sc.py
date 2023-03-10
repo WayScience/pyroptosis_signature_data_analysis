@@ -4,6 +4,12 @@
 # # Wave1 Exploratory Data Analysis on dilated 50 data
 
 # Here we understand more about the data and how it is distrubuted.
+Wave1 data are extracted features from raw images.
+These images were processed via Cellprofiler pipelines
+
+Specifically wave1 is looking at Gasdermin-D and Nuclei Staining from a cell painting experiment.
+
+Further, nuclei were dilated using multiple values of pixel dilation. Here we use data for the 50 pixel dialation
 
 # In[16]:
 

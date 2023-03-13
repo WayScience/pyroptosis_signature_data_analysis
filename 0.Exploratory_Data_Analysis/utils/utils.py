@@ -141,7 +141,7 @@ def plot_features_all_cluster(
             df, label_col, label=i, ax=ax[i], sensitivity=sensitivity
         )
         ax[i].xaxis.set_tick_params(labelbottom=True)
-        ax[i].yaxis.set_tick_params(labelsize=4)
+        ax[i].yaxis.set_tick_params(labelsize=2)
 
     plt.tight_layout()
     plt.savefig(

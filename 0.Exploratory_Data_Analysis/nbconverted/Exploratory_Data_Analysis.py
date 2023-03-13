@@ -21,13 +21,13 @@
 
 
 import sys
+import itertools
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
 get_ipython().run_line_magic("matplotlib", "inline")
-import itertools
 
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE

@@ -108,11 +108,11 @@ def plot_barchart_all_unique_features(df, label_col, label, ax, sensitivity):
 # callable function for graphing features that contribute most to each cluster's grouping
 # Though the clusters arent grouped via treatment
 def plot_features_all_cluster(
-    df=pd.DataFrame,
-    label_col="cluster",
-    n_clusters=int,
-    sensitivity=float,
-    file_label="label",
+    df: pd.DataFrame,
+    n_clusters: int,
+    sensitivity: float,
+     label_col: Optional[str] = "cluster",
+    file_label: Optional[str] = "label"
 ):
     """Function plots features that most influence cluster
 

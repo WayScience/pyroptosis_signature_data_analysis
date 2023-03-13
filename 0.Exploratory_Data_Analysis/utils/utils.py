@@ -1,5 +1,3 @@
-#!/home/lippincm/miniconda3/envs/way/bin
-
 import matplotlib.pylab as plt
 import numpy as np
 import pandas as pd
@@ -25,7 +23,8 @@ def df_stats(df=pd.DataFrame):
     print(
         "Number of total missing values across all columns:", (df.isnull().sum()).sum()
     )
-    pd.options.display.max_columns = None
+    # pd.options.display.max_columns = None
+    # print(df.head())
     return df.head()
 
 
@@ -109,7 +108,11 @@ def plot_barchart_all_unique_features(df, label_col, label, ax, sensitivity):
 # callable function for graphing features that contribute most to each cluster's grouping
 # Though the clusters arent grouped via treatment
 def plot_features_all_cluster(
-    df=pd.DataFrame, label_col="cluster", n_clusters=int, sensitivity=float
+    df=pd.DataFrame,
+    label_col="cluster",
+    n_clusters=int,
+    sensitivity=float,
+    file_label="label",
 ):
     """Function plots features that most influence cluster
 
@@ -118,6 +121,7 @@ def plot_features_all_cluster(
     label_col: color for bars
     n_clusters: number of clusters used
     sensitivity: optimizable parameter
+    file_label: string of what the output files will be labeled in an fstring
 
     Return:
     type: graph image
@@ -140,3 +144,6 @@ def plot_features_all_cluster(
         ax[i].yaxis.set_tick_params(labelsize=4)
 
     plt.tight_layout()
+    plt.savefig(
+        f"Figures/tSNE/Features_affecting_clusters/{file_label}_contributing_features.png"
+    )

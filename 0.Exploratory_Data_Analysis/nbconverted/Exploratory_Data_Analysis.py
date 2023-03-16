@@ -20,8 +20,8 @@
 # In[1]:
 
 
-import sys
 import itertools
+import sys
 
 import matplotlib.pyplot as plt
 import pandas as pd

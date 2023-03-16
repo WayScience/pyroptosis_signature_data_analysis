@@ -111,8 +111,8 @@ def plot_features_all_cluster(
     df: pd.DataFrame,
     n_clusters: int,
     sensitivity: float,
-     label_col: Optional[str] = "cluster",
-    file_label: Optional[str] = "label"
+    label_col="cluster",
+    file_label="label",
 ):
     """Function plots features that most influence cluster
 

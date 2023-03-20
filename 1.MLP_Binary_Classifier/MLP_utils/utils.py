@@ -352,7 +352,7 @@ def objective(
         print(f"Training Accuracy: {np.mean(train_acc)}")
         print(f"Training Loss: {np.mean(train_loss)}")
     else:
-        return np.mean(valid_acc)
+        return np.mean(valid_loss)
 
 
 def extract_best_trial_params(best_params):

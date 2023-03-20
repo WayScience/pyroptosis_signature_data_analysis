@@ -10,11 +10,11 @@ class Parameters:
     def __init__(self):
         # Constants
         # Subset option yes or no? if no SUBSET_NUMBER won't be used
-        self.SUBSET_OPTION = False
+        self.SUBSET_OPTION = True
 
         # number of rows to subset main df for
         # in this casse each row is 1 cell
-        self.SUBSET_NUMBER = 15000
+        self.SUBSET_NUMBER = 1500
 
         # Batch of data to load into data loader (1 is equivalent to 1 row or 1 cell in this case)
         self.BATCH_SIZE = 100
@@ -22,7 +22,7 @@ class Parameters:
         # number of epochs to use for model optimization
         self.OPTIM_EPOCHS = 100
         # number of trials to use for model optimization
-        self.N_TRIALS = 500
+        self.N_TRIALS = 100
 
         # number of epochs to use for optimized model
         self.TRAIN_EPOCHS = 1000

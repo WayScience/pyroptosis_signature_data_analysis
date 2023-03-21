@@ -1,4 +1,4 @@
-#!/bin/env/python
+from configparser import ConfigParser
 from datetime import date
 
 import matplotlib.pyplot as plt
@@ -23,7 +23,20 @@ from sklearn.model_selection import train_test_split
 
 from .parameters import Parameters
 
-params = Parameters()
+config = ConfigParser()
+config.read("Interstellar_Analysis/1.MLP_Binary_Classifier/MLP_utils/config.ini")
+config["DEFAULT"]
+
+
+# Set parameters for model optimization and training/testing
+params = Parameters(
+    DATA_SUBSET_OPTION=config["DEFAULT"]["DATA_SUBSET_OPTION"],
+    DATA_SUBSET_NUMBER=config["DEFAULT"]["DATA_SUBSET_NUMBER"],
+    BATCH_SIZE=config["DEFAULT"]["BATCH_SIZE"],
+    OPTIM_EPOCHS=config["DEFAULT"]["OPTIM_EPOCHS"],
+    N_TRIALS=config["DEFAULT"]["N_TRIALS"],
+    TRAIN_EPOCHS=config["DEFAULT"]["TRAIN_EPOCHS"],
+)
 
 
 def data_split(X_vals, y_vals, train, val, test):
@@ -229,6 +242,9 @@ def train_n_validate(
         valid_acc.append(100 * correct_v / total_v)
         valid_loss.append(batch_loss / total_step_val)
     return (
+        model,
+        optimizer,
+        criterion,
         train_acc,
         train_loss,
         valid_acc,
@@ -315,6 +331,9 @@ def objective(
     for epoch in range(params.OPTIM_EPOCHS):
 
         (
+            model,
+            optimizer,
+            criterion,
             train_acc,
             train_loss,
             valid_acc,
@@ -475,6 +494,9 @@ def train_optimized_model(
         epochs_ran.append(epoch + 1)
 
         (
+            model,
+            optimizer,
+            criterion,
             train_acc,
             train_loss,
             valid_acc,

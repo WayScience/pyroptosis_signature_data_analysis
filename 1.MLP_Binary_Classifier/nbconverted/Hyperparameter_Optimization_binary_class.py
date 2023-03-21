@@ -165,7 +165,7 @@ objective_lambda_func = lambda trial: objective(
 )
 # Study is the object for model optimzation
 study = optuna.create_study(direction="minimize")
-# Here I appply the optimize function of the study to the objective function
+# Here I apply the optimize function of the study to the objective function
 # This optimizes each parameter specified to be optinmized from the defined search space
 study.optimize(objective_lambda_func, n_trials=params.N_TRIALS)
 # Prints out the best trial's optimized parameters

@@ -53,6 +53,11 @@ params = Parameters(
 )
 
 
+def pandas_reset_index(df):
+    df = df.reset_index(drop=True)
+    return df
+
+
 def data_split(X_vals, y_vals, train, val, test, seed=1):
     """
     This function splits data into
@@ -96,6 +101,8 @@ def data_split(X_vals, y_vals, train, val, test, seed=1):
     )
 
     # reset the index to avoid downstream errors
+    for i in [X_train, Y_train, X_val, Y_val, X_test, Y_test]:
+        i = pandas_reset_index(i)
     X_train = X_train.reset_index(drop=True)
     Y_train = Y_train.reset_index(drop=True)
     X_test = X_test.reset_index(drop=True)
@@ -252,7 +259,9 @@ def train_n_validate(
 
     model.train()
 
-    for batch_idx, (X_train_batch, y_train_batch) in enumerate(train_loader):
+    # loop steps through data and optimizes the training weights via
+    # finding the loss and accuracy
+    for (X_train_batch, y_train_batch) in enumerate(train_loader):
         X_train_batch, y_train_batch = X_train_batch.to(
             params.DEVICE
         ), y_train_batch.to(params.DEVICE)
@@ -442,15 +451,15 @@ def extract_best_trial_params(best_params):
             dictionary of all of the params for the best trial model
     """
 
-    params = best_params
+    best_params
     units = []
     dropout = []
-    n_layers = params["n_layers"]
-    optimizer = params["optimizer"]
-    lr = params["learning_rate"]
-    for i in range(params["n_layers"]):
-        units.append(params[f"n_units_l{i}"])
-        dropout.append(params[f"dropout_{i}"])
+    n_layers = best_params["n_layers"]
+    optimizer = best_params["optimizer"]
+    lr = best_params["learning_rate"]
+    for i in range(best_params["n_layers"]):
+        units.append(best_params[f"n_units_l{i}"])
+        dropout.append(best_params[f"dropout_{i}"])
     param_dict = {
         "units": units,
         "dropout": dropout,
@@ -517,6 +526,8 @@ def train_optimized_model(
 
     model = optimized_model(in_features, parameter_dict)
     model = model.to(params.DEVICE)
+    # criterion is the method in which we measure our loss
+    # isn't defined as loss as it doesn't represent the loss value but the method
     criterion = nn.BCEWithLogitsLoss()
     optim_method = parameter_dict["optimizer"].strip("'")
     optimizer = (

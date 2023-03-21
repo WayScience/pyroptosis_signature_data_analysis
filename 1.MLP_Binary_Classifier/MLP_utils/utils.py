@@ -113,8 +113,8 @@ def data_split(X_vals, y_vals, train, val, test, seed=1):
     return X_train, X_test, X_val, Y_train, Y_test, Y_val
 
 
-# Data class for x and y data
-class Dataset:
+# Class for x and y data
+class Dataset_formatter:
     """
     A class for formatting data for a data loader
 

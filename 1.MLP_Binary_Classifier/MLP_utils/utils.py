@@ -1,3 +1,9 @@
+"""
+Functions for Machine Learning Model optimization, training and testing.
+These are helper functions meant to be called in a separate notebook or script
+"""
+
+
 from configparser import ConfigParser
 from datetime import date
 
@@ -21,8 +27,6 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 
-from .parameters import Parameters
-
 config = ConfigParser()
 config.read("Interstellar_Analysis/1.MLP_Binary_Classifier/MLP_utils/config.ini")
 config["DEFAULT"]
@@ -36,10 +40,20 @@ params = Parameters(
     OPTIM_EPOCHS=config["DEFAULT"]["OPTIM_EPOCHS"],
     N_TRIALS=config["DEFAULT"]["N_TRIALS"],
     TRAIN_EPOCHS=config["DEFAULT"]["TRAIN_EPOCHS"],
+    MIN_LAYERS=config["DEFAULT"]["MIN_LAYERS"],
+    MAX_LAYERS=config["DEFAULT"]["MAX_LAYERS"],
+    LAYER_UNITS_MIN=config["DEFAULT"]["LAYER_UNITS_MIN"],
+    LAYER_UNITS_MAX=config["DEFAULT"]["LAYER_UNITS_MAX"],
+    DROPOUT_MIN=config["DEFAULT"]["DROPOUT_MIN"],
+    DROPOUT_MAX=config["DEFAULT"]["DROPOUT_MAX"],
+    DROP_OUT_STEP=config["DEFAULT"]["DROP_OUT_STEP"],
+    LEARNING_RATE_MIN=config["DEFAULT"]["LEARNING_RATE_MIN"],
+    LEARNING_RATE_MAX=config["DEFAULT"]["LEARNING_RATE_MAX"],
+    OPTIMIZER_LIST=config["DEFAULT"]["OPTIMIZER_LIST"],
 )
 
 
-def data_split(X_vals, y_vals, train, val, test):
+def data_split(X_vals, y_vals, train, val, test, seed=1):
     """
     This function splits data into
     training, validation and testing data
@@ -54,7 +68,7 @@ def data_split(X_vals, y_vals, train, val, test):
 
     thus finally we have 0.1 / (1 - 0.1) = 0.11111111111111112
 
-    So ~11% of the remaining 90% of data yields 10% of the orginal data. Cheers Mates.
+    So ~11% of the remaining 90% of data yields 10% of the original data. Cheers Mates.
 
     Parameters:
         x_vals
@@ -67,15 +81,14 @@ def data_split(X_vals, y_vals, train, val, test):
 
     if train + test + val != 1:
         return
-    # Random seed set for reproducibility
-    seed = 1
+
     # split data into train-test
     X_train, X_val, Y_train, Y_val = train_test_split(
         X_vals, y_vals, test_size=val, random_state=seed, stratify=y_vals
     )
 
-    # splitting from the train dataset a second time without repolacement:
-    # we need to adjust the ratio see docstring for more explaination
+    # splitting from the train dataset a second time without replacement:
+    # we need to adjust the ratio see docstring for more explanation
     test = test / (1 - val)
     # split train data into train-validate
     X_train, X_test, Y_train, Y_test = train_test_split(
@@ -130,16 +143,16 @@ class Dataset:
 
 
 # based on https://www.kaggle.com/code/ludovicocuoghi/pytorch-pytorch-lightning-w-optuna-opt
-def build_model_custom(trial, in_features):
+def build_model_custom(trial, in_features, final_layer_out_features, params):
     """
-    This function lays out the general arcitecture of a Nueral Network.
-    There are variables throughout to optimizet the hyperparameters of this model.
+    This function lays out the general architecture of a Neural Network.
+    There are variables throughout to optimize the hyperparameter of this model.
     This function is meant to be used with optuna to optimize functions.
 
     Parameters:
         trial : optuna object
-            an optuna object foe which optimizatioon trial to input for
-            what parameters to use in the derfined search space
+            an optuna object foe which optimization trial to input for
+            what parameters to use in the defined search space
         in_features : int
             the number of input features to define the shape of the model
 
@@ -149,8 +162,8 @@ def build_model_custom(trial, in_features):
     """
 
     # number of hidden layers
-    # suugest.int takes into account the defined search space
-    n_layers = trial.suggest_int("n_layers", 1, 10)
+    # suggest.int takes into account the defined search space
+    n_layers = trial.suggest_int("n_layers", params.MIN_LAYERS, params.MAX_LAYERS)
 
     #  layers will be added to this list and called upon later
     layers = []
@@ -158,19 +171,26 @@ def build_model_custom(trial, in_features):
     for i in range(n_layers):
 
         # the number of units within a hidden layer
-        out_features = trial.suggest_int("n_units_l{}".format(i), 2, 50)
+        out_features = trial.suggest_int(
+            "n_units_l{}".format(i), params.LAYER_UNITS_MIN, params.AYER_UNITS_MAX
+        )
 
         layers.append(nn.Linear(in_features, out_features))
         # activation function
         layers.append(nn.ReLU())
 
         # dropout rate
-        p = trial.suggest_float("dropout_{}".format(i), 0.1, 0.5, step=0.05)
+        p = trial.suggest_float(
+            "dropout_{}".format(i),
+            params.DROPOUT_MIN,
+            params.DROPOUT_MAX,
+            params.DROP_OUT_STEP,
+        )
         layers.append(nn.Dropout(p))
         in_features = out_features
 
     # final layer append
-    layers.append(nn.Linear(in_features, 1))
+    layers.append(nn.Linear(in_features, final_layer_out_features))
 
     # add layers to the model
     return nn.Sequential(*layers)
@@ -190,6 +210,40 @@ def train_n_validate(
     train_loader,
     valid_loader,
 ):
+    """_summary_
+
+    Parameters
+    ----------
+    model : _type_
+        _description_
+    optimizer : _type_
+        _description_
+    criterion : _type_
+        _description_
+    train_acc : _type_
+        _description_
+    train_loss : _type_
+        _description_
+    valid_acc : _type_
+        _description_
+    valid_loss : _type_
+        _description_
+    total_step : _type_
+        _description_
+    total_step_val : _type_
+        _description_
+    params : _type_
+        _description_
+    train_loader : _type_
+        _description_
+    valid_loader : _type_
+        _description_
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
     running_loss = 0
     correct = 0
     total = 0
@@ -226,7 +280,7 @@ def train_n_validate(
     batch_loss = 0
     with torch.no_grad():
         model.eval()
-        for batch_idx, (X_valid_batch, y_valid_batch) in enumerate(valid_loader):
+        for (X_valid_batch, y_valid_batch) in enumerate(valid_loader):
             X_valid_batch, y_valid_batch = X_valid_batch.to(
                 params.DEVICE
             ), y_valid_batch.to(params.DEVICE)
@@ -262,7 +316,7 @@ def objective(
 ):
     """
     This function trains the model and tests it on validation data.
-    The accuarcy and loss output is how the success of the model is tracked.
+    The accuracy and loss output is how the success of the model is tracked.
 
     Parameters:
         trial : optuna object
@@ -276,8 +330,8 @@ def objective(
         return_info : bool
             If set to False only one metric will be returned to optimize the model
             If set to True multiple metrics will be returned via printing
-            This is required as the optmization of the model is tacked by one output metric
-            and returning more than one metric will cause the optimization to fail but after optmization
+            This is required as the optimization of the model is tracked by one output metric
+            and returning more than one metric will cause the optimization to fail but after optimization
             it is nice to know about what the other output metrics are
 
     Return:
@@ -299,7 +353,6 @@ def objective(
     optimization_params = {
         "learning_rate": trial.suggest_float("learning_rate", 1e-5, 1e-1),
         "optimizer": trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"]),
-        "n_unit": trial.suggest_int("n_unit", 1, 50),
     }
 
     # param optimizer pick
@@ -376,9 +429,9 @@ def objective(
 
 def extract_best_trial_params(best_params):
     """
-    This function extractions the best parameters from the best trial.
+    This function extracts the best parameters from the best trial.
 
-    These extracted parameters will be used to create a new model.
+    These extracted parameters will be used to train a new model.
 
     Parameters:
         best_params : obj
@@ -409,7 +462,7 @@ def extract_best_trial_params(best_params):
 
 
 # function for new optimized model
-def optimized_model(in_features, paramater_dict):
+def optimized_model(in_features, parameter_dict):
     """
     This function uses the extracted optimized functions to create a new model
 
@@ -417,25 +470,23 @@ def optimized_model(in_features, paramater_dict):
         in_features : int
             this is the number of in features to used for the model
         parameter_dict : dict
-            this is a dictionary returned fropm the extract_best_trial_params function
+            this is a dictionary returned from the extract_best_trial_params function
 
     Return:
         nn.Sequential(*layers) : dict
             this returns in a dict the architecture of the model with optimized parameters
     """
-    n_layers = paramater_dict["n_layers"]
+    n_layers = parameter_dict["n_layers"]
 
     layers = []
 
-    in_features
-
     for i in range(n_layers):
 
-        out_features = paramater_dict["units"][i]
+        out_features = parameter_dict["units"][i]
 
         layers.append(nn.Linear(in_features, out_features))
         layers.append(nn.ReLU())
-        p = paramater_dict["dropout"][i]
+        p = parameter_dict["dropout"][i]
         layers.append(nn.Dropout(p))
         in_features = out_features
     layers.append(nn.Linear(out_features, 1))
@@ -556,9 +607,9 @@ def test_optimized_model(model, test_loader, in_features, parameter_dict, params
         None
     Return:
         y_pred_list : list
-            lsit of predicted values
+            list of predicted values
         y_pred_prob_list : list
-            lsit of probabilities for predicted values
+            list of probabilities for predicted values
     """
 
     model = optimized_model(in_features, parameter_dict)
@@ -572,9 +623,6 @@ def test_optimized_model(model, test_loader, in_features, parameter_dict, params
 
     y_pred_prob_list = []
     y_pred_list = []
-
-    # Loading the best model
-    # model.load_state_dict(torch.load('./state_dict.pt'))
 
     with torch.no_grad():
         model.eval()
@@ -610,11 +658,11 @@ def un_nest(lst):
 
 def results_output(prediction_list, prediction_probability_list, test_data):
     """
-    Function outputs visulaization of testing the model
+    Function outputs visualization of testing the model
 
     Parameters:
-        prediction_list : lsit of predicted values from model
-        prediction_probability_list : list of probabailities of predicted values from model
+        prediction_list : list of predicted values from model
+        prediction_probability_list : list of probabilities of predicted values from model
         test_data : input data to model
 
     Return:

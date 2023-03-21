@@ -31,3 +31,17 @@ class Parameters:
     # defined as global for use in the optimizer function and training function
     # global DEVICE
     DEVICE = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
+
+    MIN_LAYERS = 1
+    MAX_LAYERS = 10
+
+    LAYER_UNITS_MIN = 2
+    LAYER_UNITS_MAX = 50
+
+    DROPOUT_MIN = 0.1
+    DROPOUT_MAX = 0.5
+    DROP_OUT_STEP = 0.05
+
+    LEARNING_RATE_MIN = 1e-5
+    LEARNING_RATE_MAX = 1
+    OPTIMIZER_LIST = ["Adam", "RMSprop", "SGD"]

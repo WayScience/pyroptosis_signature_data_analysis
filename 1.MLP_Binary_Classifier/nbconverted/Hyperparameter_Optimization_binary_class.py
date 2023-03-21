@@ -78,7 +78,12 @@ df = pd.read_csv(
 
 
 # Combine treatment and dose
-df["Metadata_treatment"] = df["Metadata_treatment"] + "_" + df["Metadata_dose"]
+df.assign(
+    Metadata_Treatment_and_Dose=lambda x: df["Metadata_treatment"]
+    + "_"
+    + df["Metadata_dose"]
+)
+# df["Metadata_treatment"] = df["Metadata_treatment"] + "_" + df["Metadata_dose"]
 print(df["Metadata_treatment"].unique())
 
 # Generate df speceific to analysis and model

@@ -99,7 +99,7 @@ if params.SUBSET_OPTION:
     df = df.sample(n=params.SUBSET_NUMBER)
 else:
     pass
-# Code snipptet for metadata extraction by Jenna Tomkinson
+# Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
 
 # define which columns are data and which are descriptive

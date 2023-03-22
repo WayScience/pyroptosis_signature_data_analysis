@@ -15,6 +15,7 @@ import seaborn as sns
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from MLP_utils.parameters import Parameters
 from sklearn.metrics import (
     accuracy_score,
     auc,
@@ -29,51 +30,54 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 
 config = ConfigParser()
-config.read("Interstellar_Analysis/1.MLP_Binary_Classifier/MLP_utils/config.ini")
+config.optionxform = str
+config.read("MLP_utils/config.ini")
+
 config["DEFAULT"]
 
-
-# Set parameters for model optimization and training/testing
-params = Parameters(
-    DATA_SUBSET_OPTION=config["DEFAULT"]["DATA_SUBSET_OPTION"],
-    DATA_SUBSET_NUMBER=config["DEFAULT"]["DATA_SUBSET_NUMBER"],
-    BATCH_SIZE=config["DEFAULT"]["BATCH_SIZE"],
-    OPTIM_EPOCHS=config["DEFAULT"]["OPTIM_EPOCHS"],
-    N_TRIALS=config["DEFAULT"]["N_TRIALS"],
-    TRAIN_EPOCHS=config["DEFAULT"]["TRAIN_EPOCHS"],
-    MIN_LAYERS=config["DEFAULT"]["MIN_LAYERS"],
-    MAX_LAYERS=config["DEFAULT"]["MAX_LAYERS"],
-    LAYER_UNITS_MIN=config["DEFAULT"]["LAYER_UNITS_MIN"],
-    LAYER_UNITS_MAX=config["DEFAULT"]["LAYER_UNITS_MAX"],
-    DROPOUT_MIN=config["DEFAULT"]["DROPOUT_MIN"],
-    DROPOUT_MAX=config["DEFAULT"]["DROPOUT_MAX"],
-    DROP_OUT_STEP=config["DEFAULT"]["DROP_OUT_STEP"],
-    LEARNING_RATE_MIN=config["DEFAULT"]["LEARNING_RATE_MIN"],
-    LEARNING_RATE_MAX=config["DEFAULT"]["LEARNING_RATE_MAX"],
-    OPTIMIZER_LIST=config["DEFAULT"]["OPTIMIZER_LIST"],
-)
+params = Parameters()
 
 
-def pandas_reset_index(df: pd.DataFrame) -> pd.DataFrame:
-    """Resets DataFrame Index and returns New DataFrame
+def parameter_set(params: object, config: object) -> object:
+    """reset parameter class defaults by updating from config
 
     Parameters
     ----------
-    df : pd.DataFrame
-        any pandas DataFrame
+    params : object
+        param class holding parameter information
+    config: object
+        config class
 
     Returns
     -------
-    pd.DataFrame
-        Input Data frame with reset indices
+    object
+        param class holding updated parameter information
     """
-    df = df.reset_index(drop=True)
-    return df
+    params.DATA_SUBSET_OPTION = config["DEFAULT"]["DATA_SUBSET_OPTION"]
+    params.DATA_SUBSET_NUMBER = int(config["DEFAULT"]["DATA_SUBSET_NUMBER"])
+    params.BATCH_SIZE = int(config["DEFAULT"]["BATCH_SIZE"])
+    params.OPTIM_EPOCHS = int(config["DEFAULT"]["OPTIM_EPOCHS"])
+    params.N_TRIALS = int(config["DEFAULT"]["N_TRIALS"])
+    params.TRAIN_EPOCHS = int(config["DEFAULT"]["TRAIN_EPOCHS"])
+    params.MIN_LAYERS = int(config["DEFAULT"]["MIN_LAYERS"])
+    params.MAX_LAYERS = int(config["DEFAULT"]["MAX_LAYERS"])
+    params.LAYER_UNITS_MIN = int(config["DEFAULT"]["LAYER_UNITS_MIN"])
+    params.LAYER_UNITS_MAX = int(config["DEFAULT"]["LAYER_UNITS_MAX"])
+    params.DROPOUT_MIN = float(config["DEFAULT"]["DROPOUT_MIN"])
+    params.DROPOUT_MAX = float(config["DEFAULT"]["DROPOUT_MAX"])
+    params.DROP_OUT_STEP = float(config["DEFAULT"]["DROP_OUT_STEP"])
+    params.LEARNING_RATE_MIN = float(config["DEFAULT"]["LEARNING_RATE_MIN"])
+    params.LEARNING_RATE_MAX = float(config["DEFAULT"]["LEARNING_RATE_MAX"])
+    params.OPTIMIZER_LIST = config["DEFAULT"]["OPTIMIZER_LIST"]
+    return params
+
+
+params = parameter_set(params, config)
 
 
 def data_split(
     X_vals: pd.DataFrame,
-    y_vals: pd.DataFrame,
+    y_vals: pd.Series,
     train: float = 0.8,
     val: float = 0.1,
     test: float = 0.1,
@@ -116,7 +120,7 @@ def data_split(
         Ex. training is 0.8, validation is 0.1, and testing is 0.1
     """
 
-    if train + test + val != 1:
+    if (train + test + val) != 1:
         raise Exception("Train, val, and test sets must add to 1")
 
     # split data into train-test
@@ -133,9 +137,13 @@ def data_split(
     )
 
     # reset the index to avoid downstream errors
-    for i in [X_train, Y_train, X_val, Y_val, X_test, Y_test]:
-        pandas_reset_index(i)
-        print(X_train)
+    X_train = X_train.reset_index(drop=True)
+    Y_train = Y_train.reset_index(drop=True)
+    X_val = X_val.reset_index(drop=True)
+    Y_val = Y_val.reset_index(drop=True)
+    X_test = X_test.reset_index(drop=True)
+    Y_test = Y_test.reset_index(drop=True)
+
     return X_train, X_test, X_val, Y_train, Y_test, Y_val
 
 
@@ -210,20 +218,17 @@ def build_model_custom(
 
         # the number of units within a hidden layer
         out_features = trial.suggest_int(
-            "n_units_l{}".format(i), params.LAYER_UNITS_MIN, params.AYER_UNITS_MAX
+            "n_units_l{}".format(i), params.LAYER_UNITS_MIN, params.LAYER_UNITS_MAX
         )
 
         layers.append(nn.Linear(in_features, out_features))
         # activation function
         layers.append(nn.ReLU())
-
         # dropout rate
         p = trial.suggest_float(
-            "dropout_{}".format(i),
-            params.DROPOUT_MIN,
-            params.DROPOUT_MAX,
-            params.DROP_OUT_STEP,
+            ("dropout_{}".format(i)), params.DROPOUT_MIN, params.DROPOUT_MAX
         )
+
         layers.append(nn.Dropout(p))
         in_features = out_features
 
@@ -317,7 +322,8 @@ def train_n_validate(
 
     # loop steps through data and optimizes the training weights via
     # finding the loss and accuracy
-    for (X_train_batch, y_train_batch) in enumerate(train_loader):
+    # _ isn't used but is needed to "absorb" the data index
+    for _, (X_train_batch, y_train_batch) in enumerate(train_loader):
         X_train_batch, y_train_batch = X_train_batch.to(
             params.DEVICE
         ), y_train_batch.to(params.DEVICE)
@@ -345,7 +351,7 @@ def train_n_validate(
     batch_loss = 0
     with torch.no_grad():
         model.eval()
-        for (X_valid_batch, y_valid_batch) in enumerate(valid_loader):
+        for _, (X_valid_batch, y_valid_batch) in enumerate(valid_loader):
             X_valid_batch, y_valid_batch = X_valid_batch.to(
                 params.DEVICE
             ), y_valid_batch.to(params.DEVICE)
@@ -379,7 +385,7 @@ def train_n_validate(
 def objective_model_optimizer(
     train_loader: torch.utils.data.DataLoader,
     valid_loader: torch.utils.data.DataLoader,
-    trial: object = build_model_custom,
+    trial: object = object,
     in_features: int = 1,
     out_features: int = 1,
     params: object = params,
@@ -396,8 +402,8 @@ def objective_model_optimizer(
         DataLoader for train data integration to pytorch
     valid_loader : torch.utils.data.DataLoader
         DataLoader for validation data integration to pytorch
-    trial : build_model_custom
-        initialized class containing model
+    trial : trial from optuna
+        hyperparameter optimization trial from optuna
     in_features : int
         the number of in features for the initial network layer
     out_features : int
@@ -513,7 +519,7 @@ def objective_model_optimizer(
         raise Exception("metric not defined as accuracy or loss")
 
 
-def extract_best_trial_params(best_params: optuna.study.best_params) -> dict:
+def extract_best_trial_params(best_params: optuna.study) -> dict:
     """This function extracts the best parameters from the best trial.
     These extracted parameters will be used to train a new model.
 

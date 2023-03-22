@@ -5,11 +5,12 @@ These are helper functions meant to be called in a separate notebook or script
 
 
 from configparser import ConfigParser
-from datetime import date
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import optuna
+import pandas as pd
 import seaborn as sns
 import torch
 import torch.nn as nn
@@ -53,39 +54,70 @@ params = Parameters(
 )
 
 
-def pandas_reset_index(df):
+def pandas_reset_index(df: pd.DataFrame) -> pd.DataFrame:
+    """Resets DataFrame Index and returns New DataFrame
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        any pandas DataFrame
+
+    Returns
+    -------
+    pd.DataFrame
+        Input Data frame with reset indices
+    """
     df = df.reset_index(drop=True)
     return df
 
 
-def data_split(X_vals, y_vals, train, val, test, seed=1):
-    """
-    This function splits data into
-    training, validation and testing data
-    Note that ratios of splits must be adjusted to achieve true percentage splits
+def data_split(
+    X_vals: pd.DataFrame,
+    y_vals: pd.DataFrame,
+    train: float = 0.8,
+    val: float = 0.1,
+    test: float = 0.1,
+    seed: int = 1,
+) -> Tuple[
+    pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame
+]:
+    """Split the Data into train, validation, and test data in both X and Y
 
-    Example: 80:10:10 : Train:Validation:Testing split
-    after taking 10% of the data for validation remaining is 90% of original data
+    Parameters
+    ----------
+    X_vals : _type_
+        pandas DataFrame of the X values
+        the X values are the data being used to predict (an) outcome(s)
+    y_vals : _type_
+        pandas DataFrame of the Y values
+        the Y values are the values being used to validate the model
+        the Y values are what we are aiming to predict
+    train : float, optional
+        the split of data for the training data, by default 0.8
+    val : float, optional
+        the split of data for the validation data, by default 0.1
+    test : float, optional
+        the split of data for the testing data, by default 0.1
+    seed : int, optional
+        the random state set for the random splits
+        this is to ensure reproducibility during the development phase, by default 1
 
-    Now taking 10% of the remaining 90% does not yield 10% of the original data:
-    We must adjust the ratios by diving the 10% wanted split from the original data
-    by the adjusted 1 - 0.1 = 0.9 ratio of data remaining
+    Returns
+    -------
+    Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
+        X_train, X_test, X_val, Y_train, Y_test, Y_val
+        each training, validation, and testing dataset in both X and Y dimensions properly split
 
-    thus finally we have 0.1 / (1 - 0.1) = 0.11111111111111112
-
-    So ~11% of the remaining 90% of data yields 10% of the original data. Cheers Mates.
-
-    Parameters:
-        x_vals
-        y_vals
-        train
-        val
-        test
-        params
+    Raises
+    ------
+    Exception
+        If Training, validation, and testing split ratios do not add up to 1 raise error
+        Each ratio is a percentage of the data and thus all should add up to 1
+        Ex. training is 0.8, validation is 0.1, and testing is 0.1
     """
 
     if train + test + val != 1:
-        return
+        raise Exception("Train, val, and test sets must add to 1")
 
     # split data into train-test
     X_train, X_val, Y_train, Y_val = train_test_split(
@@ -102,14 +134,8 @@ def data_split(X_vals, y_vals, train, val, test, seed=1):
 
     # reset the index to avoid downstream errors
     for i in [X_train, Y_train, X_val, Y_val, X_test, Y_test]:
-        i = pandas_reset_index(i)
-    X_train = X_train.reset_index(drop=True)
-    Y_train = Y_train.reset_index(drop=True)
-    X_test = X_test.reset_index(drop=True)
-    Y_test = Y_test.reset_index(drop=True)
-    X_val = X_val.reset_index(drop=True)
-    Y_val = Y_val.reset_index(drop=True)
-
+        pandas_reset_index(i)
+        print(X_train)
     return X_train, X_test, X_val, Y_train, Y_test, Y_val
 
 
@@ -150,22 +176,27 @@ class Dataset_formatter:
 
 
 # based on https://www.kaggle.com/code/ludovicocuoghi/pytorch-pytorch-lightning-w-optuna-opt
-def build_model_custom(trial, in_features, final_layer_out_features, params):
-    """
-    This function lays out the general architecture of a Neural Network.
-    There are variables throughout to optimize the hyperparameter of this model.
-    This function is meant to be used with optuna to optimize functions.
+def build_model_custom(
+    trial: optuna.study, in_features: int, final_layer_out_features: int, params: object
+) -> torch.nn.Sequential:
+    """Generate a flexible pytorch Neural Network Model that allows for
+    optuna hyperparameter optimization
 
-    Parameters:
-        trial : optuna object
-            an optuna object foe which optimization trial to input for
-            what parameters to use in the defined search space
-        in_features : int
-            the number of input features to define the shape of the model
+    Parameters
+    ----------
+    trial : optuna.study
+        an iteration of the optuna study object
+    in_features : int
+        the number of in features for the initial network layer
+    final_layer_out_features : int
+        the number of out features for the network final layer
+    params : object
+        parameter dataclass object to import constants and params
 
-    Return:
-        nn.Sequential(*layers) : dict
-            this returns in a dict the architecture of the model with optimized parameters
+    Returns
+    -------
+    torch.nn.Sequential
+        this returns in a dict the architecture of the model with optimized parameters
     """
 
     # number of hidden layers
@@ -204,53 +235,78 @@ def build_model_custom(trial, in_features, final_layer_out_features, params):
 
 
 def train_n_validate(
-    model,
-    optimizer,
-    criterion,
-    train_acc,
-    train_loss,
-    valid_acc,
-    valid_loss,
-    total_step,
-    total_step_val,
-    params,
-    train_loader,
-    valid_loader,
-):
-    """_summary_
+    model: build_model_custom,
+    optimizer: str,
+    criterion: object,
+    train_acc: list,
+    train_loss: list,
+    valid_acc: list,
+    valid_loss: list,
+    total_step: int,
+    total_step_val: int,
+    params: object,
+    train_loader: torch.utils.data.DataLoader,
+    valid_loader: torch.utils.data.DataLoader,
+) -> Tuple[build_model_custom, str, object, list, list, list, list, int, int, int, int]:
+    """This function trains and validates a machine learning nueral networl
+    the output is used as feedback for optuna hyper parameter optimization
+
 
     Parameters
     ----------
-    model : _type_
-        _description_
-    optimizer : _type_
-        _description_
-    criterion : _type_
-        _description_
-    train_acc : _type_
-        _description_
-    train_loss : _type_
-        _description_
-    valid_acc : _type_
-        _description_
-    valid_loss : _type_
-        _description_
-    total_step : _type_
-        _description_
-    total_step_val : _type_
-        _description_
-    params : _type_
-        _description_
-    train_loader : _type_
-        _description_
-    valid_loader : _type_
-        _description_
+    model : build_model_custom
+        initialized class containing model
+    optimizer : str
+        optimizer type
+    criterion : object
+        criterion function to be used to calculate loss
+    train_acc : list
+        list for adding training accuracy values
+    train_loss : list
+        list for adding training loss values
+    valid_acc : list
+        list for adding validation accuracy values
+    valid_loss : list
+        list for adding validation loss values
+    total_step : int
+        the length of the number of data points in training dataset
+    total_step_val : int
+        the length of the number of data points in validation dataset
+    params : object
+        Dataclass containing constants and parameter spaces
+    train_loader : torch.utils.data.DataLoader
+        DataLoader for train data integration to pytorch
+    valid_loader : torch.utils.data.DataLoader
+        DataLoader for validation data integration to pytorch
+
 
     Returns
     -------
-    _type_
-        _description_
+    Tuple[build_model_custom, str, object, list, list, list, list, int, int, int, int]
+        model : build_model_custom
+            initialized class containing model
+        optimizer : str
+            optimizer type
+        criterion : object
+            criterion function to be used to calculate loss
+        train_acc : list
+            list for adding training accuracy values
+        train_loss : list
+            list for adding training loss values
+        valid_acc : list
+            list for adding validation accuracy values
+        valid_loss : list
+            list for adding validation loss values
+        correct : int
+            the number of correctly trained data points in training data
+        total : int
+            the total number of data points in the train data
+        correct_v : int
+            the number of correctly validated data points in validation data
+        total_v : int
+            the total number of correctly validated data points in validation data
     """
+
     running_loss = 0
     correct = 0
     total = 0
@@ -320,43 +376,58 @@ def train_n_validate(
 
 
 # function for training and tracking model
-def objective(
-    trial, in_features, train_loader, valid_loader, params, return_info=False
-):
-    """
-    This function trains the model and tests it on validation data.
-    The accuracy and loss output is how the success of the model is tracked.
+def objective_model_optimizer(
+    trial: build_model_custom,
+    in_features: int,
+    out_features: int,
+    train_loader: torch.utils.data.DataLoader,
+    valid_loader: torch.utils.data.DataLoader,
+    params: object,
+    metric: str,
+    return_info: bool = False,
+) -> str | int:
+    """_summary_
 
-    Parameters:
-        trial : optuna object
+    Parameters
+    ----------
+    trial : build_model_custom
+        initialized class containing model
+    in_features : int
+        the number of in features for the initial network layer
+    out_features : int
+        the number of out features for the final network layer
+    train_loader : torch.utils.data.DataLoader
+        DataLoader for train data integration to pytorch
+    valid_loader : torch.utils.data.DataLoader
+        DataLoader for validation data integration to pytorch
+    params : object
+        Dataclass containing constants and parameter spaces
+    metric : str
+        metric to be tracked for model optimization
+        valid options: 'accuracy' or 'loss'
+    return_info : bool, optional
+        the option to return more than one metric
+        this is best to be False inside of the 'study.optimize' function
+        as this function requires only one output metric, by default False
 
-        in_features : int
-            the number of in features for a given dataset
+    Returns
+    -------
+    str | int
+        str: returns printed statements of metrics
+        when return_info=True
+        int: returns metric specified in metric arg
+        when return_info=False
 
-        train_loader : Object
-            object from torch an iterable dataclass
-
-        return_info : bool
-            If set to False only one metric will be returned to optimize the model
-            If set to True multiple metrics will be returned via printing
-            This is required as the optimization of the model is tracked by one output metric
-            and returning more than one metric will cause the optimization to fail but after optimization
-            it is nice to know about what the other output metrics are
-
-    Return:
-        metric(s) : str or float
-            if return_info == True:
-                Mean Validation Accuracy
-                Mean Validation Loss
-                Mean Training Accuracy
-                Mean Training Loss
-            if return_info == False:
-                return the mean validation accuracy
-
+    Raises
+    ------
+    optuna.exceptions.TrialPruned
+        exception is raised if/when a trial is pruned due to poor intermediate values
+    Exception
+        raised when metric value is nor 'accuracy' or 'loss'
     """
 
     # calling model function
-    model = build_model_custom(trial, in_features)
+    model = build_model_custom(trial, in_features, out_features, params)
 
     # param dictionary for optimization
     optimization_params = {
@@ -374,7 +445,6 @@ def objective(
     criterion = nn.BCEWithLogitsLoss()
 
     # send model to device(cuda)
-
     model = model.to(params.DEVICE)
     criterion = criterion.to(params.DEVICE)
 
@@ -432,23 +502,27 @@ def objective(
         print(f"Validation Loss: {np.mean(valid_loss)}")
         print(f"Training Accuracy: {np.mean(train_acc)}")
         print(f"Training Loss: {np.mean(train_loss)}")
-    else:
+    elif metric == "accuracy":
+        return np.mean(valid_acc)
+    elif metric == "loss":
         return np.mean(valid_loss)
+    else:
+        raise Exception("metric not defined as accuracy or loss")
 
 
-def extract_best_trial_params(best_params):
-    """
-    This function extracts the best parameters from the best trial.
-
+def extract_best_trial_params(best_params: optuna.study.best_params) -> dict:
+    """This function extracts the best parameters from the best trial.
     These extracted parameters will be used to train a new model.
 
-    Parameters:
-        best_params : obj
-            study.best_params
-            the best_params function of the study object
-    Return:
-        param_dict : dict
-            dictionary of all of the params for the best trial model
+    Parameters
+    ----------
+    best_params : optuna.study.best_params
+        returns the best parmaters from the best study from optuna
+
+    Returns
+    -------
+    dict
+        dictionary of all of the params for the best trial model
     """
 
     best_params
@@ -471,20 +545,27 @@ def extract_best_trial_params(best_params):
 
 
 # function for new optimized model
-def optimized_model(in_features, parameter_dict):
-    """
-    This function uses the extracted optimized functions to create a new model
+def optimized_model_create(
+    in_features: int, final_layer_out_features: int, parameter_dict: dict
+) -> torch.nn.Sequential:
+    """creates the pytorch model architecture from the best trial
+    from optuna hyperparameter optimization
 
-    Parameters:
-        in_features : int
-            this is the number of in features to used for the model
-        parameter_dict : dict
-            this is a dictionary returned from the extract_best_trial_params function
+    Parameters
+    ----------
+    in_features : int
+        the number of in features for the initial network layer
+    final_layer_out_features : int
+        the number of out features for the network final layer
+    parameter_dict : dict
+        dictionary of optimized model hyperparameters
 
-    Return:
-        nn.Sequential(*layers) : dict
-            this returns in a dict the architecture of the model with optimized parameters
+    Returns
+    -------
+    torch.nn.Sequential
+        this returns in a dict the architecture of the model with optimized parameters
     """
+
     n_layers = parameter_dict["n_layers"]
 
     layers = []
@@ -498,33 +579,54 @@ def optimized_model(in_features, parameter_dict):
         p = parameter_dict["dropout"][i]
         layers.append(nn.Dropout(p))
         in_features = out_features
-    layers.append(nn.Linear(out_features, 1))
+    layers.append(nn.Linear(out_features, final_layer_out_features))
 
     return nn.Sequential(*layers)
 
 
 # Model Training
 def train_optimized_model(
-    EPOCHS,
-    train_loader,
-    valid_loader,
-    in_features,
-    parameter_dict,
-    params,
-    return_info=False,
-):
+    EPOCHS: int,
+    train_loader: torch.utils.data.DataLoader,
+    valid_loader: torch.utils.data.DataLoader,
+    in_features: int,
+    out_features: int,
+    parameter_dict: dict,
+    params: object,
+) -> tuple[float, float, float, float, int, torch.nn.Sequential]:
+    """This function trains the optimized model on the training dataset
+
+
+    Parameters
+    ----------
+    EPOCHS : int
+        The number of epochs to train the model for
+    train_loader : torch.utils.data.DataLoader
+        DataLoader for train data integration to pytorch
+    valid_loader : torch.utils.data.DataLoader
+        DataLoader for train data integration to pytorch
+    in_features : int
+        the number of in features for the initial network layer
+    out_features : int
+        the number of out features for the final network layer
+    parameter_dict : dict
+        dictionary of optimized model hyperparameters
+    params : object
+        Dataclass containing constants and parameter spaces
+
+    Returns
+    -------
+    tuple[float, float, float, float, int, object]
+        train_loss: float
+        train_acc: float
+        valid_loss: float
+        valid_acc: float
+        epochs_ran: int
+        model: torch.nn.Sequential
+
     """
-    This function trains the optimized model on the training dataset
 
-    Parameters:
-        EPOCHS : int
-            the number of epochs to train the model for
-    Return:
-        training metrics : str
-
-    """
-
-    model = optimized_model(in_features, parameter_dict)
+    model = optimized_model_create(in_features, out_features, parameter_dict)
     model = model.to(params.DEVICE)
     # criterion is the method in which we measure our loss
     # isn't defined as loss as it doesn't represent the loss value but the method
@@ -583,7 +685,7 @@ def train_optimized_model(
         )
 
         if np.mean(valid_loss) <= valid_loss_min:
-            torch.save(model.state_dict(), f"./{date.today()}_state_dict.pt")
+            torch.save(model.state_dict(), f"./state_dict.pt")
             print(
                 f"Epoch {epoch + 0:01}: Validation loss decreased ({valid_loss_min:.6f} --> {np.mean(valid_loss):.6f}).  Saving model ..."
             )
@@ -604,26 +706,60 @@ def train_optimized_model(
 
 
 # Plot training data over epochs
-def plot_metric_vs_epoch(df, x, y1, y2):
+def plot_metric_vs_epoch(df: pd.DataFrame, x: str, y1: str, y2: str) -> None:
+    """Plot x vs y1 and x vs y2 using seaborn.
 
+    Parameters
+    ----------
+    df : pd.DataFrame
+        pandas data frame of choice
+    x : str
+        x variable in this case epoch number
+    y1 : str
+        y1 variable in this case train metric
+    y2 : str
+        y1 variable in this case validation metric
+    """
     sns.lineplot(x=x, y=y1, data=df)
     sns.lineplot(x=x, y=y2, data=df)
 
 
-def test_optimized_model(model, test_loader, in_features, parameter_dict, params):
-    """
-    This function tests the trained optimized model on test dataset
+def test_optimized_model(
+    model: torch.nn.Sequential,
+    test_loader: torch.utils.data.DataLoader,
+    in_features: int,
+    out_features: int,
+    parameter_dict: dict,
+    params: object,
+) -> Tuple[list, list]:
+    """test the trained model on test data
 
-    Parameters:
-        None
-    Return:
-        y_pred_list : list
-            list of predicted values
-        y_pred_prob_list : list
-            list of probabilities for predicted values
+    Parameters
+    ----------
+    model : torch.nn.Sequential
+        pytorch model to us
+    test_loader : torch.utils.data.DataLoader
+        DataLoader for test data integration to pytorch
+    in_features : int
+        the number of in features for the initial network layer
+    out_features : int
+        the number of out features for the final network layer
+    parameter_dict : dict
+        dictionary of optimized model hyperparameters
+    params : object
+        Dataclass containing constants and parameter spaces
+
+
+    Returns
+    -------
+    Tuple[list, list]
+        y_pred_list: list of predicted values for Y data
+
+        y_pred_prob_list: list of probabilities of
+        those predicted values
     """
 
-    model = optimized_model(in_features, parameter_dict)
+    model = optimized_model_create(in_features, out_features, parameter_dict)
     model = model.to(params.DEVICE)
     criterion = nn.BCEWithLogitsLoss()
     optim_method = parameter_dict["optimizer"].strip("'")
@@ -652,14 +788,20 @@ def test_optimized_model(model, test_loader, in_features, parameter_dict, params
 
 
 # If output list is nested
-def un_nest(lst):
-    """
-    returns an un-nested list from a nested list
+def un_nest(lst) -> list:
+    """returns an un-nested list from a nested list
 
-    Parameters:
-        lst : list
-            a list of lists
+    Parameters
+    ----------
+    lst : _type_
+        a list of lists of any data type
+
+    Returns
+    -------
+    list: list
+        flattened list
     """
+
     new_lst = []
     for i in lst:
         for j in i:
@@ -667,21 +809,27 @@ def un_nest(lst):
     return new_lst
 
 
-def results_output(prediction_list, prediction_probability_list, test_data):
-    """
-    Function outputs visualization of testing the model
+def results_output(
+    prediction_list: list, prediction_probability_list: list, test_data: list
+) -> None:
+    """Function outputs visualization of testing the model
 
-    Parameters:
-        prediction_list : list of predicted values from model
-        prediction_probability_list : list of probabilities of predicted values from model
-        test_data : input data to model
+
+    Parameters
+    ----------
+    prediction_list : list
+        list of predicted values from model
+    prediction_probability_list : list
+        list of probabilities of predicted values from model
+    test_data : list
+        input data to model actual labels
 
     Return:
         classification report
         confusion matrix
         AUC graph of accuracy and false positive rates
-
     """
+
     # Classification report
     print(classification_report(test_data, prediction_list))
 

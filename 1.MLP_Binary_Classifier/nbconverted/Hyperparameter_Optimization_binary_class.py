@@ -1,12 +1,25 @@
 #!/usr/bin/env python
 # coding: utf-8
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     formats: ipynb,py:percent
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.14.5
+# ---
+
+# %%
 
 # ## Hyperparameter tuning via Optuna for Binary MLP model
 
 # ### Being a binary model this notebook will be limited to predicting one class 1 or 0, yes or no.
 # ### Here I will be predicting if a cell received a treatment or not
 
-# In[1]:
+# %%
 
 
 import sys
@@ -44,7 +57,7 @@ from MLP_utils.utils import (
     Dataset,
     data_split,
     extract_best_trial_params,
-    objective,
+    objective_model_optimizer,
     optimized_model,
     plot_metric_vs_epoch,
     results_output,
@@ -58,7 +71,7 @@ from utils.utils import df_stats
 params = Parameters()
 
 
-# In[2]:
+# %%
 
 
 # Import Data
@@ -74,7 +87,7 @@ df = pd.read_csv(
 
 # Combine treatment with dosage to be able to discern treatments with different doses as a different condition
 
-# In[3]:
+# %%
 
 
 # Combine treatment and dose
@@ -114,7 +127,7 @@ df_values = df.drop(columns=df_metadata)
 
 # ### Setting up data for network training
 
-# In[4]:
+# %%
 
 
 # Creating label encoder
@@ -130,7 +143,7 @@ X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
 )
 
 
-# In[5]:
+# %%
 
 
 # produce data objects for train, val and test datasets
@@ -146,7 +159,7 @@ out_features = len(df_values["Metadata_treatment"].unique())
 print("Number of out features: ", out_features)
 
 
-# In[6]:
+# %%
 
 
 # convert data class into a dataloader to be compatible with pytorch
@@ -161,11 +174,11 @@ test_loader = torch.utils.data.DataLoader(
 )
 
 
-# In[7]:
+# %%
 
 
 # wrap the objective function inside of a lambda function to pass args...
-objective_lambda_func = lambda trial: objective(
+objective_lambda_func = lambda trial: objective_model_optimizer(
     trial, IN_FEATURES, train_loader, valid_loader, params, False
 )
 # Study is the object for model optimzation
@@ -174,32 +187,34 @@ study = optuna.create_study(direction="minimize")
 # This optimizes each parameter specified to be optinmized from the defined search space
 study.optimize(objective_lambda_func, n_trials=params.N_TRIALS)
 # Prints out the best trial's optimized parameters
-objective(study.best_trial, IN_FEATURES, train_loader, valid_loader, params, True)
+objective_model_optimizer(
+    study.best_trial, IN_FEATURES, train_loader, valid_loader, params, True
+)
 
 
-# In[ ]:
+# %%
 
 
-# In[8]:
+# %%
 
 
 optuna.visualization.plot_optimization_history(study)
 
 
-# In[9]:
+# %%
 
 
 optuna.visualization.plot_intermediate_values(study)
 
 
-# In[10]:
+# %%
 
 
 # call function
 param_dict = extract_best_trial_params(study.best_params)
 
 
-# In[11]:
+# %%
 
 
 # call the optimized trainig model
@@ -208,7 +223,7 @@ train_loss, train_acc, valid_loss, valid_acc, epochs_ran, model = train_optimize
 )
 
 
-# In[12]:
+# %%
 
 
 training_stats = pd.DataFrame(
@@ -217,19 +232,19 @@ training_stats = pd.DataFrame(
 )
 
 
-# In[13]:
+# %%
 
 
 plot_metric_vs_epoch(training_stats, "epochs_ran", "train_acc", "valid_acc")
 
 
-# In[14]:
+# %%
 
 
 plot_metric_vs_epoch(training_stats, "epochs_ran", "train_loss", "valid_loss")
 
 
-# In[15]:
+# %%
 
 
 # calling the testing function and outputing list values of tested model
@@ -246,7 +261,7 @@ else:
     pass
 
 
-# In[16]:
+# %%
 
 
 # Call visulalization function

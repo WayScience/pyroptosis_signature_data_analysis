@@ -377,29 +377,31 @@ def train_n_validate(
 
 # function for training and tracking model
 def objective_model_optimizer(
-    trial: build_model_custom,
-    in_features: int,
-    out_features: int,
     train_loader: torch.utils.data.DataLoader,
     valid_loader: torch.utils.data.DataLoader,
-    params: object,
-    metric: str,
+    trial: object = build_model_custom,
+    in_features: int = 1,
+    out_features: int = 1,
+    params: object = params,
+    metric: str = "loss",
     return_info: bool = False,
 ) -> str | int:
-    """_summary_
+    """Optimizes the hyperparameter based on search space defined
+    returns metrics of how well a given model is doing this is a helper
+    function for the optuna optimizer
 
-    Parameters
+        Parameters
     ----------
+    train_loader : torch.utils.data.DataLoader
+        DataLoader for train data integration to pytorch
+    valid_loader : torch.utils.data.DataLoader
+        DataLoader for validation data integration to pytorch
     trial : build_model_custom
         initialized class containing model
     in_features : int
         the number of in features for the initial network layer
     out_features : int
         the number of out features for the final network layer
-    train_loader : torch.utils.data.DataLoader
-        DataLoader for train data integration to pytorch
-    valid_loader : torch.utils.data.DataLoader
-        DataLoader for validation data integration to pytorch
     params : object
         Dataclass containing constants and parameter spaces
     metric : str
@@ -409,6 +411,7 @@ def objective_model_optimizer(
         the option to return more than one metric
         this is best to be False inside of the 'study.optimize' function
         as this function requires only one output metric, by default False
+
 
     Returns
     -------
@@ -570,8 +573,10 @@ def optimized_model_create(
 
     layers = []
 
+    # loop through each layer
     for i in range(n_layers):
 
+        # for each layer access the correct hyper paramter
         out_features = parameter_dict["units"][i]
 
         layers.append(nn.Linear(in_features, out_features))
@@ -580,7 +585,7 @@ def optimized_model_create(
         layers.append(nn.Dropout(p))
         in_features = out_features
     layers.append(nn.Linear(out_features, final_layer_out_features))
-
+    # output new model to train and test
     return nn.Sequential(*layers)
 
 

@@ -44,4 +44,8 @@ class Parameters:
 
     LEARNING_RATE_MIN = 1e-5
     LEARNING_RATE_MAX = 1
+
     OPTIMIZER_LIST = ["Adam", "RMSprop", "SGD"]
+
+    METRIC = "accuracy"
+    DIRECTION = "maximize"

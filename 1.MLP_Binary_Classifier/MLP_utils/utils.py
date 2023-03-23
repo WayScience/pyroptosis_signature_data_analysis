@@ -4,6 +4,7 @@ These are helper functions meant to be called in a separate notebook or script
 """
 
 
+import ast
 from configparser import ConfigParser
 from typing import Tuple
 
@@ -69,6 +70,8 @@ def parameter_set(params: object, config: object) -> object:
     params.LEARNING_RATE_MIN = float(config["DEFAULT"]["LEARNING_RATE_MIN"])
     params.LEARNING_RATE_MAX = float(config["DEFAULT"]["LEARNING_RATE_MAX"])
     params.OPTIMIZER_LIST = config["DEFAULT"]["OPTIMIZER_LIST"]
+    params.METRIC = config["DEFAULT"]["METRIC"]
+    params.DIRECTION = config["DEFAULT"]["DIRECTION"]
     return params
 
 
@@ -440,8 +443,12 @@ def objective_model_optimizer(
 
     # param dictionary for optimization
     optimization_params = {
-        "learning_rate": trial.suggest_float("learning_rate", 1e-5, 1e-1),
-        "optimizer": trial.suggest_categorical("optimizer", ["Adam", "RMSprop", "SGD"]),
+        "learning_rate": trial.suggest_float(
+            "learning_rate", params.LEARNING_RATE_MIN, params.LEARNING_RATE_MAX
+        ),
+        "optimizer": trial.suggest_categorical(
+            "optimizer", ast.literal_eval(params.OPTIMIZER_LIST)
+        ),
     }
 
     # param optimizer pick
@@ -643,10 +650,17 @@ def train_optimized_model(
     # isn't defined as loss as it doesn't represent the loss value but the method
     criterion = nn.BCEWithLogitsLoss()
     optim_method = parameter_dict["optimizer"].strip("'")
-    optimizer = (
-        f'optim.{optim_method}(model.parameters(), lr=parameter_dict["learning_rate"])'
-    )
+    print(optim_method)
+
+    optimizer = f'optim.{optim_method}(model.parameters(), lr={parameter_dict["learning_rate"]})'
+
+    # optimizer = (
+    # f'optim.{optim_method}(model.parameters(), lr=parameter_dict["learning_rate"])'
+    # )
+    # print(optimizer)
     optimizer = eval(optimizer)
+    # optimizer = ast.literal_eval(optimizer)
+    print(optimizer)
 
     early_stopping_patience = 15
     early_stopping_counter = 0
@@ -784,7 +798,7 @@ def test_optimized_model(
 
     with torch.no_grad():
         model.eval()
-        for batch_idx, (X_test_batch, y_test_batch) in enumerate(test_loader):
+        for _, (X_test_batch, y_test_batch) in enumerate(test_loader):
             X_test_batch = X_test_batch.to(params.DEVICE)
             # PREDICTION
             output = model(X_test_batch)

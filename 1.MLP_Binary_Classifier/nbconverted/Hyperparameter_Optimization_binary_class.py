@@ -118,9 +118,6 @@ df_values = df.drop(columns=df_metadata)
 
 #  ### Setting up data for network training
 
-# In[ ]:
-
-
 # In[5]:
 
 
@@ -196,7 +193,7 @@ objective_lambda_func = lambda trial: objective_model_optimizer(
     return_info=False,
 )
 # Study is the object for model optimization
-study = optuna.create_study(direction="minimize")
+study = optuna.create_study(direction=f"{params.DIRECTION}")
 # Here I apply the optimize function of the study to the objective function
 # This optimizes each parameter specified to be optimized from the defined search space
 study.optimize(objective_lambda_func, n_trials=params.N_TRIALS)
@@ -208,7 +205,7 @@ objective_model_optimizer(
     in_features=IN_FEATURES,
     out_features=OUT_FEATURES,
     params=params,
-    metric="loss",
+    metric=params.METRIC,
     return_info=True,
 )
 
@@ -235,7 +232,7 @@ param_dict = extract_best_trial_params(study.best_params)
 # In[12]:
 
 
-# call the optimized trainig model
+# call the optimized training model
 train_loss, train_acc, valid_loss, valid_acc, epochs_ran, model = train_optimized_model(
     params.TRAIN_EPOCHS,
     train_loader,

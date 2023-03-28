@@ -34,12 +34,10 @@ config = ConfigParser()
 config.optionxform = str
 config.read("MLP_utils/config.ini")
 
-config["DEFAULT"]
-
 params = Parameters()
 
 
-def parameter_set(params: object, config: object) -> object:
+def parameter_set(params: Parameters, config: object) -> object:
     """reset parameter class defaults by updating from config
 
     Parameters
@@ -81,9 +79,9 @@ params = parameter_set(params, config)
 def data_split(
     X_vals: pd.DataFrame,
     y_vals: pd.Series,
-    train: float = 0.8,
-    val: float = 0.1,
-    test: float = 0.1,
+    train_proportion: float = 0.8,
+    val_proportion: float = 0.1,
+    test_proportion: float = 0.1,
     seed: int = 1,
 ) -> Tuple[
     pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame
@@ -99,11 +97,11 @@ def data_split(
         pandas DataFrame of the Y values
         the Y values are the values being used to validate the model
         the Y values are what we are aiming to predict
-    train : float, optional
+    train_proportion : float, optional
         the split of data for the training data, by default 0.8
-    val : float, optional
+    val_proportion : float, optional
         the split of data for the validation data, by default 0.1
-    test : float, optional
+    test_proportion : float, optional
         the split of data for the testing data, by default 0.1
     seed : int, optional
         the random state set for the random splits
@@ -123,20 +121,20 @@ def data_split(
         Ex. training is 0.8, validation is 0.1, and testing is 0.1
     """
 
-    if (train + test + val) != 1:
+    if (train_proportion + test_proportion + val_proportion) != 1:
         raise Exception("Train, val, and test sets must add to 1")
 
     # split data into train-test
     X_train, X_val, Y_train, Y_val = train_test_split(
-        X_vals, y_vals, test_size=val, random_state=seed, stratify=y_vals
+        X_vals, y_vals, test_size=val_proportion, random_state=seed, stratify=y_vals
     )
 
     # splitting from the train dataset a second time without replacement:
     # we need to adjust the ratio see docstring for more explanation
-    test = test / (1 - val)
+    test_proportion = test_proportion / (1 - val_proportion)
     # split train data into train-validate
     X_train, X_test, Y_train, Y_test = train_test_split(
-        X_train, Y_train, test_size=test, random_state=seed, stratify=Y_train
+        X_train, Y_train, test_size=test_proportion, random_state=seed, stratify=Y_train
     )
 
     # reset the index to avoid downstream errors
@@ -256,7 +254,7 @@ def train_n_validate(
     train_loader: torch.utils.data.DataLoader,
     valid_loader: torch.utils.data.DataLoader,
 ) -> Tuple[build_model_custom, str, object, list, list, list, list, int, int, int, int]:
-    """This function trains and validates a machine learning nueral networl
+    """This function trains and validates a machine learning neural network
     the output is used as feedback for optuna hyper parameter optimization
 
 

@@ -81,9 +81,9 @@ params = parameter_set(params, config)
 def data_split(
     X_vals: pd.DataFrame,
     y_vals: pd.Series,
-    train: float = 0.8,
-    val: float = 0.1,
-    test: float = 0.1,
+    train_proportion: float = 0.8,
+    val_proportion: float = 0.1,
+    test_proportion: float = 0.1,
     seed: int = 1,
 ) -> Tuple[
     pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame

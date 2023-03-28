@@ -1,4 +1,4 @@
-"""Parametes for Machine Learning Model Training and Testing"""
+"""Parameters for Machine Learning Model Training and Testing"""
 from dataclasses import dataclass
 
 import torch

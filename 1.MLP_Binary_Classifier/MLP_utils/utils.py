@@ -502,8 +502,12 @@ def objective_model_optimizer(
             train_loader,
             valid_loader,
         )
-
-        trial.report(np.mean(valid_loss), epoch)
+        if metric == "accuracy":
+            trial.report(np.mean(valid_acc), epoch)
+        elif metric == "loss":
+            trial.report(np.mean(valid_loss), epoch)
+        else:
+            raise Exception("metric not defined as accuracy or loss")
 
         # Handle pruning based on the intermediate value
         if trial.should_prune():
@@ -782,15 +786,7 @@ def test_optimized_model(
         those predicted values
     """
 
-    model = optimized_model_create(in_features, out_features, parameter_dict)
-    model = model.to(params.DEVICE)
-    criterion = nn.BCEWithLogitsLoss()
-    optim_method = parameter_dict["optimizer"].strip("'")
-    optimizer = (
-        f'optim.{optim_method}(model.parameters(), lr=parameter_dict["learning_rate"])'
-    )
-    optimizer = eval(optimizer)
-
+    model.load_state_dict(torch.load("./state_dict.pt"))
     y_pred_prob_list = []
     y_pred_list = []
 

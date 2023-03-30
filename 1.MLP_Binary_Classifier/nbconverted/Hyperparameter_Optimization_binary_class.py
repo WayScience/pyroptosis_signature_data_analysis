@@ -69,7 +69,7 @@ config.read("MLP_utils/config.ini")
 params = Parameters()
 
 params = parameter_set(params, config)
-int(params.DATA_SUBSET_NUMBER)
+# int(params.DATA_SUBSET_NUMBER)
 
 
 # In[4]:
@@ -136,9 +136,9 @@ df_values_X.head()
 X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
     X_vals=df_values_X,
     y_vals=df_values_Y,
-    train=0.8,
-    val=0.1,
-    test=0.1,
+    train_proportion=0.8,
+    val_proportion=0.1,
+    test_proportion=0.1,
     seed=1,
 )
 
@@ -189,7 +189,7 @@ objective_lambda_func = lambda trial: objective_model_optimizer(
     in_features=IN_FEATURES,
     out_features=OUT_FEATURES,
     params=params,
-    metric="loss",
+    metric=params.METRIC,
     return_info=False,
 )
 # Study is the object for model optimization
@@ -282,6 +282,3 @@ else:
 
 # Call visualization function
 results_output(y_pred_list, y_pred_prob_list, Y_test)
-
-
-# In[ ]:

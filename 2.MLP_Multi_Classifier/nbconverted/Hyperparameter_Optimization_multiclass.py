@@ -18,6 +18,7 @@ import optuna
 import pandas as pd
 import plotly
 import seaborn as sns
+import toml
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -25,7 +26,6 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 
 sys.path.append("..")
-from configparser import ConfigParser
 
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
@@ -40,6 +40,14 @@ from MLP_utils.utils import (
     test_optimized_model,
     train_optimized_model,
     un_nest,
+)
+from sklearn.metrics import (
+    auc,
+    confusion_matrix,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+    roc_curve,
 )
 
 from utils.utils import df_stats
@@ -61,13 +69,9 @@ df = pd.read_csv(
 # In[3]:
 
 
-config = ConfigParser()
-config.optionxform = str
-config.read("MLP_utils/config.ini")
-
-
+data = Path("MLP_utils/config.toml")
+config = toml.load(data)
 params = Parameters()
-
 params = parameter_set(params, config)
 
 
@@ -87,7 +91,7 @@ print(df["Metadata_Treatment_and_Dose"].unique())
 
 # Generate df speceific to analysis and model
 df = df.query(
-    "Metadata_Treatment_and_Dose == 'LPS_10µg/ml'| Metadata_Treatment_and_Dose == 'Media only_0'"
+    "Metadata_Treatment_and_Dose == 'LPS_10µg/ml'| Metadata_Treatment_and_Dose == 'Media only_0' | Metadata_Treatment_and_Dose == 'Disulfiram_2.5µM'"
 )
 print(df["Metadata_Treatment_and_Dose"].unique())
 
@@ -102,8 +106,9 @@ df_stats(df)
 df[["Metadata_Treatment_and_Dose"]].drop_duplicates()
 print(params.DATA_SUBSET_OPTION)
 print(params.DATA_SUBSET_NUMBER)
-if params.DATA_SUBSET_OPTION:
+if params.DATA_SUBSET_OPTION == True:
     df = df.sample(n=params.DATA_SUBSET_NUMBER)
+    print("yes")
 else:
     pass
 
@@ -113,6 +118,7 @@ df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
 # define which columns are data and which are descriptive
 df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
+print(len(df_values))
 
 
 #  ### Setting up data for network training
@@ -158,7 +164,7 @@ test_data = Dataset_formatter(
 
 IN_FEATURES = X_train.shape[1]
 print("Number of in features: ", IN_FEATURES)
-OUT_FEATURES = len(df_values["Metadata_Treatment_and_Dose"].unique()) - 1
+OUT_FEATURES = len(df_values["Metadata_Treatment_and_Dose"].unique())
 print("Number of out features: ", OUT_FEATURES)
 
 
@@ -172,9 +178,7 @@ train_loader = torch.utils.data.DataLoader(
 valid_loader = torch.utils.data.DataLoader(
     dataset=val_data, batch_size=params.BATCH_SIZE
 )
-test_loader = torch.utils.data.DataLoader(
-    dataset=test_data, batch_size=params.BATCH_SIZE
-)
+test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
 
 
 # In[8]:
@@ -251,23 +255,38 @@ training_stats = pd.DataFrame(
 # In[13]:
 
 
-plot_metric_vs_epoch(training_stats, "epochs_ran", "train_acc", "valid_acc")
+plot_metric_vs_epoch(
+    training_stats,
+    x="epochs_ran",
+    y1="train_acc",
+    y2="valid_acc",
+    title="Accuracy vs. Epochs",
+    x_axis_label="Epochs",
+    y_axis_label="Accuracy",
+)
 
 
 # In[14]:
 
 
-plot_metric_vs_epoch(training_stats, "epochs_ran", "train_loss", "valid_loss")
+plot_metric_vs_epoch(
+    training_stats,
+    x="epochs_ran",
+    y1="train_loss",
+    y2="valid_loss",
+    title="Loss vs. Epochs",
+    x_axis_label="Epochs",
+    y_axis_label="Loss",
+)
 
 
 # In[15]:
 
 
 # calling the testing function and outputing list values of tested model
-y_pred_list, y_pred_prob_list = test_optimized_model(
+y_pred_list = test_optimized_model(
     model, test_loader, IN_FEATURES, OUT_FEATURES, param_dict, params
 )
-
 # un-nest list if nested i.e. length of input data does not match length of output data
 if len(y_pred_list) != len(Y_test):
     y_pred_list = un_nest(y_pred_list)
@@ -280,4 +299,7 @@ else:
 
 
 # Call visualization function
-results_output(y_pred_list, y_pred_prob_list, Y_test)
+results_output(y_pred_list, Y_test, OUT_FEATURES)
+
+
+# In[ ]:

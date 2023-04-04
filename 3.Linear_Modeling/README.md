@@ -1,3 +1,3 @@
 ## Linear Modeling of CellProfiler features to understand differences between treatments and control.
 
-Run data through a linear model to determine which features contribute the most to the beta coefficients of the model and thus are important features to use to predict the y axis, in this case is treatment
+Fit a series of linear models (one per feature) to determine which features contribute the most to the differences between treatments and controls (highest beta coefficients) adjusting for cell count per well.

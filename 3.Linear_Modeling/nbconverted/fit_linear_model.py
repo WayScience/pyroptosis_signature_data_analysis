@@ -125,7 +125,7 @@ def feature_importance_linear_model(
         r2_score = lm.score(X=X, y=cp_subset_df)
 
         # Add results to a growing list
-        lm_results.append([cp_feature, r2_score] + list(coef))
+        lm_results.append([cp_feature, r2_score, coef]))
 
     # Convert results to a pandas DataFrame
     lm_results = pd.DataFrame(lm_results, columns=columns_list)

@@ -3,9 +3,7 @@ Functions for Machine Learning Model optimization, training and testing.
 These are helper functions meant to be called in a separate notebook or script
 """
 
-
-import ast
-from configparser import ConfigParser
+from pathlib import Path
 from typing import Tuple
 
 import matplotlib.pyplot as plt
@@ -13,38 +11,37 @@ import numpy as np
 import optuna
 import pandas as pd
 import seaborn as sns
+import toml
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from MLP_utils.parameters import Parameters
 from sklearn.metrics import (
-    accuracy_score,
     auc,
     classification_report,
     confusion_matrix,
-    f1_score,
     precision_score,
     recall_score,
-    roc_auc_score,
     roc_curve,
 )
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import label_binarize
 
-config = ConfigParser()
-config.optionxform = str
-config.read("MLP_utils/config.ini")
-
+# import config file and read
+data = Path("MLP_utils/config.toml")
+config = toml.load(data)
+# instantiate the params class to pass config values into
 params = Parameters()
 
 
-def parameter_set(params: Parameters, config: object) -> object:
+def parameter_set(params: Parameters, config: toml) -> object:
     """reset parameter class defaults by updating from config
 
     Parameters
     ----------
-    params : object
+    params : Parameters
         param class holding parameter information
-    config: object
+    config: toml
         config class
 
     Returns
@@ -55,6 +52,11 @@ def parameter_set(params: Parameters, config: object) -> object:
     params.DATA_SUBSET_OPTION = config["DEFAULT"]["DATA_SUBSET_OPTION"]
     params.DATA_SUBSET_NUMBER = int(config["DEFAULT"]["DATA_SUBSET_NUMBER"])
     params.BATCH_SIZE = int(config["DEFAULT"]["BATCH_SIZE"])
+    params.TRAIN_PROPORTION_SPLIT = float(config["DEFAULT"]["TRAIN_PROPORTION_SPLIT"])
+    params.VALIDATION_PROPORTION_SPLIT = float(
+        config["DEFAULT"]["VALIDATION_PROPORTION_SPLIT"]
+    )
+    params.TEST_PROPORTION_SPLIT = float(config["DEFAULT"]["TEST_PROPORTION_SPLIT"])
     params.OPTIM_EPOCHS = int(config["DEFAULT"]["OPTIM_EPOCHS"])
     params.N_TRIALS = int(config["DEFAULT"]["N_TRIALS"])
     params.TRAIN_EPOCHS = int(config["DEFAULT"]["TRAIN_EPOCHS"])
@@ -186,7 +188,10 @@ class Dataset_formatter:
 
 # based on https://www.kaggle.com/code/ludovicocuoghi/pytorch-pytorch-lightning-w-optuna-opt
 def build_model_custom(
-    trial: optuna.study, in_features: int, final_layer_out_features: int, params: object
+    trial: optuna.study,
+    in_features: int,
+    final_layer_out_features: int,
+    params: Parameters,
 ) -> torch.nn.Sequential:
     """Generate a flexible pytorch Neural Network Model that allows for
     optuna hyperparameter optimization
@@ -199,7 +204,7 @@ def build_model_custom(
         the number of in features for the initial network layer
     final_layer_out_features : int
         the number of out features for the network final layer
-    params : object
+    params : Parameters
         parameter dataclass object to import constants and params
 
     Returns
@@ -227,7 +232,7 @@ def build_model_custom(
         layers.append(nn.ReLU())
         # dropout rate
         p = trial.suggest_float(
-            ("dropout_{}".format(i)), params.DROPOUT_MIN, params.DROPOUT_MAX
+            (f"dropout_{i}"), params.DROPOUT_MIN, params.DROPOUT_MAX
         )
 
         layers.append(nn.Dropout(p))
@@ -243,14 +248,14 @@ def build_model_custom(
 def train_n_validate(
     model: build_model_custom,
     optimizer: str,
-    criterion: object,
+    criterion: nn,
     train_acc: list,
     train_loss: list,
     valid_acc: list,
     valid_loss: list,
     total_step: int,
     total_step_val: int,
-    params: object,
+    params: Parameters,
     train_loader: torch.utils.data.DataLoader,
     valid_loader: torch.utils.data.DataLoader,
 ) -> Tuple[build_model_custom, str, object, list, list, list, list, int, int, int, int]:
@@ -264,7 +269,7 @@ def train_n_validate(
         initialized class containing model
     optimizer : str
         optimizer type
-    criterion : object
+    criterion : nn
         criterion function to be used to calculate loss
     train_acc : list
         list for adding training accuracy values
@@ -278,7 +283,7 @@ def train_n_validate(
         the length of the number of data points in training dataset
     total_step_val : int
         the length of the number of data points in validation dataset
-    params : object
+    params : Parameters
         Dataclass containing constants and parameter spaces
     train_loader : torch.utils.data.DataLoader
         DataLoader for train data integration to pytorch
@@ -293,7 +298,7 @@ def train_n_validate(
             initialized class containing model
         optimizer : str
             optimizer type
-        criterion : object
+        criterion : nn
             criterion function to be used to calculate loss
         train_acc : list
             list for adding training accuracy values
@@ -325,19 +330,29 @@ def train_n_validate(
     # finding the loss and accuracy
     # _ isn't used but is needed to "absorb" the data index
     for _, (X_train_batch, y_train_batch) in enumerate(train_loader):
+
+        y_train_batch = y_train_batch.type(torch.LongTensor)
+
         X_train_batch, y_train_batch = X_train_batch.to(
             params.DEVICE
         ), y_train_batch.to(params.DEVICE)
         optimizer.zero_grad()
         output = model(X_train_batch)
-        y_pred = torch.round(torch.sigmoid(output))
+        # print(output)
+        y_pred = torch.log_softmax(output, dim=1)
+        # print(y_pred)
+        _, y_pred = torch.max(y_pred, dim=1)
+        # print(y_pred)
         # LOSS
-        loss = criterion(output, y_train_batch.unsqueeze(1))
+        loss = criterion(output, y_train_batch)
         loss.backward()
         optimizer.step()
         running_loss += loss.item()  # sum loss for every batch
         # ACCURACY
-        correct += torch.sum(y_pred == y_train_batch.unsqueeze(1)).item()
+        # print(len(y_pred))
+        # print(len(y_train_batch))
+        # print((y_pred == y_train_batch).sum())
+        correct += (y_pred == y_train_batch).sum().item()
         total += y_train_batch.size(0)
     train_acc.append(
         100 * correct / total
@@ -353,17 +368,24 @@ def train_n_validate(
     with torch.no_grad():
         model.eval()
         for _, (X_valid_batch, y_valid_batch) in enumerate(valid_loader):
+
+            y_valid_batch = y_valid_batch.type(torch.LongTensor)
+
             X_valid_batch, y_valid_batch = X_valid_batch.to(
                 params.DEVICE
             ), y_valid_batch.to(params.DEVICE)
             # PREDICTION
             output = model(X_valid_batch)
-            y_pred = torch.round(torch.sigmoid(output))
+            # y_pred = torch.round(torch.sigmoid(output))
+            y_pred = torch.log_softmax(output, dim=1)
+            _, y_pred = torch.max(y_pred, dim=1)
+            # print(y_pred)
+            # print(y_valid_batch)
             # LOSS
-            loss_v = criterion(output, y_valid_batch.unsqueeze(1))
+            loss_v = criterion(output, y_valid_batch)
             batch_loss += loss_v.item()
             # ACCURACY
-            correct_v += torch.sum(y_pred == y_valid_batch.unsqueeze(1)).item()
+            correct_v += (y_pred == y_valid_batch).sum().item()
             total_v += y_valid_batch.size(0)
         valid_acc.append(100 * correct_v / total_v)
         valid_loss.append(batch_loss / total_step_val)
@@ -386,10 +408,10 @@ def train_n_validate(
 def objective_model_optimizer(
     train_loader: torch.utils.data.DataLoader,
     valid_loader: torch.utils.data.DataLoader,
-    trial: object = object,
+    trial: object = optuna.create_study,
     in_features: int = 1,
     out_features: int = 1,
-    params: object = params,
+    params: Parameters = params,
     metric: str = "loss",
     return_info: bool = False,
 ) -> str | int:
@@ -409,7 +431,7 @@ def objective_model_optimizer(
         the number of in features for the initial network layer
     out_features : int
         the number of out features for the final network layer
-    params : object
+    params : optuna.create_study
         Dataclass containing constants and parameter spaces
     metric : str
         metric to be tracked for model optimization
@@ -444,9 +466,7 @@ def objective_model_optimizer(
         "learning_rate": trial.suggest_float(
             "learning_rate", params.LEARNING_RATE_MIN, params.LEARNING_RATE_MAX
         ),
-        "optimizer": trial.suggest_categorical(
-            "optimizer", ast.literal_eval(params.OPTIMIZER_LIST)
-        ),
+        "optimizer": trial.suggest_categorical("optimizer", params.OPTIMIZER_LIST),
     }
 
     # param optimizer pick
@@ -456,7 +476,7 @@ def objective_model_optimizer(
     # loss function
 
     # for binary model use different for multi-class
-    criterion = nn.BCEWithLogitsLoss()
+    criterion = nn.CrossEntropyLoss()
 
     # send model to device(cuda)
     model = model.to(params.DEVICE)
@@ -520,12 +540,20 @@ def objective_model_optimizer(
         print(f"Validation Loss: {np.mean(valid_loss)}")
         print(f"Training Accuracy: {np.mean(train_acc)}")
         print(f"Training Loss: {np.mean(train_loss)}")
+        return (
+            np.mean(valid_acc),
+            np.mean(valid_loss),
+            np.mean(train_acc),
+            np.mean(train_loss),
+        )
     elif metric == "accuracy":
         return np.mean(valid_acc)
     elif metric == "loss":
         return np.mean(valid_loss)
     else:
-        raise Exception("metric not defined as accuracy or loss")
+        raise Exception(
+            'metric argument needs to be defined as either "accuracy" or "loss"'
+        )
 
 
 def extract_best_trial_params(best_params: optuna.study) -> dict:
@@ -543,7 +571,6 @@ def extract_best_trial_params(best_params: optuna.study) -> dict:
         dictionary of all of the params for the best trial model
     """
 
-    best_params
     units = []
     dropout = []
     n_layers = best_params["n_layers"]
@@ -612,7 +639,7 @@ def train_optimized_model(
     in_features: int,
     out_features: int,
     parameter_dict: dict,
-    params: object,
+    params: Parameters,
 ) -> tuple[float, float, float, float, int, torch.nn.Sequential]:
     """This function trains the optimized model on the training dataset
 
@@ -631,7 +658,7 @@ def train_optimized_model(
         the number of out features for the final network layer
     parameter_dict : dict
         dictionary of optimized model hyperparameters
-    params : object
+    params : Parameters
         Dataclass containing constants and parameter spaces
 
     Returns
@@ -650,7 +677,7 @@ def train_optimized_model(
     model = model.to(params.DEVICE)
     # criterion is the method in which we measure our loss
     # isn't defined as loss as it doesn't represent the loss value but the method
-    criterion = nn.BCEWithLogitsLoss()
+    criterion = nn.CrossEntropyLoss()
     optim_method = parameter_dict["optimizer"].strip("'")
     print(optim_method)
 
@@ -733,7 +760,15 @@ def train_optimized_model(
 
 
 # Plot training data over epochs
-def plot_metric_vs_epoch(df: pd.DataFrame, x: str, y1: str, y2: str) -> None:
+def plot_metric_vs_epoch(
+    df: pd.DataFrame,
+    x: str,
+    y1: str,
+    y2: str,
+    title: str,
+    x_axis_label: str,
+    y_axis_label: str,
+) -> None:
     """Plot x vs y1 and x vs y2 using seaborn.
 
     Parameters
@@ -746,9 +781,21 @@ def plot_metric_vs_epoch(df: pd.DataFrame, x: str, y1: str, y2: str) -> None:
         y1 variable in this case train metric
     y2 : str
         y1 variable in this case validation metric
+    title : str
+        string of the title assigned for the given graph
+    x_axis_label: str
+        label for the x axis
+    y_axis_label: str
+        label for the y axis
     """
-    sns.lineplot(x=x, y=y1, data=df)
-    sns.lineplot(x=x, y=y2, data=df)
+    # sns.lineplot(x=x, y=y1, data=df)
+    # sns.lineplot(x=x, y=y2, data=df)
+    sns.lineplot(x=df[x], y=df[y1], palette="blue", label="Train")
+    sns.lineplot(x=df[x], y=df[y2], palette="orange", label="Validation")
+    plt.title(title)
+    plt.xlabel(x_axis_label)
+    plt.ylabel(y_axis_label)
+    plt.legend()
 
 
 def test_optimized_model(
@@ -757,7 +804,7 @@ def test_optimized_model(
     in_features: int,
     out_features: int,
     parameter_dict: dict,
-    params: object,
+    params: Parameters,
 ) -> Tuple[list, list]:
     """test the trained model on test data
 
@@ -773,7 +820,7 @@ def test_optimized_model(
         the number of out features for the final network layer
     parameter_dict : dict
         dictionary of optimized model hyperparameters
-    params : object
+    params : Parameters
         Dataclass containing constants and parameter spaces
 
 
@@ -796,14 +843,14 @@ def test_optimized_model(
             X_test_batch = X_test_batch.to(params.DEVICE)
             # PREDICTION
             output = model(X_test_batch)
-            y_pred_prob = torch.sigmoid(output)
-            y_pred_prob_list.append(y_pred_prob.cpu().numpy())
-            y_pred = torch.round(y_pred_prob)
+            _, y_pred = torch.max(output, dim=1)
+            # y_pred_prob_list.append(y_pred_prob.cpu().numpy())
+            # y_pred = torch.round(y_pred_prob)
             y_pred_list.append(y_pred.cpu().numpy())
-    y_pred_prob_list = [a.squeeze().tolist() for a in y_pred_prob_list]
+    # y_pred_prob_list = [a.squeeze().tolist() for a in y_pred_prob_list]
     y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
 
-    return y_pred_list, y_pred_prob_list
+    return y_pred_list
 
 
 # If output list is nested
@@ -828,9 +875,7 @@ def un_nest(lst) -> list:
     return new_lst
 
 
-def results_output(
-    prediction_list: list, prediction_probability_list: list, test_data: list
-) -> None:
+def results_output(prediction_list: list, test_data: list, OUT_FEATURES: int) -> None:
     """Function outputs visualization of testing the model
 
 
@@ -838,8 +883,6 @@ def results_output(
     ----------
     prediction_list : list
         list of predicted values from model
-    prediction_probability_list : list
-        list of probabilities of predicted values from model
     test_data : list
         input data to model actual labels
 
@@ -853,23 +896,72 @@ def results_output(
     print(classification_report(test_data, prediction_list))
 
     # confusion matrix
-    confusion_matrix(test_data, prediction_list)
 
-    # AUC graph of accuracy and false positive rates
-    plt.figure(figsize=(5.5, 4))
-    fpr, tpr, _ = roc_curve(test_data, prediction_probability_list)
-    roc_auc = auc(fpr, tpr)
-    plt.plot(fpr, tpr, "b", label="AUC = %0.2f" % roc_auc)
-    plt.plot([0, 1], [0, 1], "r--")
-    plt.title("ROC curve", fontsize=25)
-    plt.ylabel("True Positive Rate", fontsize=18)
-    plt.xlabel("False Positive Rate", fontsize=18)
-    plt.legend(
-        loc="lower right",
-        fontsize=24,
-        fancybox=True,
-        shadow=True,
-        frameon=True,
-        handlelength=0,
+    confusion_matrix_df = pd.DataFrame(confusion_matrix(test_data, prediction_list))
+    sns.heatmap(confusion_matrix_df, annot=True)
+
+    for i in range(OUT_FEATURES):
+        class_label = (
+            i  # the class for which you want to calculate precision and recall
+        )
+        precision = precision_score(
+            test_data, prediction_list, average="weighted", labels=[class_label]
+        )
+        recall = recall_score(
+            test_data, prediction_list, average="weighted", labels=[class_label]
+        )
+
+        print(f"Precision for class {class_label}: {precision}")
+        print(f"Recall for class {class_label}: {recall}")
+
+    n_classes = OUT_FEATURES  # the number of classes in your multi-class problem
+
+    # Binarize the labels for the multiclass ROC calculation
+    y_true_binarized = label_binarize(test_data, classes=np.arange(n_classes))
+    y_score_binarized = label_binarize(prediction_list, classes=np.arange(n_classes))
+
+    # Compute ROC curve and ROC area for each class
+    fpr = {}
+    tpr = {}
+    roc_auc = {}
+    for i in range(n_classes):
+        fpr[i], tpr[i], _ = roc_curve(y_true_binarized[:, i], y_score_binarized[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
+
+    # Compute micro-average ROC curve and ROC area
+    fpr["micro"], tpr["micro"], _ = roc_curve(
+        y_true_binarized.ravel(), y_score_binarized.ravel()
     )
+    roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+
+    # Plot ROC curves for each class
+    plt.figure()
+    lw = 2
+    colors = ["blue", "red", "green", "purple"]
+    for i, color in zip(range(n_classes), colors):
+        plt.plot(
+            fpr[i],
+            tpr[i],
+            color=color,
+            lw=lw,
+            label="ROC curve (AUC = %0.2f) for class %d" % (roc_auc[i], i),
+        )
+
+    # Plot micro-average ROC curve
+    plt.plot(
+        fpr["micro"],
+        tpr["micro"],
+        label="Micro-average ROC curve (AUC = {0:0.2f})".format(roc_auc["micro"]),
+        color="deeppink",
+        linestyle=":",
+        linewidth=4,
+    )
+
+    plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("Receiver Operating Characteristic (ROC) Curve")
+    plt.legend(loc="lower right")
     plt.show()

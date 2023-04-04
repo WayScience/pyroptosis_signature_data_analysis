@@ -18,6 +18,7 @@ import optuna
 import pandas as pd
 import plotly
 import seaborn as sns
+import toml
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -25,7 +26,6 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 
 sys.path.append("..")
-from configparser import ConfigParser
 
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
@@ -69,15 +69,10 @@ df = pd.read_csv(
 # In[3]:
 
 
-config = ConfigParser()
-config.optionxform = str
-config.read("MLP_utils/config.ini")
-
-
+data = Path("MLP_utils/config.toml")
+config = toml.load(data)
 params = Parameters()
-
 params = parameter_set(params, config)
-# int(params.DATA_SUBSET_NUMBER)
 
 
 # In[4]:
@@ -260,13 +255,29 @@ training_stats = pd.DataFrame(
 # In[13]:
 
 
-plot_metric_vs_epoch(training_stats, "epochs_ran", "train_acc", "valid_acc")
+plot_metric_vs_epoch(
+    training_stats,
+    x="epochs_ran",
+    y1="train_acc",
+    y2="valid_acc",
+    title="Accuracy vs. Epochs",
+    x_axis_label="Epochs",
+    y_axis_label="Accuracy",
+)
 
 
 # In[14]:
 
 
-plot_metric_vs_epoch(training_stats, "epochs_ran", "train_loss", "valid_loss")
+plot_metric_vs_epoch(
+    training_stats,
+    x="epochs_ran",
+    y1="train_loss",
+    y2="valid_loss",
+    title="Loss vs. Epochs",
+    x_axis_label="Epochs",
+    y_axis_label="Loss",
+)
 
 
 # In[15]:
@@ -289,3 +300,6 @@ else:
 
 # Call visualization function
 results_output(y_pred_list, Y_test, OUT_FEATURES)
+
+
+# In[ ]:

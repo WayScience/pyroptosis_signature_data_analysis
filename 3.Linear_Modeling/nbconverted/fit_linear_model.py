@@ -127,7 +127,7 @@ def feature_importance_linear_model(
         # Add results to a growing list
         lm_results.append([cp_feature, r2_score] + list(coef))
 
-        # Convert results to a pandas DataFrame
+    # Convert results to a pandas DataFrame
     lm_results = pd.DataFrame(lm_results, columns=columns_list)
 
     # Output file

@@ -22,10 +22,9 @@ import matplotlib.pyplot as plt
 
 
 # Define inputs and outputs
-df = pd.read_csv(
-    "../../Extracted_Features_(CSV_files)/interstellar_wave3_sc_norm_cellprofiler.csv.gz",
-    low_memory=False,
-)
+feature_file = pathlib.Path("../../Extracted_Features_(CSV_files)/interstellar_wave3_sc_norm_cellprofiler.csv.gz")
+
+feature_df = pd.read_csv(feature_file, low_memory=False)
 # output_dir = pathlib.Path("results")
 # output_cp_file = pathlib.Path(output_dir, "linear_model_cp_features.tsv")
 

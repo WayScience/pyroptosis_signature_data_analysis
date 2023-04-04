@@ -3,9 +3,7 @@ Functions for Machine Learning Model optimization, training and testing.
 These are helper functions meant to be called in a separate notebook or script
 """
 
-
-import ast
-from configparser import ConfigParser
+from pathlib import Path
 from typing import Tuple
 
 import matplotlib.pyplot as plt
@@ -13,39 +11,37 @@ import numpy as np
 import optuna
 import pandas as pd
 import seaborn as sns
+import toml
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from MLP_utils.parameters import Parameters
 from sklearn.metrics import (
-    accuracy_score,
     auc,
     classification_report,
     confusion_matrix,
-    f1_score,
     precision_score,
     recall_score,
-    roc_auc_score,
     roc_curve,
 )
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import label_binarize
 
-config = ConfigParser()
-config.optionxform = str
-config.read("MLP_utils/config.ini")
-
+# import config file and read
+data = Path("MLP_utils/config.toml")
+config = toml.load(data)
+# instantiate the params class to pass config values into
 params = Parameters()
 
 
-def parameter_set(params: Parameters, config: object) -> object:
+def parameter_set(params: Parameters, config: toml) -> object:
     """reset parameter class defaults by updating from config
 
     Parameters
     ----------
-    params : object
+    params : Parameters
         param class holding parameter information
-    config: object
+    config: toml
         config class
 
     Returns
@@ -56,6 +52,11 @@ def parameter_set(params: Parameters, config: object) -> object:
     params.DATA_SUBSET_OPTION = config["DEFAULT"]["DATA_SUBSET_OPTION"]
     params.DATA_SUBSET_NUMBER = int(config["DEFAULT"]["DATA_SUBSET_NUMBER"])
     params.BATCH_SIZE = int(config["DEFAULT"]["BATCH_SIZE"])
+    params.TRAIN_PROPORTION_SPLIT = float(config["DEFAULT"]["TRAIN_PROPORTION_SPLIT"])
+    params.VALIDATION_PROPORTION_SPLIT = float(
+        config["DEFAULT"]["VALIDATION_PROPORTION_SPLIT"]
+    )
+    params.TEST_PROPORTION_SPLIT = float(config["DEFAULT"]["TEST_PROPORTION_SPLIT"])
     params.OPTIM_EPOCHS = int(config["DEFAULT"]["OPTIM_EPOCHS"])
     params.N_TRIALS = int(config["DEFAULT"]["N_TRIALS"])
     params.TRAIN_EPOCHS = int(config["DEFAULT"]["TRAIN_EPOCHS"])
@@ -187,7 +188,10 @@ class Dataset_formatter:
 
 # based on https://www.kaggle.com/code/ludovicocuoghi/pytorch-pytorch-lightning-w-optuna-opt
 def build_model_custom(
-    trial: optuna.study, in_features: int, final_layer_out_features: int, params: object
+    trial: optuna.study,
+    in_features: int,
+    final_layer_out_features: int,
+    params: Parameters,
 ) -> torch.nn.Sequential:
     """Generate a flexible pytorch Neural Network Model that allows for
     optuna hyperparameter optimization
@@ -200,7 +204,7 @@ def build_model_custom(
         the number of in features for the initial network layer
     final_layer_out_features : int
         the number of out features for the network final layer
-    params : object
+    params : Parameters
         parameter dataclass object to import constants and params
 
     Returns
@@ -228,7 +232,7 @@ def build_model_custom(
         layers.append(nn.ReLU())
         # dropout rate
         p = trial.suggest_float(
-            ("dropout_{}".format(i)), params.DROPOUT_MIN, params.DROPOUT_MAX
+            (f"dropout_{i}"), params.DROPOUT_MIN, params.DROPOUT_MAX
         )
 
         layers.append(nn.Dropout(p))
@@ -244,14 +248,14 @@ def build_model_custom(
 def train_n_validate(
     model: build_model_custom,
     optimizer: str,
-    criterion: object,
+    criterion: nn,
     train_acc: list,
     train_loss: list,
     valid_acc: list,
     valid_loss: list,
     total_step: int,
     total_step_val: int,
-    params: object,
+    params: Parameters,
     train_loader: torch.utils.data.DataLoader,
     valid_loader: torch.utils.data.DataLoader,
 ) -> Tuple[build_model_custom, str, object, list, list, list, list, int, int, int, int]:
@@ -265,7 +269,7 @@ def train_n_validate(
         initialized class containing model
     optimizer : str
         optimizer type
-    criterion : object
+    criterion : nn
         criterion function to be used to calculate loss
     train_acc : list
         list for adding training accuracy values
@@ -279,7 +283,7 @@ def train_n_validate(
         the length of the number of data points in training dataset
     total_step_val : int
         the length of the number of data points in validation dataset
-    params : object
+    params : Parameters
         Dataclass containing constants and parameter spaces
     train_loader : torch.utils.data.DataLoader
         DataLoader for train data integration to pytorch
@@ -294,7 +298,7 @@ def train_n_validate(
             initialized class containing model
         optimizer : str
             optimizer type
-        criterion : object
+        criterion : nn
             criterion function to be used to calculate loss
         train_acc : list
             list for adding training accuracy values
@@ -404,10 +408,10 @@ def train_n_validate(
 def objective_model_optimizer(
     train_loader: torch.utils.data.DataLoader,
     valid_loader: torch.utils.data.DataLoader,
-    trial: object = object,
+    trial: object = optuna.create_study,
     in_features: int = 1,
     out_features: int = 1,
-    params: object = params,
+    params: Parameters = params,
     metric: str = "loss",
     return_info: bool = False,
 ) -> str | int:
@@ -427,7 +431,7 @@ def objective_model_optimizer(
         the number of in features for the initial network layer
     out_features : int
         the number of out features for the final network layer
-    params : object
+    params : optuna.create_study
         Dataclass containing constants and parameter spaces
     metric : str
         metric to be tracked for model optimization
@@ -462,9 +466,7 @@ def objective_model_optimizer(
         "learning_rate": trial.suggest_float(
             "learning_rate", params.LEARNING_RATE_MIN, params.LEARNING_RATE_MAX
         ),
-        "optimizer": trial.suggest_categorical(
-            "optimizer", ast.literal_eval(params.OPTIMIZER_LIST)
-        ),
+        "optimizer": trial.suggest_categorical("optimizer", params.OPTIMIZER_LIST),
     }
 
     # param optimizer pick
@@ -538,12 +540,20 @@ def objective_model_optimizer(
         print(f"Validation Loss: {np.mean(valid_loss)}")
         print(f"Training Accuracy: {np.mean(train_acc)}")
         print(f"Training Loss: {np.mean(train_loss)}")
+        return (
+            np.mean(valid_acc),
+            np.mean(valid_loss),
+            np.mean(train_acc),
+            np.mean(train_loss),
+        )
     elif metric == "accuracy":
         return np.mean(valid_acc)
     elif metric == "loss":
         return np.mean(valid_loss)
     else:
-        raise Exception("metric not defined as accuracy or loss")
+        raise Exception(
+            'metric argument needs to be defined as either "accuracy" or "loss"'
+        )
 
 
 def extract_best_trial_params(best_params: optuna.study) -> dict:
@@ -561,7 +571,6 @@ def extract_best_trial_params(best_params: optuna.study) -> dict:
         dictionary of all of the params for the best trial model
     """
 
-    best_params
     units = []
     dropout = []
     n_layers = best_params["n_layers"]
@@ -630,7 +639,7 @@ def train_optimized_model(
     in_features: int,
     out_features: int,
     parameter_dict: dict,
-    params: object,
+    params: Parameters,
 ) -> tuple[float, float, float, float, int, torch.nn.Sequential]:
     """This function trains the optimized model on the training dataset
 
@@ -649,7 +658,7 @@ def train_optimized_model(
         the number of out features for the final network layer
     parameter_dict : dict
         dictionary of optimized model hyperparameters
-    params : object
+    params : Parameters
         Dataclass containing constants and parameter spaces
 
     Returns
@@ -751,7 +760,15 @@ def train_optimized_model(
 
 
 # Plot training data over epochs
-def plot_metric_vs_epoch(df: pd.DataFrame, x: str, y1: str, y2: str) -> None:
+def plot_metric_vs_epoch(
+    df: pd.DataFrame,
+    x: str,
+    y1: str,
+    y2: str,
+    title: str,
+    x_axis_label: str,
+    y_axis_label: str,
+) -> None:
     """Plot x vs y1 and x vs y2 using seaborn.
 
     Parameters
@@ -764,9 +781,21 @@ def plot_metric_vs_epoch(df: pd.DataFrame, x: str, y1: str, y2: str) -> None:
         y1 variable in this case train metric
     y2 : str
         y1 variable in this case validation metric
+    title : str
+        string of the title assigned for the given graph
+    x_axis_label: str
+        label for the x axis
+    y_axis_label: str
+        label for the y axis
     """
-    sns.lineplot(x=x, y=y1, data=df)
-    sns.lineplot(x=x, y=y2, data=df)
+    # sns.lineplot(x=x, y=y1, data=df)
+    # sns.lineplot(x=x, y=y2, data=df)
+    sns.lineplot(x=df[x], y=df[y1], palette="blue", label="Train")
+    sns.lineplot(x=df[x], y=df[y2], palette="orange", label="Validation")
+    plt.title(title)
+    plt.xlabel(x_axis_label)
+    plt.ylabel(y_axis_label)
+    plt.legend()
 
 
 def test_optimized_model(
@@ -775,7 +804,7 @@ def test_optimized_model(
     in_features: int,
     out_features: int,
     parameter_dict: dict,
-    params: object,
+    params: Parameters,
 ) -> Tuple[list, list]:
     """test the trained model on test data
 
@@ -791,7 +820,7 @@ def test_optimized_model(
         the number of out features for the final network layer
     parameter_dict : dict
         dictionary of optimized model hyperparameters
-    params : object
+    params : Parameters
         Dataclass containing constants and parameter spaces
 
 
@@ -892,9 +921,9 @@ def results_output(prediction_list: list, test_data: list, OUT_FEATURES: int) ->
     y_score_binarized = label_binarize(prediction_list, classes=np.arange(n_classes))
 
     # Compute ROC curve and ROC area for each class
-    fpr = dict()
-    tpr = dict()
-    roc_auc = dict()
+    fpr = {}
+    tpr = {}
+    roc_auc = {}
     for i in range(n_classes):
         fpr[i], tpr[i], _ = roc_curve(y_true_binarized[:, i], y_score_binarized[:, i])
         roc_auc[i] = auc(fpr[i], tpr[i])

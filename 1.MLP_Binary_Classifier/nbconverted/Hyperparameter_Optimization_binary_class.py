@@ -69,7 +69,6 @@ config.read("MLP_utils/config.ini")
 params = Parameters()
 
 params = parameter_set(params, config)
-# int(params.DATA_SUBSET_NUMBER)
 
 
 # In[4]:

@@ -48,12 +48,15 @@ cp_features = infer_cp_features(df)
 
 print(f"We are testing {len(cp_features)} CellProfiler features")
 # Drop na and reindex accordingly
-df = df.dropna()
-df = df.reindex()
-df = df.assign(
+df = (
+    df
+    .dropna()
+    .reindex(drop=True)
+    .assign(
     Metadata_Treatment_and_Dose=lambda x: df["Metadata_treatment"]
     + "_"
     + df["Metadata_dose"]
+)
 )
 df["Metadata_Treatment_and_Dose"].unique()
 

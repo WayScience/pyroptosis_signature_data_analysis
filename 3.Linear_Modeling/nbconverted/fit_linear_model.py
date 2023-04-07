@@ -33,12 +33,7 @@ def linear_model_function(control, treatment, df, cp_features):
     variables = ["Metadata_number_of_singlecells"]
     X = pd.concat([df.loc[:, variables], treatment_df], axis=1)
 
-    columns_list = []
-    columns_list.append("feature")
-    columns_list.append("r2_score")
-
-    for i in X:
-        columns_list.append(i)
+    columns_list = ["feature", "r2_score"] + X.columns.tolist()
     # Fit linear model for each feature
     lm_results = []
     for cp_feature in cp_features:

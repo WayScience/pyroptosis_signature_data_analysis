@@ -31,9 +31,7 @@ def linear_model_function(control, treatment, df, cp_features):
     treatment_df = pd.get_dummies(data=df.Metadata_Treatment_and_Dose)
     # Setup linear modeling framework
     variables = ["Metadata_number_of_singlecells"]
-    X = df.loc[:, variables]
-
-    X = pd.concat([X, treatment_df], axis=1)
+    X = pd.concat([df.loc[:, variables], treatment_df], axis=1)
 
     columns_list = []
     columns_list.append("feature")

@@ -160,11 +160,9 @@ for i in feature_df["Metadata_Treatment_and_Dose"].unique():
     treatment_df
     # Setup linear modeling framework
     variables = ["Metadata_number_of_singlecells"]
-    X = df.loc[:, variables]
-    X = pd.concat([X, treatment_df], axis=1)
+    X = pd.concat([df.loc[:, variables], treatment_df], axis=1)
 
     columns_list = ["feature", "r2_score"] + X.columns.tolist()
-
     # Fit linear model for each feature
     lm_results = []
     for cp_feature in cp_features:

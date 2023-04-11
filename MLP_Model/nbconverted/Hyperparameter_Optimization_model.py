@@ -87,7 +87,7 @@ df = df.assign(
     + df["Metadata_dose"]
 )
 
-print("Unique Catagories are:")
+print("Unique Categories are:")
 print(df["Metadata_Treatment_and_Dose"].unique())
 
 # Generate df specific to analysis and model

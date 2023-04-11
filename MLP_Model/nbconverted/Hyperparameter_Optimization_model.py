@@ -381,7 +381,7 @@ else:
 
 
 # Call visualization function
-# calling the testing function and outputing list values of tested model
+# calling the testing function and outputting list values of tested model
 if params.MODEL_TYPE == "Multi_Class":
     results_output(y_pred_list, Y_test, params)
 elif params.MODEL_TYPE == "Binary_Classification":

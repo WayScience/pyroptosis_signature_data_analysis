@@ -115,7 +115,7 @@ if params.DATA_SUBSET_OPTION == "True":
     print(f"Data Subset Is On")
     print(f"Data is subset to {params.DATA_SUBSET_NUMBER}")
 else:
-    print(f"Data Subset Is Off")
+    print("Data Subset Is Off")
 
 # Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])

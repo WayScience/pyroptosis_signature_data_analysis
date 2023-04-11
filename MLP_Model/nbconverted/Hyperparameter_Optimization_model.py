@@ -112,7 +112,7 @@ df[["Metadata_Treatment_and_Dose"]].drop_duplicates()
 
 if params.DATA_SUBSET_OPTION == "True":
     df = df.sample(n=params.DATA_SUBSET_NUMBER)
-    print(f"Data Subset Is On")
+    print("Data Subset Is On")
     print(f"Data is subset to {params.DATA_SUBSET_NUMBER}")
 else:
     print("Data Subset Is Off")

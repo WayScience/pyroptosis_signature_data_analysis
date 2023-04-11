@@ -98,7 +98,7 @@ df = df.query(
 # df = df.query(
 #     "Metadata_Treatment_and_Dose == 'LPS_10µg/ml'| Metadata_Treatment_and_Dose == 'Media only_0'"
 # )
-print("Selected Catagories are:")
+print("Selected Categories are:")
 print(df["Metadata_Treatment_and_Dose"].unique())
 # Drop na and reindex accordingly
 df = df.dropna()

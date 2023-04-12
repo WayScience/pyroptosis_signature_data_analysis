@@ -45,30 +45,40 @@ def parameter_set(params: Parameters, config: toml) -> object:
     object
         param class holding updated parameter information
     """
-    params.MODEL_TYPE = config["DEFAULT"]["MODEL_TYPE"]
-    params.DATA_SUBSET_OPTION = config["DEFAULT"]["DATA_SUBSET_OPTION"]
-    params.DATA_SUBSET_NUMBER = int(config["DEFAULT"]["DATA_SUBSET_NUMBER"])
-    params.BATCH_SIZE = int(config["DEFAULT"]["BATCH_SIZE"])
-    params.TRAIN_PROPORTION_SPLIT = float(config["DEFAULT"]["TRAIN_PROPORTION_SPLIT"])
-    params.VALIDATION_PROPORTION_SPLIT = float(
-        config["DEFAULT"]["VALIDATION_PROPORTION_SPLIT"]
+    params.MODEL_TYPE = config["MACHINE_LEARNING_PARAMS"]["MODEL_TYPE"]
+    params.DATA_SUBSET_OPTION = config["MACHINE_LEARNING_PARAMS"]["DATA_SUBSET_OPTION"]
+    params.DATA_SUBSET_NUMBER = int(
+        config["MACHINE_LEARNING_PARAMS"]["DATA_SUBSET_NUMBER"]
     )
-    params.TEST_PROPORTION_SPLIT = float(config["DEFAULT"]["TEST_PROPORTION_SPLIT"])
-    params.OPTIM_EPOCHS = int(config["DEFAULT"]["OPTIM_EPOCHS"])
-    params.N_TRIALS = int(config["DEFAULT"]["N_TRIALS"])
-    params.TRAIN_EPOCHS = int(config["DEFAULT"]["TRAIN_EPOCHS"])
-    params.MIN_LAYERS = int(config["DEFAULT"]["MIN_LAYERS"])
-    params.MAX_LAYERS = int(config["DEFAULT"]["MAX_LAYERS"])
-    params.LAYER_UNITS_MIN = int(config["DEFAULT"]["LAYER_UNITS_MIN"])
-    params.LAYER_UNITS_MAX = int(config["DEFAULT"]["LAYER_UNITS_MAX"])
-    params.DROPOUT_MIN = float(config["DEFAULT"]["DROPOUT_MIN"])
-    params.DROPOUT_MAX = float(config["DEFAULT"]["DROPOUT_MAX"])
-    params.DROP_OUT_STEP = float(config["DEFAULT"]["DROP_OUT_STEP"])
-    params.LEARNING_RATE_MIN = float(config["DEFAULT"]["LEARNING_RATE_MIN"])
-    params.LEARNING_RATE_MAX = float(config["DEFAULT"]["LEARNING_RATE_MAX"])
-    params.OPTIMIZER_LIST = config["DEFAULT"]["OPTIMIZER_LIST"]
-    params.METRIC = config["DEFAULT"]["METRIC"]
-    params.DIRECTION = config["DEFAULT"]["DIRECTION"]
+    params.BATCH_SIZE = int(config["MACHINE_LEARNING_PARAMS"]["BATCH_SIZE"])
+    params.TRAIN_PROPORTION_SPLIT = float(
+        config["MACHINE_LEARNING_PARAMS"]["TRAIN_PROPORTION_SPLIT"]
+    )
+    params.VALIDATION_PROPORTION_SPLIT = float(
+        config["MACHINE_LEARNING_PARAMS"]["VALIDATION_PROPORTION_SPLIT"]
+    )
+    params.TEST_PROPORTION_SPLIT = float(
+        config["MACHINE_LEARNING_PARAMS"]["TEST_PROPORTION_SPLIT"]
+    )
+    params.OPTIM_EPOCHS = int(config["MACHINE_LEARNING_PARAMS"]["OPTIM_EPOCHS"])
+    params.N_TRIALS = int(config["MACHINE_LEARNING_PARAMS"]["N_TRIALS"])
+    params.TRAIN_EPOCHS = int(config["MACHINE_LEARNING_PARAMS"]["TRAIN_EPOCHS"])
+    params.MIN_LAYERS = int(config["MACHINE_LEARNING_PARAMS"]["MIN_LAYERS"])
+    params.MAX_LAYERS = int(config["MACHINE_LEARNING_PARAMS"]["MAX_LAYERS"])
+    params.LAYER_UNITS_MIN = int(config["MACHINE_LEARNING_PARAMS"]["LAYER_UNITS_MIN"])
+    params.LAYER_UNITS_MAX = int(config["MACHINE_LEARNING_PARAMS"]["LAYER_UNITS_MAX"])
+    params.DROPOUT_MIN = float(config["MACHINE_LEARNING_PARAMS"]["DROPOUT_MIN"])
+    params.DROPOUT_MAX = float(config["MACHINE_LEARNING_PARAMS"]["DROPOUT_MAX"])
+    params.DROP_OUT_STEP = float(config["MACHINE_LEARNING_PARAMS"]["DROP_OUT_STEP"])
+    params.LEARNING_RATE_MIN = float(
+        config["MACHINE_LEARNING_PARAMS"]["LEARNING_RATE_MIN"]
+    )
+    params.LEARNING_RATE_MAX = float(
+        config["MACHINE_LEARNING_PARAMS"]["LEARNING_RATE_MAX"]
+    )
+    params.OPTIMIZER_LIST = config["MACHINE_LEARNING_PARAMS"]["OPTIMIZER_LIST"]
+    params.METRIC = config["MACHINE_LEARNING_PARAMS"]["METRIC"]
+    params.DIRECTION = config["MACHINE_LEARNING_PARAMS"]["DIRECTION"]
     return params
 
 
@@ -1010,7 +1020,12 @@ def results_output(
     if params.MODEL_TYPE == "Multi_Class":
         print(classification_report(test_data, prediction_list))
         confusion_matrix_df = pd.DataFrame(confusion_matrix(test_data, prediction_list))
-        sns.heatmap(confusion_matrix_df, annot=True, fmt="d")
+        ax = sns.heatmap(confusion_matrix_df, annot=True, fmt="d")
+        ax.invert_xaxis()
+        ax.invert_yaxis()
+        plt.title("Confusion Matrix for Binary Classifier", fontsize=20)
+        plt.xlabel("Actual Values", size=15)
+        plt.ylabel("Predicted Values", size=15)
         graph_path = Path(f"./figures/{params.MODEL_TYPE}/confusion_matrix_graph.png")
         plt.savefig(graph_path)
         for i in range(params.OUT_FEATURES):
@@ -1088,11 +1103,18 @@ def results_output(
         graph_path = Path(f"./figures/{params.MODEL_TYPE}/ROC_graph.png")
         plt.savefig(graph_path)
         plt.show()
-
+        return confusion_matrix_df
     elif params.MODEL_TYPE == "Binary_Classification":
         print(classification_report(test_data, prediction_list))
         confusion_matrix_df = pd.DataFrame(confusion_matrix(test_data, prediction_list))
-        sns.heatmap(confusion_matrix_df, annot=True, fmt="d")
+        confusion_matrix_df.columns = ["Negative", "Positive"]
+        confusion_matrix_df.index = ["Negative", "Positive"]
+        ax = sns.heatmap(confusion_matrix_df, annot=True, fmt="d")
+        ax.invert_xaxis()
+        ax.invert_yaxis()
+        plt.title("Confusion Matrix for Binary Classifier", fontsize=20)
+        plt.xlabel("Actual Values", size=15)
+        plt.ylabel("Predicted Values", size=15)
         graph_path = Path(f"./figures/{params.MODEL_TYPE}/confusion_matrix_graph.png")
         plt.savefig(graph_path)
         # AUC graph of accuracy and false positive rates
@@ -1115,6 +1137,7 @@ def results_output(
         graph_path = Path(f"./figures/{params.MODEL_TYPE}/ROC_graph.png")
         plt.savefig(graph_path)
         plt.show()
+
     elif params.MODEL_TYPE == "Regression":
         mse = mean_squared_error(test_data, prediction_list)
         r_square = r2_score(test_data, prediction_list)

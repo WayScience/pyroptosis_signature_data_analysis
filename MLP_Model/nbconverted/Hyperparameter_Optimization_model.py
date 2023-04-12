@@ -112,10 +112,10 @@ df[["Metadata_Treatment_and_Dose"]].drop_duplicates()
 
 if params.DATA_SUBSET_OPTION == "True":
     df = df.sample(n=params.DATA_SUBSET_NUMBER)
-    print(f"Data Subset Is On")
+    print("Data Subset Is On")
     print(f"Data is subset to {params.DATA_SUBSET_NUMBER}")
 else:
-    print(f"Data Subset Is Off")
+    print("Data Subset Is Off")
 
 # Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
@@ -358,13 +358,11 @@ plot_metric_vs_epoch(
 # In[18]:
 
 
-# calling the testing function and outputing list values of tested model
-if params.MODEL_TYPE == "Multi_Class":
+# calling the testing function and outputting list values of tested model
+if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
     y_pred_list = test_optimized_model(model, test_loader, params)
 elif params.MODEL_TYPE == "Binary_Classification":
     y_pred_list, y_pred_prob_list = test_optimized_model(model, test_loader, params)
-elif params.MODEL_TYPE == "Regression":
-    y_pred_list = test_optimized_model(model, test_loader, params)
 else:
     raise Exception("Model type must be specified for proper model testing")
 
@@ -382,11 +380,9 @@ else:
 
 # Call visualization function
 # calling the testing function and outputing list values of tested model
-if params.MODEL_TYPE == "Multi_Class":
-    results_output(y_pred_list, Y_test, params)
+if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
+    confusion_matrix_df = results_output(y_pred_list, Y_test, params)
 elif params.MODEL_TYPE == "Binary_Classification":
     results_output(y_pred_list, Y_test, params, y_pred_prob_list)
-elif params.MODEL_TYPE == "Regression":
-    results_output(y_pred_list, Y_test, params)
 else:
     raise Exception("Model type must be specified for proper model testing")

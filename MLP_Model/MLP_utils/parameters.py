@@ -9,6 +9,8 @@ class Parameters:
     """Class for keeping constants"""
 
     # Constants
+    MODEL_TYPE: str = "Binary_Classification"
+
     # Subset option yes or no? if no SUBSET_NUMBER won't be used
     DATA_SUBSET_OPTION: bool = True
 
@@ -56,3 +58,5 @@ class Parameters:
 
     METRIC: str = "accuracy"
     DIRECTION: str = "maximize"
+    IN_FEATURES: int = 1
+    OUT_FEATURES: int = 1

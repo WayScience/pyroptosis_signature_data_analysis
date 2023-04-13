@@ -20,18 +20,14 @@ from sklearn.metrics import (
     auc,
     classification_report,
     confusion_matrix,
+    mean_squared_error,
     precision_score,
+    r2_score,
     recall_score,
     roc_curve,
 )
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import label_binarize
-
-# import config file and read
-data = Path("MLP_utils/config.toml")
-config = toml.load(data)
-# instantiate the params class to pass config values into
-params = Parameters()
 
 
 def parameter_set(params: Parameters, config: toml) -> object:
@@ -49,33 +45,41 @@ def parameter_set(params: Parameters, config: toml) -> object:
     object
         param class holding updated parameter information
     """
-    params.DATA_SUBSET_OPTION = config["DEFAULT"]["DATA_SUBSET_OPTION"]
-    params.DATA_SUBSET_NUMBER = int(config["DEFAULT"]["DATA_SUBSET_NUMBER"])
-    params.BATCH_SIZE = int(config["DEFAULT"]["BATCH_SIZE"])
-    params.TRAIN_PROPORTION_SPLIT = float(config["DEFAULT"]["TRAIN_PROPORTION_SPLIT"])
-    params.VALIDATION_PROPORTION_SPLIT = float(
-        config["DEFAULT"]["VALIDATION_PROPORTION_SPLIT"]
+    params.MODEL_TYPE = config["MACHINE_LEARNING_PARAMS"]["MODEL_TYPE"]
+    params.DATA_SUBSET_OPTION = config["MACHINE_LEARNING_PARAMS"]["DATA_SUBSET_OPTION"]
+    params.DATA_SUBSET_NUMBER = int(
+        config["MACHINE_LEARNING_PARAMS"]["DATA_SUBSET_NUMBER"]
     )
-    params.TEST_PROPORTION_SPLIT = float(config["DEFAULT"]["TEST_PROPORTION_SPLIT"])
-    params.OPTIM_EPOCHS = int(config["DEFAULT"]["OPTIM_EPOCHS"])
-    params.N_TRIALS = int(config["DEFAULT"]["N_TRIALS"])
-    params.TRAIN_EPOCHS = int(config["DEFAULT"]["TRAIN_EPOCHS"])
-    params.MIN_LAYERS = int(config["DEFAULT"]["MIN_LAYERS"])
-    params.MAX_LAYERS = int(config["DEFAULT"]["MAX_LAYERS"])
-    params.LAYER_UNITS_MIN = int(config["DEFAULT"]["LAYER_UNITS_MIN"])
-    params.LAYER_UNITS_MAX = int(config["DEFAULT"]["LAYER_UNITS_MAX"])
-    params.DROPOUT_MIN = float(config["DEFAULT"]["DROPOUT_MIN"])
-    params.DROPOUT_MAX = float(config["DEFAULT"]["DROPOUT_MAX"])
-    params.DROP_OUT_STEP = float(config["DEFAULT"]["DROP_OUT_STEP"])
-    params.LEARNING_RATE_MIN = float(config["DEFAULT"]["LEARNING_RATE_MIN"])
-    params.LEARNING_RATE_MAX = float(config["DEFAULT"]["LEARNING_RATE_MAX"])
-    params.OPTIMIZER_LIST = config["DEFAULT"]["OPTIMIZER_LIST"]
-    params.METRIC = config["DEFAULT"]["METRIC"]
-    params.DIRECTION = config["DEFAULT"]["DIRECTION"]
+    params.BATCH_SIZE = int(config["MACHINE_LEARNING_PARAMS"]["BATCH_SIZE"])
+    params.TRAIN_PROPORTION_SPLIT = float(
+        config["MACHINE_LEARNING_PARAMS"]["TRAIN_PROPORTION_SPLIT"]
+    )
+    params.VALIDATION_PROPORTION_SPLIT = float(
+        config["MACHINE_LEARNING_PARAMS"]["VALIDATION_PROPORTION_SPLIT"]
+    )
+    params.TEST_PROPORTION_SPLIT = float(
+        config["MACHINE_LEARNING_PARAMS"]["TEST_PROPORTION_SPLIT"]
+    )
+    params.OPTIM_EPOCHS = int(config["MACHINE_LEARNING_PARAMS"]["OPTIM_EPOCHS"])
+    params.N_TRIALS = int(config["MACHINE_LEARNING_PARAMS"]["N_TRIALS"])
+    params.TRAIN_EPOCHS = int(config["MACHINE_LEARNING_PARAMS"]["TRAIN_EPOCHS"])
+    params.MIN_LAYERS = int(config["MACHINE_LEARNING_PARAMS"]["MIN_LAYERS"])
+    params.MAX_LAYERS = int(config["MACHINE_LEARNING_PARAMS"]["MAX_LAYERS"])
+    params.LAYER_UNITS_MIN = int(config["MACHINE_LEARNING_PARAMS"]["LAYER_UNITS_MIN"])
+    params.LAYER_UNITS_MAX = int(config["MACHINE_LEARNING_PARAMS"]["LAYER_UNITS_MAX"])
+    params.DROPOUT_MIN = float(config["MACHINE_LEARNING_PARAMS"]["DROPOUT_MIN"])
+    params.DROPOUT_MAX = float(config["MACHINE_LEARNING_PARAMS"]["DROPOUT_MAX"])
+    params.DROP_OUT_STEP = float(config["MACHINE_LEARNING_PARAMS"]["DROP_OUT_STEP"])
+    params.LEARNING_RATE_MIN = float(
+        config["MACHINE_LEARNING_PARAMS"]["LEARNING_RATE_MIN"]
+    )
+    params.LEARNING_RATE_MAX = float(
+        config["MACHINE_LEARNING_PARAMS"]["LEARNING_RATE_MAX"]
+    )
+    params.OPTIMIZER_LIST = config["MACHINE_LEARNING_PARAMS"]["OPTIMIZER_LIST"]
+    params.METRIC = config["MACHINE_LEARNING_PARAMS"]["METRIC"]
+    params.DIRECTION = config["MACHINE_LEARNING_PARAMS"]["DIRECTION"]
     return params
-
-
-params = parameter_set(params, config)
 
 
 def data_split(
@@ -85,6 +89,7 @@ def data_split(
     val_proportion: float = 0.1,
     test_proportion: float = 0.1,
     seed: int = 1,
+    params: Parameters = True,
 ) -> Tuple[
     pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame
 ]:
@@ -108,6 +113,8 @@ def data_split(
     seed : int, optional
         the random state set for the random splits
         this is to ensure reproducibility during the development phase, by default 1
+    params: Parameters, required
+        Parameters class object
 
     Returns
     -------
@@ -126,18 +133,41 @@ def data_split(
     if (train_proportion + test_proportion + val_proportion) != 1:
         raise Exception("Train, val, and test sets must add to 1")
 
-    # split data into train-test
-    X_train, X_val, Y_train, Y_val = train_test_split(
-        X_vals, y_vals, test_size=val_proportion, random_state=seed, stratify=y_vals
-    )
+    if params.MODEL_TYPE == "Regression":
+        # split data into train-test
+        # TODO add a binning function to be able to properly stratify the continuos predictor feature
+        X_train, X_val, Y_train, Y_val = train_test_split(
+            X_vals,
+            y_vals,
+            test_size=val_proportion,
+            random_state=seed,
+        )
+    else:
+        X_train, X_val, Y_train, Y_val = train_test_split(
+            X_vals, y_vals, test_size=val_proportion, random_state=seed, stratify=y_vals
+        )
 
     # splitting from the train dataset a second time without replacement:
     # we need to adjust the ratio see docstring for more explanation
     test_proportion = test_proportion / (1 - val_proportion)
-    # split train data into train-validate
-    X_train, X_test, Y_train, Y_test = train_test_split(
-        X_train, Y_train, test_size=test_proportion, random_state=seed, stratify=Y_train
-    )
+    if params.MODEL_TYPE == "Regression":
+        # split data into train-test
+        # TODO add a binning function to be able to properly stratify the continuos predictor feature
+        X_train, X_test, Y_train, Y_test = train_test_split(
+            X_train,
+            Y_train,
+            test_size=test_proportion,
+            random_state=seed,
+        )
+    else:
+        # split train data into train-validate
+        X_train, X_test, Y_train, Y_test = train_test_split(
+            X_train,
+            Y_train,
+            test_size=test_proportion,
+            random_state=seed,
+            stratify=Y_train,
+        )
 
     # reset the index to avoid downstream errors
     X_train = X_train.reset_index(drop=True)
@@ -189,8 +219,6 @@ class Dataset_formatter:
 # based on https://www.kaggle.com/code/ludovicocuoghi/pytorch-pytorch-lightning-w-optuna-opt
 def build_model_custom(
     trial: optuna.study,
-    in_features: int,
-    final_layer_out_features: int,
     params: Parameters,
 ) -> torch.nn.Sequential:
     """Generate a flexible pytorch Neural Network Model that allows for
@@ -200,10 +228,6 @@ def build_model_custom(
     ----------
     trial : optuna.study
         an iteration of the optuna study object
-    in_features : int
-        the number of in features for the initial network layer
-    final_layer_out_features : int
-        the number of out features for the network final layer
     params : Parameters
         parameter dataclass object to import constants and params
 
@@ -219,6 +243,7 @@ def build_model_custom(
 
     #  layers will be added to this list and called upon later
     layers = []
+    in_features = params.IN_FEATURES
 
     for i in range(n_layers):
 
@@ -239,7 +264,7 @@ def build_model_custom(
         in_features = out_features
 
     # final layer append
-    layers.append(nn.Linear(in_features, final_layer_out_features))
+    layers.append(nn.Linear(in_features, params.OUT_FEATURES))
 
     # add layers to the model
     return nn.Sequential(*layers)
@@ -331,7 +356,16 @@ def train_n_validate(
     # _ isn't used but is needed to "absorb" the data index
     for _, (X_train_batch, y_train_batch) in enumerate(train_loader):
 
-        y_train_batch = y_train_batch.type(torch.LongTensor)
+        if params.MODEL_TYPE == "Multi_Class":
+            y_train_batch = y_train_batch.type(torch.LongTensor)
+        elif params.MODEL_TYPE == "Binary_Classification":
+            pass
+        elif params.MODEL_TYPE == "Regression":
+            pass
+        else:
+            raise Exception(
+                "y_train type casting is dependent on model type! check model type definition"
+            )
 
         X_train_batch, y_train_batch = X_train_batch.to(
             params.DEVICE
@@ -339,24 +373,36 @@ def train_n_validate(
         optimizer.zero_grad()
         output = model(X_train_batch)
         # print(output)
-        y_pred = torch.log_softmax(output, dim=1)
-        # print(y_pred)
-        _, y_pred = torch.max(y_pred, dim=1)
-        # print(y_pred)
-        # LOSS
-        loss = criterion(output, y_train_batch)
-        loss.backward()
-        optimizer.step()
-        running_loss += loss.item()  # sum loss for every batch
-        # ACCURACY
-        # print(len(y_pred))
-        # print(len(y_train_batch))
-        # print((y_pred == y_train_batch).sum())
-        correct += (y_pred == y_train_batch).sum().item()
-        total += y_train_batch.size(0)
-    train_acc.append(
-        100 * correct / total
-    )  # calculate accuracy among all entries in the batches
+        if params.MODEL_TYPE == "Multi_Class":
+            y_pred = torch.log_softmax(output, dim=1)
+            _, y_pred = torch.max(y_pred, dim=1)
+            loss = criterion(output, y_train_batch)
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()  # sum loss for every batch
+            correct += (y_pred == y_train_batch).sum().item()
+            total += y_train_batch.size(0)
+        elif params.MODEL_TYPE == "Binary_Classification":
+            y_pred = torch.round(torch.sigmoid(output))
+            loss = criterion(output, y_train_batch.unsqueeze(1))
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()  # sum loss for every batch
+            correct += torch.sum(y_pred == y_train_batch.unsqueeze(1)).item()
+            total += y_train_batch.size(0)
+        elif params.MODEL_TYPE == "Regression":
+            loss = criterion(output, y_train_batch.unsqueeze(1))
+            loss.backward()
+            optimizer.step()
+            running_loss += loss.item()
+        else:
+            raise Exception("train accuracy and loss model type not specified")
+    if params.MODEL_TYPE == "Regression":
+        pass
+    else:
+        train_acc.append(
+            100 * correct / total
+        )  # calculate accuracy among all entries in the batches
     train_loss.append(
         running_loss / total_step
     )  # get average loss among all batches dividing total loss by the number of batches
@@ -369,25 +415,49 @@ def train_n_validate(
         model.eval()
         for _, (X_valid_batch, y_valid_batch) in enumerate(valid_loader):
 
-            y_valid_batch = y_valid_batch.type(torch.LongTensor)
+            if params.MODEL_TYPE == "Multi_Class":
+                y_valid_batch = y_valid_batch.type(torch.LongTensor)
+            elif params.MODEL_TYPE == "Binary_Classification":
+                pass
+            elif params.MODEL_TYPE == "Regression":
+                pass
+            else:
+                raise Exception(
+                    "y_valid type casting is dependent on model type! check model type definition"
+                )
 
             X_valid_batch, y_valid_batch = X_valid_batch.to(
                 params.DEVICE
             ), y_valid_batch.to(params.DEVICE)
             # PREDICTION
             output = model(X_valid_batch)
-            # y_pred = torch.round(torch.sigmoid(output))
-            y_pred = torch.log_softmax(output, dim=1)
-            _, y_pred = torch.max(y_pred, dim=1)
-            # print(y_pred)
-            # print(y_valid_batch)
-            # LOSS
-            loss_v = criterion(output, y_valid_batch)
-            batch_loss += loss_v.item()
-            # ACCURACY
-            correct_v += (y_pred == y_valid_batch).sum().item()
-            total_v += y_valid_batch.size(0)
-        valid_acc.append(100 * correct_v / total_v)
+
+            if params.MODEL_TYPE == "Multi_Class":
+                y_pred = torch.log_softmax(output, dim=1)
+                _, y_pred = torch.max(y_pred, dim=1)
+                loss_v = criterion(output, y_valid_batch)
+                batch_loss += loss_v.item()
+                correct_v += (y_pred == y_valid_batch).sum().item()
+                total_v += y_valid_batch.size(0)
+            elif params.MODEL_TYPE == "Binary_Classification":
+                y_pred = torch.round(torch.sigmoid(output))
+                # LOSS
+                loss_v = criterion(output, y_valid_batch.unsqueeze(1))
+                batch_loss += loss_v.item()
+                # ACCURACY
+                correct_v += torch.sum(y_pred == y_valid_batch.unsqueeze(1)).item()
+                total_v += y_valid_batch.size(0)
+            elif params.MODEL_TYPE == "Regression":
+                loss = criterion(output, y_valid_batch.unsqueeze(1))
+                batch_loss += loss.item()
+            else:
+                raise Exception(
+                    "y_valid accuracy and loss is dependent on model type! check model type definition"
+                )
+        if params.MODEL_TYPE == "Regression":
+            pass
+        else:
+            valid_acc.append(100 * correct_v / total_v)
         valid_loss.append(batch_loss / total_step_val)
     return (
         model,
@@ -409,9 +479,7 @@ def objective_model_optimizer(
     train_loader: torch.utils.data.DataLoader,
     valid_loader: torch.utils.data.DataLoader,
     trial: object = optuna.create_study,
-    in_features: int = 1,
-    out_features: int = 1,
-    params: Parameters = params,
+    params: Parameters = False,
     metric: str = "loss",
     return_info: bool = False,
 ) -> str | int:
@@ -427,10 +495,6 @@ def objective_model_optimizer(
         DataLoader for validation data integration to pytorch
     trial : trial from optuna
         hyperparameter optimization trial from optuna
-    in_features : int
-        the number of in features for the initial network layer
-    out_features : int
-        the number of out features for the final network layer
     params : optuna.create_study
         Dataclass containing constants and parameter spaces
     metric : str
@@ -459,7 +523,7 @@ def objective_model_optimizer(
     """
 
     # calling model function
-    model = build_model_custom(trial, in_features, out_features, params)
+    model = build_model_custom(trial, params)
 
     # param dictionary for optimization
     optimization_params = {
@@ -476,7 +540,14 @@ def objective_model_optimizer(
     # loss function
 
     # for binary model use different for multi-class
-    criterion = nn.CrossEntropyLoss()
+    if params.MODEL_TYPE == "Multi_Class":
+        criterion = nn.CrossEntropyLoss()
+    elif params.MODEL_TYPE == "Binary_Classification":
+        criterion = nn.BCEWithLogitsLoss()
+    elif params.MODEL_TYPE == "Regression":
+        criterion = nn.MSELoss()
+    else:
+        raise Exception("Model type must be specified to define a train loss function")
 
     # send model to device(cuda)
     model = model.to(params.DEVICE)
@@ -536,16 +607,24 @@ def objective_model_optimizer(
     # I want information returned but only 1 metric required for the optimize function called by study.optimize
     # with out this conditional statement the optimization will fail
     if return_info == True:
-        print(f"Validation Accuracy: {np.mean(valid_acc)}")
-        print(f"Validation Loss: {np.mean(valid_loss)}")
-        print(f"Training Accuracy: {np.mean(train_acc)}")
-        print(f"Training Loss: {np.mean(train_loss)}")
-        return (
-            np.mean(valid_acc),
-            np.mean(valid_loss),
-            np.mean(train_acc),
-            np.mean(train_loss),
-        )
+        if params.MODEL_TYPE == "Regression":
+            print(f"Validation Loss: {np.mean(valid_loss)}")
+            print(f"Training Loss: {np.mean(train_loss)}")
+            return (
+                np.mean(valid_loss),
+                np.mean(train_loss),
+            )
+        else:
+            print(f"Validation Accuracy: {np.mean(valid_acc)}")
+            print(f"Validation Loss: {np.mean(valid_loss)}")
+            print(f"Training Accuracy: {np.mean(train_acc)}")
+            print(f"Training Loss: {np.mean(train_loss)}")
+            return (
+                np.mean(valid_acc),
+                np.mean(valid_loss),
+                np.mean(train_acc),
+                np.mean(train_loss),
+            )
     elif metric == "accuracy":
         return np.mean(valid_acc)
     elif metric == "loss":
@@ -591,19 +670,17 @@ def extract_best_trial_params(best_params: optuna.study) -> dict:
 
 # function for new optimized model
 def optimized_model_create(
-    in_features: int, final_layer_out_features: int, parameter_dict: dict
+    parameter_dict: dict, params: Parameters
 ) -> torch.nn.Sequential:
     """creates the pytorch model architecture from the best trial
     from optuna hyperparameter optimization
 
     Parameters
     ----------
-    in_features : int
-        the number of in features for the initial network layer
-    final_layer_out_features : int
-        the number of out features for the network final layer
     parameter_dict : dict
         dictionary of optimized model hyperparameters
+    params : Parameters
+        dataclass to store data of hyperparameters and parameters
 
     Returns
     -------
@@ -614,7 +691,7 @@ def optimized_model_create(
     n_layers = parameter_dict["n_layers"]
 
     layers = []
-
+    in_features = params.IN_FEATURES
     # loop through each layer
     for i in range(n_layers):
 
@@ -626,7 +703,7 @@ def optimized_model_create(
         p = parameter_dict["dropout"][i]
         layers.append(nn.Dropout(p))
         in_features = out_features
-    layers.append(nn.Linear(out_features, final_layer_out_features))
+    layers.append(nn.Linear(in_features, params.OUT_FEATURES))
     # output new model to train and test
     return nn.Sequential(*layers)
 
@@ -636,8 +713,6 @@ def train_optimized_model(
     EPOCHS: int,
     train_loader: torch.utils.data.DataLoader,
     valid_loader: torch.utils.data.DataLoader,
-    in_features: int,
-    out_features: int,
     parameter_dict: dict,
     params: Parameters,
 ) -> tuple[float, float, float, float, int, torch.nn.Sequential]:
@@ -652,10 +727,6 @@ def train_optimized_model(
         DataLoader for train data integration to pytorch
     valid_loader : torch.utils.data.DataLoader
         DataLoader for train data integration to pytorch
-    in_features : int
-        the number of in features for the initial network layer
-    out_features : int
-        the number of out features for the final network layer
     parameter_dict : dict
         dictionary of optimized model hyperparameters
     params : Parameters
@@ -672,24 +743,24 @@ def train_optimized_model(
         model: torch.nn.Sequential
 
     """
-
-    model = optimized_model_create(in_features, out_features, parameter_dict)
+    model = optimized_model_create(parameter_dict, params)
     model = model.to(params.DEVICE)
     # criterion is the method in which we measure our loss
     # isn't defined as loss as it doesn't represent the loss value but the method
-    criterion = nn.CrossEntropyLoss()
+    if params.MODEL_TYPE == "Multi_Class":
+        criterion = nn.CrossEntropyLoss()
+    elif params.MODEL_TYPE == "Binary_Classification":
+        criterion = nn.BCEWithLogitsLoss()
+    elif params.MODEL_TYPE == "Regression":
+        criterion = nn.MSELoss()
+    else:
+        raise Exception("Model type must be specified to define a train loss function")
     optim_method = parameter_dict["optimizer"].strip("'")
     print(optim_method)
 
     optimizer = f'optim.{optim_method}(model.parameters(), lr={parameter_dict["learning_rate"]})'
 
-    # optimizer = (
-    # f'optim.{optim_method}(model.parameters(), lr=parameter_dict["learning_rate"])'
-    # )
-    # print(optimizer)
     optimizer = eval(optimizer)
-    # optimizer = ast.literal_eval(optimizer)
-    print(optimizer)
 
     early_stopping_patience = 15
     early_stopping_counter = 0
@@ -739,7 +810,24 @@ def train_optimized_model(
         )
 
         if np.mean(valid_loss) <= valid_loss_min:
-            torch.save(model.state_dict(), f"./state_dict.pt")
+            if params.MODEL_TYPE == "Multi_Class":
+                torch.save(
+                    model.state_dict(),
+                    f"./results/model_save_states/Multi_Class_state_dict.pt",
+                )
+            elif params.MODEL_TYPE == "Binary_Classification":
+                torch.save(
+                    model.state_dict(),
+                    f"./results/model_save_states/Binary_Classification_state_dict.pt",
+                )
+            elif params.MODEL_TYPE == "Regression":
+                torch.save(
+                    model.state_dict(),
+                    f"./results/model_save_states/Regression_state_dict.pt",
+                )
+            else:
+                raise Exception("Model type must be specified for proper model saving")
+
             print(
                 f"Epoch {epoch + 0:01}: Validation loss decreased ({valid_loss_min:.6f} --> {np.mean(valid_loss):.6f}).  Saving model ..."
             )
@@ -752,10 +840,12 @@ def train_optimized_model(
         if early_stopping_counter > early_stopping_patience:
             print("Early stopped at epoch :", epoch)
             break
-
-        print(
-            f"\t Train_Loss: {np.mean(train_loss):.4f} Train_Acc: {(100 * correct / total):.3f} Val_Loss: {np.mean(valid_loss):.4f}  BEST VAL Loss: {valid_loss_min:.4f}  Val_Acc: {(100 * correct_v / total_v):.3f}\n"
-        )
+        if params.MODEL_TYPE == "Regression":
+            pass
+        else:
+            print(
+                f"\t Train_Loss: {np.mean(train_loss):.4f} Train_Acc: {(100 * correct / total):.3f} Val_Loss: {np.mean(valid_loss):.4f}  BEST VAL Loss: {valid_loss_min:.4f}  Val_Acc: {(100 * correct_v / total_v):.3f}\n"
+            )
     return train_loss, train_acc, valid_loss, valid_acc, epochs_ran, model
 
 
@@ -768,6 +858,7 @@ def plot_metric_vs_epoch(
     title: str,
     x_axis_label: str,
     y_axis_label: str,
+    params: Parameters,
 ) -> None:
     """Plot x vs y1 and x vs y2 using seaborn.
 
@@ -796,14 +887,13 @@ def plot_metric_vs_epoch(
     plt.xlabel(x_axis_label)
     plt.ylabel(y_axis_label)
     plt.legend()
+    graph_path = Path(f"./figures/{params.MODEL_TYPE}/{y_axis_label}_graph.png")
+    plt.savefig(graph_path)
 
 
 def test_optimized_model(
     model: torch.nn.Sequential,
     test_loader: torch.utils.data.DataLoader,
-    in_features: int,
-    out_features: int,
-    parameter_dict: dict,
     params: Parameters,
 ) -> Tuple[list, list]:
     """test the trained model on test data
@@ -814,12 +904,6 @@ def test_optimized_model(
         pytorch model to us
     test_loader : torch.utils.data.DataLoader
         DataLoader for test data integration to pytorch
-    in_features : int
-        the number of in features for the initial network layer
-    out_features : int
-        the number of out features for the final network layer
-    parameter_dict : dict
-        dictionary of optimized model hyperparameters
     params : Parameters
         Dataclass containing constants and parameter spaces
 
@@ -832,25 +916,56 @@ def test_optimized_model(
         y_pred_prob_list: list of probabilities of
         those predicted values
     """
+    if params.MODEL_TYPE == "Multi_Class":
+        model.load_state_dict(
+            torch.load("./results/model_save_states/Multi_Class_state_dict.pt")
+        )
+    elif params.MODEL_TYPE == "Binary_Classification":
+        model.load_state_dict(
+            torch.load(
+                "./results/model_save_states/Binary_Classification_state_dict.pt"
+            )
+        )
+    elif params.MODEL_TYPE == "Regression":
+        model.load_state_dict(
+            torch.load("./results/model_save_states/Regression_state_dict.pt")
+        )
+    else:
+        raise Exception("Model type must be specified for proper model loading")
 
-    model.load_state_dict(torch.load("./state_dict.pt"))
     y_pred_prob_list = []
     y_pred_list = []
 
     with torch.no_grad():
         model.eval()
-        for _, (X_test_batch, y_test_batch) in enumerate(test_loader):
+        for _, (X_test_batch, _) in enumerate(test_loader):
             X_test_batch = X_test_batch.to(params.DEVICE)
             # PREDICTION
             output = model(X_test_batch)
-            _, y_pred = torch.max(output, dim=1)
-            # y_pred_prob_list.append(y_pred_prob.cpu().numpy())
-            # y_pred = torch.round(y_pred_prob)
-            y_pred_list.append(y_pred.cpu().numpy())
-    # y_pred_prob_list = [a.squeeze().tolist() for a in y_pred_prob_list]
-    y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
 
-    return y_pred_list
+            if params.MODEL_TYPE == "Multi_Class":
+                _, y_pred = torch.max(output, dim=1)
+                y_pred_list.append(y_pred.cpu().numpy())
+            elif params.MODEL_TYPE == "Binary_Classification":
+                y_pred_prob = torch.sigmoid(output)
+                y_pred_prob_list.append(y_pred_prob.cpu().numpy())
+                y_pred = torch.round(y_pred_prob)
+                y_pred_list.append(y_pred.cpu().numpy())
+            elif params.MODEL_TYPE == "Regression":
+                y_pred_list.append(output.cpu().numpy())
+            else:
+                raise Exception("Model type must be specified for proper model testing")
+
+    y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
+    if params.MODEL_TYPE == "Multi_Class":
+        return y_pred_list
+    elif params.MODEL_TYPE == "Binary_Classification":
+        y_pred_prob_list = [a.squeeze().tolist() for a in y_pred_prob_list]
+        return y_pred_list, y_pred_prob_list
+    elif params.MODEL_TYPE == "Regression":
+        return y_pred_list
+    else:
+        raise Exception("Model type must be specified for proper model testing")
 
 
 # If output list is nested
@@ -875,93 +990,182 @@ def un_nest(lst) -> list:
     return new_lst
 
 
-def results_output(prediction_list: list, test_data: list, OUT_FEATURES: int) -> None:
+def results_output(
+    prediction_list: list,
+    test_data: list,
+    params: Parameters,
+    prediction_probability_list: list = False,
+) -> None:
     """Function outputs visualization of testing the model
-
 
     Parameters
     ----------
     prediction_list : list
-        list of predicted values from model
+        lis of predicted values
     test_data : list
-        input data to model actual labels
+        actual values (true values)
+    params: Parameters
+        dataclass of parameters
+    prediction_probability_list : list, optional
+        list of probabilities of 0 or 1, by default False
 
-    Return:
-        classification report
-        confusion matrix
-        AUC graph of accuracy and false positive rates
+    Raises
+    ------
+    Exception
+        raised if proper model type is not specified
     """
 
     # Classification report
-    print(classification_report(test_data, prediction_list))
 
-    # confusion matrix
+    if params.MODEL_TYPE == "Multi_Class":
+        print(classification_report(test_data, prediction_list))
+        confusion_matrix_df = pd.DataFrame(confusion_matrix(test_data, prediction_list))
+        ax = sns.heatmap(confusion_matrix_df, annot=True, fmt="d")
+        ax.invert_xaxis()
+        ax.invert_yaxis()
+        plt.title("Confusion Matrix for Binary Classifier", fontsize=20)
+        plt.xlabel("Actual Values", size=15)
+        plt.ylabel("Predicted Values", size=15)
+        graph_path = Path(f"./figures/{params.MODEL_TYPE}/confusion_matrix_graph.png")
+        plt.savefig(graph_path)
+        for i in range(params.OUT_FEATURES):
+            class_label = (
+                i  # the class for which you want to calculate precision and recall
+            )
+            precision = precision_score(
+                test_data, prediction_list, average="weighted", labels=[class_label]
+            )
+            recall = recall_score(
+                test_data, prediction_list, average="weighted", labels=[class_label]
+            )
 
-    confusion_matrix_df = pd.DataFrame(confusion_matrix(test_data, prediction_list))
-    sns.heatmap(confusion_matrix_df, annot=True)
+            print(f"Precision for class {class_label}: {precision}")
+            print(f"Recall for class {class_label}: {recall}")
 
-    for i in range(OUT_FEATURES):
-        class_label = (
-            i  # the class for which you want to calculate precision and recall
+        n_classes = (
+            params.OUT_FEATURES
+        )  # the number of classes in your multi-class problem
+
+        print(n_classes)
+
+        # Binarize the labels for the multiclass ROC calculation
+        y_true_binarized = label_binarize(test_data, classes=np.arange(n_classes))
+        y_score_binarized = label_binarize(
+            prediction_list, classes=np.arange(n_classes)
         )
-        precision = precision_score(
-            test_data, prediction_list, average="weighted", labels=[class_label]
+
+        # Compute ROC curve and ROC area for each class
+        fpr = {}
+        tpr = {}
+        roc_auc = {}
+        for i in range(n_classes):
+            fpr[i], tpr[i], _ = roc_curve(
+                y_true_binarized[:, i], y_score_binarized[:, i]
+            )
+            roc_auc[i] = auc(fpr[i], tpr[i])
+
+        # Compute micro-average ROC curve and ROC area
+        fpr["micro"], tpr["micro"], _ = roc_curve(
+            y_true_binarized.ravel(), y_score_binarized.ravel()
         )
-        recall = recall_score(
-            test_data, prediction_list, average="weighted", labels=[class_label]
-        )
+        roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
 
-        print(f"Precision for class {class_label}: {precision}")
-        print(f"Recall for class {class_label}: {recall}")
+        # Plot ROC curves for each class
+        plt.figure()
+        lw = 2
+        colors = ["blue", "red", "green", "purple"]
+        for i, color in zip(range(n_classes), colors):
+            plt.plot(
+                fpr[i],
+                tpr[i],
+                color=color,
+                lw=lw,
+                label="ROC curve (AUC = %0.2f) for class %d" % (roc_auc[i], i),
+            )
 
-    n_classes = OUT_FEATURES  # the number of classes in your multi-class problem
-
-    # Binarize the labels for the multiclass ROC calculation
-    y_true_binarized = label_binarize(test_data, classes=np.arange(n_classes))
-    y_score_binarized = label_binarize(prediction_list, classes=np.arange(n_classes))
-
-    # Compute ROC curve and ROC area for each class
-    fpr = {}
-    tpr = {}
-    roc_auc = {}
-    for i in range(n_classes):
-        fpr[i], tpr[i], _ = roc_curve(y_true_binarized[:, i], y_score_binarized[:, i])
-        roc_auc[i] = auc(fpr[i], tpr[i])
-
-    # Compute micro-average ROC curve and ROC area
-    fpr["micro"], tpr["micro"], _ = roc_curve(
-        y_true_binarized.ravel(), y_score_binarized.ravel()
-    )
-    roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
-
-    # Plot ROC curves for each class
-    plt.figure()
-    lw = 2
-    colors = ["blue", "red", "green", "purple"]
-    for i, color in zip(range(n_classes), colors):
+        # Plot micro-average ROC curve
         plt.plot(
-            fpr[i],
-            tpr[i],
-            color=color,
-            lw=lw,
-            label="ROC curve (AUC = %0.2f) for class %d" % (roc_auc[i], i),
+            fpr["micro"],
+            tpr["micro"],
+            label="Micro-average ROC curve (AUC = {0:0.2f})".format(roc_auc["micro"]),
+            color="deeppink",
+            linestyle=":",
+            linewidth=4,
         )
 
-    # Plot micro-average ROC curve
-    plt.plot(
-        fpr["micro"],
-        tpr["micro"],
-        label="Micro-average ROC curve (AUC = {0:0.2f})".format(roc_auc["micro"]),
-        color="deeppink",
-        linestyle=":",
-        linewidth=4,
-    )
+        plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
+        plt.xlim([-0.05, 1.05])
+        plt.ylim([-0.05, 1.05])
+        plt.xlabel("False Positive Rate")
+        plt.ylabel("True Positive Rate")
+        plt.title("Receiver Operating Characteristic (ROC) Curve")
+        plt.legend(loc="lower right")
+        graph_path = Path(f"./figures/{params.MODEL_TYPE}/ROC_graph.png")
+        plt.savefig(graph_path)
+        plt.show()
+        return confusion_matrix_df
+    elif params.MODEL_TYPE == "Binary_Classification":
+        print(classification_report(test_data, prediction_list))
+        confusion_matrix_df = pd.DataFrame(confusion_matrix(test_data, prediction_list))
+        confusion_matrix_df.columns = ["Negative", "Positive"]
+        confusion_matrix_df.index = ["Negative", "Positive"]
+        ax = sns.heatmap(confusion_matrix_df, annot=True, fmt="d")
+        ax.invert_xaxis()
+        ax.invert_yaxis()
+        plt.title("Confusion Matrix for Binary Classifier", fontsize=20)
+        plt.xlabel("Actual Values", size=15)
+        plt.ylabel("Predicted Values", size=15)
+        graph_path = Path(f"./figures/{params.MODEL_TYPE}/confusion_matrix_graph.png")
+        plt.savefig(graph_path)
+        # AUC graph of accuracy and false positive rates
+        plt.figure(figsize=(5.5, 4))
+        fpr, tpr, _ = roc_curve(test_data, prediction_probability_list)
+        roc_auc = auc(fpr, tpr)
+        plt.plot(fpr, tpr, "b", label="AUC = %0.2f" % roc_auc)
+        plt.plot([0, 1], [0, 1], "r--")
+        plt.title("ROC curve", fontsize=25)
+        plt.ylabel("True Positive Rate", fontsize=18)
+        plt.xlabel("False Positive Rate", fontsize=18)
+        plt.legend(
+            loc="lower right",
+            fontsize=24,
+            fancybox=True,
+            shadow=True,
+            frameon=True,
+            handlelength=0,
+        )
+        graph_path = Path(f"./figures/{params.MODEL_TYPE}/ROC_graph.png")
+        plt.savefig(graph_path)
+        plt.show()
 
-    plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
-    plt.xlim([-0.05, 1.05])
-    plt.ylim([-0.05, 1.05])
-    plt.xlabel("False Positive Rate")
-    plt.ylabel("True Positive Rate")
-    plt.title("Receiver Operating Characteristic (ROC) Curve")
-    plt.legend(loc="lower right")
-    plt.show()
+    elif params.MODEL_TYPE == "Regression":
+        mse = mean_squared_error(test_data, prediction_list)
+        r_square = r2_score(test_data, prediction_list)
+        print("Mean Squared Error :", mse)
+        print("R^2 :", r_square)
+        a, b = np.polyfit(test_data, prediction_list, 1)
+        # plt.figure(figsize=(5.5, 4))
+        plt.scatter(test_data, prediction_list, s=25)
+        plt.plot(
+            test_data,
+            a * test_data + b,
+            color="red",
+            label="R2={0:0.2f}".format(r_square),
+        )
+        plt.title("Regression Nerual Network Prediction vs. True", fontsize=25)
+        plt.ylabel("Predicted", fontsize=18)
+        plt.xlabel("Target", fontsize=18)
+
+        plt.legend(
+            loc="upper left",
+            fontsize=24,
+            fancybox=True,
+            shadow=True,
+            frameon=True,
+            handlelength=0,
+        )
+        graph_path = Path(f"./figures/{params.MODEL_TYPE}/Predicted_vs_True_graph.png")
+        plt.savefig(graph_path)
+        plt.show()
+    else:
+        raise Exception("Model type must be specified for proper model testing")

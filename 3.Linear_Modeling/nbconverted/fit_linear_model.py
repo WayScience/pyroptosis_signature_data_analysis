@@ -7,12 +7,17 @@
 import pathlib
 import sys
 
+# import Union
+from typing import Union
+
 import pandas as pd
+import pdfkit
 import plotly.express as px
 import seaborn as sns
 from matplotlib import pyplot as plt
 from pycytominer.cyto_utils import infer_cp_features
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import LabelEncoder
 
 sys.path.append("..")
 # from ..utils.utils import df_stats
@@ -27,7 +32,7 @@ def plot_lm(
     y: str,
     fill: str,
     title: str,
-    file_name: str,
+    file_name: Union[bool, str] = False,
     x_label: str = False,
     y_label: str = False,
 ):
@@ -36,21 +41,25 @@ def plot_lm(
     Parameters
     ----------
     lm_df : pd.DataFrame
-        Data Frame of outputed linear model values
+        Data Frame of outputted linear model values
     x : str
         x-axis column name
     y : str
         y-axis column name
     fill : str
         data-point fill column name
-    title: str
+    title : str
         title of graph
-    file_name : str
-        substring of title of file
-    x_label : str
-        x-axis label
-    y_label : str
-        y-axis label
+    file_name : Union[bool, str], optional
+        substring of title of file, by default False
+    x_label : str, optional
+         x-axis label, by default False thus no export of file be done
+    y_label : str, optional
+        y-axis label, by default False
+
+    Returns
+    -------
+    plotly.graph_objects.Figure
     """
 
     fig = px.scatter(lm_df, x=x, y=y, color=fill, title=title)
@@ -58,12 +67,14 @@ def plot_lm(
         xaxis_title=x_label,
         yaxis_title=y_label,
     )
-    # fig.update_yaxes(range = [-0.01,0.5])
-    # fig.update_xaxes(range = [-2,2])
-    figure_file_path = f"./figures/{file_name}"
-    fig.write_html(pathlib.Path(f"{figure_file_path}.html"))
-    fig.write_image(pathlib.Path(f"{figure_file_path}.png"))
-    fig.show()
+    if file_name == False:
+        pass
+    else:
+        figure_file_path = f"./figures/{file_name}"
+        fig.write_html(pathlib.Path(f"{figure_file_path}.html"))
+        fig.write_image(pathlib.Path(f"{figure_file_path}.png"))
+        fig.show()
+    return fig
 
 
 # In[3]:
@@ -139,8 +150,11 @@ feature_df["Metadata_Treatment_and_Dose"].unique()
 
 # ##### Here I plot the beta coeifccents for each treatment against the number of cells per well. Data points the drift heavily in the Y axis are features that are affected the most by the y-axis treatment while data points that drift more in the x-axis are features that are most affected by the number of cells in a well.
 
-# #### Simple Linear Modeling
+# #### Simple Linear Modeling (1 beta approach)
 # Here I merged the treatment and dosage and used DMSO 0.1% as the control simply comparing one dosage/treatment at a time and outputting each graph for each treatment for all features. All features and treatments will be exported into 1 file which will be the `simple model file`
+#
+# Linear Model:
+# $y = \beta _{0}x+ \epsilon$ ; $y$ is each feature and $x$ is the inputed variables
 
 # In[9]:
 
@@ -160,9 +174,11 @@ for i in feature_df["Metadata_Treatment_and_Dose"].unique():
     treatment_df
     # Setup linear modeling framework
     variables = ["Metadata_number_of_singlecells"]
-    X = pd.concat([df.loc[:, variables], treatment_df], axis=1)
+    X = df.loc[:, variables]
+    X = pd.concat([X, treatment_df], axis=1)
 
     columns_list = ["feature", "r2_score"] + X.columns.tolist()
+
     # Fit linear model for each feature
     lm_results = []
     for cp_feature in cp_features:
@@ -191,7 +207,7 @@ for i in feature_df["Metadata_Treatment_and_Dose"].unique():
         y=f"{i}",
         fill="feature",
         title=f"Linear Model of {i}",
-        file_name=f"lm_of_{i}_beta_coefficient_against_{variables}_beta_coefficient",
+        file_name=f"lm_of_{i}_beta_coefficient_against_{''.join(variables)}_beta_coefficient",
         x_label=f"{''.join(variables)}",
         y_label=f"{i}",
     )
@@ -207,15 +223,21 @@ lm_results_df_all.to_csv(simple_model_output_file_path, sep="\t", index=False)
 
 
 # #### Complex Linear Model
-# Here I run the same analysis as above but with dosage of a treatment being a factor in the linear model
+# Here I run the same analysis as above but with dosage of a treatment being a factor in the linear model. All features and treatments will be exported into 1 file which will be the `two_beta model file`
+#
+# Linear Model:
+# $y = \beta _{0}x+ \beta _{1}x+ \epsilon$ ; $y$ is each feature and $x$ is the inputed variables
+#
+# $\beta _{0}$ is the beta coefficient attributed to treatment while,
+# $\beta _{1}$ is the beta coefficient attributed to dose.
 
 # In[10]:
 
 
-lm_results_df_all = pd.DataFrame(cp_features, columns=["feature"])
+lm_results = []
 control = ["DMSO 0.1%"]
-for i in feature_df["Metadata_treatment"].unique():
 
+for i in feature_df["Metadata_treatment"].unique():
     treatment = []
     treatment.append(i)
 
@@ -225,20 +247,21 @@ for i in feature_df["Metadata_treatment"].unique():
     df = feature_df.query("Metadata_treatment == @dosage_treatments_list")
     # Add dummy matrix of categorical genotypes
     treatment_df = feature_df[["Metadata_treatment", "Metadata_dose"]]
-    tmp_df = df[["Metadata_treatment", "Metadata_dose"]]
-    treatment_df = pd.get_dummies(
-        data=tmp_df, columns=["Metadata_treatment", "Metadata_dose"]
+    print(df["Metadata_dose"].unique())
+    tmp_df = df.loc[:, ("Metadata_treatment", "Metadata_dose")]
+    tmp_df["Metadata_treatment"] = LabelEncoder().fit_transform(
+        tmp_df["Metadata_treatment"]
     )
+    tmp_df["Metadata_dose"] = LabelEncoder().fit_transform(tmp_df["Metadata_dose"])
 
     # Setup linear modeling framework
     variables = ["Metadata_number_of_singlecells"]
 
-    X = pd.concat([df.loc[:, variables], treatment_df], axis=1)
-
-    columns_list = ["feature", "r2_score"] + X.columns.tolist()
+    X = pd.concat([df.loc[:, variables], tmp_df], axis=1)
+    columns_list = ["feature", "r2_score"] + X.columns.tolist() + ["treatment", "dose"]
 
     # Fit linear model for each feature
-    lm_results = []
+    # lm_results = []
     for cp_feature in cp_features:
         # Subset CP data to each individual feature (univariate test)
         cp_subset_df = df.loc[:, cp_feature]
@@ -254,29 +277,52 @@ for i in feature_df["Metadata_treatment"].unique():
         r2_score = lm.score(X=X, y=cp_subset_df)
 
         # Add results to a growing list
-        lm_results.append([cp_feature, r2_score] + coef)
-
-    # Convert results to a pandas DataFrame
-    lm_results_df = pd.DataFrame(lm_results, columns=columns_list)
-    for i in lm_results_df.iloc[:, 3:]:
-        print(i)
-        graph_title = f"lm_of_{i}_beta_coefficient_against_{variables}_beta_coefficient"
-        plot_lm(
-            lm_df=lm_results_df,
-            x=variables,
-            y=f"{i}",
-            fill="feature",
-            title=f"lm of all doses of {'_'.join(dosage_treatments_list)}",
-            file_name=f"lm_of_all_doses_{'_'.join(dosage_treatments_list)}_and_{i}_beta_coefficient_against_{'_'.join(variables)}_beta_coefficient",
-            x_label=f"{'_'.join(variables)}",
-            y_label=f"{'_'.join(treatment)} {i}",
+        lm_results.append(
+            [cp_feature, r2_score] + coef + [treatment[0], df["Metadata_dose"].unique()]
         )
-    x = []
-    for i in lm_results_df.columns:
-        x.append(f'{i}_{"_+_".join(dosage_treatments_list)}')
-    lm_results_df.columns = x
-    lm_results_df_all = pd.concat([lm_results_df_all, lm_results_df], axis=1)
-simple_model_output_file_path = pathlib.Path(
-    f'./results/LM_cp_features_all_doses_and_treatments__against_{"_".join(variables)}.tsv'
+
+lm_results_df = pd.DataFrame(lm_results, columns=columns_list)
+
+complex_model_output_file_path = pathlib.Path(
+    f'./results/lm_cp_features_all_treatments_and_doses_against_{"_".join(variables)}.tsv'
 )
-lm_results_df_all.to_csv(simple_model_output_file_path, sep="\t", index=False)
+lm_results_df.to_csv(complex_model_output_file_path, sep="\t", index=False)
+
+
+# In[11]:
+
+
+for i in feature_df["Metadata_treatment"].unique():
+    treatment = []
+    treatment.append(i)
+    print(treatment)
+    dose = lm_results_df["dose"].loc[lm_results_df.index[0]]
+    df = lm_results_df.query("treatment == @treatment")
+
+    fig1 = plot_lm(
+        lm_df=df,
+        x=variables,
+        y="Metadata_treatment",
+        fill="feature",
+        title=f"lm of all doses of {'_'.join(treatment)}",
+        x_label=f"{'_'.join(variables)}",
+        y_label=f"{'_'.join(treatment)}",
+    )
+
+    fig2 = plot_lm(
+        lm_df=df,
+        x=variables,
+        y="Metadata_dose",
+        fill="feature",
+        title=f"lm of {'_'.join(treatment)} for all {'/'.join(dose)}",
+        x_label=f"{' '.join(variables)}",
+        y_label=f"Dose of {treatment[0]}",
+    )
+    filename = f"figures/lm_two_beta_{'_'.join(treatment)}"
+    with open(f"{filename}.html", "a") as f:
+        f.write(fig1.to_html(full_html=False, include_plotlyjs="cdn"))
+        f.write(fig2.to_html(full_html=False, include_plotlyjs="cdn"))
+    f.close()
+
+    # convert HTML file to PDF
+    pdfkit.from_file(f"{filename}.html", f"{filename}.pdf")

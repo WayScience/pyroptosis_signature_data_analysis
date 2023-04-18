@@ -82,7 +82,7 @@ def plot_lm(
 
 # Define inputs and outputs
 feature_file = pathlib.Path(
-    "../../Extracted_Features_(CSV_files)/interstellar_wave3_sc_norm_fs_cellprofiler.csv.gz"
+    "../../Extracted_Features_(CSV_files)/interstellar_wave3_sc_norm_cellprofiler.csv.gz"
 )
 feature_df = pd.read_csv(feature_file, engine="pyarrow")
 output_dir = pathlib.Path("results")
@@ -222,7 +222,7 @@ simple_model_output_file_path = pathlib.Path(
 lm_results_df_all.to_csv(simple_model_output_file_path, sep="\t", index=False)
 
 
-# #### Complex Linear Model
+# #### Complex Linear Model - 2 betas
 # Here I run the same analysis as above but with dosage of a treatment being a factor in the linear model. All features and treatments will be exported into 1 file which will be the `two_beta model file`
 #
 # Linear Model:
@@ -234,20 +234,23 @@ lm_results_df_all.to_csv(simple_model_output_file_path, sep="\t", index=False)
 # In[10]:
 
 
+# Loop for each treatment then each feature
+
+# define the control and treatment
 lm_results = []
 control = ["DMSO 0.1%"]
 
+# loop through each treatment
 for i in feature_df["Metadata_treatment"].unique():
     treatment = []
     treatment.append(i)
 
     dosage_treatments_list = treatment + control
-    print(dosage_treatments_list)
 
+    # query for the treatment
     df = feature_df.query("Metadata_treatment == @dosage_treatments_list")
     # Add dummy matrix of categorical genotypes
     treatment_df = feature_df[["Metadata_treatment", "Metadata_dose"]]
-    print(df["Metadata_dose"].unique())
     tmp_df = df.loc[:, ("Metadata_treatment", "Metadata_dose")]
     tmp_df["Metadata_treatment"] = LabelEncoder().fit_transform(
         tmp_df["Metadata_treatment"]
@@ -281,17 +284,21 @@ for i in feature_df["Metadata_treatment"].unique():
             [cp_feature, r2_score] + coef + [treatment[0], df["Metadata_dose"].unique()]
         )
 
+# Convert results to a pandas DataFrame
 lm_results_df = pd.DataFrame(lm_results, columns=columns_list)
 
+# define output file path
 complex_model_output_file_path = pathlib.Path(
     f'./results/lm_cp_features_all_treatments_and_doses_against_{"_".join(variables)}.tsv'
 )
+# write output to file
 lm_results_df.to_csv(complex_model_output_file_path, sep="\t", index=False)
 
 
 # In[11]:
 
 
+# for loop to graph all the lm results
 for i in feature_df["Metadata_treatment"].unique():
     treatment = []
     treatment.append(i)
@@ -299,6 +306,7 @@ for i in feature_df["Metadata_treatment"].unique():
     dose = lm_results_df["dose"].loc[lm_results_df.index[0]]
     df = lm_results_df.query("treatment == @treatment")
 
+    # plot treatment lm
     fig1 = plot_lm(
         lm_df=df,
         x=variables,
@@ -308,7 +316,9 @@ for i in feature_df["Metadata_treatment"].unique():
         x_label=f"{'_'.join(variables)}",
         y_label=f"{'_'.join(treatment)}",
     )
+    fig1.show()
 
+    # plot dose lm
     fig2 = plot_lm(
         lm_df=df,
         x=variables,
@@ -318,6 +328,9 @@ for i in feature_df["Metadata_treatment"].unique():
         x_label=f"{' '.join(variables)}",
         y_label=f"Dose of {treatment[0]}",
     )
+    fig2.show()
+
+    # write both treatment and dose lm to html file
     filename = f"figures/lm_two_beta_{'_'.join(treatment)}"
     with open(f"{filename}.html", "a") as f:
         f.write(fig1.to_html(full_html=False, include_plotlyjs="cdn"))

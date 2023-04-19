@@ -73,7 +73,7 @@ def plot_lm(
         figure_file_path = f"./figures/{file_name}"
         fig.write_html(pathlib.Path(f"{figure_file_path}.html"))
         fig.write_image(pathlib.Path(f"{figure_file_path}.png"))
-        fig.show()
+        # fig.show()
     return fig
 
 
@@ -85,9 +85,6 @@ feature_file = pathlib.Path(
     "../../Extracted_Features_(CSV_files)/interstellar_wave3_sc_norm_cellprofiler.csv.gz"
 )
 feature_df = pd.read_csv(feature_file, engine="pyarrow")
-output_dir = pathlib.Path("results")
-
-output_cp_file = pathlib.Path(output_dir, "linear_model_cp_features.tsv")
 
 
 # In[4]:
@@ -148,39 +145,47 @@ print(f"We are testing {len(cp_features)} CellProfiler features")
 feature_df["Metadata_Treatment_and_Dose"].unique()
 
 
-# ##### Here I plot the beta coeifccents for each treatment against the number of cells per well. Data points the drift heavily in the Y axis are features that are affected the most by the y-axis treatment while data points that drift more in the x-axis are features that are most affected by the number of cells in a well.
+# ##### Here I plot the beta coefficients for each treatment against the number of cells per well. Data points the drift heavily in the Y axis are features that are affected the most by the y-axis treatment while data points that drift more in the x-axis are features that are most affected by the number of cells in a well.
 
-# #### Simple Linear Modeling (1 beta approach)
-# Here I merged the treatment and dosage and used DMSO 0.1% as the control simply comparing one dosage/treatment at a time and outputting each graph for each treatment for all features. All features and treatments will be exported into 1 file which will be the `simple model file`
+# #### Simple Linear Modeling (cell count beta + 1 beta approach)
+# Here I merged the treatment and dosage and used DMSO 0.1% as the control simply comparing one dosage/treatment at a time and outputting each graph for each treatment for all features. All features and treatments will be exported into 1 file.
 #
 # Linear Model:
-# $y = \beta _{0}x+ \epsilon$ ; $y$ is each feature and $x$ is the inputed variables
+# $y = \beta _{0}x+ \beta _{1}x+ \epsilon$ where;
+# $y$ is each feature
+# $x$ is the inputed variables
+# $\beta _{0}$ is the beta coefficient attributed to cell count,
+# $\beta _{1}$ is the beta coefficient attributed to treatment & dose combined.
+# $\epsilon$ is the residual variance not explained by factors in the model
 
 # In[9]:
 
 
 control = ["DMSO 0.1%_0"]
-lm_results_df_all = pd.DataFrame(cp_features, columns=["feature"])
-lm_results_df_all
+# lm_results_df_all = pd.DataFrame(cp_features, columns=["feature"])
+# lm_results_df_all
+lm_results = []
 for i in feature_df["Metadata_Treatment_and_Dose"].unique():
     treatment = []
     treatment.append(i)
 
     dosage_treatments_list = treatment + control
-
+    print(dosage_treatments_list)
     df = feature_df.query("Metadata_Treatment_and_Dose == @dosage_treatments_list")
 
-    treatment_df = pd.get_dummies(data=df.Metadata_Treatment_and_Dose)
-    treatment_df
+    df["Metadata_Treatment_and_Dose"] = LabelEncoder().fit_transform(
+        df["Metadata_Treatment_and_Dose"]
+    )
+
     # Setup linear modeling framework
     variables = ["Metadata_number_of_singlecells"]
     X = df.loc[:, variables]
-    X = pd.concat([X, treatment_df], axis=1)
+    X = pd.concat([X, df["Metadata_Treatment_and_Dose"]], axis=1)
 
-    columns_list = ["feature", "r2_score"] + X.columns.tolist()
-
+    columns_list = (
+        ["feature", "r2_score"] + X.columns.tolist() + ["dosage_treatments_list"]
+    )
     # Fit linear model for each feature
-    lm_results = []
     for cp_feature in cp_features:
         # Subset CP data to each individual feature (univariate test)
         cp_subset_df = df.loc[:, cp_feature]
@@ -189,49 +194,66 @@ for i in feature_df["Metadata_Treatment_and_Dose"].unique():
         lm = LinearRegression(fit_intercept=True)
         lm_result = lm.fit(X=X, y=cp_subset_df)
 
-        # Extract Beta coefficients
-        # (contribution of feature to X covariates)
+        # Extract Beta coefficients(contribution of feature to X covariates)
         coef = list(lm_result.coef_)
         # Estimate fit (R^2)
         r2_score = lm.score(X=X, y=cp_subset_df)
 
         # Add results to a growing list
-        lm_results.append([cp_feature, r2_score] + coef)
+        lm_results.append(
+            [cp_feature, r2_score] + coef + [f"{'_'.join(dosage_treatments_list)}"]
+        )
 
-    # Convert results to a pandas DataFrame
-    lm_results_df = pd.DataFrame(lm_results, columns=columns_list)
-    lm_results_df
+# Convert results to a pandas DataFrame
+lm_results_df = pd.DataFrame(lm_results, columns=columns_list)
+lm_results_df.head(100)
+
+
+# define output file path
+simple_model_output_file_path = pathlib.Path(
+    f'./results/lm_cp_features_all_treatments_against_{"_".join(variables)}.tsv'
+)
+
+# write output to file
+lm_results_df.to_csv(simple_model_output_file_path, sep="\t", index=False)
+
+
+# In[10]:
+
+
+# for loop to graph all the lm results
+control = ["DMSO 0.1%_0"]
+for i in feature_df["Metadata_Treatment_and_Dose"].unique():
+    treatment = []
+    treatment.append(i)
+    dosage_treatments_list = treatment + control
+    df = lm_results_df.query("Metadata_Treatment_and_Dose == @dosage_treatments_list")
+    # plot results of lm
     plot_lm(
         lm_df=lm_results_df,
         x=f"{''.join(variables)}",
-        y=f"{i}",
+        y=f"Metadata_Treatment_and_Dose",
         fill="feature",
         title=f"Linear Model of {i}",
         file_name=f"lm_of_{i}_beta_coefficient_against_{''.join(variables)}_beta_coefficient",
         x_label=f"{''.join(variables)}",
         y_label=f"{i}",
     )
-    x = []
-    for i in lm_results_df.columns:
-        x.append(f'{i}_{"_+_".join(dosage_treatments_list)}')
-    lm_results_df.columns = x
-    lm_results_df_all = pd.concat([lm_results_df_all, lm_results_df], axis=1)
-simple_model_output_file_path = pathlib.Path(
-    f'./results/lm_cp_features_all_treatments_against_{"_".join(variables)}.tsv'
-)
-lm_results_df_all.to_csv(simple_model_output_file_path, sep="\t", index=False)
 
 
-# #### Complex Linear Model - 2 betas
-# Here I run the same analysis as above but with dosage of a treatment being a factor in the linear model. All features and treatments will be exported into 1 file which will be the `two_beta model file`
+# #### Complex Linear Modeling (cell count btea + 2 beta approach)
+# Here I run the same analysis as above but with dosage of a treatment being a factor in the linear model. All features and treatments will be exported into 1 file.
 #
 # Linear Model:
-# $y = \beta _{0}x+ \beta _{1}x+ \epsilon$ ; $y$ is each feature and $x$ is the inputed variables
-#
-# $\beta _{0}$ is the beta coefficient attributed to treatment while,
-# $\beta _{1}$ is the beta coefficient attributed to dose.
+# $y = \beta _{0}x+ \beta _{1}x+ \beta _{2}x+ \epsilon$ where;
+# $y$ is each feature
+# $x$ is the inputed variables
+# $\beta _{0}$ is the beta coefficient attributed to cell count.
+# $\beta _{1}$ is the beta coefficient attributed to treatment.
+# $\beta _{2}$ is the beta coefficient attributed to dose.
+# $\epsilon$ is the residual variance not explained by factors in the model
 
-# In[10]:
+# In[11]:
 
 
 # Loop for each treatment then each feature
@@ -281,7 +303,9 @@ for i in feature_df["Metadata_treatment"].unique():
 
         # Add results to a growing list
         lm_results.append(
-            [cp_feature, r2_score] + coef + [treatment[0], df["Metadata_dose"].unique()]
+            [cp_feature, r2_score]
+            + coef
+            + [treatment[0], "_".join(df["Metadata_dose"].unique())]
         )
 
 # Convert results to a pandas DataFrame
@@ -295,14 +319,13 @@ complex_model_output_file_path = pathlib.Path(
 lm_results_df.to_csv(complex_model_output_file_path, sep="\t", index=False)
 
 
-# In[11]:
+# In[12]:
 
 
 # for loop to graph all the lm results
 for i in feature_df["Metadata_treatment"].unique():
     treatment = []
     treatment.append(i)
-    print(treatment)
     dose = lm_results_df["dose"].loc[lm_results_df.index[0]]
     df = lm_results_df.query("treatment == @treatment")
 

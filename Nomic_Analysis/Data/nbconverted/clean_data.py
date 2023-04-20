@@ -23,6 +23,15 @@ from sklearn import preprocessing
 # In[2]:
 
 
+# max rows displayed
+pd.set_option("display.max_rows", 1000)
+# max columns displayed
+pd.set_option("display.max_columns", 1000)
+
+
+# In[3]:
+
+
 nELISA_data_input_path = pathlib.Path("./raw/nELISA_Data_UCA1_2023.04.11.csv")
 MetaData_input_path = pathlib.Path("./raw/Metadata_UCA1_2023.04.11.csv")
 
@@ -31,7 +40,7 @@ nELISA_data_all = pd.read_csv(nELISA_data_input_path)
 MetaData = pd.read_csv(MetaData_input_path)
 
 
-# In[3]:
+# In[4]:
 
 
 # Change the 'A1' cell format to 'A01' format
@@ -42,14 +51,12 @@ MetaData["position"] = position
 MetaData.head()
 
 
-# In[4]:
+# In[5]:
 
 
 # Change column names
 nELISA_data_all = nELISA_data_all.rename({"user_well_loc": "position"}, axis=1)
 nELISA_data_all.head()
-# MetaData.head()
-# nELISA_data = pd.concat([MetaData,nELISA_data_all], axis=1)
 # nELISA_data
 
 MetaData["plate_position"] = (
@@ -67,10 +74,10 @@ nELISA_data_all["plate_position"] = (
 nELISA_data_all.replace(regex=[" and "], value="_", inplace=True)
 
 
-# In[5]:
+# In[6]:
 
 
-# Seperate out by plate
+# Seperate df out by plate
 MetaData_plate_430418_430419 = MetaData.loc[
     MetaData["plate_barcode"] == "430418_430419"
 ]
@@ -78,7 +85,7 @@ MetaData_plate_430418_430419 = MetaData.loc[
 MetaData_plate_430420 = MetaData.loc[MetaData["plate_barcode"] == "430420"]
 
 
-# In[6]:
+# In[7]:
 
 
 # seperate out by plate
@@ -91,16 +98,14 @@ nELISA_data_all_plate_430420 = nELISA_data_all.loc[
 ]
 
 
-# In[7]:
+# In[8]:
 
 
-# Merge the two dataframes for plate 430420
-plate_430420 = pd.merge(
-    MetaData_plate_430420,
-    nELISA_data_all_plate_430420,
-    right_on="plate_position",
-    left_on="plate_position",
-    how="left",
+# Merge the two dataframes for plate 430420 via concat because pandas is being a pain
+plate_430420 = pd.concat(
+    [MetaData_plate_430420, nELISA_data_all_plate_430420],
+    axis=1,
+    join="inner",
 )
 
 # remove empty wells and qc_fail
@@ -111,14 +116,17 @@ plate_430420 = plate_430420[
     ~plate_430420.nelisa_sample_comments.str.contains("qc_fail", na=False)
 ]
 
+plate_430420.shape
+
+
+# In[9]:
+
 
 # Merge the two dataframes for plate 430418_430419
-plate_430418_430419 = pd.merge(
-    MetaData_plate_430418_430419,
-    nELISA_data_all_plate_430418_430419,
-    right_on="plate_position",
-    left_on="plate_position",
-    how="left",
+plate_430418_430419 = pd.concat(
+    [MetaData_plate_430420, nELISA_data_all_plate_430420],
+    axis=1,
+    join="inner",
 )
 
 # remove empty wells and qc_fail
@@ -128,9 +136,10 @@ plate_430418_430419 = plate_430418_430419[
 plate_430418_430419 = plate_430418_430419[
     ~plate_430418_430419.nelisa_sample_comments.str.contains("qc_fail", na=False)
 ]
+plate_430418_430419.shape
 
 
-# In[8]:
+# In[10]:
 
 
 # define output paths

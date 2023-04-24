@@ -53,11 +53,11 @@ def umap_graph(df: pd.DataFrame, color: str, save_name: pathlib.Path, title: str
 
 
 # import nELISA umap data
-nELISA_plate_430420_PBMC_path = pathlib.Path(
-    "./results/nELISA_plate_430420_umap_PBMC.csv"
+nELISA_plate_430420_SH_SY5Y_path = pathlib.Path(
+    "./results/nELISA_plate_430420_umap_SH-SY5Y.csv"
 )
 
-nELISA_plate_430420 = pd.read_csv(nELISA_plate_430420_PBMC_path)
+nELISA_plate_430420 = pd.read_csv(nELISA_plate_430420_SH_SY5Y_path)
 
 
 # In[4]:

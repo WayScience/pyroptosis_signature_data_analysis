@@ -17,18 +17,18 @@ import umap
 # In[2]:
 
 
-nELISA_plate_430420_PBMC_path = pathlib.Path(
-    "../../Data/clean/Plate2/nELISA_plate_430420_PBMC.csv"
+nELISA_plate_430420_SH_SY5Y_path = pathlib.Path(
+    "../../Data/clean/Plate2/nELISA_plate_430420_SH_SY5Y.csv"
 )
 manual_cluster_path = pathlib.Path(
     "../../Data/clean/Plate2/Manual_Treatment_Clusters.csv"
 )
 
 
-nELISA_plate_430420_PBMC = pd.read_csv(nELISA_plate_430420_PBMC_path)
+nELISA_plate_430420_SH_SY5Y = pd.read_csv(nELISA_plate_430420_SH_SY5Y_path)
 manual_clusters = pd.read_csv(manual_cluster_path)
 
-nELISA_orgingal_plate = nELISA_plate_430420_PBMC.copy()
+nELISA_orgingal_plate = nELISA_plate_430420_SH_SY5Y.copy()
 
 
 # In[3]:
@@ -43,7 +43,7 @@ nELISA_data_values.head()
 # In[4]:
 
 
-# normalize data via max value in each column (recommendation by Nomic)
+# normalize data via max value in each column
 max_values = nELISA_data_values.max()  # find max value in each column
 nELISA_data_values_sensor_max_norm = nELISA_data_values.div(
     max_values
@@ -113,10 +113,9 @@ nELISA_plate_430420["inducer1_plus_concentration_plus_inhibitor"] = (
     + nELISA_plate_430420["inhibitor"]
 )
 
-
 # define output paths
 nELISA_plate_430420_out_path = pathlib.Path(
-    "./results/nELISA_plate_430420_umap_PBMC.csv"
+    "./results/nELISA_plate_430420_umap_SH-SY5Y.csv"
 )
 # write to csv
 nELISA_plate_430420.to_csv(nELISA_plate_430420_out_path, index=False)

@@ -158,6 +158,6 @@ nELISA_430418_430419_path = pathlib.Path(
 )
 # write to csv
 plate_430420.to_csv(nELISA_plate_430420_path, index=False)
-plate_430420.to_csv(nELISA_plate_430420_PBMC_path, index=False)
-plate_430420.to_csv(nELISA_plate_430420_SH_SY5Y_path, index=False)
+plate_430420_PBMC.to_csv(nELISA_plate_430420_PBMC_path, index=False)
+plate_430420_SH_SY5Y.to_csv(nELISA_plate_430420_SH_SY5Y_path, index=False)
 plate_430418_430419.to_csv(nELISA_430418_430419_path, index=False)

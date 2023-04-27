@@ -60,7 +60,7 @@ nELISA_plate_430420_SH_SY5Y_path = pathlib.Path(
 nELISA_plate_430420 = pd.read_csv(nELISA_plate_430420_SH_SY5Y_path)
 
 
-# In[4]:
+# In[5]:
 
 
 nELISA_plate_430420 = nELISA_plate_430420[
@@ -71,7 +71,6 @@ col_list = [
     "cell_type",
     "inducer1",
     "inhibitor",
-    "Manual_Cluster",
     "Function",
     "inducer1_plus_concentration",
     "inducer1_plus_inhibitor",
@@ -85,3 +84,6 @@ for col in col_list:
         save_name=f"./figures/nELISA_Normalized_UMAP_{col}",
         title=f"Umap projection of nELISA data colored by {col.replace('_', ' ')}",
     )
+
+
+# In[ ]:

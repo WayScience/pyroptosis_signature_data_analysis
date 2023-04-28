@@ -19,9 +19,6 @@ from pycytominer.cyto_utils import infer_cp_features
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import LabelEncoder
 
-# import Union
-
-
 sys.path.append("..")
 # from ..utils.utils import df_stats
 import matplotlib.pyplot as plt

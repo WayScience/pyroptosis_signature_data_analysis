@@ -19,9 +19,6 @@ from pycytominer.cyto_utils import infer_cp_features
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import LabelEncoder
 
-# import Union
-
-
 sys.path.append("..")
 # from ..utils.utils import df_stats
 import matplotlib.pyplot as plt
@@ -90,7 +87,6 @@ for treatment in feature_df["twob_Metadata_Treatment_Dose_Inhibitor_Dose"].uniqu
         "twob_Metadata_Treatment_Dose_Inhibitor_Dose in @dosage_treatments_list"
     )
     # Add dummy matrix of categorical genotypes
-    # treatment_df = feature_df[["Metadata_inducer1", "Metadata_inducer1_concentration"]]
     df[["twob_Metadata_Treatment_Inhibitor_Dose", "Treatment_Dose"]] = df[
         "twob_Metadata_Treatment_Dose_Inhibitor_Dose"
     ].str.split("__", expand=True)
@@ -117,7 +113,6 @@ for treatment in feature_df["twob_Metadata_Treatment_Dose_Inhibitor_Dose"].uniqu
     )
 
     # Fit linear model for each feature
-    # lm_results = []
     for cp_feature in cp_features:
         # Subset CP data to each individual feature (univariate test)
         cp_subset_df = df.loc[:, cp_feature]

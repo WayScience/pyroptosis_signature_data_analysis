@@ -19,9 +19,6 @@ from pycytominer.cyto_utils import infer_cp_features
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import LabelEncoder
 
-# import Union
-
-
 sys.path.append("..")
 # from ..utils.utils import df_stats
 import matplotlib.pyplot as plt
@@ -122,7 +119,6 @@ for treatment in feature_df["threeb_Metadata_Treatment_Dose_Inhibitor_Dose"].uni
     )
 
     # Fit linear model for each feature
-    # lm_results = []
     for cp_feature in cp_features:
         # Subset CP data to each individual feature (univariate test)
         cp_subset_df = df.loc[:, cp_feature]

@@ -129,7 +129,6 @@ for treatment in feature_df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"].uniq
     )
 
     # Fit linear model for each feature
-    # lm_results = []
     for cp_feature in cp_features:
         # Subset CP data to each individual feature (univariate test)
         cp_subset_df = df.loc[:, cp_feature]

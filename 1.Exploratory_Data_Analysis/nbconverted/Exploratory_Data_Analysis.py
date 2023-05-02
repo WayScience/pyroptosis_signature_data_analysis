@@ -17,7 +17,7 @@
 # Here we look into how the data are distributed in wave3, the same plate data as wave1 but with full cell painting dataset including the Gasdermin D channel for a total of 6 channels to analyze.
 # These data sets contain extracted features from raw image dataset. See README for information as to how raw image data was processed.
 
-# In[3]:
+# In[1]:
 
 
 import pathlib
@@ -38,7 +38,7 @@ from sklearn.manifold import TSNE
 sys.path.append("..")
 from utils.utils import df_stats, plot_features_all_cluster
 
-# In[ ]:
+# In[2]:
 
 
 # function for EDA of each input feature extraction file:
@@ -75,7 +75,9 @@ def EDA_run(df, wave_label, subset_number=1500):
     new_wave_label = f"{wave_label}_treatments:{samples}"
 
     df_subset = df.sample(n=subset_number)
-    # Code snipptet for metadata extraction by Jendf_valuesartswith("Metadata")])
+
+    # Code snipptet for metadata extraction by Jenna Tomkinson
+    df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
 
     # define which columns are data and which are descriptive
     df_descriptive = df_subset[df_metadata]
@@ -124,21 +126,12 @@ def EDA_run(df, wave_label, subset_number=1500):
     fig.suptitle(
         f"Comparing Clusters vs Treatment tSNE for {subset_number} subset samples for {samples} treatments"
     )
-    plt.savefig(f"Figures/tSNE/{new_wave_label}_tSNE_cluster.png")
-    df_values["cluster"] = clustering_ori
-    # callable function for graphing features that contribute most to each cluster's grouping
-    plot_features_all_cluster(
-        df=df_values,
-        label_col="cluster",
-        n_clusters=n_clusters,
-        sensitivity=0.2,
-        file_label=new_wave_label,
-    )
+    plt.savefig(f"Figures/tSNE_plate1/{new_wave_label}_tSNE_cluster.png")
 
 
 # ## Wave1 Dialte50 Analysis
 
-# In[ ]:
+# In[3]:
 
 
 # Import data with low memory arg as the data are large
@@ -155,7 +148,7 @@ EDA_run(df, "wave1_dialte50")
 
 # ## Wave3 Single Cell Feature Extraction
 
-# In[ ]:
+# In[4]:
 
 
 # Import data with low memory arg as the data are large
@@ -168,7 +161,7 @@ EDA_run(df, "Wave3_sc")
 
 # ## Wave3 Single Cell Normalized Features
 
-# In[ ]:
+# In[5]:
 
 
 # Import data with low memory arg as the data are large
@@ -182,7 +175,7 @@ EDA_run(df, "Wave3_sc_normalized")
 # ## Wave3 Single Cell Normalized Selected Features
 # #### Feature Selection was performed in the data processeing repo. Check README for more information
 
-# In[ ]:
+# In[6]:
 
 
 # Import data with low memory arg as the data are large
@@ -195,21 +188,23 @@ EDA_run(df, "Wave3_sc_normalized_selected_features")
 
 # ## Plate 2
 
-# In[31]:
+# In[7]:
 
 
 # Set path to parquet file
-path = pathlib.Path("../../Extracted_Features_(CSV_files)/feature_df_sc_norm.parquet")
+path = pathlib.Path(
+    "../../Extracted_Features_(CSV_files)/SHSY5Y_preprocessed_df_sc_norm.parquet"
+)
 # Read in parquet file
 df = pq.read_table(path).to_pandas()
-# subset data frame to 1000 samples too much data results in poor clustrering
+# subset data frame to 1000 samples too much data results in poor clustering
 df = df.sample(n=1000)
 
 
-# In[32]:
+# In[8]:
 
 
-# Code snipptet for metadata extraction by Jenna Tomkinson
+# Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
 
 # define which columns are data and which are descriptive
@@ -217,7 +212,7 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[11]:
+# In[9]:
 
 
 df_values = df_values.drop(
@@ -230,22 +225,19 @@ df_values = df_values.drop(
 )
 
 
-# In[29]:
+# In[10]:
 
 
 # set umap parameters
 umap_params = umap.UMAP(
-    # n_neighbors=6,
-    # min_dist=0.8,
     n_components=2,
-    # metric="cosine",
     spread=1.1,
     init="random",
     random_state=0,
 )
 
 
-# In[30]:
+# In[11]:
 
 
 # fit and transform data for umap
@@ -256,7 +248,7 @@ df_values["umap_1"] = proj_2d[:, 0]
 df_values["umap_2"] = proj_2d[:, 1]
 
 
-# In[ ]:
+# In[12]:
 
 
 df_values["Treatment"] = df_descriptive["Metadata_Treatment"]
@@ -272,6 +264,4 @@ sns.scatterplot(
 )
 plt.title("Visualized on umap")
 plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0)
-
-
-# In[ ]:
+plt.savefig(f"Figures/umap_plate2/plate2_umap.png", bbox_inches="tight")

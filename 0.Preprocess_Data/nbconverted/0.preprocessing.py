@@ -187,6 +187,7 @@ feature_df["threeb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     + "_"
     + feature_df["Metadata_inhibitor_concentration"].astype(str)
 ).astype(str)
+
 feature_df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     feature_df["Metadata_Treatment"]
     + "__"

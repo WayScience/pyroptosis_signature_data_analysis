@@ -126,7 +126,7 @@ results = [
         str
     ),
 ]
-feature_df["Metadata_Treatment"] = np.select(conditions, results)
+feature_df["Metadata_Treatment"] = np.select(condlist=conditions,choicelist=results)
 
 # dose column merge
 conditions = [

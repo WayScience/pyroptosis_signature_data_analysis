@@ -5,26 +5,11 @@
 
 
 import pathlib
-import sys
 
 import numpy as np
 import pandas as pd
-import pdfkit
-import plotly.express as px
 import pyarrow as pa
 import pyarrow.parquet as pq
-import seaborn as sns
-from matplotlib import pyplot as plt
-from pycytominer.cyto_utils import infer_cp_features
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import LabelEncoder
-
-# import Union
-
-
-sys.path.append("..")
-# from ..utils.utils import df_stats
-import matplotlib.pyplot as plt
 
 # In[2]:
 
@@ -34,7 +19,6 @@ feature_file = pathlib.Path(
     "../../Extracted_Features_(CSV_files)/SHSY5Y_sc_norm.parquet"
 )
 feature_df = pq.read_table(feature_file).to_pandas()
-# feature_df = pd.read_csv(feature_file, engine="pyarrow")
 
 
 # In[3]:
@@ -59,7 +43,7 @@ feature_df.head()
 # removing costes features as they behave with great variance across all data
 feature_df = feature_df.drop(feature_df.filter(regex="Costes").columns, axis=1)
 print(feature_df.shape)
-feature_df
+feature_df.head()
 
 
 # In[6]:
@@ -69,32 +53,7 @@ feature_df
 feature_df = feature_df.replace(to_replace="/", value="_per_", regex=True)
 
 
-# In[7]:
-
-
-# Recycled code from: https://github.com/WayScience/NF1_SchwannCell_data/blob/main/5_analyze_data/notebooks/linear_model/fit_linear_model.ipynb
-cell_count_df = (
-    feature_df.groupby("Metadata_Well")["Metadata_Plate"]
-    .count()
-    .reset_index()
-    .rename(columns={"Metadata_Plate": "Metadata_number_of_singlecells"})
-)
-
-
-# In[8]:
-
-
-feature_df.head()
-
-
-# In[9]:
-
-
-# show max column in pandas df
-pd.set_option("display.max_columns", 100)
-
-
-# In[10]:
+# In[ ]:
 
 
 # replace nan values with 0
@@ -111,7 +70,7 @@ feature_df["Metadata_inhibitor_concentration"] = feature_df[
 
 # #### Combine Inducer1 and Inducer2 into one column
 
-# In[11]:
+# In[ ]:
 
 
 # treatment column merge
@@ -126,7 +85,7 @@ results = [
         str
     ),
 ]
-feature_df["Metadata_Treatment"] = np.select(condlist=conditions,choicelist=results)
+feature_df["Metadata_Treatment"] = np.select(condlist=conditions, choicelist=results)
 
 # dose column merge
 conditions = [
@@ -142,10 +101,10 @@ results = [
         + feature_df["Metadata_inducer2_concentration"].astype(str)
     ).astype(str),
 ]
-feature_df["Metadata_Dose"] = np.select(conditions, results)
+feature_df["Metadata_Dose"] = np.select(condlist=conditions, choicelist=results)
 
 
-# In[12]:
+# In[ ]:
 
 
 feature_df["Metadata_inducer1_concentration"] = pd.to_numeric(
@@ -154,10 +113,12 @@ feature_df["Metadata_inducer1_concentration"] = pd.to_numeric(
 
 
 # ## N Beta Column condition generation
+# columns generated to used for linear modeling where terms separated by '__' will be a beta coefficient
 
-# In[13]:
+# In[ ]:
 
 
+# one beta of inudcer1, inducer1 concentration, inhibitor, and inhibitor concentration all as 1 beta term
 feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     feature_df["Metadata_Treatment"]
     + "_"
@@ -168,6 +129,8 @@ feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     + feature_df["Metadata_inhibitor_concentration"].astype(str)
 ).astype(str)
 
+
+# two beta of inducer1, inhibitor, and inhibitor concentration all as 1 beta term + inducer1 concentration as 2nd beta term
 feature_df["twob_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     feature_df["Metadata_Treatment"]
     + "_"
@@ -178,6 +141,7 @@ feature_df["twob_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     + feature_df["Metadata_Dose"].astype(str)
 ).astype(str)
 
+# three beta of inducer 1 as 1 beta term, inducer1 concentration as 2nd beta term, inhibitor and inhibitor concentration as 3rd beta term
 feature_df["threeb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     feature_df["Metadata_Treatment"]
     + "__"
@@ -188,6 +152,7 @@ feature_df["threeb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     + feature_df["Metadata_inhibitor_concentration"].astype(str)
 ).astype(str)
 
+# four beta of inducer 1 as 1 beta term, inducer1 concentration as 2nd beta term, inhibitor as 3rd beta term, and inhibitor concentration as 4th beta term
 feature_df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     feature_df["Metadata_Treatment"]
     + "__"
@@ -202,6 +167,5 @@ feature_df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
 # In[ ]:
 
 
-# feature_df.to_csv(feature_df_out_path, index=False)
 feature_df_table = pa.Table.from_pandas(feature_df)
 pq.write_table(feature_df_table, feature_df_out_path)

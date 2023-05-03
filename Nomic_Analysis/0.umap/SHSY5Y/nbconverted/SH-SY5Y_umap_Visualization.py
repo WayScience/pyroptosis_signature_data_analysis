@@ -53,14 +53,14 @@ def umap_graph(df: pd.DataFrame, color: str, save_name: pathlib.Path, title: str
 
 
 # import nELISA umap data
-nELISA_plate_430420_SH_SY5Y_path = pathlib.Path(
+nELISA_plate_430420_path = pathlib.Path(
     "./results/nELISA_plate_430420_umap_SH-SY5Y.csv"
 )
 
-nELISA_plate_430420 = pd.read_csv(nELISA_plate_430420_SH_SY5Y_path)
+nELISA_plate_430420 = pd.read_csv(nELISA_plate_430420_path)
 
 
-# In[5]:
+# In[4]:
 
 
 nELISA_plate_430420 = nELISA_plate_430420[
@@ -84,6 +84,3 @@ for col in col_list:
         save_name=f"./figures/nELISA_Normalized_UMAP_{col}",
         title=f"Umap projection of nELISA data colored by {col.replace('_', ' ')}",
     )
-
-
-# In[ ]:

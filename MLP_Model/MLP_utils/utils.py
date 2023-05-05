@@ -1086,6 +1086,7 @@ def results_output(
     prediction_probability_list: list = False,
     test_name: str = "test",
     model_name: str = "model",
+    title: str = "Test Results",
 ) -> None:
     """Function outputs visualization of testing the model
 
@@ -1103,6 +1104,8 @@ def results_output(
         name of the test, by default "test"
     model_name : str, optional
         name of the model, by default "model"
+    title : str, optional
+        title of the graph, by default "Test Results"
 
 
     Raises
@@ -1119,7 +1122,7 @@ def results_output(
         ax = sns.heatmap(confusion_matrix_df, annot=True, fmt="d")
         ax.invert_xaxis()
         ax.invert_yaxis()
-        plt.title("Confusion Matrix for Binary Classifier", fontsize=20)
+        plt.title(f"Confusion Matrix for Binary Classifier \n {title}", fontsize=20)
         plt.xlabel("Actual Values", size=15)
         plt.ylabel("Predicted Values", size=15)
         # make dir if dir not exist
@@ -1201,7 +1204,7 @@ def results_output(
         plt.ylim([-0.05, 1.05])
         plt.xlabel("False Positive Rate")
         plt.ylabel("True Positive Rate")
-        plt.title("Receiver Operating Characteristic (ROC) Curve")
+        plt.title(f"Receiver Operating Characteristic (ROC) Curve \n {title}")
         plt.legend(loc="lower right")
         graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
         if not os.path.exists(graph_path):
@@ -1221,7 +1224,7 @@ def results_output(
         ax = sns.heatmap(confusion_matrix_df, annot=True, fmt="d")
         ax.invert_xaxis()
         ax.invert_yaxis()
-        plt.title("Confusion Matrix for Binary Classifier", fontsize=20)
+        plt.title(f"Confusion Matrix for Binary Classifier \n {title}", fontsize=20)
         plt.xlabel("Actual Values", size=15)
         plt.ylabel("Predicted Values", size=15)
         graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
@@ -1238,7 +1241,7 @@ def results_output(
         roc_auc = auc(fpr, tpr)
         plt.plot(fpr, tpr, "b", label="AUC = %0.2f" % roc_auc)
         plt.plot([0, 1], [0, 1], "r--")
-        plt.title("ROC curve", fontsize=25)
+        plt.title(f"ROC curve \n {title}", fontsize=25)
         plt.ylabel("True Positive Rate", fontsize=18)
         plt.xlabel("False Positive Rate", fontsize=18)
         plt.legend(
@@ -1273,7 +1276,9 @@ def results_output(
             color="red",
             label="R2={0:0.2f}".format(r_square),
         )
-        plt.title("Regression Nerual Network Prediction vs. True", fontsize=25)
+        plt.title(
+            f"Regression Nerual Network Prediction vs. True \n {title}", fontsize=25
+        )
         plt.ylabel("Predicted", fontsize=18)
         plt.xlabel("Target", fontsize=18)
 

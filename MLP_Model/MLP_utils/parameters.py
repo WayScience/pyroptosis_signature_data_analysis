@@ -11,6 +11,8 @@ class Parameters:
     # Constants
     MODEL_TYPE: str = "Binary_Classification"
 
+    MODEL_NAME: str = "test_model"
+
     # Subset option yes or no? if no SUBSET_NUMBER won't be used
     DATA_SUBSET_OPTION: bool = True
 

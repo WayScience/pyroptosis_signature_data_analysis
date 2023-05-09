@@ -103,7 +103,7 @@ params = parameter_set(params, config)
 
 # Generate df specific to analysis and model
 df = df.query(
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'LPS_100.000_DMSO_0.025'| oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'DMSO_0.100_DMSO_0.025' | oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'Thapsigargin_10.000_DMSO_0.025'"
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'LPS_100.000_DMSO_0.025'| oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'Thapsigargin_10.000_DMSO_0.025' | oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'DMSO_0.100_DMSO_0.025'"
 )
 # for binary classification testing
 # df = df.query(
@@ -178,10 +178,17 @@ df_values_X = df_values.drop(
 df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
 
+# In[8]:
+
+
+output_name = (" ").join(df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique())
+title = f'{output_name.split(" ")[0].split("_")[0]} vs {(" ").join(output_name.split(" ")[1].split("_")[:2])} vs {(" ").join(output_name.split(" ")[2].split("_")[:2])}'
+
+
 # ##### Regression Model Data Wrangling and Set Up
 # comment out if not using regression
 
-# In[8]:
+# In[9]:
 
 
 # if params.DATA_SUBSET_OPTION == 'True':
@@ -207,7 +214,7 @@ df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
 # #### Split Data - All Models can proceed through this point
 
-# In[9]:
+# In[10]:
 
 
 X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
@@ -221,7 +228,7 @@ X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
 )
 
 
-# In[10]:
+# In[11]:
 
 
 # produce data objects for train, val and test datasets
@@ -236,7 +243,7 @@ test_data = Dataset_formatter(
 )
 
 
-# In[11]:
+# In[12]:
 
 
 params.IN_FEATURES = X_train.shape[1]
@@ -262,7 +269,7 @@ else:
 print(params.MODEL_TYPE)
 
 
-# In[12]:
+# In[13]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
@@ -275,7 +282,7 @@ valid_loader = torch.utils.data.DataLoader(
 test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
 
 
-# In[13]:
+# In[14]:
 
 
 # no accuracy function must be loss for regression
@@ -311,7 +318,7 @@ objective_model_optimizer(
 )
 
 
-# In[14]:
+# In[15]:
 
 
 fig = optuna.visualization.plot_optimization_history(study)
@@ -323,7 +330,7 @@ fig.write_image(Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[15]:
+# In[16]:
 
 
 fig = optuna.visualization.plot_intermediate_values(study)
@@ -337,7 +344,7 @@ fig.write_image(Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[16]:
+# In[17]:
 
 
 param_dict = extract_best_trial_params(
@@ -345,7 +352,7 @@ param_dict = extract_best_trial_params(
 )
 
 
-# In[17]:
+# In[18]:
 
 
 # call the optimized training model
@@ -370,7 +377,7 @@ else:
     )
 
 
-# In[18]:
+# In[19]:
 
 
 if params.MODEL_TYPE == "Regression":
@@ -389,7 +396,7 @@ else:
     )
 
 
-# In[19]:
+# In[20]:
 
 
 plot_metric_vs_epoch(
@@ -405,7 +412,7 @@ plot_metric_vs_epoch(
 )
 
 
-# In[20]:
+# In[21]:
 
 
 # calling the testing function and outputting list values of tested model
@@ -429,7 +436,7 @@ else:
     pass
 
 
-# In[21]:
+# In[22]:
 
 
 # Call visualization function
@@ -441,6 +448,7 @@ if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
         params,
         test_name=f"{params.MODEL_NAME}_testing",
         model_name=params.MODEL_NAME,
+        title=title,
     )
 elif params.MODEL_TYPE == "Binary_Classification":
     results_output(
@@ -455,9 +463,19 @@ else:
     raise Exception("Model type must be specified for proper model testing")
 
 
+# In[23]:
+
+
+for i, j in zip(
+    df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique(),
+    df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique(),
+):
+    print(i, j)
+
+
 # #### look at the feature weights of the model
 
-# In[22]:
+# In[24]:
 
 
 # get all paramters from pytorch model
@@ -468,7 +486,7 @@ for name, param in model.named_parameters():
 feature_weights = model[0].weight.grad[0].detach().cpu().numpy()
 
 
-# In[23]:
+# In[25]:
 
 
 col_list = []
@@ -477,27 +495,27 @@ for col in df_values.columns:
     col_list.append(col)
 
 
-# In[24]:
+# In[26]:
 
 
 # remove last 4 columns from col_list that are not features
 col_list = col_list[:-4]
 
 
-# In[25]:
+# In[27]:
 
 
 pd.set_option("display.max_colwidth", None)
 
-df = pd.DataFrame(zip(col_list, feature_weights), columns=["feature", "weight"])
+df1 = pd.DataFrame(zip(col_list, feature_weights), columns=["feature", "weight"])
 # change weight collumn to float
-df["weight"] = df["weight"].astype(float)
+df1["weight"] = df1["weight"].astype(float)
 # sort by weight
-df = df.sort_values(by=["weight"], ascending=False)
-df
+df1 = df1.sort_values(by=["weight"], ascending=False)
+df1
 
 
-# In[26]:
+# In[28]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -508,7 +526,13 @@ df_descriptive = df_holdout[df_metadata]
 df_values = df_holdout.drop(columns=df_metadata)
 
 
-# In[27]:
+# In[29]:
+
+
+df_descriptive
+
+
+# In[30]:
 
 
 # Creating label encoder
@@ -530,7 +554,7 @@ df_values_X = df_values.drop(
 df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
 
-# In[28]:
+# In[31]:
 
 
 test_data = Dataset_formatter(
@@ -541,7 +565,7 @@ test_data = Dataset_formatter(
 test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
 
 
-# In[29]:
+# In[32]:
 
 
 # calling the testing function and outputting list values of tested model
@@ -565,11 +589,12 @@ else:
     pass
 
 
-# In[30]:
+# In[33]:
 
 
 # Call visualization function
 # calling the testing function and outputing list values of tested model
+
 if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
     confusion_matrix_df = results_output(
         y_pred_list,
@@ -577,6 +602,7 @@ if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
         params,
         test_name=f"{params.MODEL_NAME}_hold_out",
         model_name=params.MODEL_NAME,
+        title=title,
     )
 elif params.MODEL_TYPE == "Binary_Classification":
     results_output(
@@ -589,3 +615,13 @@ elif params.MODEL_TYPE == "Binary_Classification":
     )
 else:
     raise Exception("Model type must be specified for proper model testing")
+
+
+# In[34]:
+
+
+for i, j in zip(
+    df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique(),
+    df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique(),
+):
+    print(i, j)

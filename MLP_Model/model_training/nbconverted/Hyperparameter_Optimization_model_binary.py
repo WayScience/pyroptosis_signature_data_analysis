@@ -107,8 +107,11 @@ params = parameter_set(params, config)
 # )
 # for binary classification testing
 df = df.query(
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'LPS_100.000_DMSO_0.025'| oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'DMSO_0.100_DMSO_0.025'"
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'LPS_10.000_DMSO_0.025'| oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'DMSO_0.100_DMSO_0.025'"
 )
+# df = df.query(
+#     "oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'LPS_100.000_DMSO_0.025'| oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'LPS_10.000_DMSO_0.025'"
+# )
 print("Selected Catagories are:")
 print(df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique())
 # Drop na and reindex accordingly
@@ -441,6 +444,7 @@ if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
         params,
         test_name=f"{params.MODEL_NAME}_testing",
         model_name=params.MODEL_NAME,
+        title=params.MODEL_NAME,
     )
 elif params.MODEL_TYPE == "Binary_Classification":
     results_output(
@@ -450,6 +454,7 @@ elif params.MODEL_TYPE == "Binary_Classification":
         y_pred_prob_list,
         test_name=f"{params.MODEL_NAME}_testing",
         model_name=params.MODEL_NAME,
+        title=params.MODEL_NAME,
     )
 else:
     raise Exception("Model type must be specified for proper model testing")
@@ -497,7 +502,7 @@ df = df.sort_values(by=["weight"], ascending=False)
 df
 
 
-# In[27]:
+# In[26]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -508,7 +513,7 @@ df_descriptive = df_holdout[df_metadata]
 df_values = df_holdout.drop(columns=df_metadata)
 
 
-# In[28]:
+# In[27]:
 
 
 # Creating label encoder
@@ -530,7 +535,7 @@ df_values_X = df_values.drop(
 df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
 
-# In[29]:
+# In[28]:
 
 
 test_data = Dataset_formatter(
@@ -541,7 +546,7 @@ test_data = Dataset_formatter(
 test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
 
 
-# In[30]:
+# In[29]:
 
 
 # calling the testing function and outputting list values of tested model
@@ -565,7 +570,7 @@ else:
     pass
 
 
-# In[31]:
+# In[30]:
 
 
 # Call visualization function
@@ -577,6 +582,7 @@ if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
         params,
         test_name=f"{params.MODEL_NAME}_hold_out",
         model_name=params.MODEL_NAME,
+        title=params.MODEL_NAME,
     )
 elif params.MODEL_TYPE == "Binary_Classification":
     results_output(
@@ -586,6 +592,7 @@ elif params.MODEL_TYPE == "Binary_Classification":
         y_pred_prob_list,
         test_name=f"{params.MODEL_NAME}_hold_out",
         model_name=params.MODEL_NAME,
+        title=params.MODEL_NAME,
     )
 else:
     raise Exception("Model type must be specified for proper model testing")

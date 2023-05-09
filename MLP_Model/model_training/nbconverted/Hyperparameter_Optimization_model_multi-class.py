@@ -290,6 +290,7 @@ if params.MODEL_TYPE == "Regression":
     params.METRIC = "loss"
     pass
 
+sampler = optuna.samplers.TPESampler(seed=10)
 
 # wrap the objective function inside of a lambda function to pass args...
 objective_lambda_func = lambda trial: objective_model_optimizer(
@@ -303,7 +304,7 @@ objective_lambda_func = lambda trial: objective_model_optimizer(
 
 
 # Study is the object for model optimization
-study = optuna.create_study(direction=f"{params.DIRECTION}")
+study = optuna.create_study(direction=f"{params.DIRECTION}", sampler=sampler)
 # Here I apply the optimize function of the study to the objective function
 # This optimizes each parameter specified to be optimized from the defined search space
 study.optimize(objective_lambda_func, n_trials=params.N_TRIALS)

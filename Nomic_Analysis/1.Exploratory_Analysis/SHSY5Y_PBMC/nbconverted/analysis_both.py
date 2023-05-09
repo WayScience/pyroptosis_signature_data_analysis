@@ -205,6 +205,44 @@ plot_cytokines(nELISA_plate_430420, "TRAIL [NSU]")
 # In[11]:
 
 
+def plot_cytokines_treatments(df, cytokine):
+    plt.figure()
+    plt.tight_layout()
+    sns.set(rc={"figure.figsize": (8, 5)})
+    # plot a bar chart
+    sns.barplot(
+        y=cytokine,
+        x="inducer1_and_concentration",
+        hue="cell_type",
+        data=df,
+        estimator=np.mean,
+        errorbar=("ci", 95),
+        # ci = 50,
+        # color="#69b3a2",
+    )
+    plt.xticks(rotation=90)
+    plt.ylim(0, 1)
+    plt.ylabel(cytokine)
+    plt.savefig(f"figures/{cytokine}_all_dosages.png", bbox_inches="tight")
+    plt.show()
+    plt.close()
+
+
+nELISA_plate_430420["inducer1_and_concentration"] = (
+    nELISA_plate_430420["inducer1"]
+    + "_"
+    + nELISA_plate_430420["inducer1_concentration"].astype(str)
+)
+plot_cytokines_treatments(nELISA_plate_430420, "IL-1 beta [NSU]")
+plot_cytokines_treatments(nELISA_plate_430420, "IL-18 [NSU]")
+
+
+# In[ ]:
+
+
+# In[12]:
+
+
 # open pdf file
 with PdfPages("figures/inducers.pdf") as pdf:
     # plot all cytokines and selected inducer and plot them in a pdf

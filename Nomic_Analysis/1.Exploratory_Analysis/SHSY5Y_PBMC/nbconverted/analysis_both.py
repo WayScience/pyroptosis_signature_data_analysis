@@ -143,7 +143,7 @@ results = [
 nELISA_plate_430420["Treatments"] = np.select(conditions, results)
 
 
-# In[9]:
+# In[ ]:
 
 
 # select rows that contain 'Thapsigargin_10 µM_DMSO_0.03%' from Treatment_and_Dose column
@@ -163,7 +163,7 @@ nELISA_plate_430420 = nELISA_plate_430420[
 ]
 
 
-# In[10]:
+# In[ ]:
 
 
 def plot_cytokines(df, cytokine):
@@ -200,9 +200,12 @@ plot_cytokines(nELISA_plate_430420, "CCL2 [NSU]")
 plot_cytokines(nELISA_plate_430420, "CCL5 [NSU]")
 plot_cytokines(nELISA_plate_430420, "TNF alpha [NSU]")
 plot_cytokines(nELISA_plate_430420, "TRAIL [NSU]")
+plot_cytokines(nELISA_plate_430420, "Osteopontin (OPN) [NSU]")
+plot_cytokines(nELISA_plate_430420, "IL-2 [NSU]")
+plot_cytokines(nELISA_plate_430420, "IL-17A [NSU]")
 
 
-# In[11]:
+# In[ ]:
 
 
 def plot_cytokines_treatments(df, cytokine):
@@ -235,12 +238,15 @@ nELISA_plate_430420["inducer1_and_concentration"] = (
 )
 plot_cytokines_treatments(nELISA_plate_430420, "IL-1 beta [NSU]")
 plot_cytokines_treatments(nELISA_plate_430420, "IL-18 [NSU]")
+plot_cytokines_treatments(nELISA_plate_430420, "Osteopontin (OPN) [NSU]")
+plot_cytokines_treatments(nELISA_plate_430420, "IL-2 [NSU]")
+plot_cytokines_treatments(nELISA_plate_430420, "IL-17A [NSU]")
 
 
 # In[ ]:
 
 
-# In[12]:
+# In[ ]:
 
 
 # open pdf file
@@ -284,5 +290,51 @@ with PdfPages("figures/death_type.pdf") as pdf:
             estimator=np.mean,
             errorbar=("sd"),
         )
+        plt.xticks(rotation=90)
         pdf.savefig(bbox_inches="tight")
         plt.close()
+
+
+# In[10]:
+
+
+# open pdf file
+with PdfPages("figures/all_treatmemts.pdf") as pdf:
+    # plot all cytokines and selected inducer and plot them in a pdf
+    for i in nELISA_plate_430420.filter(like="NSU", axis=1).columns:
+        plt.figure()
+        plt.tight_layout()
+        sns.set(rc={"figure.figsize": (8, 5)})
+        # plot a bar chart
+        sns.barplot(
+            y=nELISA_plate_430420[i],
+            x="Treatment_and_Dose",
+            data=nELISA_plate_430420,
+            hue="cell_type",
+            estimator=np.mean,
+            errorbar=("sd"),
+        )
+        plt.xticks(rotation=90)
+        pdf.savefig(bbox_inches="tight")
+        plt.close()
+
+
+# In[11]:
+
+
+plt.figure()
+plt.tight_layout()
+# sns.set(rc={"figure.figsize": (8, 5)})
+# plot a bar chart
+sns.barplot(
+    y=nELISA_plate_430420["IL-2 [NSU]"],
+    x="Treatment_and_Dose",
+    data=nELISA_plate_430420,
+    hue="cell_type",
+    estimator=np.mean,
+    errorbar=("sd"),
+)
+plt.xticks(rotation=90)
+
+
+# In[ ]:

@@ -71,7 +71,6 @@ col_list = [
     "cell_type",
     "inducer1",
     "inhibitor",
-    "Manual_Cluster",
     "Function",
     "inducer1_plus_concentration",
     "inducer1_plus_inhibitor",

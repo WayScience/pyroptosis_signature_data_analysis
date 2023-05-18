@@ -34,6 +34,7 @@ df = pq.read_table(path).to_pandas()
 # In[3]:
 
 
+# barplot of number of single cells per treatment
 sns.barplot(
     x="Metadata_Treatment",
     y="Metadata_number_of_singlecells",
@@ -58,6 +59,7 @@ plt.close()
 # In[4]:
 
 
+# Number of single cells per treatment and dose level
 for i in df["Metadata_Treatment"].unique():
     tmp_df = df[df["Metadata_Treatment"] == i]
     sns.barplot(
@@ -68,7 +70,7 @@ for i in df["Metadata_Treatment"].unique():
         data=tmp_df,
         errorbar=("sd"),
     )
-    plt.xlabel(i)
+    plt.xlabel(f"{i}_doasage")
     plt.ylabel("Number of single cells")
     plt.xticks(rotation=45)
     plt.title(f"Number of single cells per {i}")

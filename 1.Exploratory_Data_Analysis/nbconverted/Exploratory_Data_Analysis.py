@@ -17,21 +17,21 @@
 # Here we look into how the data are distributed in wave3, the same plate data as wave1 but with full cell painting dataset including the Gasdermin D channel for a total of 6 channels to analyze.
 # These data sets contain extracted features from raw image dataset. See README for information as to how raw image data was processed.
 
-# In[1]:
+# In[2]:
 
 
+import itertools
 import pathlib
 import sys
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 import seaborn as sns
 import umap
 
 get_ipython().run_line_magic("matplotlib", "inline")
-import itertools
-
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
 
@@ -42,6 +42,8 @@ from utils.utils import df_stats, plot_features_all_cluster
 
 
 # function for EDA of each input feature extraction file:
+
+
 def EDA_run(df, wave_label, subset_number=1500):
     """Function runs EDA on imported data frame
 

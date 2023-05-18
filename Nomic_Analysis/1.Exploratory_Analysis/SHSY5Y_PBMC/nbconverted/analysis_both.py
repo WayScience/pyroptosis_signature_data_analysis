@@ -16,7 +16,7 @@ from sklearn import preprocessing
 # In[2]:
 
 
-path = pathlib.Path("../../Data/clean/Plate2/nELISA_plate_430420.csv")
+PBMC_SHSY5Y_PATH = pathlib.Path("../../Data/clean/Plate2/nELISA_plate_430420.csv")
 
 manual_cluster_1_path = pathlib.Path(
     "../../Data/clean/Plate2/Manual_Treatment_Clusters_1.csv"
@@ -26,7 +26,7 @@ manual_cluster_2_path = pathlib.Path(
     "../../Data/clean/Plate2/Manual_Treatment_Clusters_2.csv"
 )
 
-df = pd.read_csv(path)
+PBMC_SHSY5Y_df = pd.read_csv(PBMC_SHSY5Y_PATH)
 
 
 manual_clusters_1 = pd.read_csv(manual_cluster_1_path)
@@ -37,7 +37,7 @@ manual_clusters_2 = pd.read_csv(manual_cluster_2_path)
 
 
 # select data only columns and make floats
-nELISA_data_values = df.filter(like="NSU", axis=1)
+nELISA_data_values = PBMC_SHSY5Y_df.filter(like="NSU", axis=1)
 nELISA_data_values = nELISA_data_values.astype("float")
 nELISA_data_values.head()
 
@@ -67,8 +67,8 @@ nELISA_data_values_min_max_norm.head()
 
 
 # drop columns that are named with NSU
-Metadata = df.drop(df.filter(like="NSU", axis=1), axis=1)
-Metadata = Metadata.drop(df.filter(like="pgML", axis=1), axis=1)
+Metadata = PBMC_SHSY5Y_df.drop(PBMC_SHSY5Y_df.filter(like="NSU", axis=1), axis=1)
+Metadata = Metadata.drop(PBMC_SHSY5Y_df.filter(like="pgML", axis=1), axis=1)
 Metadata.head()
 
 
@@ -143,7 +143,7 @@ results = [
 nELISA_plate_430420["Treatments"] = np.select(conditions, results)
 
 
-# In[ ]:
+# In[9]:
 
 
 # select rows that contain 'Thapsigargin_10 µM_DMSO_0.03%' from Treatment_and_Dose column
@@ -163,7 +163,7 @@ nELISA_plate_430420 = nELISA_plate_430420[
 ]
 
 
-# In[ ]:
+# In[10]:
 
 
 def plot_cytokines(df, cytokine):
@@ -205,7 +205,7 @@ plot_cytokines(nELISA_plate_430420, "IL-2 [NSU]")
 plot_cytokines(nELISA_plate_430420, "IL-17A [NSU]")
 
 
-# In[ ]:
+# In[11]:
 
 
 def plot_cytokines_treatments(df, cytokine):
@@ -243,10 +243,7 @@ plot_cytokines_treatments(nELISA_plate_430420, "IL-2 [NSU]")
 plot_cytokines_treatments(nELISA_plate_430420, "IL-17A [NSU]")
 
 
-# In[ ]:
-
-
-# In[ ]:
+# In[12]:
 
 
 # open pdf file
@@ -271,7 +268,7 @@ with PdfPages("figures/inducers.pdf") as pdf:
         plt.close()
 
 
-# In[ ]:
+# In[13]:
 
 
 # open pdf file
@@ -295,7 +292,7 @@ with PdfPages("figures/death_type.pdf") as pdf:
         plt.close()
 
 
-# In[10]:
+# In[14]:
 
 
 # open pdf file
@@ -319,7 +316,7 @@ with PdfPages("figures/all_treatmemts.pdf") as pdf:
         plt.close()
 
 
-# In[11]:
+# In[15]:
 
 
 plt.figure()
@@ -335,6 +332,3 @@ sns.barplot(
     errorbar=("sd"),
 )
 plt.xticks(rotation=90)
-
-
-# In[ ]:

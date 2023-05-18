@@ -16,7 +16,7 @@ from sklearn import preprocessing
 # In[2]:
 
 
-path = pathlib.Path("../../Data/clean/Plate2/nELISA_plate_430420_PBMC.csv")
+PBMC_path = pathlib.Path("../../Data/clean/Plate2/nELISA_plate_430420_PBMC.csv")
 
 
 manual_cluster_1_path = pathlib.Path(
@@ -27,7 +27,7 @@ manual_cluster_2_path = pathlib.Path(
     "../../Data/clean/Plate2/Manual_Treatment_Clusters_2.csv"
 )
 
-df = pd.read_csv(path)
+PBMC_df = pd.read_csv(PBMC_path)
 
 manual_clusters_1 = pd.read_csv(manual_cluster_1_path)
 manual_clusters_2 = pd.read_csv(manual_cluster_2_path)
@@ -37,7 +37,7 @@ manual_clusters_2 = pd.read_csv(manual_cluster_2_path)
 
 
 # select data only columns and make floats
-nELISA_data_values = df.filter(like="NSU", axis=1)
+nELISA_data_values = PBMC_df.filter(like="NSU", axis=1)
 nELISA_data_values = nELISA_data_values.astype("float")
 nELISA_data_values.head()
 
@@ -52,7 +52,6 @@ nELISA_data_values_sensor_max_norm = nELISA_data_values.div(
 )  # divide each value in each column by max value in that column
 nELISA_data_values_sensor_max_norm.head()
 # min max normalization via sklearn
-from sklearn import preprocessing
 
 # normalize data via min max normalization
 min_max_scaler = preprocessing.MinMaxScaler()
@@ -67,8 +66,8 @@ nELISA_data_values_min_max_norm.head()
 
 
 # drop columns that are named with NSU
-Metadata = df.drop(df.filter(like="NSU", axis=1), axis=1)
-Metadata = Metadata.drop(df.filter(like="pgML", axis=1), axis=1)
+Metadata = PBMC_df.drop(PBMC_df.filter(like="NSU", axis=1), axis=1)
+Metadata = Metadata.drop(PBMC_df.filter(like="pgML", axis=1), axis=1)
 
 
 # In[6]:
@@ -99,7 +98,6 @@ nELISA_plate_430420 = pd.merge(
 # In[8]:
 
 
-# nELISA_plate_430420['treatment'] =
 # dose column merge
 conditions = [
     (nELISA_plate_430420["inducer2"].isnull()),

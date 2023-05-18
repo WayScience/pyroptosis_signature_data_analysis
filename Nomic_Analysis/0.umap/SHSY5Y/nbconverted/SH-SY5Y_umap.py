@@ -36,9 +36,6 @@ manual_clusters_2 = pd.read_csv(manual_cluster_2_path)
 nELISA_orgingal_plate = nELISA_plate_430420_SH_SY5Y.copy()
 
 
-# In[ ]:
-
-
 # In[3]:
 
 
@@ -79,7 +76,7 @@ print(
 
 # display max columns pandas
 pd.set_option("display.max_columns", None)
-nELISA_orgingal_plate
+nELISA_orgingal_plate.head()
 
 
 # In[7]:
@@ -105,11 +102,6 @@ proj_2d = umap_params.fit_transform(nELISA_data_values_sensor_max_norm)
 # add umap coordinates to dataframe of metadata and raw data
 nELISA_orgingal_plate["umap_1"] = proj_2d[:, 0]
 nELISA_orgingal_plate["umap_2"] = proj_2d[:, 1]
-
-# # add manual clusters columns to dataframe
-# nELISA_plate_430420 = pd.merge(
-#     nELISA_orgingal_plate, manual_clusters_1, on=("inducer1", "inhibitor"), how="inner"
-# )
 
 # add manual clusters columns to dataframe
 nELISA_plate_430420 = pd.merge(

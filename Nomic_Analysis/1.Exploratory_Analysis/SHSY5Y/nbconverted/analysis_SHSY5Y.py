@@ -16,7 +16,8 @@ from sklearn import preprocessing
 # In[2]:
 
 
-path = pathlib.Path("../../Data/clean/Plate2/nELISA_plate_430420_SH_SY5Y.csv")
+# sourcery skip: my-custom-rule
+SH_SY5Y_PATH = pathlib.Path("../../Data/clean/Plate2/nELISA_plate_430420_SH_SY5Y.csv")
 
 manual_cluster_1_path = pathlib.Path(
     "../../Data/clean/Plate2/Manual_Treatment_Clusters_1.csv"
@@ -26,7 +27,7 @@ manual_cluster_2_path = pathlib.Path(
     "../../Data/clean/Plate2/Manual_Treatment_Clusters_2.csv"
 )
 
-df = pd.read_csv(path)
+SHSY5Y_df = pd.read_csv(SH_SY5Y_PATH)
 
 manual_clusters_1 = pd.read_csv(manual_cluster_1_path)
 manual_clusters_2 = pd.read_csv(manual_cluster_2_path)
@@ -36,7 +37,7 @@ manual_clusters_2 = pd.read_csv(manual_cluster_2_path)
 
 
 # select data only columns and make floats
-nELISA_data_values = df.filter(like="NSU", axis=1)
+nELISA_data_values = SHSY5Y_df.filter(like="NSU", axis=1)
 nELISA_data_values = nELISA_data_values.astype("float")
 nELISA_data_values.head()
 
@@ -66,8 +67,8 @@ nELISA_data_values_min_max_norm.head()
 
 
 # drop columns that are named with NSU
-Metadata = df.drop(df.filter(like="NSU", axis=1), axis=1)
-Metadata = Metadata.drop(df.filter(like="pgML", axis=1), axis=1)
+Metadata = SHSY5Y_df.drop(SHSY5Y_df.filter(like="NSU", axis=1), axis=1)
+Metadata = Metadata.drop(SHSY5Y_df.filter(like="pgML", axis=1), axis=1)
 
 
 # In[6]:
@@ -98,7 +99,6 @@ nELISA_plate_430420 = pd.merge(
 # In[8]:
 
 
-# nELISA_plate_430420['treatment'] =
 # dose column merge
 conditions = [
     (nELISA_plate_430420["inducer2"].isnull()),

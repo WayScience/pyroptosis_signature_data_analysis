@@ -4,7 +4,7 @@ These are helper functions meant to be called in a separate notebook or script
 """
 
 import ast
-import os
+import pathlib
 from pathlib import Path
 from typing import Tuple
 
@@ -639,7 +639,7 @@ def objective_model_optimizer(
 
 
 def extract_best_trial_params(
-    best_params: optuna.study, params: Parameters, model_name: str
+    best_params: optuna.study, MLP_params: Parameters, model_name: str
 ) -> dict:
     """This function extracts the best parameters from the best trial.
     These extracted parameters will be used to train a new model.
@@ -647,8 +647,8 @@ def extract_best_trial_params(
     Parameters
     ----------
     best_params : optuna.study.best_params
-        returns the best parmaters from the best study from optuna
-    params : Parameters
+        returns the best paramaters from the best study from optuna
+    MLP_params : Parameters
         dataclass containing constants and parameter spaces
     model_name : str
         name of the model to be created
@@ -677,7 +677,7 @@ def extract_best_trial_params(
 
     # write model architecture to file
 
-    if params.MODEL_TYPE == "Multi_Class":
+    if MLP_params.MODEL_TYPE == "Multi_Class":
         with open(
             f"../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.txt",
             "w",
@@ -685,7 +685,7 @@ def extract_best_trial_params(
             f.write(str(param_dict))
         f.close()
 
-    elif params.MODEL_TYPE == "Binary_Classification":
+    elif MLP_params.MODEL_TYPE == "Binary_Classification":
         with open(
             f"../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.txt",
             "w",
@@ -693,7 +693,7 @@ def extract_best_trial_params(
             f.write(str(param_dict))
         f.close()
 
-    elif params.MODEL_TYPE == "Regression":
+    elif MLP_params.MODEL_TYPE == "Regression":
         with open(
             f"../trained_models/architectures/Regression/Regression_{model_name}.txt",
             "w",
@@ -1127,8 +1127,8 @@ def results_output(
         plt.ylabel("Predicted Values", size=15)
         # make dir if dir not exist
         graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
-        if not os.path.exists(graph_path):
-            os.makedirs(graph_path)
+        if not pathlib.Path.exists(graph_path):
+            pathlib.Path.mkdir(graph_path)
         graph_path = Path(
             f"../figures/{params.MODEL_TYPE}/{model_name}/confusion_matrix_graph_{test_name}.png"
         )
@@ -1207,8 +1207,8 @@ def results_output(
         plt.title(f"Receiver Operating Characteristic (ROC) Curve \n {title}")
         plt.legend(loc="lower right")
         graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
-        if not os.path.exists(graph_path):
-            os.makedirs(graph_path)
+        if not pathlib.Path.exists(graph_path):
+            pathlib.Path.mkdir(graph_path)
         graph_path = Path(
             f"../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
         )
@@ -1228,8 +1228,8 @@ def results_output(
         plt.xlabel("Actual Values", size=15)
         plt.ylabel("Predicted Values", size=15)
         graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
-        if not os.path.exists(graph_path):
-            os.makedirs(graph_path)
+        if not pathlib.Path.exists(graph_path):
+            pathlib.Path.mkdir(graph_path)
         graph_path = Path(
             f"../figures/{params.MODEL_TYPE}/{model_name}/confusion_matrix_graph_{test_name}.png"
         )
@@ -1253,8 +1253,8 @@ def results_output(
             handlelength=0,
         )
         graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
-        if not os.path.exists(graph_path):
-            os.makedirs(graph_path)
+        if not pathlib.Path.exists(graph_path):
+            pathlib.Path.mkdir(graph_path)
         graph_path = Path(
             f"../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
         )
@@ -1291,8 +1291,8 @@ def results_output(
             handlelength=0,
         )
         graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
-        if not os.path.exists(graph_path):
-            os.makedirs(graph_path)
+        if not pathlib.Path.exists(graph_path):
+            pathlib.Path.mkdir(graph_path)
         graph_path = Path(
             f"../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
         )

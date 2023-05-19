@@ -3,6 +3,8 @@ Functions for Machine Learning Model optimization, training and testing.
 These are helper functions meant to be called in a separate notebook or script
 """
 
+import ast
+import pathlib
 from pathlib import Path
 from typing import Tuple
 
@@ -46,6 +48,7 @@ def parameter_set(params: Parameters, config: toml) -> object:
         param class holding updated parameter information
     """
     params.MODEL_TYPE = config["MACHINE_LEARNING_PARAMS"]["MODEL_TYPE"]
+    params.MODEL_NAME = config["MACHINE_LEARNING_PARAMS"]["MODEL_NAME"]
     params.DATA_SUBSET_OPTION = config["MACHINE_LEARNING_PARAMS"]["DATA_SUBSET_OPTION"]
     params.DATA_SUBSET_NUMBER = int(
         config["MACHINE_LEARNING_PARAMS"]["DATA_SUBSET_NUMBER"]
@@ -635,14 +638,20 @@ def objective_model_optimizer(
         )
 
 
-def extract_best_trial_params(best_params: optuna.study) -> dict:
+def extract_best_trial_params(
+    best_params: optuna.study, MLP_params: Parameters, model_name: str
+) -> dict:
     """This function extracts the best parameters from the best trial.
     These extracted parameters will be used to train a new model.
 
     Parameters
     ----------
     best_params : optuna.study.best_params
-        returns the best parmaters from the best study from optuna
+        returns the best paramaters from the best study from optuna
+    MLP_params : Parameters
+        dataclass containing constants and parameter spaces
+    model_name : str
+        name of the model to be created
 
     Returns
     -------
@@ -658,35 +667,96 @@ def extract_best_trial_params(best_params: optuna.study) -> dict:
     for i in range(best_params["n_layers"]):
         units.append(best_params[f"n_units_l{i}"])
         dropout.append(best_params[f"dropout_{i}"])
-    param_dict = {
-        "units": units,
-        "dropout": dropout,
-        "n_layers": n_layers,
-        "optimizer": optimizer,
-        "learning_rate": lr,
-    }
+        param_dict = {
+            "units": units,
+            "dropout": dropout,
+            "n_layers": n_layers,
+            "optimizer": optimizer,
+            "learning_rate": lr,
+        }
+
+    # write model architecture to file
+
+    if MLP_params.MODEL_TYPE == "Multi_Class":
+        with open(
+            f"../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.txt",
+            "w",
+        ) as f:
+            f.write(str(param_dict))
+        f.close()
+
+    elif MLP_params.MODEL_TYPE == "Binary_Classification":
+        with open(
+            f"../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.txt",
+            "w",
+        ) as f:
+            f.write(str(param_dict))
+        f.close()
+
+    elif MLP_params.MODEL_TYPE == "Regression":
+        with open(
+            f"../trained_models/architectures/Regression/Regression_{model_name}.txt",
+            "w",
+        ) as f:
+            f.write(str(param_dict))
+        f.close()
+
+    else:
+        raise Exception("Model type must be specified for proper model saving")
+
     return param_dict
 
 
 # function for new optimized model
 def optimized_model_create(
-    parameter_dict: dict, params: Parameters
+    # parameter_dict: dict,
+    params: Parameters,
+    model_name: str,
 ) -> torch.nn.Sequential:
     """creates the pytorch model architecture from the best trial
     from optuna hyperparameter optimization
 
     Parameters
     ----------
-    parameter_dict : dict
-        dictionary of optimized model hyperparameters
+    # parameter_dict : dict
+    #     dictionary of optimized model hyperparameters
     params : Parameters
         dataclass to store data of hyperparameters and parameters
+    model_name : str
+        name of the model to be created
 
     Returns
     -------
     torch.nn.Sequential
         this returns in a dict the architecture of the model with optimized parameters
     """
+    # load in model architecture from saved model architecture
+    if params.MODEL_TYPE == "Multi_Class":
+        with open(
+            f"../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.txt",
+            "r",
+        ) as f:
+            parameter_dict = ast.literal_eval(f.read())
+        f.close()
+
+    elif params.MODEL_TYPE == "Binary_Classification":
+        with open(
+            f"../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.txt",
+            "r",
+        ) as f:
+            parameter_dict = ast.literal_eval(f.read())
+        f.close()
+
+    elif params.MODEL_TYPE == "Regression":
+        with open(
+            f"../trained_models/architectures/Regression/Regression_{model_name}.txt",
+            "r",
+        ) as f:
+            parameter_dict = ast.literal_eval(f.read())
+        f.close()
+
+    else:
+        raise Exception("Model type must be specified for proper model saving")
 
     n_layers = parameter_dict["n_layers"]
 
@@ -715,6 +785,7 @@ def train_optimized_model(
     valid_loader: torch.utils.data.DataLoader,
     parameter_dict: dict,
     params: Parameters,
+    model_name: str,
 ) -> tuple[float, float, float, float, int, torch.nn.Sequential]:
     """This function trains the optimized model on the training dataset
 
@@ -731,6 +802,8 @@ def train_optimized_model(
         dictionary of optimized model hyperparameters
     params : Parameters
         Dataclass containing constants and parameter spaces
+    model_name : str
+        name of the model to be added to the save name
 
     Returns
     -------
@@ -743,7 +816,7 @@ def train_optimized_model(
         model: torch.nn.Sequential
 
     """
-    model = optimized_model_create(parameter_dict, params)
+    model = optimized_model_create(params, model_name)
     model = model.to(params.DEVICE)
     # criterion is the method in which we measure our loss
     # isn't defined as loss as it doesn't represent the loss value but the method
@@ -813,17 +886,17 @@ def train_optimized_model(
             if params.MODEL_TYPE == "Multi_Class":
                 torch.save(
                     model.state_dict(),
-                    f"./results/model_save_states/Multi_Class_state_dict.pt",
+                    f"../trained_models/model_save_states/Multi_Class/Multi_Class_{model_name}.pt",
                 )
             elif params.MODEL_TYPE == "Binary_Classification":
                 torch.save(
                     model.state_dict(),
-                    f"./results/model_save_states/Binary_Classification_state_dict.pt",
+                    f"../trained_models/model_save_states/Binary_Classification/Binary_Classification_{model_name}.pt",
                 )
             elif params.MODEL_TYPE == "Regression":
                 torch.save(
                     model.state_dict(),
-                    f"./results/model_save_states/Regression_state_dict.pt",
+                    f"../trained_models/model_save_states/Regression/Regression_{model_name}.pt",
                 )
             else:
                 raise Exception("Model type must be specified for proper model saving")
@@ -859,6 +932,7 @@ def plot_metric_vs_epoch(
     x_axis_label: str,
     y_axis_label: str,
     params: Parameters,
+    model_name: str,
 ) -> None:
     """Plot x vs y1 and x vs y2 using seaborn.
 
@@ -878,6 +952,10 @@ def plot_metric_vs_epoch(
         label for the x axis
     y_axis_label: str
         label for the y axis
+    params : Parameters
+        Dataclass containing constants and parameter spaces
+    model_name : str
+        name of the model to be added to the save name
     """
     # sns.lineplot(x=x, y=y1, data=df)
     # sns.lineplot(x=x, y=y2, data=df)
@@ -887,7 +965,10 @@ def plot_metric_vs_epoch(
     plt.xlabel(x_axis_label)
     plt.ylabel(y_axis_label)
     plt.legend()
-    graph_path = Path(f"./figures/{params.MODEL_TYPE}/{y_axis_label}_graph.png")
+    graph_path = Path(
+        f"../figures/{params.MODEL_TYPE}/{model_name}/{y_axis_label}_graph.png"
+    )
+    plt.tight_layout()
     plt.savefig(graph_path)
 
 
@@ -895,6 +976,7 @@ def test_optimized_model(
     model: torch.nn.Sequential,
     test_loader: torch.utils.data.DataLoader,
     params: Parameters,
+    model_name: str,
 ) -> Tuple[list, list]:
     """test the trained model on test data
 
@@ -906,6 +988,8 @@ def test_optimized_model(
         DataLoader for test data integration to pytorch
     params : Parameters
         Dataclass containing constants and parameter spaces
+    model_name : str
+        name of the model to be used for loading
 
 
     Returns
@@ -916,19 +1000,24 @@ def test_optimized_model(
         y_pred_prob_list: list of probabilities of
         those predicted values
     """
+    model = model.to(params.DEVICE)
     if params.MODEL_TYPE == "Multi_Class":
         model.load_state_dict(
-            torch.load("./results/model_save_states/Multi_Class_state_dict.pt")
+            torch.load(
+                f"../trained_models/model_save_states/Multi_Class/Multi_Class_{model_name}.pt"
+            )
         )
     elif params.MODEL_TYPE == "Binary_Classification":
         model.load_state_dict(
             torch.load(
-                "./results/model_save_states/Binary_Classification_state_dict.pt"
+                f"../trained_models/model_save_states/Binary_Classification/Binary_Classification_{model_name}.pt"
             )
         )
     elif params.MODEL_TYPE == "Regression":
         model.load_state_dict(
-            torch.load("./results/model_save_states/Regression_state_dict.pt")
+            torch.load(
+                f"../trained_models/model_save_states/Regression/Regression_{model_name}.pt"
+            )
         )
     else:
         raise Exception("Model type must be specified for proper model loading")
@@ -995,6 +1084,9 @@ def results_output(
     test_data: list,
     params: Parameters,
     prediction_probability_list: list = False,
+    test_name: str = "test",
+    model_name: str = "model",
+    title: str = "Test Results",
 ) -> None:
     """Function outputs visualization of testing the model
 
@@ -1008,6 +1100,13 @@ def results_output(
         dataclass of parameters
     prediction_probability_list : list, optional
         list of probabilities of 0 or 1, by default False
+    test_name : str, optional
+        name of the test, by default "test"
+    model_name : str, optional
+        name of the model, by default "model"
+    title : str, optional
+        title of the graph, by default "Test Results"
+
 
     Raises
     ------
@@ -1023,10 +1122,17 @@ def results_output(
         ax = sns.heatmap(confusion_matrix_df, annot=True, fmt="d")
         ax.invert_xaxis()
         ax.invert_yaxis()
-        plt.title("Confusion Matrix for Binary Classifier", fontsize=20)
+        plt.title(f"Confusion Matrix for Binary Classifier \n {title}", fontsize=20)
         plt.xlabel("Actual Values", size=15)
         plt.ylabel("Predicted Values", size=15)
-        graph_path = Path(f"./figures/{params.MODEL_TYPE}/confusion_matrix_graph.png")
+        # make dir if dir not exist
+        graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
+        if not pathlib.Path.exists(graph_path):
+            pathlib.Path.mkdir(graph_path)
+        graph_path = Path(
+            f"../figures/{params.MODEL_TYPE}/{model_name}/confusion_matrix_graph_{test_name}.png"
+        )
+        plt.tight_layout()
         plt.savefig(graph_path)
         for i in range(params.OUT_FEATURES):
             class_label = (
@@ -1098,9 +1204,15 @@ def results_output(
         plt.ylim([-0.05, 1.05])
         plt.xlabel("False Positive Rate")
         plt.ylabel("True Positive Rate")
-        plt.title("Receiver Operating Characteristic (ROC) Curve")
+        plt.title(f"Receiver Operating Characteristic (ROC) Curve \n {title}")
         plt.legend(loc="lower right")
-        graph_path = Path(f"./figures/{params.MODEL_TYPE}/ROC_graph.png")
+        graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
+        if not pathlib.Path.exists(graph_path):
+            pathlib.Path.mkdir(graph_path)
+        graph_path = Path(
+            f"../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
+        )
+        plt.tight_layout()
         plt.savefig(graph_path)
         plt.show()
         return confusion_matrix_df
@@ -1112,10 +1224,16 @@ def results_output(
         ax = sns.heatmap(confusion_matrix_df, annot=True, fmt="d")
         ax.invert_xaxis()
         ax.invert_yaxis()
-        plt.title("Confusion Matrix for Binary Classifier", fontsize=20)
+        plt.title(f"Confusion Matrix for Binary Classifier \n {title}", fontsize=20)
         plt.xlabel("Actual Values", size=15)
         plt.ylabel("Predicted Values", size=15)
-        graph_path = Path(f"./figures/{params.MODEL_TYPE}/confusion_matrix_graph.png")
+        graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
+        if not pathlib.Path.exists(graph_path):
+            pathlib.Path.mkdir(graph_path)
+        graph_path = Path(
+            f"../figures/{params.MODEL_TYPE}/{model_name}/confusion_matrix_graph_{test_name}.png"
+        )
+        plt.tight_layout()
         plt.savefig(graph_path)
         # AUC graph of accuracy and false positive rates
         plt.figure(figsize=(5.5, 4))
@@ -1123,7 +1241,7 @@ def results_output(
         roc_auc = auc(fpr, tpr)
         plt.plot(fpr, tpr, "b", label="AUC = %0.2f" % roc_auc)
         plt.plot([0, 1], [0, 1], "r--")
-        plt.title("ROC curve", fontsize=25)
+        plt.title(f"ROC curve \n {title}", fontsize=25)
         plt.ylabel("True Positive Rate", fontsize=18)
         plt.xlabel("False Positive Rate", fontsize=18)
         plt.legend(
@@ -1134,7 +1252,13 @@ def results_output(
             frameon=True,
             handlelength=0,
         )
-        graph_path = Path(f"./figures/{params.MODEL_TYPE}/ROC_graph.png")
+        graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
+        if not pathlib.Path.exists(graph_path):
+            pathlib.Path.mkdir(graph_path)
+        graph_path = Path(
+            f"../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
+        )
+        plt.tight_layout()
         plt.savefig(graph_path)
         plt.show()
 
@@ -1152,7 +1276,9 @@ def results_output(
             color="red",
             label="R2={0:0.2f}".format(r_square),
         )
-        plt.title("Regression Nerual Network Prediction vs. True", fontsize=25)
+        plt.title(
+            f"Regression Nerual Network Prediction vs. True \n {title}", fontsize=25
+        )
         plt.ylabel("Predicted", fontsize=18)
         plt.xlabel("Target", fontsize=18)
 
@@ -1164,7 +1290,13 @@ def results_output(
             frameon=True,
             handlelength=0,
         )
-        graph_path = Path(f"./figures/{params.MODEL_TYPE}/Predicted_vs_True_graph.png")
+        graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
+        if not pathlib.Path.exists(graph_path):
+            pathlib.Path.mkdir(graph_path)
+        graph_path = Path(
+            f"../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
+        )
+        plt.tight_layout()
         plt.savefig(graph_path)
         plt.show()
     else:

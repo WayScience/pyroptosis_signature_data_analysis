@@ -1,5 +1,23 @@
 ---
 repos:
+# isort for jupyter notebooks
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.3.1
+    hooks:
+      - id: nbqa-isort
+
+  # Code formatter for both python files and jupyter notebooks
+  - repo: https://github.com/psf/black
+    rev: 22.10.0
+    hooks:
+      - id: black
+        language_version: python3.10
+
+  - repo: https://github.com/mwouts/jupytext
+    rev: v1.14.0  # CURRENT_TAG/COMMIT_HASH
+    hooks:
+    - id: jupytext
+      args: [--from, notebooks///ipynb, --to, "scripts///py:percent", --sync, --pipe, black]
 
   # Formats import order
   - repo: https://github.com/pycqa/isort
@@ -15,21 +33,6 @@ repos:
     hooks:
       - id: pycln
 
-
-  # Code formatter for both python files and jupyter notebooks
-  - repo: https://github.com/psf/black
-    rev: 22.10.0
-    hooks:
-      - id: black-jupyter
-      - id: black
-        language_version: python3.10
-
-  # isort for jupyter notebooks
-  - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.3.1
-    hooks:
-      - id: nbqa-isort
-
   # additional hooks found with in the pre-commit lib
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.4.0
@@ -43,3 +46,5 @@ repos:
           - --autofix
           - --indent=4
           - --no-sort-keys
+
+

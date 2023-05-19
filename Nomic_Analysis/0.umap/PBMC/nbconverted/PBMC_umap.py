@@ -20,18 +20,13 @@ import umap
 nELISA_plate_430420_PBMC_path = pathlib.Path(
     "../../Data/clean/Plate2/nELISA_plate_430420_PBMC.csv"
 )
-manual_cluster_1_path = pathlib.Path(
-    "../../Data/clean/Plate2/Manual_Treatment_Clusters_1.csv"
-)
-
-manual_cluster_2_path = pathlib.Path(
-    "../../Data/clean/Plate2/Manual_Treatment_Clusters_2.csv"
+manual_cluster_path = pathlib.Path(
+    "../../Data/clean/Plate2/Manual_Treatment_Clusters.csv"
 )
 
 
 nELISA_plate_430420_PBMC = pd.read_csv(nELISA_plate_430420_PBMC_path)
-manual_clusters_1 = pd.read_csv(manual_cluster_1_path)
-manual_clusters_2 = pd.read_csv(manual_cluster_2_path)
+manual_clusters = pd.read_csv(manual_cluster_path)
 
 nELISA_orgingal_plate = nELISA_plate_430420_PBMC.copy()
 
@@ -95,24 +90,9 @@ proj_2d = umap_params.fit_transform(nELISA_data_values_sensor_max_norm)
 nELISA_orgingal_plate["umap_1"] = proj_2d[:, 0]
 nELISA_orgingal_plate["umap_2"] = proj_2d[:, 1]
 
-# # add manual clusters columns to dataframe
-# nELISA_plate_430420 = pd.merge(
-#     nELISA_orgingal_plate, manual_clusters, on=("inducer1", "inhibitor"), how="inner"
-# )
-
 # add manual clusters columns to dataframe
 nELISA_plate_430420 = pd.merge(
-    nELISA_orgingal_plate,
-    manual_clusters_2,
-    on=(
-        "inducer1",
-        "inducer1_concentration_value",
-        "inhibitor",
-        "inhibitor_concentration_value",
-        "inducer2",
-        "inducer2_concentration_value",
-    ),
-    how="inner",
+    nELISA_orgingal_plate, manual_clusters, on=("inducer1", "inhibitor"), how="inner"
 )
 
 nELISA_plate_430420["inducer1_plus_concentration"] = (

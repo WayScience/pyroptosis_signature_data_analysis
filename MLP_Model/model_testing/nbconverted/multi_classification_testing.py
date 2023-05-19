@@ -145,7 +145,7 @@ def test_loop(df, output_name, title):
     else:
         pass
     # Call visualization function
-    # calling the testing function and outputing list values of tested model
+    # calling the testing function and outputting list values of tested model
     if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
         confusion_matrix_df = results_output(
             y_pred_list,

@@ -3,7 +3,7 @@ Functions for Machine Learning Model optimization, training and testing.
 These are helper functions meant to be called in a separate notebook or script
 """
 
-import ast
+import json
 import pathlib
 from pathlib import Path
 from typing import Tuple
@@ -21,7 +21,7 @@ from MLP_utils.exceptions import (
     ModelTypeError,
     OptimizationMetricError,
     TrainingValidationTestingSplitError,
-    yDataTypeError,
+    YDataTypeError,
 )
 from MLP_utils.parameters import Parameters
 from sklearn.metrics import (
@@ -370,7 +370,7 @@ def train_n_validate(
         elif params.MODEL_TYPE == "Regression":
             pass
         else:
-            raise yDataTypeError
+            raise YDataTypeError
 
         X_train_batch, y_train_batch = X_train_batch.to(
             params.DEVICE
@@ -426,7 +426,7 @@ def train_n_validate(
             elif params.MODEL_TYPE == "Regression":
                 pass
             else:
-                raise yDataTypeError
+                raise YDataTypeError
 
             X_valid_batch, y_valid_batch = X_valid_batch.to(
                 params.DEVICE
@@ -673,26 +673,26 @@ def extract_best_trial_params(
 
     if MLP_params.MODEL_TYPE == "Multi_Class":
         with open(
-            f"../../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.txt",
+            f"../../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.json",
             "w",
         ) as f:
-            f.write(str(param_dict))
+            json.dump(param_dict, f, indent=4)
         f.close()
 
     elif MLP_params.MODEL_TYPE == "Binary_Classification":
         with open(
-            f"../../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.txt",
+            f"../../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.json",
             "w",
         ) as f:
-            f.write(str(param_dict))
+            json.dump(param_dict, f, indent=4)
         f.close()
 
     elif MLP_params.MODEL_TYPE == "Regression":
         with open(
-            f"../../trained_models/architectures/Regression/Regression_{model_name}.txt",
+            f"../../trained_models/architectures/Regression/Regression_{model_name}.json",
             "w",
         ) as f:
-            f.write(str(param_dict))
+            json.dump(param_dict, f, indent=4)
         f.close()
 
     else:
@@ -727,28 +727,25 @@ def optimized_model_create(
     # load in model architecture from saved model architecture
     if params.MODEL_TYPE == "Multi_Class":
         with open(
-            f"../../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.txt",
+            f"../../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.json",
             "r",
         ) as f:
-            parameter_dict = ast.literal_eval(f.read())
+            parameter_dict = json.load(f)
         f.close()
-
     elif params.MODEL_TYPE == "Binary_Classification":
         with open(
-            f"../../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.txt",
+            f"../../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.json",
             "r",
         ) as f:
-            parameter_dict = ast.literal_eval(f.read())
+            parameter_dict = json.load(f)
         f.close()
-
     elif params.MODEL_TYPE == "Regression":
         with open(
-            f"../../trained_models/architectures/Regression/Regression_{model_name}.txt",
+            f"../../trained_models/architectures/Regression/Regression_{model_name}.json",
             "r",
         ) as f:
-            parameter_dict = ast.literal_eval(f.read())
+            parameter_dict = json.load(f)
         f.close()
-
     else:
         raise ModelTypeError
 

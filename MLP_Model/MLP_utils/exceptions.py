@@ -9,7 +9,7 @@ class TrainingValidationTestingSplitError(Exception):
 
 class YDataTypeError(Exception):
     """Exception occurs in the case that the y data does not have the correct data type
-    each model has a different y data type"""
+    (e.g., each model has a different y data type)"""
 
     pass
 

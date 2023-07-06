@@ -2,7 +2,7 @@
 
 
 class TrainingValidationTestingSplitError(Exception):
-    """Exception occurs in the case that the training, validation, and testing splits to not add up to 1.0"""
+    """Exception occurs in the case that the training, validation, and testing splits do not add up to 1.0"""
 
     pass
 

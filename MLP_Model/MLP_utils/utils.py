@@ -17,6 +17,12 @@ import toml
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from MLP_utils.exceptions import (
+    ModelTypeError,
+    OptimizationMetricError,
+    TrainingValidationTestingSplitError,
+    yDataTypeError,
+)
 from MLP_utils.parameters import Parameters
 from sklearn.metrics import (
     auc,
@@ -134,7 +140,7 @@ def data_split(
     """
 
     if (train_proportion + test_proportion + val_proportion) != 1:
-        raise Exception("Train, val, and test sets must add to 1")
+        raise TrainingValidationTestingSplitError
 
     if params.MODEL_TYPE == "Regression":
         # split data into train-test
@@ -249,7 +255,6 @@ def build_model_custom(
     in_features = params.IN_FEATURES
 
     for i in range(n_layers):
-
         # the number of units within a hidden layer
         out_features = trial.suggest_int(
             "n_units_l{}".format(i), params.LAYER_UNITS_MIN, params.LAYER_UNITS_MAX
@@ -358,7 +363,6 @@ def train_n_validate(
     # finding the loss and accuracy
     # _ isn't used but is needed to "absorb" the data index
     for _, (X_train_batch, y_train_batch) in enumerate(train_loader):
-
         if params.MODEL_TYPE == "Multi_Class":
             y_train_batch = y_train_batch.type(torch.LongTensor)
         elif params.MODEL_TYPE == "Binary_Classification":
@@ -366,9 +370,7 @@ def train_n_validate(
         elif params.MODEL_TYPE == "Regression":
             pass
         else:
-            raise Exception(
-                "y_train type casting is dependent on model type! check model type definition"
-            )
+            raise yDataTypeError
 
         X_train_batch, y_train_batch = X_train_batch.to(
             params.DEVICE
@@ -399,7 +401,7 @@ def train_n_validate(
             optimizer.step()
             running_loss += loss.item()
         else:
-            raise Exception("train accuracy and loss model type not specified")
+            raise ModelTypeError
     if params.MODEL_TYPE == "Regression":
         pass
     else:
@@ -417,7 +419,6 @@ def train_n_validate(
     with torch.no_grad():
         model.eval()
         for _, (X_valid_batch, y_valid_batch) in enumerate(valid_loader):
-
             if params.MODEL_TYPE == "Multi_Class":
                 y_valid_batch = y_valid_batch.type(torch.LongTensor)
             elif params.MODEL_TYPE == "Binary_Classification":
@@ -425,9 +426,7 @@ def train_n_validate(
             elif params.MODEL_TYPE == "Regression":
                 pass
             else:
-                raise Exception(
-                    "y_valid type casting is dependent on model type! check model type definition"
-                )
+                raise yDataTypeError
 
             X_valid_batch, y_valid_batch = X_valid_batch.to(
                 params.DEVICE
@@ -454,9 +453,7 @@ def train_n_validate(
                 loss = criterion(output, y_valid_batch.unsqueeze(1))
                 batch_loss += loss.item()
             else:
-                raise Exception(
-                    "y_valid accuracy and loss is dependent on model type! check model type definition"
-                )
+                raise ModelTypeError
         if params.MODEL_TYPE == "Regression":
             pass
         else:
@@ -550,7 +547,7 @@ def objective_model_optimizer(
     elif params.MODEL_TYPE == "Regression":
         criterion = nn.MSELoss()
     else:
-        raise Exception("Model type must be specified to define a train loss function")
+        raise ModelTypeError
 
     # send model to device(cuda)
     model = model.to(params.DEVICE)
@@ -569,7 +566,6 @@ def objective_model_optimizer(
     total_step_val = len(valid_loader)
 
     for epoch in range(params.OPTIM_EPOCHS):
-
         (
             model,
             optimizer,
@@ -601,7 +597,7 @@ def objective_model_optimizer(
         elif metric == "loss":
             trial.report(np.mean(valid_loss), epoch)
         else:
-            raise Exception("metric not defined as accuracy or loss")
+            raise OptimizationMetricError
 
         # Handle pruning based on the intermediate value
         if trial.should_prune():
@@ -633,9 +629,7 @@ def objective_model_optimizer(
     elif metric == "loss":
         return np.mean(valid_loss)
     else:
-        raise Exception(
-            'metric argument needs to be defined as either "accuracy" or "loss"'
-        )
+        raise OptimizationMetricError
 
 
 def extract_best_trial_params(
@@ -679,7 +673,7 @@ def extract_best_trial_params(
 
     if MLP_params.MODEL_TYPE == "Multi_Class":
         with open(
-            f"../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.txt",
+            f"../../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.txt",
             "w",
         ) as f:
             f.write(str(param_dict))
@@ -687,7 +681,7 @@ def extract_best_trial_params(
 
     elif MLP_params.MODEL_TYPE == "Binary_Classification":
         with open(
-            f"../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.txt",
+            f"../../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.txt",
             "w",
         ) as f:
             f.write(str(param_dict))
@@ -695,14 +689,14 @@ def extract_best_trial_params(
 
     elif MLP_params.MODEL_TYPE == "Regression":
         with open(
-            f"../trained_models/architectures/Regression/Regression_{model_name}.txt",
+            f"../../trained_models/architectures/Regression/Regression_{model_name}.txt",
             "w",
         ) as f:
             f.write(str(param_dict))
         f.close()
 
     else:
-        raise Exception("Model type must be specified for proper model saving")
+        raise ModelTypeError
 
     return param_dict
 
@@ -733,7 +727,7 @@ def optimized_model_create(
     # load in model architecture from saved model architecture
     if params.MODEL_TYPE == "Multi_Class":
         with open(
-            f"../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.txt",
+            f"../../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.txt",
             "r",
         ) as f:
             parameter_dict = ast.literal_eval(f.read())
@@ -741,7 +735,7 @@ def optimized_model_create(
 
     elif params.MODEL_TYPE == "Binary_Classification":
         with open(
-            f"../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.txt",
+            f"../../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.txt",
             "r",
         ) as f:
             parameter_dict = ast.literal_eval(f.read())
@@ -749,14 +743,14 @@ def optimized_model_create(
 
     elif params.MODEL_TYPE == "Regression":
         with open(
-            f"../trained_models/architectures/Regression/Regression_{model_name}.txt",
+            f"../../trained_models/architectures/Regression/Regression_{model_name}.txt",
             "r",
         ) as f:
             parameter_dict = ast.literal_eval(f.read())
         f.close()
 
     else:
-        raise Exception("Model type must be specified for proper model saving")
+        raise ModelTypeError
 
     n_layers = parameter_dict["n_layers"]
 
@@ -764,7 +758,6 @@ def optimized_model_create(
     in_features = params.IN_FEATURES
     # loop through each layer
     for i in range(n_layers):
-
         # for each layer access the correct hyper paramter
         out_features = parameter_dict["units"][i]
 
@@ -827,7 +820,8 @@ def train_optimized_model(
     elif params.MODEL_TYPE == "Regression":
         criterion = nn.MSELoss()
     else:
-        raise Exception("Model type must be specified to define a train loss function")
+        raise ModelTypeError
+
     optim_method = parameter_dict["optimizer"].strip("'")
     print(optim_method)
 
@@ -852,7 +846,6 @@ def train_optimized_model(
     epochs_ran = []
 
     for epoch in range(EPOCHS):
-
         epochs_ran.append(epoch + 1)
 
         (
@@ -886,20 +879,20 @@ def train_optimized_model(
             if params.MODEL_TYPE == "Multi_Class":
                 torch.save(
                     model.state_dict(),
-                    f"../trained_models/model_save_states/Multi_Class/Multi_Class_{model_name}.pt",
+                    f"../../trained_models/model_save_states/Multi_Class/Multi_Class_{model_name}.pt",
                 )
             elif params.MODEL_TYPE == "Binary_Classification":
                 torch.save(
                     model.state_dict(),
-                    f"../trained_models/model_save_states/Binary_Classification/Binary_Classification_{model_name}.pt",
+                    f"../../trained_models/model_save_states/Binary_Classification/Binary_Classification_{model_name}.pt",
                 )
             elif params.MODEL_TYPE == "Regression":
                 torch.save(
                     model.state_dict(),
-                    f"../trained_models/model_save_states/Regression/Regression_{model_name}.pt",
+                    f"../../trained_models/model_save_states/Regression/Regression_{model_name}.pt",
                 )
             else:
-                raise Exception("Model type must be specified for proper model saving")
+                raise ModelTypeError
 
             print(
                 f"Epoch {epoch + 0:01}: Validation loss decreased ({valid_loss_min:.6f} --> {np.mean(valid_loss):.6f}).  Saving model ..."
@@ -966,7 +959,7 @@ def plot_metric_vs_epoch(
     plt.ylabel(y_axis_label)
     plt.legend()
     graph_path = Path(
-        f"../figures/{params.MODEL_TYPE}/{model_name}/{y_axis_label}_graph.png"
+        f"../../figures/{params.MODEL_TYPE}/{model_name}/{y_axis_label}_graph.png"
     )
     plt.tight_layout()
     plt.savefig(graph_path)
@@ -1004,24 +997,23 @@ def test_optimized_model(
     if params.MODEL_TYPE == "Multi_Class":
         model.load_state_dict(
             torch.load(
-                f"../trained_models/model_save_states/Multi_Class/Multi_Class_{model_name}.pt"
+                f"../../trained_models/model_save_states/Multi_Class/Multi_Class_{model_name}.pt"
             )
         )
     elif params.MODEL_TYPE == "Binary_Classification":
         model.load_state_dict(
             torch.load(
-                f"../trained_models/model_save_states/Binary_Classification/Binary_Classification_{model_name}.pt"
+                f"../../trained_models/model_save_states/Binary_Classification/Binary_Classification_{model_name}.pt"
             )
         )
     elif params.MODEL_TYPE == "Regression":
         model.load_state_dict(
             torch.load(
-                f"../trained_models/model_save_states/Regression/Regression_{model_name}.pt"
+                f"../../trained_models/model_save_states/Regression/Regression_{model_name}.pt"
             )
         )
     else:
-        raise Exception("Model type must be specified for proper model loading")
-
+        raise ModelTypeError
     y_pred_prob_list = []
     y_pred_list = []
 
@@ -1043,8 +1035,7 @@ def test_optimized_model(
             elif params.MODEL_TYPE == "Regression":
                 y_pred_list.append(output.cpu().numpy())
             else:
-                raise Exception("Model type must be specified for proper model testing")
-
+                raise ModelTypeError
     y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
     if params.MODEL_TYPE == "Multi_Class":
         return y_pred_list
@@ -1054,7 +1045,7 @@ def test_optimized_model(
     elif params.MODEL_TYPE == "Regression":
         return y_pred_list
     else:
-        raise Exception("Model type must be specified for proper model testing")
+        raise ModelTypeError
 
 
 # If output list is nested
@@ -1126,11 +1117,11 @@ def results_output(
         plt.xlabel("Actual Values", size=15)
         plt.ylabel("Predicted Values", size=15)
         # make dir if dir not exist
-        graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
+        graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{model_name}/")
         if not pathlib.Path.exists(graph_path):
             pathlib.Path.mkdir(graph_path)
         graph_path = Path(
-            f"../figures/{params.MODEL_TYPE}/{model_name}/confusion_matrix_graph_{test_name}.png"
+            f"../../figures/{params.MODEL_TYPE}/{model_name}/confusion_matrix_graph_{test_name}.png"
         )
         plt.tight_layout()
         plt.savefig(graph_path)
@@ -1206,11 +1197,11 @@ def results_output(
         plt.ylabel("True Positive Rate")
         plt.title(f"Receiver Operating Characteristic (ROC) Curve \n {title}")
         plt.legend(loc="lower right")
-        graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
+        graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{model_name}/")
         if not pathlib.Path.exists(graph_path):
             pathlib.Path.mkdir(graph_path)
         graph_path = Path(
-            f"../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
+            f"../../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
         )
         plt.tight_layout()
         plt.savefig(graph_path)
@@ -1227,11 +1218,11 @@ def results_output(
         plt.title(f"Confusion Matrix for Binary Classifier \n {title}", fontsize=20)
         plt.xlabel("Actual Values", size=15)
         plt.ylabel("Predicted Values", size=15)
-        graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
+        graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{model_name}/")
         if not pathlib.Path.exists(graph_path):
             pathlib.Path.mkdir(graph_path)
         graph_path = Path(
-            f"../figures/{params.MODEL_TYPE}/{model_name}/confusion_matrix_graph_{test_name}.png"
+            f"../../figures/{params.MODEL_TYPE}/{model_name}/confusion_matrix_graph_{test_name}.png"
         )
         plt.tight_layout()
         plt.savefig(graph_path)
@@ -1252,11 +1243,11 @@ def results_output(
             frameon=True,
             handlelength=0,
         )
-        graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
+        graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{model_name}/")
         if not pathlib.Path.exists(graph_path):
             pathlib.Path.mkdir(graph_path)
         graph_path = Path(
-            f"../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
+            f"../../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
         )
         plt.tight_layout()
         plt.savefig(graph_path)
@@ -1290,14 +1281,14 @@ def results_output(
             frameon=True,
             handlelength=0,
         )
-        graph_path = Path(f"../figures/{params.MODEL_TYPE}/{model_name}/")
+        graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{model_name}/")
         if not pathlib.Path.exists(graph_path):
             pathlib.Path.mkdir(graph_path)
         graph_path = Path(
-            f"../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
+            f"../../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
         )
         plt.tight_layout()
         plt.savefig(graph_path)
         plt.show()
     else:
-        raise Exception("Model type must be specified for proper model testing")
+        raise ModelTypeError

@@ -39,7 +39,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 
-sys.path.append("..")
+sys.path.append("../..")
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
     Dataset_formatter,
@@ -55,20 +55,20 @@ from MLP_utils.utils import (
     un_nest,
 )
 
-sys.path.append("../..")
+sys.path.append("../../..")
 from utils.utils import df_stats
 
 # %%
 # Import Data
 # set data file path under pathlib path for multi-system use
 file_path = Path(
-    "../../../Extracted_Features_(CSV_files)/SHSY5Y_preprocessed_df_sc_norm.parquet"
+    "../../../../Extracted_Features_(CSV_files)/SHSY5Y_preprocessed_df_sc_norm.parquet"
 )
 
 df = pq.read_table(file_path).to_pandas()
 
 # %%
-data = Path("../MLP_utils/config.toml")
+data = Path("../../MLP_utils/config.toml")
 config = toml.load(data)
 params = Parameters()
 params = parameter_set(params, config)

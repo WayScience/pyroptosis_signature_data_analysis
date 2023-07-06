@@ -50,7 +50,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 
-sys.path.append("..")
+sys.path.append("../..")
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
     Dataset_formatter,
@@ -66,7 +66,7 @@ from MLP_utils.utils import (
     un_nest,
 )
 
-sys.path.append("../..")
+sys.path.append("../../../")
 from utils.utils import df_stats
 
 # %%
@@ -75,18 +75,18 @@ from utils.utils import df_stats
 
 
 file_path = Path(
-    "../../../Extracted_Features_(CSV_files)/interstellar_wave3_sc_norm_fs_cellprofiler.csv.gz"
+    "../../../../Extracted_Features_(CSV_files)/interstellar_wave3_sc_norm_fs_cellprofiler.csv.gz"
 )
 
 file_path = Path(
-    "../../../Extracted_Features_(CSV_files)/SHSY5Y_preprocessed_df_sc_norm.parquet"
+    "../../../../Extracted_Features_(CSV_files)/SHSY5Y_preprocessed_df_sc_norm.parquet"
 )
 
 df = pq.read_table(file_path).to_pandas()
 # df = pd.read_csv(file_path, engine="pyarrow")
 
 # %%
-data = Path("../MLP_utils/config.toml")
+data = Path("../../MLP_utils/config.toml")
 config = toml.load(data)
 params = Parameters()
 params = parameter_set(params, config)
@@ -258,21 +258,19 @@ objective_model_optimizer(
 
 # %%
 fig = optuna.visualization.plot_optimization_history(study)
-graph_path = Path(f"../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/")
+graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/")
 if not os.path.exists(graph_path):
     os.makedirs(graph_path)
-graph_path = f"../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/plot_optimization_history_graph"
+graph_path = f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/plot_optimization_history_graph"
 fig.write_image(Path(f"{graph_path}.png"))
 fig.show()
 
 # %%
 fig = optuna.visualization.plot_intermediate_values(study)
-graph_path = Path(f"../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/")
+graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/")
 if not os.path.exists(graph_path):
     os.makedirs(graph_path)
-graph_path = (
-    f"../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/plot_intermediate_values_graph"
-)
+graph_path = f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/plot_intermediate_values_graph"
 fig.write_image(Path(f"{graph_path}.png"))
 fig.show()
 

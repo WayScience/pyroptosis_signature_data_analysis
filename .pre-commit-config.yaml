@@ -1,10 +1,18 @@
 ---
 repos:
-# isort for jupyter notebooks
+  # isort for jupyter notebooks
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.3.1
     hooks:
       - id: nbqa-isort
+
+  # Formats import order
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        name: isort (python)
+        args: ["--profile", "black", "--filter-files"]
 
   # Code formatter for both python files and jupyter notebooks
   - repo: https://github.com/psf/black
@@ -20,13 +28,7 @@ repos:
     - id: jupytext
       args: [--from, notebooks///ipynb, --to, "scripts///py:percent", --sync, --pipe, black]
 
-  # Formats import order
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        name: isort (python)
-        args: ["--profile", "black", "--filter-files"]
+
 
   # remove unused imports
   - repo: https://github.com/hadialqattan/pycln.git

@@ -7,7 +7,7 @@ class TrainingValidationTestingSplitError(Exception):
     pass
 
 
-class yDataTypeError(Exception):
+class YDataTypeError(Exception):
     """Exception occurs in the case that the y data does not have the correct data type
     each model has a different y data type"""
 

@@ -32,7 +32,7 @@ pd.set_option("mode.chained_assignment", None)
 
 
 # Parameters
-celltype = "SHSY5Y"
+celltype = "PBMC"
 
 
 # In[3]:

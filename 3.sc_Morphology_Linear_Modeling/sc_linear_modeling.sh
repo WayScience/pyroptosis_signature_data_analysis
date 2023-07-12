@@ -1,4 +1,13 @@
 #!/bin/bash
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks=16
+#SBATCH --mem=300G
+#SBATCH --partition=amem
+#SBATCH --qos=mem
+#SBATCH --time=48:00:00
+#SBATCH --output=sample-%j.out
+
 
 conda activate Interstellar
 

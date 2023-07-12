@@ -7,6 +7,8 @@
 #SBATCH --time=4:00:00
 #SBATCH --output=sample-%j.out
 
+module load anaconda
+
 conda activate Interstellar
 
 papermill 1.preprocessing.ipynb 1.preprocessing.ipynb -p celltype "SHSY5Y"

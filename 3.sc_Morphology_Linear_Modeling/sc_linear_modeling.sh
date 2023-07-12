@@ -8,6 +8,7 @@
 #SBATCH --time=48:00:00
 #SBATCH --output=sample-%j.out
 
+module load anaconda
 
 conda activate Interstellar
 

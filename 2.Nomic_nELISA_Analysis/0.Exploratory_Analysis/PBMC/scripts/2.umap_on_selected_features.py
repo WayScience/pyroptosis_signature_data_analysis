@@ -185,7 +185,7 @@ plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
 plt.show()
 
 
-# here we do the same as above but with more treatment groups:
+# Here we do the same as above but with more treatment groups:
 # - DMSO : Control
 # - LPS 10ng/ml : Pyroptosis
 # - LPS 100ng/ml : Pyroptosis

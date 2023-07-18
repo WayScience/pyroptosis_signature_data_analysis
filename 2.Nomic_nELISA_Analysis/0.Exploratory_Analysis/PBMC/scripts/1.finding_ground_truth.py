@@ -198,7 +198,8 @@ final_df_tukey = final_df_tukey.sort_values(by=["p-adj"], ascending=[True])
 # In[8]:
 
 
-# Treatment order list
+# reorder the treatment list
+# this for the purpose of plotting in a specific order on the x axis
 treatment_order_lst = [
     "DMSO_0.10%",
     "Disulfiram_0.1 µM",

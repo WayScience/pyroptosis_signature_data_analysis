@@ -156,7 +156,7 @@ nELISA_plate_430420_no_inhibitors = nELISA_plate_430420[
 # In[ ]:
 
 
-# select rows that contain 'Thapsigargin_10 µM_DMSO_0.03%' from Treatment_and_Dose column
+# select rows that contain 'Thapsigargin_10 µM_DMSO_0.03%' from Treatments column
 nELISA_plate_430420_Thapsi_sub = nELISA_plate_430420[
     nELISA_plate_430420["Treatments"].isin(
         [
@@ -167,7 +167,7 @@ nELISA_plate_430420_Thapsi_sub = nELISA_plate_430420[
     )
 ]
 
-# select rows that contain 'Thapsigargin_10 µM_DMSO_0.03%' from Treatment_and_Dose column
+# select rows that contain 'Thapsigargin_10 µM_DMSO_0.03%' from 'inhibitor' column
 nELISA_plate_430420_Thapsi_sub = nELISA_plate_430420_Thapsi_sub[
     nELISA_plate_430420_Thapsi_sub["inhibitor"].isin(["DMSO"])
 ]
@@ -176,7 +176,8 @@ nELISA_plate_430420_Thapsi_sub = nELISA_plate_430420_Thapsi_sub[
 # In[ ]:
 
 
-# resort treatment list
+# reorder the treatment list
+# this for the purpose of plotting in a specific order on the x axis
 treatments = [
     "DMSO_0.10%",
     "Topotecan_5 nM",

@@ -7,25 +7,25 @@
 import pathlib
 
 # umap analysis of treatment groups
+# using warnings to ignore the deprecation warnings upon importing umap and numba
+# these are annoying and not useful for the analysis output
 import warnings
 
-# anova test on each group
-# import the package hdbscan
 import hdbscan
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
 import seaborn as sns
+import umap
 from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
-from scipy.stats import f_oneway
 
 # post hoc test for 'VEGF-C [NSU]' column using Tukey's HSD test
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 warnings.simplefilter("ignore", category=NumbaDeprecationWarning)
 warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
-import umap
+
 
 # In[2]:
 
@@ -51,7 +51,7 @@ df = df[~df["Inducer1_and_dose"].str.contains("Topotecan")]
 # In[4]:
 
 
-# coonvert cytokines to a list
+# convert cytokines to a list
 cytokines_list = cytokines["cytokine"].tolist()
 # subset the filtered_df with cytokines_list
 df_cytokine = df[cytokines_list]
@@ -60,8 +60,8 @@ df_cytokine = df[cytokines_list]
 # In[5]:
 
 
-# set order of the treatment groups
-# Treatment order list
+# reorder the treatment list
+# this for the purpose of plotting in a specific order on the x axis
 treatment_order_lst = [
     "DMSO_0.10%",
     "Disulfiram_0.1 µM",
@@ -146,7 +146,6 @@ column_list = [col for col in df_treatment.columns if "[NSU]" in col]
 df_cytokine = df_treatment[column_list]
 treatment_col = df_treatment["Inducer1_and_dose"]
 
-# umap of df_cytokine and DMSOdose'] = treatment_col
 # plot the embedding
 sns.scatterplot(
     x="UMAP1",
@@ -194,7 +193,7 @@ plt.show()
 # - H202 10nM : General Cell Stress
 # - H202 10uM : General Cell Stress
 #
-# We expect to see clear separations between LPS and Thapsigargin treatments.
+# We expect to see clear seperations between LPs and Thapsigargin treatments.
 
 # In[10]:
 

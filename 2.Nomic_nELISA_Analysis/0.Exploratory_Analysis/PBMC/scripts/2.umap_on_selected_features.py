@@ -194,7 +194,7 @@ plt.show()
 # - H202 10nM : General Cell Stress
 # - H202 10uM : General Cell Stress
 #
-# We expect to see clear seperations between LPs and Thapsigargin treatments.
+# We expect to see clear separations between LPS and Thapsigargin treatments.
 
 # In[10]:
 

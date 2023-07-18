@@ -6,7 +6,7 @@ A couple of models are used to determine feature variance and the condition's co
 
 files
 `1a.fit_linear_model_1beta.ipynb`
-`1b.fit_linear_model_2b.ipynb`
+`1b.fit_linear_model_2beta.ipynb`
 `1c.fit_linear_model_3beta.ipynb`
 `1d.fit_linear_model_4beta.ipynb`
 

@@ -16,6 +16,13 @@ repos:
       - id: black
         language_version: python3.10
 
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.7.0
+    hooks:
+    - id: nbqa-isort
+      additional_dependencies: [isort==5.6.4]
+      args: [--profile=black]
+
   # code for converting jupyter notebooks to python scripts
   - repo: https://github.com/mwouts/jupytext
     rev: v1.14.0  # CURRENT_TAG/COMMIT_HASH

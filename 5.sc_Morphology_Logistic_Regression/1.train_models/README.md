@@ -5,12 +5,12 @@ Each logistic regression model run with parameters from the config file for each
 - Model 2: Logistic regression - Multiclass Classifier
 
 Each config has the follwing parameters:
-`MODEL_TYPE`: This is the type of model to run. Either `Binary` or `Multiclass`
-`control`: The control treatment group in the column specified in the code `DMSO_0.100_DMSO_0.025`
-`treatments`: The treatment group(s) in the column specified in the code `LPS_100.000_DMSO_0.025`
-`aggregation`: A boolean that dictates if the single cell data should be aggregated by well or not `True` or `False`
-`nomic`: A boolean that dictates if the Nomic nELISA data will be used in the model or not `True` or `False`
-`cell_type`: A string for the cell type that is to be analyzed in this analaysis the options are `SHSY5Y` or `PBMC`
+- `MODEL_TYPE`: This is the type of model to run. Either `Binary` or `Multiclass`
+- `control`: The control treatment group in the column specified in the code `DMSO_0.100_DMSO_0.025`
+- `treatments`: The treatment group(s) in the column specified in the code `LPS_100.000_DMSO_0.025`
+- `aggregation`: A boolean that dictates if the single cell data should be aggregated by well or not `True` or `False`
+- `nomic`: A boolean that dictates if the Nomic nELISA data will be used in the model or not `True` or `False`
+- `cell_type`: A string for the cell type that is to be analyzed in this analaysis the options are `SHSY5Y` or `PBMC`
 
 ## Outputs
 Each model will output:

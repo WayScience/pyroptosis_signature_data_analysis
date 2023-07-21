@@ -1,6 +1,6 @@
 # Training models
 
-Each logistic regression model run with parameters from the config file for each type of model:
+Each logistic regression model will be run using:
 - Model 1: Logistic regression - Binary Classifier
 - Model 2: Logistic regression - Multiclass Classifier
 

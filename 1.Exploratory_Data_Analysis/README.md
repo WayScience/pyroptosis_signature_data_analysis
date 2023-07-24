@@ -13,6 +13,7 @@ is for clustering of cells across all features. The goal is to aim to see if tre
 All figures are saved under `Figures` folder.
 
 
-Small note about the `bash` files: these are meant to be run on a SLURM cluster. Our PBMC data is large and requires a lot of memory for most analysis and one of our `128GiB` RAM workstations cannot handel these analysis.
+Small note about the `bash` files: these are meant to be run on a SLURM cluster.
+Our PBMC data is large and requires a lot of memory for most analysis and one of our `128GiB` RAM workstations cannot handel these analysis.
 
 This Repository will not go into the details of how to run these analysis on a SLURM cluster. Please see the [SLURM documentation](https://slurm.schedmd.com/documentation.html) for more information.

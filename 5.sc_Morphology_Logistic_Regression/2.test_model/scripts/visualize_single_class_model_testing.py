@@ -30,7 +30,7 @@ from sklearn.utils import parallel_backend, shuffle
 
 
 # Parameters
-cell_type = "SHSY5Y"
+cell_type = "PBMC"
 aggregation = False
 nomic = False
 flag = True
@@ -52,7 +52,6 @@ if flag == False:
     toml_path = pathlib.Path("../1.train_models/single_class_config.toml")
     with open(toml_path, "r") as f:
         config = toml.load(f)
-    f.close()
     control = config["logistic_regression_params"]["control"]
     treatment = config["logistic_regression_params"]["treatments"]
     aggregation = ast.literal_eval(config["logistic_regression_params"]["aggregation"])
@@ -197,42 +196,100 @@ for model_type, feature_type, phenotypic_class, evaluation_type in itertools.pro
     if evaluation_type == "train":
         # get data_split train
         df_train = df[df["data_split"] == "train"]
-        sns.heatmap(
-            confusion_matrix(
-                df_train["Phenotypic_Class_True"],
-                df_train["Phenotypic_Class_Predicted"],
-            ),
-            annot=True,
-            fmt="g",
-        )
-        plt.xlabel("Predicted")
-        plt.ylabel("True")
-        plt.title(
-            f"Confusion matrix of {model_type} model on {feature_type} features for {phenotypic_class}"
-        )
-        plt.savefig(
-            f"{figure_path}/{model_type}__train__{feature_type}__{phenotypic_class}.png"
-        )
-        plt.show()
+
+        if model_type == "final":
+            df_train_final = df_train[df_train["shuffled"] == False]
+            model = load(
+                f"../1.train_models/{model_path}/{model_type}__{feature_type}.joblib"
+            )
+
+            sns.heatmap(
+                confusion_matrix(
+                    df_train_final["Phenotypic_Class_True"],
+                    df_train_final["Phenotypic_Class_Predicted"],
+                ),
+                annot=True,
+                fmt="g",
+            )
+            plt.xlabel("Predicted")
+            plt.ylabel("True")
+            plt.title(
+                f"Confusion matrix of {model_type} model on {feature_type} features for {phenotypic_class}"
+            )
+            plt.savefig(
+                f"{figure_path}/{model_type}__train__{feature_type}__{phenotypic_class}.png"
+            )
+            plt.show()
+        elif model_type == "shuffled_baseline":
+            df_train_shuffled = df_train[df_train["shuffled"] == True]
+            model = load(
+                f"../1.train_models/{model_path}/{model_type}__{feature_type}.joblib"
+            )
+            sns.heatmap(
+                confusion_matrix(
+                    df_train_shuffled["Phenotypic_Class_True"],
+                    df_train_shuffled["Phenotypic_Class_Predicted"],
+                ),
+                annot=True,
+                fmt="g",
+            )
+            plt.xlabel("Predicted")
+            plt.ylabel("True")
+            plt.title(
+                f"Confusion matrix of {model_type} model on {feature_type} features for {phenotypic_class}"
+            )
+            plt.savefig(
+                f"{figure_path}/{model_type}__train__{feature_type}__{phenotypic_class}.png"
+            )
+            plt.show()
+        else:
+            print("Error")
     elif evaluation_type == "test":
         # get data_split test
         df_test = df[df["data_split"] == "test"]
-        sns.heatmap(
-            confusion_matrix(
-                df_test["Phenotypic_Class_True"], df_test["Phenotypic_Class_Predicted"]
-            ),
-            annot=True,
-            fmt="g",
-        )
-        plt.xlabel("Predicted")
-        plt.ylabel("True")
-        plt.title(
-            f"Confusion matrix of {model_type} model on {feature_type} features for {phenotypic_class}"
-        )
-        plt.savefig(
-            f"{figure_path}/{model_type}__test__{feature_type}__{phenotypic_class}.png"
-        )
-        plt.show()
-
-
-# In[ ]:
+        if model_type == "final":
+            df_test_final = df_test[df_test["shuffled"] == False]
+            model = load(
+                f"../1.train_models/{model_path}/{model_type}__{feature_type}.joblib"
+            )
+            sns.heatmap(
+                confusion_matrix(
+                    df_test_final["Phenotypic_Class_True"],
+                    df_test_final["Phenotypic_Class_Predicted"],
+                ),
+                annot=True,
+                fmt="g",
+            )
+            plt.xlabel("Predicted")
+            plt.ylabel("True")
+            plt.title(
+                f"Confusion matrix of {model_type} model on {feature_type} features for {phenotypic_class}"
+            )
+            plt.savefig(
+                f"{figure_path}/{model_type}__test__{feature_type}__{phenotypic_class}.png"
+            )
+            plt.show()
+        elif model_type == "shuffled_baseline":
+            df_test_shuffled = df_test[df_test["shuffled"] == True]
+            model = load(
+                f"../1.train_models/{model_path}/{model_type}__{feature_type}.joblib"
+            )
+            sns.heatmap(
+                confusion_matrix(
+                    df_test_shuffled["Phenotypic_Class_True"],
+                    df_test_shuffled["Phenotypic_Class_Predicted"],
+                ),
+                annot=True,
+                fmt="g",
+            )
+            plt.xlabel("Predicted")
+            plt.ylabel("True")
+            plt.title(
+                f"Confusion matrix of {model_type} model on {feature_type} features for {phenotypic_class}"
+            )
+            plt.savefig(
+                f"{figure_path}/{model_type}__test__{feature_type}__{phenotypic_class}.png"
+            )
+            plt.show()
+        else:
+            print("Error")

@@ -30,7 +30,7 @@ from sklearn.utils import parallel_backend, shuffle
 
 
 # Parameters
-cell_type = "SHSY5Y"
+cell_type = "PBMC"
 aggregation = False
 nomic = False
 flag = True
@@ -41,7 +41,17 @@ treatment = "Thapsigargin_1.000_DMSO_0.025"
 # In[3]:
 
 
-print(cell_type, aggregation, nomic, flag, control, treatment)
+if flag == False:
+    # read in toml file and get parameters
+    toml_path = pathlib.Path("../1.train_models/single_class_config.toml")
+    with open(toml_path, "r") as f:
+        config = toml.load(f)
+    control = config["logistic_regression_params"]["control"]
+    treatment = config["logistic_regression_params"]["treatments"]
+    aggregation = ast.literal_eval(config["logistic_regression_params"]["aggregation"])
+    nomic = ast.literal_eval(config["logistic_regression_params"]["nomic"])
+    cell_type = config["logistic_regression_params"]["cell_type"]
+    print(aggregation, nomic, cell_type)
 
 
 # In[4]:
@@ -64,26 +74,9 @@ if flag == False:
 # In[5]:
 
 
-if flag == False:
-    # read in toml file and get parameters
-    toml_path = pathlib.Path("../1.train_models/single_class_config.toml")
-    with open(toml_path, "r") as f:
-        config = toml.load(f)
-    f.close()
-    control = config["logistic_regression_params"]["control"]
-    treatment = config["logistic_regression_params"]["treatments"]
-    aggregation = ast.literal_eval(config["logistic_regression_params"]["aggregation"])
-    nomic = ast.literal_eval(config["logistic_regression_params"]["nomic"])
-    cell_type = config["logistic_regression_params"]["cell_type"]
-    print(aggregation, nomic, cell_type)
-
-
-# In[6]:
-
-
 # load training data from indexes and features dataframe
 # data_split_path = pathlib.Path(f"../0.split_data/indexes/data_split_indexes.tsv")
-data_path = pathlib.Path("../../data/SHSY5Y_preprocessed_sc_norm.parquet")
+data_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
 
 # dataframe with only the labeled data we want (exclude certain phenotypic classes)
 data_df = pq.read_table(data_path).to_pandas()
@@ -101,7 +94,7 @@ df_nomic = df_nomic.drop(columns=df_nomic.columns[3:25])
 df_nomic = df_nomic.drop(columns=df_nomic.columns[0:2])
 
 
-# In[7]:
+# In[6]:
 
 
 if (aggregation == True) and (nomic == True):
@@ -163,13 +156,13 @@ else:
 data_df
 
 
-# In[8]:
+# In[7]:
 
 
 data_split_indexes.index = data_split_indexes["labeled_data_index"]
 
 
-# In[9]:
+# In[8]:
 
 
 # subset data_df by indexes in data_split_indexes
@@ -177,7 +170,7 @@ data_all = data_df.loc[data_split_indexes["labeled_data_index"]]
 data_all["label"] = data_split_indexes["label"]
 
 
-# In[10]:
+# In[9]:
 
 
 # get oneb_Metadata_Treatment_Dose_Inhibitor_Dose  =='DMSO_0.100_DMSO_0.025' and 'LPS_100.000_DMSO_0.025 and Thapsigargin_10.000_DMSO_0.025'
@@ -186,7 +179,7 @@ data_all = data_all[
 ]
 
 
-# In[11]:
+# In[10]:
 
 
 # at random downsample the DMSO treatment to match the number of wells in the LPS treatment
@@ -208,7 +201,7 @@ if dmso_wells > trt_wells:
     data_all = data_all
 
 
-# In[12]:
+# In[11]:
 
 
 # set model path from parameters
@@ -232,7 +225,7 @@ else:
     print("Error")
 
 
-# In[13]:
+# In[12]:
 
 
 model_types = ["final", "shuffled_baseline"]
@@ -240,7 +233,7 @@ feature_types = ["CP"]
 phenotypic_classes = [treatment]
 
 
-# In[14]:
+# In[13]:
 
 
 # define metadata columns
@@ -260,7 +253,7 @@ test_labeled_data = data_all.loc[data_all["label"] == "test"][
 ]
 
 
-# In[15]:
+# In[14]:
 
 
 # set path for figures
@@ -298,7 +291,7 @@ figure_path.mkdir(parents=True, exist_ok=True)
 results_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[16]:
+# In[15]:
 
 
 data_x.reset_index(drop=True, inplace=True)
@@ -371,8 +364,14 @@ for model_type, feature_type, phenotypic_class, evaluation_type in itertools.pro
         )
 
 
-# In[17]:
+# In[16]:
 
 
 # write compiled predictions to csv file in results folder
 compiled_predictions.to_csv(f"{results_path}/compiled_predictions.csv", index=False)
+
+
+# In[17]:
+
+
+compiled_predictions

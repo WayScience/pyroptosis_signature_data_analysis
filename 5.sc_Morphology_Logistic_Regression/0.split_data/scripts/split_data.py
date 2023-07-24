@@ -22,7 +22,7 @@ from sklearn.utils import parallel_backend, shuffle
 
 
 # Parameters
-cell_type = "SHSY5Y"
+cell_type = "PBMC"
 aggregation = False
 nomic = False
 flag = True
@@ -31,12 +31,6 @@ treatment = "Thapsigargin_1.000_DMSO_0.025"
 
 
 # In[3]:
-
-
-print(cell_type, aggregation, nomic, flag, control, treatment)
-
-
-# In[4]:
 
 
 if flag == False:
@@ -53,15 +47,17 @@ if flag == False:
     print(aggregation, nomic, cell_type)
 
 
-# In[5]:
+# In[4]:
 
 
 path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
 
 data_df = pq.read_table(path).to_pandas()
 
+data_df.head()
 
-# In[6]:
+
+# In[5]:
 
 
 if nomic == True:
@@ -80,7 +76,7 @@ else:
     df_nomic = None
 
 
-# In[7]:
+# In[6]:
 
 
 # subset each column that contains metadata
@@ -95,7 +91,7 @@ metadata_well = metadata["Metadata_Well"]
 data = pd.merge(data, metadata_well, left_index=True, right_index=True)
 
 
-# In[8]:
+# In[7]:
 
 
 if (aggregation == True) and (nomic == True):
@@ -141,7 +137,7 @@ else:
     print("Error")
 
 
-# In[9]:
+# In[8]:
 
 
 # drop all metadata columns
@@ -149,13 +145,13 @@ data_x = data_df.drop(metadata.columns, axis=1)
 labeled_data = data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
 
-# In[10]:
+# In[9]:
 
 
 # https://github.com/WayScience/phenotypic_profiling_model/blob/main/1.split_data/split_data.ipynb
 
 
-# In[11]:
+# In[10]:
 
 
 # get oneb_Metadata_Treatment_Dose_Inhibitor_Dose  =='DMSO_0.100_DMSO_0.025' and 'LPS_100.000_DMSO_0.025 and Thapsigargin_10.000_DMSO_0.025'
@@ -164,7 +160,7 @@ data_df = data_df[
 ]
 
 
-# In[12]:
+# In[11]:
 
 
 # ratio of data to be used for testing (ex 0.15 = 15%)
@@ -184,7 +180,7 @@ print(f"Training data has shape: {training_data.shape}")
 print(f"Testing data has shape: {testing_data.shape}")
 
 
-# In[13]:
+# In[12]:
 
 
 # create pandas dataframe with all indexes and their respective labels, stratified by phenotypic class
@@ -198,7 +194,7 @@ for index in test_indexes:
 index_data = pd.DataFrame(index_data).sort_values(["labeled_data_index"])
 
 
-# In[14]:
+# In[13]:
 
 
 # set save path
@@ -220,7 +216,7 @@ print(save_path)
 save_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[15]:
+# In[14]:
 
 
 # save indexes as tsv file

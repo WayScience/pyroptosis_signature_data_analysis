@@ -23,7 +23,7 @@ from sklearn.utils import parallel_backend, shuffle
 
 
 # Parameters
-cell_type = "SHSY5Y"
+cell_type = "PBMC"
 aggregation = False
 nomic = False
 flag = True
@@ -39,7 +39,6 @@ if flag == False:
     toml_path = pathlib.Path("single_class_config.toml")
     with open(toml_path, "r") as f:
         config = toml.load(f)
-    f.close()
     control = config["logistic_regression_params"]["control"]
     treatment = config["logistic_regression_params"]["treatments"]
     aggregation = ast.literal_eval(config["logistic_regression_params"]["aggregation"])
@@ -280,4 +279,3 @@ with open(config_copy_path, "a") as f:
     f.write(f"aggregation={aggregation}\n")
     f.write(f"nomic={nomic}\n")
     f.write(f"cell_type='{cell_type}'\n")
-f.close()

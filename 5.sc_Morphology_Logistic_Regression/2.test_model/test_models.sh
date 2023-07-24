@@ -7,6 +7,10 @@
 #SBATCH --time=24:00:00
 #SBATCH --output=sample-%j.out
 
+module load anaconda
+
+conda activate Interstellar
+
 # shell loop to run notebook with multiple args
 # set args to loop through
 cell_types=(SHSY5Y PBMC)

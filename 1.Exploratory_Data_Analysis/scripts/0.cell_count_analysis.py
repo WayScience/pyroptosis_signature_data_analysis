@@ -4,29 +4,15 @@
 # In[1]:
 
 
-import sys
-
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import seaborn as sns
 
 get_ipython().run_line_magic("matplotlib", "inline")
-import itertools
 import pathlib
 
+import numpy as np
+import pandas as pd
 import pyarrow.parquet as pq
-from sklearn.cluster import KMeans
-from sklearn.manifold import TSNE
-
-sys.path.append("..")
-from utils.utils import df_stats, plot_features_all_cluster
-
-# In[2]:
-
-
-celltype = "SHSY5Y"
-
+import seaborn as sns
 
 # In[3]:
 

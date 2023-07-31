@@ -138,8 +138,7 @@ merged_df = pd.merge(
     nomic_df,
     left_on=["Metadata_Well"],
     right_on=["Metadata_position_x"],
-)
-merged_df = merged_df.drop(["Metadata_position_x"], axis=1)
+).drop(["Metadata_position_x"], axis=1)
 
 
 # ## Correlation of Aggregated Features per Well + Nomic Data

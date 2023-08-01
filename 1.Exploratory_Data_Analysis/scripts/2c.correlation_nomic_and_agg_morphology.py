@@ -13,13 +13,8 @@
 
 import pathlib
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import plotnine as gg
-import scipy.stats as stats
-import seaborn as sns
-import statsmodels.api as sm
 
 # In[2]:
 
@@ -34,7 +29,7 @@ cell_type = "PBMC"
 # set import data paths
 PBMC_df_path = pathlib.Path(f"../data/{cell_type}_sc_aggregate_norm.parquet")
 nomic_df_path = pathlib.Path(
-    f"../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}.csv"
+    f"../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_cleanup4correlation.csv"
 )
 
 # read in data
@@ -105,31 +100,9 @@ feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
 ).astype(str)
 
 
-# ## Clean up Nomic df
-
-# In[5]:
-
-
-# remove column if colname has pgml in it
-nomic_df = nomic_df.loc[:, ~nomic_df.columns.str.contains("pgml", case=False, na=False)]
-# if column does not contain [NSU] then prefix with Metadata_
-for col in nomic_df.columns:
-    if not any(x in col for x in ["NSU"]):
-        nomic_df = nomic_df.rename(columns={col: "Metadata_" + col})
-
-
-# In[6]:
-
-
-# drop first column of metadata
-nomic_df.columns[3:25]
-nomic_df = nomic_df.drop(nomic_df.columns[3:25], axis=1)
-nomic_df = nomic_df.drop(nomic_df.columns[0:2], axis=1)
-
-
 # ### Merge Nomic and Aggregated Morphology dfs
 
-# In[7]:
+# In[5]:
 
 
 # merge nomic and morphology data by metadata_well and position_x
@@ -138,108 +111,101 @@ merged_df = pd.merge(
     nomic_df,
     left_on=["Metadata_Well"],
     right_on=["Metadata_position_x"],
-)
-merged_df = merged_df.drop(["Metadata_position_x"], axis=1)
+).drop(["Metadata_position_x"], axis=1)
+print(feature_df.shape)
+print(nomic_df.shape)
+print(merged_df.shape)
 
 
 # ## Correlation of Aggregated Features per Well + Nomic Data
 
-# In[8]:
+# In[6]:
 
 
 # drop metadata columns if the column contains 'Metadata'
-cell_df = merged_df
-feature_df = cell_df.loc[:, ~cell_df.columns.str.contains("Metadata")]
-metadata_df = cell_df.loc[:, cell_df.columns.str.contains("Metadata")]
+feature_df = merged_df.loc[:, ~merged_df.columns.str.contains("Metadata")]
+metadata_df = merged_df.loc[:, merged_df.columns.str.contains("Metadata")]
 
 
-# In[9]:
+# In[7]:
 
 
 feature_df.loc[:, "Metadata_Well"] = metadata_df["Metadata_Well"]
 feature_df.index = feature_df["Metadata_Well"]
 feature_df = feature_df.drop(columns=["Metadata_Well"])
+print(feature_df.shape)
 
 
-# In[10]:
+# In[8]:
 
 
-well_corr_df = feature_df.T.corr()
+feature_df = (
+    feature_df.T.corr()
+    .reset_index()
+    .rename(columns={"Metadata_Well": "Wells"})
+    .melt(
+        id_vars="Wells",
+        var_name="Metadata_Well",
+        value_name="correlation",
+    )
+)
+
+
+# In[9]:
+
+
 save_path = pathlib.Path(
     f"./results/correlation/{cell_type}/aggregated_morphology_and_nomic"
 )
 save_path.mkdir(parents=True, exist_ok=True)
-well_corr_df.to_csv(f"{save_path}/wells_corr.csv")
+feature_df.to_csv(f"{save_path}/wells.csv")
 
 
 # # All Treatment Correlation
 
+# In[10]:
+
+
+# drop metadata columns if the column contains 'Metadata'
+feature_df = merged_df.loc[:, ~merged_df.columns.str.contains("Metadata")]
+metadata_df = merged_df.loc[:, merged_df.columns.str.contains("Metadata")]
+
+
 # In[11]:
 
 
-feature_df.reset_index(inplace=True)
-feature_df.drop(columns=["Metadata_Well"], inplace=True)
 feature_df.loc[:, "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = metadata_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose_x"
 ]
-# group by oneb_Metadata_Treatment_Dose_Inhibitor_Dose
-feature_df = feature_df.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose").mean()
 
 
 # In[12]:
 
 
-well_corr_df = feature_df.T.corr()
-save_path = pathlib.Path(
-    f"./results/correlation/{cell_type}/aggregated_morphology_and_nomic"
-)
-save_path.mkdir(parents=True, exist_ok=True)
-well_corr_df.to_csv(f"{save_path}/treatments_corr.csv")
+# group by oneb_Metadata_Treatment_Dose_Inhibitor_Dose
+feature_df = feature_df.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose").mean()
 
-
-# # Selected Treatment correlation
 
 # In[13]:
 
 
-feature_df.reset_index(inplace=True)
-treatments_agg = feature_df
+feature_df = (
+    feature_df.T.corr()
+    .reset_index()
+    .rename(columns={"oneb_Metadata_Treatment_Dose_Inhibitor_Dose": "Treatments"})
+    .melt(
+        id_vars="Treatments",
+        var_name="oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
+        value_name="correlation",
+    )
+)
 
 
 # In[14]:
 
 
-list_of_treatments = [
-    "LPS_0.010_DMSO_0.025",
-    "LPS_0.100_DMSO_0.025",
-    "LPS_1.000_DMSO_0.025",
-    "LPS_10.000_DMSO_0.025",
-    "LPS_100.000_DMSO_0.025",
-    "DMSO_0.100_DMSO_0.025",
-    "Thapsigargin_1.000_DMSO_0.025",
-    "Thapsigargin_10.000_DMSO_0.025",
-]
-
-
-# In[15]:
-
-
-# subset the data to only include the treatments of interest from list_of_treatments
-treatments_agg = treatments_agg[
-    treatments_agg["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
-        list_of_treatments
-    )
-]
-# set the index to the treatment column
-treatments_agg.set_index("oneb_Metadata_Treatment_Dose_Inhibitor_Dose", inplace=True)
-
-
-# In[16]:
-
-
-well_corr_df = treatments_agg.T.corr()
 save_path = pathlib.Path(
     f"./results/correlation/{cell_type}/aggregated_morphology_and_nomic"
 )
 save_path.mkdir(parents=True, exist_ok=True)
-well_corr_df.to_csv(f"{save_path}/selected_treatments_corr.csv")
+feature_df.to_csv(f"{save_path}/treatments.csv")

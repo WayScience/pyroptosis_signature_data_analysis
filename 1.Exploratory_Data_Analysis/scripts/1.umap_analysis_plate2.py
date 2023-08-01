@@ -92,7 +92,7 @@ df_values["umap_2"] = proj_2d[:, 1]
 
 df_values["Treatment"] = df_descriptive["Metadata_Treatment"]
 
-# Figure Showing tSNE of Clusters vs Treatment
+# Figure Showing UMAP of Clusters vs Treatment
 sns.scatterplot(
     data=df_values,
     x="umap_1",

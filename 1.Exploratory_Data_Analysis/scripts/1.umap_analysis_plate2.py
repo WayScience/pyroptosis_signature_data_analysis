@@ -8,7 +8,6 @@
 
 import itertools
 import pathlib
-import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,15 +19,6 @@ import umap
 get_ipython().run_line_magic("matplotlib", "inline")
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
-
-sys.path.append("..")
-from utils.utils import df_stats, plot_features_all_cluster
-
-# In[2]:
-
-
-celltype = "SHSY5Y"
-
 
 # In[3]:
 
@@ -101,8 +91,8 @@ df_values["umap_2"] = proj_2d[:, 1]
 
 
 df_values["Treatment"] = df_descriptive["Metadata_Treatment"]
-# Figure Showing tSNE of Clusters vs Treatment
 
+# Figure Showing UMAP of Clusters vs Treatment
 sns.scatterplot(
     data=df_values,
     x="umap_1",
@@ -115,5 +105,4 @@ plt.title("Visualized on umap")
 plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0)
 
 # if path does not exist create it
-
 plt.savefig(f"Figures/umap_plate2/{celltype}_umap.png", bbox_inches="tight")

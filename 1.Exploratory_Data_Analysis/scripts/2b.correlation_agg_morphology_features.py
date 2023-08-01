@@ -13,13 +13,8 @@
 
 import pathlib
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import plotnine as gg
-import scipy.stats as stats
-import seaborn as sns
-import statsmodels.api as sm
 
 # In[2]:
 
@@ -123,15 +118,29 @@ feature_df = feature_df.drop(columns=["Metadata_Well"])
 # In[7]:
 
 
-well_corr_df = feature_df.T.corr()
+feature_df = (
+    feature_df.T.corr()
+    .reset_index()
+    .rename(columns={"Metadata_Well": "Wells"})
+    .melt(
+        id_vars="Wells",
+        var_name="Metadata_Well",
+        value_name="correlation",
+    )
+)
+
+
+# In[8]:
+
+
 save_path = pathlib.Path(f"./results/correlation/{cell_type}/aggregated_morphology")
 save_path.mkdir(parents=True, exist_ok=True)
-well_corr_df.to_csv(f"{save_path}/wells_corr.csv")
+feature_df.to_csv(f"{save_path}/wells.csv")
 
 
 # # Correlation of Aggregated Features per Treatment
 
-# In[8]:
+# In[9]:
 
 
 feature_df = cell_df.loc[:, ~cell_df.columns.str.contains("Metadata")]
@@ -143,58 +152,24 @@ feature_df.loc[:, "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = metadata_df[
 feature_df = feature_df.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose").median()
 
 
-# In[9]:
-
-
-well_corr_df = feature_df.T.corr()
-save_path = pathlib.Path(f"./results/correlation/{cell_type}/aggregated_morphology")
-save_path.mkdir(parents=True, exist_ok=True)
-well_corr_df.to_csv(f"{save_path}/treatments_corr.csv")
-
-
-# # Selected Treatment correlation
-
 # In[10]:
 
 
-treatments_agg = feature_df
-treatments_agg = treatments_agg.reset_index()
+feature_df = (
+    feature_df.T.corr()
+    .reset_index()
+    .rename(columns={"oneb_Metadata_Treatment_Dose_Inhibitor_Dose": "Treatments"})
+    .melt(
+        id_vars="Treatments",
+        var_name="oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
+        value_name="correlation",
+    )
+)
 
 
 # In[11]:
 
 
-list_of_treatments = [
-    "LPS_0.010_DMSO_0.025",
-    "LPS_0.100_DMSO_0.025",
-    "LPS_1.000_DMSO_0.025",
-    "LPS_10.000_DMSO_0.025",
-    "LPS_100.000_DMSO_0.025",
-    "DMSO_0.100_DMSO_0.025",
-    "Thapsigargin_1.000_DMSO_0.025",
-    "Thapsigargin_10.000_DMSO_0.025",
-]
-
-
-# In[12]:
-
-
-# subset the data to only include the treatments of interest from list_of_treatments
-treatments_agg = treatments_agg[
-    treatments_agg["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
-        list_of_treatments
-    )
-]
-# aggregate by treatment and dose
-treatments_agg = treatments_agg.groupby(
-    ["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-).mean()
-
-
-# In[13]:
-
-
-well_corr_df = treatments_agg.T.corr()
 save_path = pathlib.Path(f"./results/correlation/{cell_type}/aggregated_morphology")
 save_path.mkdir(parents=True, exist_ok=True)
-well_corr_df.to_csv(f"{save_path}/selected_treatments_corr.csv")
+feature_df.to_csv(f"{save_path}/treatments.csv")

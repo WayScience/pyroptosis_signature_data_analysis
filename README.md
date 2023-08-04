@@ -7,7 +7,7 @@ Cells were incubated for 1h in the inhibitors, and then incubated for 6h in each
 For more information on plate layout and experimental design please see [pyroptosis_signature](https://github.com/WayScience/pyroptosis_signature).
 
 
-# Treatments of Interest (All in this table are with 0.025% inhibitor)
+# Treatments of Interest (All in this table are with DMSO 0.025% inhibitor)
 
 | Inducer           | Number of Doses   | Dose Concentration(s) | Function                      |
 | :----------       | :---------------: | :-----| :---------                    |

@@ -1,29 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
-# ---
-# jupyter:
-#   jupytext:
-#     cell_metadata_filter: -all
-#     formats: ipynb,py
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.14.0
-#   kernelspec:
-#     display_name: Python 3 (ipykernel)
-#     language: python
-#     name: python3
-# ---
 
-# %% [markdown]
 # ## Hyperparameter tuning via Optuna
 
-# %% [markdown]
 # ### Being a binary model this notebook will be limited to predicting one class 1 or 0, yes or no.
 # ### Here I will be predicting if a cell received a treatment or not
 
-# %%
+# In[1]:
+
+
 import os
 import sys
 from pathlib import Path
@@ -69,7 +54,9 @@ from MLP_utils.utils import (
 sys.path.append("../../../")
 from utils.utils import df_stats
 
-# %%
+# In[2]:
+
+
 # Import Data
 # set data file path under pathlib path for multi-system use
 
@@ -85,20 +72,24 @@ file_path = Path(
 df = pq.read_table(file_path).to_pandas()
 # df = pd.read_csv(file_path, engine="pyarrow")
 
-# %%
+
+# In[3]:
+
+
 data = Path("../../MLP_utils/config.toml")
 config = toml.load(data)
 params = Parameters()
 params = parameter_set(params, config)
 
-# %% [markdown]
+
 # #### Set up Data to be compatible with model
 
-# %% [markdown]
 # ##### Classification Models:
 # Comment out code if using regression
 
-# %%
+# In[4]:
+
+
 # Generate df specific to analysis and model
 df = df.query(
     "oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'LPS_100.000_DMSO_0.025'| oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'Thapsigargin_10.000_DMSO_0.025' | oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'DMSO_0.100_DMSO_0.025'"
@@ -116,7 +107,10 @@ if params.DATA_SUBSET_OPTION == "True":
 else:
     print("Data Subset Is Off")
 
-# %%
+
+# In[5]:
+
+
 np.random.seed(seed=0)
 wells_to_hold = (
     df.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose")
@@ -132,7 +126,10 @@ print(
     "Wells to use for training, validation, and testing", df["Metadata_Well"].unique()
 )
 
-# %%
+
+# In[6]:
+
+
 # Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
 
@@ -140,7 +137,10 @@ df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
 df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
-# %%
+
+# In[7]:
+
+
 # Creating label encoder
 le = preprocessing.LabelEncoder()
 # Converting strings into numbers
@@ -159,14 +159,19 @@ df_values_X = df_values.drop(
 )
 df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
-# %%
+
+# In[8]:
+
+
 output_name = (" ").join(df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique())
 title = f'{output_name.split(" ")[0].split("_")[0]} vs {(" ").join(output_name.split(" ")[1].split("_")[:2])} vs {(" ").join(output_name.split(" ")[2].split("_")[:2])}'
 
-# %% [markdown]
+
 # #### Split Data - All Models can proceed through this point
 
-# %%
+# In[9]:
+
+
 X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
     X_vals=df_values_X,
     y_vals=df_values_Y,
@@ -177,7 +182,10 @@ X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
     params=params,
 )
 
-# %%
+
+# In[10]:
+
+
 # produce data objects for train, val and test datasets
 train_data = Dataset_formatter(
     torch.FloatTensor(X_train.values), torch.FloatTensor(Y_train.values)
@@ -189,7 +197,10 @@ test_data = Dataset_formatter(
     torch.FloatTensor(X_test.values), torch.FloatTensor(Y_test.values)
 )
 
-# %%
+
+# In[11]:
+
+
 params.IN_FEATURES = X_train.shape[1]
 print("Number of in features: ", params.IN_FEATURES)
 if params.MODEL_TYPE == "Regression":
@@ -212,7 +223,10 @@ else:
     pass
 print(params.MODEL_TYPE)
 
-# %%
+
+# In[12]:
+
+
 # convert data class into a dataloader to be compatible with pytorch
 train_loader = torch.utils.data.DataLoader(
     dataset=train_data, batch_size=params.BATCH_SIZE
@@ -222,7 +236,10 @@ valid_loader = torch.utils.data.DataLoader(
 )
 test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
 
-# %%
+
+# In[13]:
+
+
 # no accuracy function must be loss for regression
 if params.MODEL_TYPE == "Regression":
     params.METRIC = "loss"
@@ -256,7 +273,10 @@ objective_model_optimizer(
     return_info=True,
 )
 
-# %%
+
+# In[14]:
+
+
 fig = optuna.visualization.plot_optimization_history(study)
 graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/")
 if not os.path.exists(graph_path):
@@ -265,7 +285,10 @@ graph_path = f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/plot_optimi
 fig.write_image(Path(f"{graph_path}.png"))
 fig.show()
 
-# %%
+
+# In[15]:
+
+
 fig = optuna.visualization.plot_intermediate_values(study)
 graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/")
 if not os.path.exists(graph_path):
@@ -274,12 +297,18 @@ graph_path = f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/plot_interm
 fig.write_image(Path(f"{graph_path}.png"))
 fig.show()
 
-# %%
+
+# In[16]:
+
+
 param_dict = extract_best_trial_params(
     study.best_params, params, model_name=params.MODEL_NAME
 )
 
-# %%
+
+# In[17]:
+
+
 # call the optimized training model
 train_loss, train_acc, valid_loss, valid_acc, epochs_ran, model = train_optimized_model(
     params.TRAIN_EPOCHS,
@@ -301,7 +330,10 @@ else:
         columns=["train_loss", "train_acc", "valid_loss", "valid_acc", "epochs_ran"],
     )
 
-# %%
+
+# In[18]:
+
+
 if params.MODEL_TYPE == "Regression":
     pass
 else:
@@ -317,7 +349,10 @@ else:
         model_name=params.MODEL_NAME,
     )
 
-# %%
+
+# In[19]:
+
+
 plot_metric_vs_epoch(
     training_stats,
     x="epochs_ran",
@@ -330,7 +365,10 @@ plot_metric_vs_epoch(
     model_name=params.MODEL_NAME,
 )
 
-# %%
+
+# In[20]:
+
+
 # calling the testing function and outputting list values of tested model
 if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
     y_pred_list = test_optimized_model(
@@ -351,7 +389,10 @@ if len(y_pred_list) != len(Y_test):
 else:
     pass
 
-# %%
+
+# In[21]:
+
+
 # Call visualization function
 # calling the testing function and outputing list values of tested model
 if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
@@ -375,17 +416,22 @@ elif params.MODEL_TYPE == "Binary_Classification":
 else:
     raise Exception("Model type must be specified for proper model testing")
 
-# %%
+
+# In[22]:
+
+
 for i, j in zip(
     df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique(),
     df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique(),
 ):
     print(i, j)
 
-# %% [markdown]
+
 # #### look at the feature weights of the model
 
-# %%
+# In[23]:
+
+
 # get all paramters from pytorch model
 lst = []
 for name, param in model.named_parameters():
@@ -393,17 +439,26 @@ for name, param in model.named_parameters():
     lst.append(param)
 feature_weights = model[0].weight.grad[0].detach().cpu().numpy()
 
-# %%
+
+# In[24]:
+
+
 col_list = []
 for col in df_values.columns:
     # print(col)
     col_list.append(col)
 
-# %%
+
+# In[25]:
+
+
 # remove last 4 columns from col_list that are not features
 col_list = col_list[:-4]
 
-# %%
+
+# In[26]:
+
+
 pd.set_option("display.max_colwidth", None)
 
 df1 = pd.DataFrame(zip(col_list, feature_weights), columns=["feature", "weight"])
@@ -413,7 +468,10 @@ df1["weight"] = df1["weight"].astype(float)
 df1 = df1.sort_values(by=["weight"], ascending=False)
 df1
 
-# %%
+
+# In[27]:
+
+
 # Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = list(df_holdout.columns[df_holdout.columns.str.startswith("Metadata")])
 
@@ -421,10 +479,16 @@ df_metadata = list(df_holdout.columns[df_holdout.columns.str.startswith("Metadat
 df_descriptive = df_holdout[df_metadata]
 df_values = df_holdout.drop(columns=df_metadata)
 
-# %%
+
+# In[28]:
+
+
 df_descriptive
 
-# %%
+
+# In[29]:
+
+
 # Creating label encoder
 le = preprocessing.LabelEncoder()
 # Converting strings into numbers
@@ -443,7 +507,10 @@ df_values_X = df_values.drop(
 )
 df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
-# %%
+
+# In[30]:
+
+
 test_data = Dataset_formatter(
     torch.FloatTensor(df_values_X.values), torch.FloatTensor(df_values_Y.values)
 )
@@ -451,7 +518,10 @@ test_data = Dataset_formatter(
 # convert data class into a dataloader to be compatible with pytorch
 test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
 
-# %%
+
+# In[31]:
+
+
 # calling the testing function and outputting list values of tested model
 if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
     y_pred_list = test_optimized_model(
@@ -472,7 +542,10 @@ if len(y_pred_list) != len(df_values_Y):
 else:
     pass
 
-# %%
+
+# In[32]:
+
+
 # Call visualization function
 # calling the testing function and outputing list values of tested model
 
@@ -497,7 +570,10 @@ elif params.MODEL_TYPE == "Binary_Classification":
 else:
     raise Exception("Model type must be specified for proper model testing")
 
-# %%
+
+# In[33]:
+
+
 for i, j in zip(
     df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique(),
     df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique(),

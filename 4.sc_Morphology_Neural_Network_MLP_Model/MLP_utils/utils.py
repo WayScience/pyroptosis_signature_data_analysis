@@ -675,24 +675,36 @@ def extract_best_trial_params(
     # write model architecture to file
 
     if MLP_params.MODEL_TYPE == "Multi_Class":
+        architecture_path = Path(
+            f"../../trained_models/architectures/Multi_Class/{MLP_params.CELL_TYPE}"
+        )
+        architecture_path.mkdir(parents=True, exist_ok=True)
         with open(
-            f"../../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.json",
+            f"{architecture_path}/Multi_Class_{model_name}.json",
             "w",
         ) as f:
             json.dump(param_dict, f, indent=4)
         f.close()
 
     elif MLP_params.MODEL_TYPE == "Binary_Classification":
+        architecture_path = Path(
+            f"../../trained_models/architectures/Binary_Classification/{MLP_params.CELL_TYPE}"
+        )
+        architecture_path.mkdir(parents=True, exist_ok=True)
         with open(
-            f"../../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.json",
+            f"{architecture_path}/Binary_Classification_{model_name}.json",
             "w",
         ) as f:
             json.dump(param_dict, f, indent=4)
         f.close()
 
     elif MLP_params.MODEL_TYPE == "Regression":
+        architecture_path = Path(
+            f"../../trained_models/architectures/Regression/{MLP_params.CELL_TYPE}"
+        )
+        architecture_path.mkdir(parents=True, exist_ok=True)
         with open(
-            f"../../trained_models/architectures/Regression/Regression_{model_name}.json",
+            f"{architecture_path}/Regression_{model_name}.json",
             "w",
         ) as f:
             json.dump(param_dict, f, indent=4)
@@ -729,22 +741,31 @@ def optimized_model_create(
     """
     # load in model architecture from saved model architecture
     if params.MODEL_TYPE == "Multi_Class":
+        architecture_path = Path(
+            f"../../trained_models/architectures/Multi_Class/{params.CELL_TYPE}"
+        )
         with open(
-            f"../../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.json",
+            f"{architecture_path}/Multi_Class_{model_name}.json",
             "r",
         ) as f:
             parameter_dict = json.load(f)
         f.close()
     elif params.MODEL_TYPE == "Binary_Classification":
+        architecture_path = Path(
+            f"../../trained_models/architectures/Binary_Classification/{params.CELL_TYPE}"
+        )
         with open(
-            f"../../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.json",
+            f"{architecture_path}/Binary_Classification_{model_name}.json",
             "r",
         ) as f:
             parameter_dict = json.load(f)
         f.close()
     elif params.MODEL_TYPE == "Regression":
+        architecture_path = Path(
+            f"../../trained_models/architectures/Regression/{params.CELL_TYPE}"
+        )
         with open(
-            f"../../trained_models/architectures/Regression/Regression_{model_name}.json",
+            f"{architecture_path}/Regression_{model_name}.json",
             "r",
         ) as f:
             parameter_dict = json.load(f)
@@ -877,19 +898,28 @@ def train_optimized_model(
 
         if np.mean(valid_loss) <= valid_loss_min:
             if params.MODEL_TYPE == "Multi_Class":
+                save_state_path = Path(
+                    f"../../trained_models/model_save_states/Multi_Class/{params.CELL_TYPE}"
+                )
                 torch.save(
                     model.state_dict(),
-                    f"../../trained_models/model_save_states/Multi_Class/Multi_Class_{model_name}.pt",
+                    f"{save_state_path}/Multi_Class_{model_name}.pt",
                 )
             elif params.MODEL_TYPE == "Binary_Classification":
+                save_state_path = Path(
+                    f"../../trained_models/model_save_states/Binary_Classification/{params.CELL_TYPE}"
+                )
                 torch.save(
                     model.state_dict(),
-                    f"../../trained_models/model_save_states/Binary_Classification/Binary_Classification_{model_name}.pt",
+                    f"{save_state_path}/Binary_Classification_{model_name}.pt",
                 )
             elif params.MODEL_TYPE == "Regression":
+                save_state_path = Path(
+                    f"../../trained_models/model_save_states/Regression/{params.CELL_TYPE}"
+                )
                 torch.save(
                     model.state_dict(),
-                    f"../../trained_models/model_save_states/Regression/Regression_{model_name}.pt",
+                    f"{save_state_path}/Regression_{model_name}.pt",
                 )
             else:
                 raise ModelTypeError
@@ -1008,22 +1038,25 @@ def test_optimized_model(
     """
     model = model.to(params.DEVICE)
     if params.MODEL_TYPE == "Multi_Class":
+        save_state_path = Path(
+            f"../../trained_models/model_save_states/Multi_Class/{params.CELL_TYPE}"
+        )
         model.load_state_dict(
-            torch.load(
-                f"../../trained_models/model_save_states/Multi_Class/Multi_Class_{model_name}.pt"
-            )
+            torch.load(f"{save_state_path}/Multi_Class_{model_name}.pt")
         )
     elif params.MODEL_TYPE == "Binary_Classification":
+        save_state_path = Path(
+            f"../../trained_models/model_save_states/Binary_Classification/{params.CELL_TYPE}"
+        )
         model.load_state_dict(
-            torch.load(
-                f"../../trained_models/model_save_states/Binary_Classification/Binary_Classification_{model_name}.pt"
-            )
+            torch.load(f"{save_state_path}/Binary_Classification_{model_name}.pt")
         )
     elif params.MODEL_TYPE == "Regression":
+        save_state_path = Path(
+            f"../../trained_models/model_save_states/Regression/{params.CELL_TYPE}"
+        )
         model.load_state_dict(
-            torch.load(
-                f"../../trained_models/model_save_states/Regression/Regression_{model_name}.pt"
-            )
+            torch.load(f"{save_state_path}/Regression_{model_name}.pt")
         )
     else:
         raise ModelTypeError

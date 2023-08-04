@@ -678,7 +678,7 @@ def extract_best_trial_params(
         architecture_path = Path(
             f"../../trained_models/architectures/Multi_Class/{MLP_params.CELL_TYPE}"
         )
-        architecture_path.mkdir(parents=True, exist_ok=True)
+        Path(architecture_path).mkdir(parents=True, exist_ok=True)
         with open(
             f"{architecture_path}/Multi_Class_{model_name}.json",
             "w",
@@ -690,7 +690,7 @@ def extract_best_trial_params(
         architecture_path = Path(
             f"../../trained_models/architectures/Binary_Classification/{MLP_params.CELL_TYPE}"
         )
-        architecture_path.mkdir(parents=True, exist_ok=True)
+        Path(architecture_path).mkdir(parents=True, exist_ok=True)
         with open(
             f"{architecture_path}/Binary_Classification_{model_name}.json",
             "w",
@@ -702,7 +702,7 @@ def extract_best_trial_params(
         architecture_path = Path(
             f"../../trained_models/architectures/Regression/{MLP_params.CELL_TYPE}"
         )
-        architecture_path.mkdir(parents=True, exist_ok=True)
+        Path(architecture_path).mkdir(parents=True, exist_ok=True)
         with open(
             f"{architecture_path}/Regression_{model_name}.json",
             "w",
@@ -901,6 +901,7 @@ def train_optimized_model(
                 save_state_path = Path(
                     f"../../trained_models/model_save_states/Multi_Class/{params.CELL_TYPE}"
                 )
+                Path(save_state_path).mkdir(parents=True, exist_ok=True)
                 torch.save(
                     model.state_dict(),
                     f"{save_state_path}/Multi_Class_{model_name}.pt",
@@ -909,6 +910,7 @@ def train_optimized_model(
                 save_state_path = Path(
                     f"../../trained_models/model_save_states/Binary_Classification/{params.CELL_TYPE}"
                 )
+                Path(save_state_path).mkdir(parents=True, exist_ok=True)
                 torch.save(
                     model.state_dict(),
                     f"{save_state_path}/Binary_Classification_{model_name}.pt",
@@ -917,6 +919,7 @@ def train_optimized_model(
                 save_state_path = Path(
                     f"../../trained_models/model_save_states/Regression/{params.CELL_TYPE}"
                 )
+                Path(save_state_path).mkdir(parents=True, exist_ok=True)
                 torch.save(
                     model.state_dict(),
                     f"{save_state_path}/Regression_{model_name}.pt",

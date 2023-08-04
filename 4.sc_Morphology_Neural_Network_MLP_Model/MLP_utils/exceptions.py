@@ -24,3 +24,9 @@ class OptimizationMetricError(Exception):
     """Exception occurs in the case that the optimization metric is not specified correctly"""
 
     pass
+
+
+class ModelNameError(Exception):
+    """Exception occurs in the case that the model name is not specified correctly"""
+
+    pass

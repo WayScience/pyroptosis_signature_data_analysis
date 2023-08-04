@@ -24,7 +24,6 @@
 # ### Here I will be predicting if a cell received a treatment or not
 
 # %%
-import os
 import sys
 from pathlib import Path
 
@@ -51,6 +50,8 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 
 sys.path.append("../..")
+
+from MLP_utils.exceptions import ModelNameError
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
     Dataset_formatter,
@@ -70,26 +71,35 @@ sys.path.append("../../..")
 from utils.utils import df_stats
 
 # %%
-# Import Data
-# set data file path under pathlib path for multi-system use
-
-
-file_path = Path(
-    "../../../../Extracted_Features_(CSV_files)/interstellar_wave3_sc_norm_fs_cellprofiler.csv.gz"
-)
-
-file_path = Path(
-    "../../../../Extracted_Features_(CSV_files)/SHSY5Y_preprocessed_df_sc_norm.parquet"
-)
-
-df = pq.read_table(file_path).to_pandas()
-# df = pd.read_csv(file_path, engine="pyarrow")
+# Parameters
+SHUFFLE_DATA = False
+CELL_TYPE = "SHSY5Y"
+CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
+TREATMENT_NAME = "Thapsigargin_10.000_DMSO_0.025"
+MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_10"
 
 # %%
-data = Path("../../MLP_utils/config.toml")
+data = Path("../../MLP_utils/binary_config.toml")
 config = toml.load(data)
 params = Parameters()
 params = parameter_set(params, config)
+
+# overwrite params via command line arguments from papermill
+params.CELL_TYPE = CELL_TYPE
+params.MODEL_NAME = MODEL_NAME
+params.CONTROL_NAME = CONTROL_NAME
+params.TREATMENT_NAME = TREATMENT_NAME
+params.MODEL_NAME = MODEL_NAME
+
+# %%
+
+# %%
+# Import Data
+# set data file path under pathlib path for multi-system use
+
+file_path = Path(f"../../../data/{params.CELL_TYPE}_preprocessed_sc_norm.parquet")
+
+df = pq.read_table(file_path).to_pandas()
 
 # %% [markdown]
 # #### Set up Data to be compatible with model
@@ -99,10 +109,12 @@ params = parameter_set(params, config)
 # Comment out code if using regression
 
 # %%
-# for binary classification testing
-df = df.query(
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'LPS_10.000_DMSO_0.025'| oneb_Metadata_Treatment_Dose_Inhibitor_Dose == 'DMSO_0.100_DMSO_0.025'"
-)
+# filter the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column to only include the treatment and control via loc
+df = df.loc[
+    df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
+        [params.TREATMENT_NAME, params.CONTROL_NAME]
+    )
+]
 
 print("Selected Catagories are:")
 print(df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique())
@@ -215,7 +227,12 @@ train_loader = torch.utils.data.DataLoader(
 valid_loader = torch.utils.data.DataLoader(
     dataset=val_data, batch_size=params.BATCH_SIZE
 )
-test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
+test_loader = torch.utils.data.DataLoader(
+    dataset=test_data, batch_size=1, shuffle=SHUFFLE_DATA
+)
+
+# %%
+print(params.DEVICE)
 
 # %%
 # no accuracy function must be loss for regression
@@ -251,20 +268,36 @@ objective_model_optimizer(
 )
 
 # %%
+# create graph directory for this model
+graph_path = Path(
+    f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
+)
+Path(graph_path).mkdir(parents=True, exist_ok=True)
 fig = optuna.visualization.plot_optimization_history(study)
-graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/")
-if not os.path.exists(graph_path):
-    os.makedirs(graph_path)
-graph_path = f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/plot_optimization_history_graph"
+
+if SHUFFLE_DATA:
+    graph_path = f"{graph_path}/plot_optimization_history_graph_shuffled_data"
+elif not SHUFFLE_DATA:
+    graph_path = f"{graph_path}/plot_optimization_history_graph"
+else:
+    raise ModelNameError
 fig.write_image(Path(f"{graph_path}.png"))
 fig.show()
 
 # %%
+# create graph directory for this model
+graph_path = Path(
+    f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
+)
+Path(graph_path).mkdir(parents=True, exist_ok=True)
 fig = optuna.visualization.plot_intermediate_values(study)
-graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/")
-if not os.path.exists(graph_path):
-    os.makedirs(graph_path)
-graph_path = f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/plot_intermediate_values_graph"
+if SHUFFLE_DATA:
+    graph_path = f"{graph_path}/plot_intermediate_values_graph_shuffled_data"
+elif not SHUFFLE_DATA:
+    graph_path = f"{graph_path}/plot_intermediate_values_graph"
+else:
+    raise ModelNameError
+
 fig.write_image(Path(f"{graph_path}.png"))
 fig.show()
 
@@ -309,6 +342,7 @@ else:
         y_axis_label="Accuracy",
         params=params,
         model_name=params.MODEL_NAME,
+        shuffle=SHUFFLE_DATA,
     )
 
 # %%
@@ -322,6 +356,7 @@ plot_metric_vs_epoch(
     y_axis_label="Loss",
     params=params,
     model_name=params.MODEL_NAME,
+    shuffle=SHUFFLE_DATA,
 )
 
 # %%
@@ -356,6 +391,7 @@ if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
         test_name=f"{params.MODEL_NAME}_testing",
         model_name=params.MODEL_NAME,
         title=params.MODEL_NAME,
+        shuffle=SHUFFLE_DATA,
     )
 elif params.MODEL_TYPE == "Binary_Classification":
     results_output(
@@ -366,6 +402,7 @@ elif params.MODEL_TYPE == "Binary_Classification":
         test_name=f"{params.MODEL_NAME}_testing",
         model_name=params.MODEL_NAME,
         title=params.MODEL_NAME,
+        shuffle=SHUFFLE_DATA,
     )
 else:
     raise Exception("Model type must be specified for proper model testing")
@@ -428,13 +465,18 @@ df_values_X = df_values.drop(
 )
 df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
+# %% [markdown]
+# ## Test the hold out wells
+
 # %%
 test_data = Dataset_formatter(
     torch.FloatTensor(df_values_X.values), torch.FloatTensor(df_values_Y.values)
 )
 
 # convert data class into a dataloader to be compatible with pytorch
-test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
+test_loader = torch.utils.data.DataLoader(
+    dataset=test_data, batch_size=1, shuffle=SHUFFLE_DATA
+)
 
 # %%
 # calling the testing function and outputting list values of tested model
@@ -468,6 +510,7 @@ if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
         test_name=f"{params.MODEL_NAME}_hold_out",
         model_name=params.MODEL_NAME,
         title=params.MODEL_NAME,
+        shuffle=SHUFFLE_DATA,
     )
 elif params.MODEL_TYPE == "Binary_Classification":
     results_output(
@@ -478,6 +521,7 @@ elif params.MODEL_TYPE == "Binary_Classification":
         test_name=f"{params.MODEL_NAME}_hold_out",
         model_name=params.MODEL_NAME,
         title=params.MODEL_NAME,
+        shuffle=SHUFFLE_DATA,
     )
 else:
     raise Exception("Model type must be specified for proper model testing")

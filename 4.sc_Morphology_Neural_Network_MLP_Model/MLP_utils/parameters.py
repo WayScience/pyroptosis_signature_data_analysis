@@ -62,3 +62,7 @@ class Parameters:
     DIRECTION: str = "maximize"
     IN_FEATURES: int = 1
     OUT_FEATURES: int = 1
+
+    CONTROL_NAME: str = "Control"
+    TREATMENT_NAME: str = "Treatment"
+    CELL_TYPE: str = "Cell_Type"

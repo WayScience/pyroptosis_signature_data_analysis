@@ -12,7 +12,7 @@ module load anaconda
 conda activate Interstellar
 
 shuffled_datas=( True False )
-cell_types=( SHSY5Y )
+cell_types=( SHSY5Y PBMC )
 control_names=( DMSO_0.100_DMSO_0.025 )
 treatment_names=( LPS_100.000_DMSO_0.025 Thapsigargin_10.000_DMSO_0.025 LPS_10.000_DMSO_0.025 LPS_1.000_DMSO_0.025 LPS_0.100_DMSO_0.025 LPS_0.010_DMSO_0.025 Thapsigargin_1.000_DMSO_0.025 )
 model_names=( DMSO_0.025_vs_LPS_100 DMSO_0.025_vs_Thapsigargin_10 DMSO_0.025_vs_LPS_10 DMSO_0.025_vs_LPS_1 DMSO_0.025_vs_LPS_0.1 DMSO_0.025_vs_LPS_0.01 DMSO_0.025_vs_Thapsigargin_1 )

@@ -39,7 +39,6 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 
 sys.path.append("../..")
-from MLP_utils.exceptions import ModelNameError
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
     Dataset_formatter,
@@ -78,14 +77,6 @@ params.MODEL_NAME = MODEL_NAME
 params.CONTROL_NAME = CONTROL_NAME
 params.TREATMENT_NAME = TREATMENT_NAME
 params.MODEL_NAME = MODEL_NAME
-
-# %% papermill={"duration": 0.005017, "end_time": "2023-08-04T01:18:40.140776", "exception": false, "start_time": "2023-08-04T01:18:40.135759", "status": "completed"} tags=[]
-if SHUFFLE_DATA:
-    params.MODEL_NAME = params.MODEL_NAME + "_shuffled"
-elif not SHUFFLE_DATA:
-    pass
-else:
-    raise ModelNameError
 
 # %% papermill={"duration": 2.401476, "end_time": "2023-08-04T01:18:42.543606", "exception": false, "start_time": "2023-08-04T01:18:40.142130", "status": "completed"} tags=[]
 # Import Data

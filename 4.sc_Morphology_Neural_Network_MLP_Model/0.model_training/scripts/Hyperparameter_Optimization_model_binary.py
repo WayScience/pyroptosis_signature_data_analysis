@@ -92,8 +92,6 @@ params.TREATMENT_NAME = TREATMENT_NAME
 params.MODEL_NAME = MODEL_NAME
 
 # %%
-
-# %%
 # Import Data
 # set data file path under pathlib path for multi-system use
 

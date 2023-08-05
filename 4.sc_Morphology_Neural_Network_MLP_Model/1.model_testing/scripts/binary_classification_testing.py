@@ -204,6 +204,7 @@ paired_treatment_list = [
     ["DMSO_0.100_DMSO_0.025", "LPS_Nigericin_1.000_3.0_DMSO_0.025"],
     ["DMSO_0.100_DMSO_0.025", "LPS_Nigericin_1.000_10.0_DMSO_0.025"],
     ["DMSO_0.100_DMSO_0.025", "H2O2_100.000_Z-VAD-FMK_100.0"],
+    ["DMSO_0.100_DMSO_0.025", "H2O2_100.000_DMSO_0.025"],
     ["LPS_100.000_DMSO_0.025", "Thapsigargin_1.000_DMSO_0.025"],
     ["LPS_100.000_DMSO_0.025", "Thapsigargin_10.000_DMSO_0.025"],
     ["LPS_10.000_DMSO_0.025", "Thapsigargin_1.000_DMSO_0.025"],

@@ -13,7 +13,7 @@
 #     name: python3
 # ---
 
-# %% papermill={"duration": 1.445559, "end_time": "2023-08-04T01:18:40.117777", "exception": false, "start_time": "2023-08-04T01:18:38.672218", "status": "completed"} tags=[]
+# %% papermill={"duration": 3.760048, "end_time": "2023-08-05T20:11:33.826236", "exception": false, "start_time": "2023-08-05T20:11:30.066188", "status": "completed"} tags=[]
 import sys
 from pathlib import Path
 
@@ -57,15 +57,15 @@ from MLP_utils.utils import (
 sys.path.append("../../..")
 from utils.utils import df_stats
 
-# %% papermill={"duration": 0.008438, "end_time": "2023-08-04T01:18:38.670779", "exception": false, "start_time": "2023-08-04T01:18:38.662341", "status": "completed"} tags=["injected-parameters"]
+# %% papermill={"duration": 0.006762, "end_time": "2023-08-05T20:11:33.835879", "exception": false, "start_time": "2023-08-05T20:11:33.829117", "status": "completed"} tags=["injected-parameters"]
 # Parameters
-SHUFFLE_DATA = True
-CELL_TYPE = "SHSY5Y"
+SHUFFLE_DATA = False
+CELL_TYPE = "PBMC"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
-TREATMENT_NAME = "LPS_100.000_DMSO_0.025"
-MODEL_NAME = "DMSO_0.025_vs_LPS_100"
+TREATMENT_NAME = "Thapsigargin_1.000_DMSO_0.025"
+MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_1"
 
-# %% papermill={"duration": 0.006395, "end_time": "2023-08-04T01:18:40.134257", "exception": false, "start_time": "2023-08-04T01:18:40.127862", "status": "completed"} tags=[]
+# %% papermill={"duration": 0.006503, "end_time": "2023-08-05T20:11:33.844096", "exception": false, "start_time": "2023-08-05T20:11:33.837593", "status": "completed"} tags=[]
 data = Path("../../MLP_utils/binary_config.toml")
 config = toml.load(data)
 params = Parameters()
@@ -78,7 +78,7 @@ params.CONTROL_NAME = CONTROL_NAME
 params.TREATMENT_NAME = TREATMENT_NAME
 params.MODEL_NAME = MODEL_NAME
 
-# %% papermill={"duration": 2.401476, "end_time": "2023-08-04T01:18:42.543606", "exception": false, "start_time": "2023-08-04T01:18:40.142130", "status": "completed"} tags=[]
+# %% papermill={"duration": 311.682826, "end_time": "2023-08-05T20:16:45.528630", "exception": false, "start_time": "2023-08-05T20:11:33.845804", "status": "completed"} tags=[]
 # Import Data
 # set data file path under pathlib path for multi-system use
 file_path = Path(f"../../../data/{params.CELL_TYPE}_preprocessed_sc_norm.parquet")
@@ -86,7 +86,7 @@ file_path = Path(f"../../../data/{params.CELL_TYPE}_preprocessed_sc_norm.parquet
 df = pq.read_table(file_path).to_pandas()
 
 
-# %% papermill={"duration": 0.007996, "end_time": "2023-08-04T01:18:42.553198", "exception": false, "start_time": "2023-08-04T01:18:42.545202", "status": "completed"} tags=[]
+# %% papermill={"duration": 0.01145, "end_time": "2023-08-05T20:16:45.592116", "exception": false, "start_time": "2023-08-05T20:16:45.580666", "status": "completed"} tags=[]
 def test_loop(df, output_name, title):
     # Code snippet for metadata extraction by Jenna Tomkinson
     df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
@@ -182,10 +182,10 @@ def test_loop(df, output_name, title):
         raise Exception("Model type must be specified for proper model testing")
 
 
-# %% papermill={"duration": 0.053103, "end_time": "2023-08-04T01:18:42.607493", "exception": false, "start_time": "2023-08-04T01:18:42.554390", "status": "completed"} tags=[]
+# %% papermill={"duration": 0.284484, "end_time": "2023-08-05T20:16:45.878644", "exception": false, "start_time": "2023-08-05T20:16:45.594160", "status": "completed"} tags=[]
 df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
 
-# %% papermill={"duration": 0.005921, "end_time": "2023-08-04T01:18:42.615306", "exception": false, "start_time": "2023-08-04T01:18:42.609385", "status": "completed"} tags=[]
+# %% papermill={"duration": 0.007489, "end_time": "2023-08-05T20:16:45.888088", "exception": false, "start_time": "2023-08-05T20:16:45.880599", "status": "completed"} tags=[]
 paired_treatment_list = [
     ["DMSO_0.100_DMSO_0.025", "LPS_100.000_DMSO_0.025"],
     ["DMSO_0.100_DMSO_0.025", "Thapsigargin_1.000_DMSO_0.025"],
@@ -216,7 +216,7 @@ paired_treatment_list = [
     ["LPS_0.010_DMSO_0.025", "Thapsigargin_10.000_DMSO_0.025"],
 ]
 
-# %% papermill={"duration": 163.342132, "end_time": "2023-08-04T01:21:25.959096", "exception": false, "start_time": "2023-08-04T01:18:42.616964", "status": "completed"} tags=[]
+# %% papermill={"duration": 1430.863697, "end_time": "2023-08-05T20:40:36.753561", "exception": false, "start_time": "2023-08-05T20:16:45.889864", "status": "completed"} tags=[]
 for i, j in paired_treatment_list:
     test_df = df.query(
         f"oneb_Metadata_Treatment_Dose_Inhibitor_Dose == '{j}' | oneb_Metadata_Treatment_Dose_Inhibitor_Dose == '{i}'"
@@ -230,4 +230,4 @@ for i, j in paired_treatment_list:
     title = f'{output_name.split(" ")[0].split("_")[0]} vs {(" ").join(output_name.split(" ")[1].split("_")[:2])}'
     test_loop(test_df, output_name, title)
 
-# %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=[]
+# %% papermill={"duration": 0.029857, "end_time": "2023-08-05T20:40:36.829055", "exception": false, "start_time": "2023-08-05T20:40:36.799198", "status": "completed"} tags=[]

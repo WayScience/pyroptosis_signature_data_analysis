@@ -1,14 +1,29 @@
 #!/usr/bin/env python
 # coding: utf-8
+# ---
+# jupyter:
+#   jupytext:
+#     cell_metadata_filter: -all
+#     formats: ipynb,py
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.14.0
+#   kernelspec:
+#     display_name: Python 3 (ipykernel)
+#     language: python
+#     name: python3
+# ---
 
+# %% [markdown]
 # ## Hyperparameter tuning via Optuna
 
+# %% [markdown]
 # ### Being a binary model this notebook will be limited to predicting one class 1 or 0, yes or no.
 # ### Here I will be predicting if a cell received a treatment or not
 
-# In[1]:
-
-
+# %%
 import sys
 from pathlib import Path
 
@@ -36,7 +51,6 @@ from sklearn.model_selection import train_test_split
 
 sys.path.append("../..")
 
-from MLP_utils.exceptions import ModelNameError
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
     Dataset_formatter,
@@ -55,20 +69,14 @@ from MLP_utils.utils import (
 sys.path.append("../../..")
 from utils.utils import df_stats
 
-# In[2]:
-
-
+# %%
 # Parameters
-SHUFFLE_DATA = False
-CELL_TYPE = "PBMC"
+CELL_TYPE = "SHSY5Y"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
-TREATMENT_NAME = "Thapsigargin_1.000_DMSO_0.025"
-MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_1"
+TREATMENT_NAME = "Thapsigargin_10.000_DMSO_0.025"
+MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_10"
 
-
-# In[3]:
-
-
+# %%
 data = Path("../../MLP_utils/binary_config.toml")
 config = toml.load(data)
 params = Parameters()
@@ -81,13 +89,7 @@ params.CONTROL_NAME = CONTROL_NAME
 params.TREATMENT_NAME = TREATMENT_NAME
 params.MODEL_NAME = MODEL_NAME
 
-
-# In[ ]:
-
-
-# In[4]:
-
-
+# %%
 # Import Data
 # set data file path under pathlib path for multi-system use
 
@@ -95,15 +97,14 @@ file_path = Path(f"../../../data/{params.CELL_TYPE}_preprocessed_sc_norm.parquet
 
 df = pq.read_table(file_path).to_pandas()
 
-
+# %% [markdown]
 # #### Set up Data to be compatible with model
 
+# %% [markdown]
 # ##### Classification Models:
 # Comment out code if using regression
 
-# In[5]:
-
-
+# %%
 # filter the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column to only include the treatment and control via loc
 df = df.loc[
     df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
@@ -122,10 +123,7 @@ if params.DATA_SUBSET_OPTION == "True":
 else:
     print("Data Subset Is Off")
 
-
-# In[6]:
-
-
+# %%
 np.random.seed(seed=0)
 wells_to_hold = (
     df.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose")
@@ -141,10 +139,7 @@ print(
     "Wells to use for training, validation, and testing", df["Metadata_Well"].unique()
 )
 
-
-# In[7]:
-
-
+# %%
 # Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
 
@@ -152,10 +147,7 @@ df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
 df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
-
-# In[8]:
-
-
+# %%
 # Creating label encoder
 le = preprocessing.LabelEncoder()
 # Converting strings into numbers
@@ -174,12 +166,10 @@ df_values_X = df_values.drop(
 )
 df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
-
+# %% [markdown]
 # #### Split Data - All Models can proceed through this point
 
-# In[9]:
-
-
+# %%
 X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
     X_vals=df_values_X,
     y_vals=df_values_Y,
@@ -190,10 +180,7 @@ X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
     params=params,
 )
 
-
-# In[10]:
-
-
+# %%
 # produce data objects for train, val and test datasets
 train_data = Dataset_formatter(
     torch.FloatTensor(X_train.values), torch.FloatTensor(Y_train.values)
@@ -205,10 +192,7 @@ test_data = Dataset_formatter(
     torch.FloatTensor(X_test.values), torch.FloatTensor(Y_test.values)
 )
 
-
-# In[11]:
-
-
+# %%
 params.IN_FEATURES = X_train.shape[1]
 print("Number of in features: ", params.IN_FEATURES)
 if params.MODEL_TYPE == "Regression":
@@ -231,10 +215,7 @@ else:
     pass
 print(params.MODEL_TYPE)
 
-
-# In[12]:
-
-
+# %%
 # convert data class into a dataloader to be compatible with pytorch
 train_loader = torch.utils.data.DataLoader(
     dataset=train_data, batch_size=params.BATCH_SIZE
@@ -243,19 +224,13 @@ valid_loader = torch.utils.data.DataLoader(
     dataset=val_data, batch_size=params.BATCH_SIZE
 )
 test_loader = torch.utils.data.DataLoader(
-    dataset=test_data, batch_size=1, shuffle=SHUFFLE_DATA
+    dataset=test_data, batch_size=1, shuffle=False
 )
 
-
-# In[13]:
-
-
+# %%
 print(params.DEVICE)
 
-
-# In[14]:
-
-
+# %%
 # no accuracy function must be loss for regression
 if params.MODEL_TYPE == "Regression":
     params.METRIC = "loss"
@@ -288,10 +263,7 @@ objective_model_optimizer(
     return_info=True,
 )
 
-
-# In[15]:
-
-
+# %%
 # create graph directory for this model
 graph_path = Path(
     f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
@@ -299,47 +271,31 @@ graph_path = Path(
 Path(graph_path).mkdir(parents=True, exist_ok=True)
 fig = optuna.visualization.plot_optimization_history(study)
 
-if SHUFFLE_DATA:
-    graph_path = f"{graph_path}/plot_optimization_history_graph_shuffled_data"
-elif not SHUFFLE_DATA:
-    graph_path = f"{graph_path}/plot_optimization_history_graph"
-else:
-    raise ModelNameError
+
+graph_path = f"{graph_path}/plot_optimization_history_graph"
+
 fig.write_image(Path(f"{graph_path}.png"))
 fig.show()
 
-
-# In[16]:
-
-
+# %%
 # create graph directory for this model
 graph_path = Path(
     f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
 )
 Path(graph_path).mkdir(parents=True, exist_ok=True)
 fig = optuna.visualization.plot_intermediate_values(study)
-if SHUFFLE_DATA:
-    graph_path = f"{graph_path}/plot_intermediate_values_graph_shuffled_data"
-elif not SHUFFLE_DATA:
-    graph_path = f"{graph_path}/plot_intermediate_values_graph"
-else:
-    raise ModelNameError
+
+graph_path = f"{graph_path}/plot_intermediate_values_graph"
 
 fig.write_image(Path(f"{graph_path}.png"))
 fig.show()
 
-
-# In[17]:
-
-
+# %%
 param_dict = extract_best_trial_params(
     study.best_params, params, model_name=params.MODEL_NAME
 )
 
-
-# In[18]:
-
-
+# %%
 # call the optimized training model
 train_loss, train_acc, valid_loss, valid_acc, epochs_ran, model = train_optimized_model(
     params.TRAIN_EPOCHS,
@@ -361,10 +317,7 @@ else:
         columns=["train_loss", "train_acc", "valid_loss", "valid_acc", "epochs_ran"],
     )
 
-
-# In[19]:
-
-
+# %%
 if params.MODEL_TYPE == "Regression":
     pass
 else:
@@ -378,13 +331,10 @@ else:
         y_axis_label="Accuracy",
         params=params,
         model_name=params.MODEL_NAME,
-        shuffle=SHUFFLE_DATA,
+        shuffle=False,
     )
 
-
-# In[20]:
-
-
+# %%
 plot_metric_vs_epoch(
     training_stats,
     x="epochs_ran",
@@ -395,13 +345,10 @@ plot_metric_vs_epoch(
     y_axis_label="Loss",
     params=params,
     model_name=params.MODEL_NAME,
-    shuffle=SHUFFLE_DATA,
+    shuffle=False,
 )
 
-
-# In[21]:
-
-
+# %%
 # calling the testing function and outputting list values of tested model
 if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
     y_pred_list = test_optimized_model(
@@ -422,10 +369,7 @@ if len(y_pred_list) != len(Y_test):
 else:
     pass
 
-
-# In[22]:
-
-
+# %%
 # Call visualization function
 # calling the testing function and outputing list values of tested model
 if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
@@ -436,7 +380,7 @@ if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
         test_name=f"{params.MODEL_NAME}_testing",
         model_name=params.MODEL_NAME,
         title=params.MODEL_NAME,
-        shuffle=SHUFFLE_DATA,
+        shuffle=False,
     )
 elif params.MODEL_TYPE == "Binary_Classification":
     results_output(
@@ -447,17 +391,15 @@ elif params.MODEL_TYPE == "Binary_Classification":
         test_name=f"{params.MODEL_NAME}_testing",
         model_name=params.MODEL_NAME,
         title=params.MODEL_NAME,
-        shuffle=SHUFFLE_DATA,
+        shuffle=False,
     )
 else:
     raise Exception("Model type must be specified for proper model testing")
 
-
+# %% [markdown]
 # #### look at the feature weights of the model
 
-# In[23]:
-
-
+# %%
 # get all paramters from pytorch model
 lst = []
 for name, param in model.named_parameters():
@@ -465,26 +407,17 @@ for name, param in model.named_parameters():
     lst.append(param)
 feature_weights = model[0].weight.grad[0].detach().cpu().numpy()
 
-
-# In[24]:
-
-
+# %%
 col_list = []
 for col in df_values.columns:
     # print(col)
     col_list.append(col)
 
-
-# In[25]:
-
-
+# %%
 # remove last 4 columns from col_list that are not features
 col_list = col_list[:-4]
 
-
-# In[26]:
-
-
+# %%
 pd.set_option("display.max_colwidth", None)
 
 df = pd.DataFrame(zip(col_list, feature_weights), columns=["feature", "weight"])
@@ -494,10 +427,7 @@ df["weight"] = df["weight"].astype(float)
 df = df.sort_values(by=["weight"], ascending=False)
 df
 
-
-# In[27]:
-
-
+# %%
 # Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = list(df_holdout.columns[df_holdout.columns.str.startswith("Metadata")])
 
@@ -505,10 +435,7 @@ df_metadata = list(df_holdout.columns[df_holdout.columns.str.startswith("Metadat
 df_descriptive = df_holdout[df_metadata]
 df_values = df_holdout.drop(columns=df_metadata)
 
-
-# In[28]:
-
-
+# %%
 # Creating label encoder
 le = preprocessing.LabelEncoder()
 # Converting strings into numbers
@@ -527,71 +454,63 @@ df_values_X = df_values.drop(
 )
 df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
-
+# %% [markdown]
 # ## Test the hold out wells
 
-# In[29]:
-
-
-test_data = Dataset_formatter(
-    torch.FloatTensor(df_values_X.values), torch.FloatTensor(df_values_Y.values)
-)
-
-# convert data class into a dataloader to be compatible with pytorch
-test_loader = torch.utils.data.DataLoader(
-    dataset=test_data, batch_size=1, shuffle=SHUFFLE_DATA
-)
-
-
-# In[30]:
-
-
-# calling the testing function and outputting list values of tested model
-if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
-    y_pred_list = test_optimized_model(
-        model, test_loader, params, model_name=params.MODEL_NAME
+# %%
+for SHUFFLE in [True, False]:
+    test_data = Dataset_formatter(
+        torch.FloatTensor(df_values_X.values), torch.FloatTensor(df_values_Y.values)
     )
-elif params.MODEL_TYPE == "Binary_Classification":
-    y_pred_list, y_pred_prob_list = test_optimized_model(
-        model, test_loader, params, model_name=params.MODEL_NAME
+
+    # convert data class into a dataloader to be compatible with pytorch
+    test_loader = torch.utils.data.DataLoader(
+        dataset=test_data, batch_size=1, shuffle=SHUFFLE
     )
-else:
-    raise Exception("Model type must be specified for proper model testing")
 
+    # calling the testing function and outputting list values of tested model
+    if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
+        y_pred_list = test_optimized_model(
+            model, test_loader, params, model_name=params.MODEL_NAME
+        )
+    elif params.MODEL_TYPE == "Binary_Classification":
+        y_pred_list, y_pred_prob_list = test_optimized_model(
+            model, test_loader, params, model_name=params.MODEL_NAME
+        )
+    else:
+        raise Exception("Model type must be specified for proper model testing")
 
-# un-nest list if nested i.e. length of input data does not match length of output data
-if len(y_pred_list) != len(df_values_Y):
-    y_pred_list = un_nest(y_pred_list)
-    y_pred_prob_list = un_nest(y_pred_prob_list)
-else:
-    pass
+    # un-nest list if nested i.e. length of input data does not match length of output data
+    if len(y_pred_list) != len(df_values_Y):
+        y_pred_list = un_nest(y_pred_list)
+        y_pred_prob_list = un_nest(y_pred_prob_list)
+    else:
+        pass
 
+    # Call visualization function
+    # calling the testing function and outputing list values of tested model
+    if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
+        confusion_matrix_df = results_output(
+            y_pred_list,
+            df_values_Y,
+            params,
+            test_name=f"{params.MODEL_NAME}_hold_out",
+            model_name=params.MODEL_NAME,
+            title=params.MODEL_NAME,
+            shuffle=SHUFFLE,
+        )
+    elif params.MODEL_TYPE == "Binary_Classification":
+        results_output(
+            y_pred_list,
+            df_values_Y,
+            params,
+            y_pred_prob_list,
+            test_name=f"{params.MODEL_NAME}_hold_out",
+            model_name=params.MODEL_NAME,
+            title=params.MODEL_NAME,
+            shuffle=SHUFFLE,
+        )
+    else:
+        raise Exception("Model type must be specified for proper model testing")
 
-# In[31]:
-
-
-# Call visualization function
-# calling the testing function and outputing list values of tested model
-if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
-    confusion_matrix_df = results_output(
-        y_pred_list,
-        df_values_Y,
-        params,
-        test_name=f"{params.MODEL_NAME}_hold_out",
-        model_name=params.MODEL_NAME,
-        title=params.MODEL_NAME,
-        shuffle=SHUFFLE_DATA,
-    )
-elif params.MODEL_TYPE == "Binary_Classification":
-    results_output(
-        y_pred_list,
-        df_values_Y,
-        params,
-        y_pred_prob_list,
-        test_name=f"{params.MODEL_NAME}_hold_out",
-        model_name=params.MODEL_NAME,
-        title=params.MODEL_NAME,
-        shuffle=SHUFFLE_DATA,
-    )
-else:
-    raise Exception("Model type must be specified for proper model testing")
+# %%

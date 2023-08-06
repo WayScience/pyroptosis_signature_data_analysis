@@ -71,10 +71,10 @@ from utils.utils import df_stats
 
 # %%
 # Parameters
-CELL_TYPE = "SHSY5Y"
+CELL_TYPE = "PBMC"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
-TREATMENT_NAME = "Thapsigargin_10.000_DMSO_0.025"
-MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_10"
+TREATMENT_NAME = "Thapsigargin_1.000_DMSO_0.025"
+MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_1"
 
 # %%
 data = Path("../../MLP_utils/binary_config.toml")

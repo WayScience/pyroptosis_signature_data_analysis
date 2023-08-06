@@ -24,7 +24,6 @@ for cell_type in "${cell_types[@]}"; do
             papermill \
             Hyperparameter_Optimization_model_binary.ipynb \
             Hyperparameter_Optimization_model_binary.ipynb \
-            -p SHUFFLE_DATA $shuffled_data \
             -p CELL_TYPE $cell_type \
             -p CONTROL_NAME $control_name \
             -p TREATMENT_NAME ${treatment_names[$treatment_name]} \

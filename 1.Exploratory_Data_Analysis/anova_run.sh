@@ -23,14 +23,14 @@ for treatment1 in ${treatment1s[@]}; do
                 echo "treatment1: $treatment1 treatment2: $treatment2 treatment3: $treatment3 cell_type: $cell_type"
                 papermill 5.anova.ipynb \
                 5.anova.ipynb \
-                -p cell_type SHSY5Y \
-                -p treatment1 DMSO_0.100_DMSO_0.025 \
-                -p treatment2 LPS_100.000_DMSO_0.025 \
-                -p treatment3 Thapsigargin_10.000_DMSO_0.025
+                -p cell_type $cell_type \
+                -p treatment1 $treatment1 \
+                -p treatment2 $treatment2 \
+                -p treatment3 $treatment3
             done
         done
     done
 done
 
 # conver the notebook to script
-jupyter nbconvert --to=script --FilesWriter.build_directory=/scripts *.ipynb
+jupyter nbconvert --to=script --FilesWriter.build_directory=scripts *.ipynb

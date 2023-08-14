@@ -395,7 +395,7 @@ else:
 
 # Call visualization function
 # calling the testing function and outputing list values of tested model
-if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
+if any(params.MODEL_TYPE == model_type for model_type in ["Multi_Class", "Regression"]):
     confusion_matrix_df = results_output(
         y_pred_list,
         Y_test,

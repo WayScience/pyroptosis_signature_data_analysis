@@ -24,30 +24,16 @@
 # ### Here I will be predicting if a cell received a treatment or not
 
 # %%
+import pathlib
 import sys
-from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
 import optuna
 import pandas as pd
-import plotly
 import pyarrow.parquet as pq
-import seaborn as sns
 import toml
 import torch
-import torch.nn as nn
-import torch.optim as optim
 from sklearn import preprocessing
-from sklearn.metrics import (
-    auc,
-    confusion_matrix,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-    roc_curve,
-)
-from sklearn.model_selection import train_test_split
 
 sys.path.append("../..")
 
@@ -57,7 +43,6 @@ from MLP_utils.utils import (
     data_split,
     extract_best_trial_params,
     objective_model_optimizer,
-    optimized_model_create,
     parameter_set,
     plot_metric_vs_epoch,
     results_output,
@@ -69,6 +54,11 @@ from MLP_utils.utils import (
 sys.path.append("../../..")
 from utils.utils import df_stats
 
+# %% [markdown]
+# ## Papermill usage for CLI running of notebooks with multiple parameters
+# Here the `injected-parameters` cell is used to inject parameters into the notebook via papermill.
+# This allows for multiple notebooks to be run with different parameters without having to manually change the parameters in the notebook or have multiple copies of the notebook.
+
 # %%
 # Parameters
 CELL_TYPE = "PBMC"
@@ -77,23 +67,27 @@ TREATMENT_NAME = "Thapsigargin_1.000_DMSO_0.025"
 MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_1"
 
 # %%
-data = Path("../../MLP_utils/binary_config.toml")
-config = toml.load(data)
+ml_configs_file = pathlib.Path("../../MLP_utils/binary_config.toml").resolve(
+    strict=True
+)
+ml_configs = toml.load(ml_configs_file)
 params = Parameters()
-params = parameter_set(params, config)
+mlp_params = parameter_set(params, ml_configs)
 
 # overwrite params via command line arguments from papermill
-params.CELL_TYPE = CELL_TYPE
-params.MODEL_NAME = MODEL_NAME
-params.CONTROL_NAME = CONTROL_NAME
-params.TREATMENT_NAME = TREATMENT_NAME
-params.MODEL_NAME = MODEL_NAME
+mlp_params.CELL_TYPE = CELL_TYPE
+mlp_params.MODEL_NAME = MODEL_NAME
+mlp_params.CONTROL_NAME = CONTROL_NAME
+mlp_params.TREATMENT_NAME = TREATMENT_NAME
+mlp_params.MODEL_NAME = MODEL_NAME
 
 # %%
 # Import Data
 # set data file path under pathlib path for multi-system use
 
-file_path = Path(f"../../../data/{params.CELL_TYPE}_preprocessed_sc_norm.parquet")
+file_path = pathlib.Path(
+    f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm.parquet"
+).resolve(strict=True)
 
 df = pq.read_table(file_path).to_pandas()
 
@@ -108,18 +102,19 @@ df = pq.read_table(file_path).to_pandas()
 # filter the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column to only include the treatment and control via loc
 df = df.loc[
     df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
-        [params.TREATMENT_NAME, params.CONTROL_NAME]
+        [mlp_params.TREATMENT_NAME, mlp_params.CONTROL_NAME]
     )
 ]
+
 
 print("Selected Catagories are:")
 print(df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique())
 df_stats(df)
 
-if params.DATA_SUBSET_OPTION == "True":
-    df = df.sample(n=params.DATA_SUBSET_NUMBER)
+if mlp_params.DATA_SUBSET_OPTION == "True":
+    df = df.sample(n=mlp_params.DATA_SUBSET_NUMBER)
     print("Data Subset Is On")
-    print(f"Data is subset to {params.DATA_SUBSET_NUMBER}")
+    print(f"Data is subset to {mlp_params.DATA_SUBSET_NUMBER}")
 else:
     print("Data Subset Is Off")
 
@@ -193,47 +188,47 @@ test_data = Dataset_formatter(
 )
 
 # %%
-params.IN_FEATURES = X_train.shape[1]
-print("Number of in features: ", params.IN_FEATURES)
-if params.MODEL_TYPE == "Regression":
-    params.OUT_FEATURES = 1
+mlp_params.IN_FEATURES = X_train.shape[1]
+print("Number of in features: ", mlp_params.IN_FEATURES)
+if mlp_params.MODEL_TYPE == "Regression":
+    mlp_params.OUT_FEATURES = 1
 else:
-    params.OUT_FEATURES = len(
+    mlp_params.OUT_FEATURES = len(
         df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
     )
 
-print("Number of out features: ", params.OUT_FEATURES)
+print("Number of out features: ", mlp_params.OUT_FEATURES)
 
-if params.OUT_FEATURES > 2:
-    params.MODEL_TYPE = "Multi_Class"
-elif params.OUT_FEATURES == 2:
-    params.OUT_FEATURES = params.OUT_FEATURES - 1
-    params.MODEL_TYPE = "Binary_Classification"
-elif params.OUT_FEATURES == 1:
-    params.MODEL_TYPE = "Regression"
+if mlp_params.OUT_FEATURES > 2:
+    mlp_params.MODEL_TYPE = "Multi_Class"
+elif mlp_params.OUT_FEATURES == 2:
+    mlp_params.OUT_FEATURES = mlp_params.OUT_FEATURES - 1
+    mlp_params.MODEL_TYPE = "Binary_Classification"
+elif mlp_params.OUT_FEATURES == 1:
+    mlp_params.MODEL_TYPE = "Regression"
 else:
     pass
-print(params.MODEL_TYPE)
+print(mlp_params.MODEL_TYPE)
 
 # %%
 # convert data class into a dataloader to be compatible with pytorch
 train_loader = torch.utils.data.DataLoader(
-    dataset=train_data, batch_size=params.BATCH_SIZE
+    dataset=train_data, batch_size=mlp_params.BATCH_SIZE
 )
 valid_loader = torch.utils.data.DataLoader(
-    dataset=val_data, batch_size=params.BATCH_SIZE
+    dataset=val_data, batch_size=mlp_params.BATCH_SIZE
 )
 test_loader = torch.utils.data.DataLoader(
     dataset=test_data, batch_size=1, shuffle=False
 )
 
 # %%
-print(params.DEVICE)
+print(mlp_params.DEVICE)
 
 # %%
 # no accuracy function must be loss for regression
-if params.MODEL_TYPE == "Regression":
-    params.METRIC = "loss"
+if mlp_params.MODEL_TYPE == "Regression":
+    mlp_params.METRIC = "loss"
     pass
 
 
@@ -243,70 +238,72 @@ objective_lambda_func = lambda trial: objective_model_optimizer(
     valid_loader,
     trial=trial,
     params=params,
-    metric=params.METRIC,
+    metric=mlp_params.METRIC,
     return_info=False,
 )
 
 
 # Study is the object for model optimization
-study = optuna.create_study(direction=f"{params.DIRECTION}")
+study = optuna.create_study(direction=f"{mlp_params.DIRECTION}")
 # Here I apply the optimize function of the study to the objective function
 # This optimizes each parameter specified to be optimized from the defined search space
-study.optimize(objective_lambda_func, n_trials=params.N_TRIALS)
+study.optimize(objective_lambda_func, n_trials=mlp_params.N_TRIALS)
 # Prints out the best trial's optimized parameters
 objective_model_optimizer(
     train_loader,
     valid_loader,
     trial=study.best_trial,
     params=params,
-    metric=params.METRIC,
+    metric=mlp_params.METRIC,
     return_info=True,
 )
 
 # %%
 # create graph directory for this model
-graph_path = Path(
-    f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
-)
-Path(graph_path).mkdir(parents=True, exist_ok=True)
+graph_path = pathlib.Path(
+    f"../../figures/{mlp_params.MODEL_TYPE}/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}"
+).resolve(strict=True)
+
+pathlib.Path(graph_path).mkdir(parents=True, exist_ok=True)
 fig = optuna.visualization.plot_optimization_history(study)
 
 
 graph_path = f"{graph_path}/plot_optimization_history_graph"
 
-fig.write_image(Path(f"{graph_path}.png"))
+fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 # %%
 # create graph directory for this model
-graph_path = Path(
-    f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
-)
-Path(graph_path).mkdir(parents=True, exist_ok=True)
+graph_path = pathlib.Path(
+    f"../../figures/{mlp_params.MODEL_TYPE}/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}"
+).resolve(strict=True)
+
+pathlib.Path(graph_path).mkdir(parents=True, exist_ok=True)
 fig = optuna.visualization.plot_intermediate_values(study)
 
 graph_path = f"{graph_path}/plot_intermediate_values_graph"
 
-fig.write_image(Path(f"{graph_path}.png"))
+fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 # %%
 param_dict = extract_best_trial_params(
-    study.best_params, params, model_name=params.MODEL_NAME
+    study.best_params, params, model_name=mlp_params.MODEL_NAME
 )
 
 # %%
 # call the optimized training model
 train_loss, train_acc, valid_loss, valid_acc, epochs_ran, model = train_optimized_model(
-    params.TRAIN_EPOCHS,
+    mlp_params.TRAIN_EPOCHS,
     train_loader,
     valid_loader,
     param_dict,
     params,
-    params.MODEL_NAME,
+    mlp_params.MODEL_NAME,
 )
 # get training_metrics
-if params.MODEL_TYPE == "Regression":
+if mlp_params.MODEL_TYPE == "Regression":
     training_stats = pd.DataFrame(
         zip(train_loss, valid_loss, epochs_ran),
         columns=["train_loss", "valid_loss", "epochs_ran"],
@@ -318,7 +315,7 @@ else:
     )
 
 # %%
-if params.MODEL_TYPE == "Regression":
+if mlp_params.MODEL_TYPE == "Regression":
     pass
 else:
     plot_metric_vs_epoch(
@@ -330,7 +327,7 @@ else:
         x_axis_label="Epochs",
         y_axis_label="Accuracy",
         params=params,
-        model_name=params.MODEL_NAME,
+        model_name=mlp_params.MODEL_NAME,
         shuffle=False,
     )
 
@@ -344,19 +341,23 @@ plot_metric_vs_epoch(
     x_axis_label="Epochs",
     y_axis_label="Loss",
     params=params,
-    model_name=params.MODEL_NAME,
+    model_name=mlp_params.MODEL_NAME,
     shuffle=False,
 )
 
 # %%
+
+# %%
 # calling the testing function and outputting list values of tested model
-if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
+if any(
+    model_type == mlp_params.MODEL_TYPE for model_type in ["Multi_Class", "Regression"]
+):
     y_pred_list = test_optimized_model(
-        model, test_loader, params, model_name=params.MODEL_NAME
+        model, test_loader, params, model_name=mlp_params.MODEL_NAME
     )
-elif params.MODEL_TYPE == "Binary_Classification":
+elif mlp_params.MODEL_TYPE == "Binary_Classification":
     y_pred_list, y_pred_prob_list = test_optimized_model(
-        model, test_loader, params, model_name=params.MODEL_NAME
+        model, test_loader, params, model_name=mlp_params.MODEL_NAME
     )
 else:
     raise Exception("Model type must be specified for proper model testing")
@@ -372,25 +373,27 @@ else:
 # %%
 # Call visualization function
 # calling the testing function and outputing list values of tested model
-if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
+if any(
+    model_type == mlp_params.MODEL_TYPE for model_type in ["Multi_Class", "Regression"]
+):
     confusion_matrix_df = results_output(
         y_pred_list,
         Y_test,
         params,
-        test_name=f"{params.MODEL_NAME}_testing",
-        model_name=params.MODEL_NAME,
-        title=params.MODEL_NAME,
+        test_name=f"{mlp_params.MODEL_NAME}_testing",
+        model_name=mlp_params.MODEL_NAME,
+        title=mlp_params.MODEL_NAME,
         shuffle=False,
     )
-elif params.MODEL_TYPE == "Binary_Classification":
+elif mlp_params.MODEL_TYPE == "Binary_Classification":
     results_output(
         y_pred_list,
         Y_test,
         params,
         y_pred_prob_list,
-        test_name=f"{params.MODEL_NAME}_testing",
-        model_name=params.MODEL_NAME,
-        title=params.MODEL_NAME,
+        test_name=f"{mlp_params.MODEL_NAME}_testing",
+        model_name=mlp_params.MODEL_NAME,
+        title=mlp_params.MODEL_NAME,
         shuffle=False,
     )
 else:
@@ -469,13 +472,16 @@ for SHUFFLE in [True, False]:
     )
 
     # calling the testing function and outputting list values of tested model
-    if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
+    if any(
+        model_type == mlp_params.MODEL_TYPE
+        for model_type in ["Multi_Class", "Regression"]
+    ):
         y_pred_list = test_optimized_model(
-            model, test_loader, params, model_name=params.MODEL_NAME
+            model, test_loader, params, model_name=mlp_params.MODEL_NAME
         )
-    elif params.MODEL_TYPE == "Binary_Classification":
+    elif mlp_params.MODEL_TYPE == "Binary_Classification":
         y_pred_list, y_pred_prob_list = test_optimized_model(
-            model, test_loader, params, model_name=params.MODEL_NAME
+            model, test_loader, params, model_name=mlp_params.MODEL_NAME
         )
     else:
         raise Exception("Model type must be specified for proper model testing")
@@ -489,25 +495,28 @@ for SHUFFLE in [True, False]:
 
     # Call visualization function
     # calling the testing function and outputing list values of tested model
-    if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
+    if any(
+        model_type == mlp_params.MODEL_TYPE
+        for model_type in ["Multi_Class", "Regression"]
+    ):
         confusion_matrix_df = results_output(
             y_pred_list,
             df_values_Y,
             params,
-            test_name=f"{params.MODEL_NAME}_hold_out",
-            model_name=params.MODEL_NAME,
-            title=params.MODEL_NAME,
+            test_name=f"{mlp_params.MODEL_NAME}_hold_out",
+            model_name=mlp_params.MODEL_NAME,
+            title=mlp_params.MODEL_NAME,
             shuffle=SHUFFLE,
         )
-    elif params.MODEL_TYPE == "Binary_Classification":
+    elif mlp_params.MODEL_TYPE == "Binary_Classification":
         results_output(
             y_pred_list,
             df_values_Y,
             params,
             y_pred_prob_list,
-            test_name=f"{params.MODEL_NAME}_hold_out",
-            model_name=params.MODEL_NAME,
-            title=params.MODEL_NAME,
+            test_name=f"{mlp_params.MODEL_NAME}_hold_out",
+            model_name=mlp_params.MODEL_NAME,
+            title=mlp_params.MODEL_NAME,
             shuffle=SHUFFLE,
         )
     else:

@@ -14,48 +14,26 @@
 # ---
 
 # %% papermill={"duration": 3.641528, "end_time": "2023-08-06T18:56:40.949436", "exception": false, "start_time": "2023-08-06T18:56:37.307908", "status": "completed"} tags=[]
+import pathlib
 import sys
-from pathlib import Path
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import plotly
 import pyarrow.parquet as pq
-import seaborn as sns
 import toml
 import torch
-import torch.nn as nn
-import torch.optim as optim
 from sklearn import preprocessing
-from sklearn.metrics import (
-    auc,
-    confusion_matrix,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-    roc_curve,
-)
-from sklearn.model_selection import train_test_split
 
 sys.path.append("../..")
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
     Dataset_formatter,
-    data_split,
-    extract_best_trial_params,
-    objective_model_optimizer,
     optimized_model_create,
     parameter_set,
-    plot_metric_vs_epoch,
     results_output,
     test_optimized_model,
-    train_optimized_model,
     un_nest,
 )
 
 sys.path.append("../../..")
-from utils.utils import df_stats
 
 # %% papermill={"duration": 0.00606, "end_time": "2023-08-06T18:56:40.960224", "exception": false, "start_time": "2023-08-06T18:56:40.954164", "status": "completed"} tags=["injected-parameters"]
 # Parameters
@@ -66,22 +44,26 @@ TREATMENT_NAME = "Thapsigargin_1.000_DMSO_0.025"
 MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_1"
 
 # %% papermill={"duration": 0.00696, "end_time": "2023-08-06T18:56:40.968861", "exception": false, "start_time": "2023-08-06T18:56:40.961901", "status": "completed"} tags=[]
-data = Path("../../MLP_utils/binary_config.toml")
-config = toml.load(data)
+ml_configs_file = pathlib.path("../../MLP_utils/binary_config.toml").resolve(
+    strict=True
+)
+ml_configs = toml.load(ml_configs_file)
 params = Parameters()
-params = parameter_set(params, config)
+mlp_params = parameter_set(params, ml_configs)
 
-# overwrite params via command line arguments from papermill
-params.CELL_TYPE = CELL_TYPE
-params.MODEL_NAME = MODEL_NAME
-params.CONTROL_NAME = CONTROL_NAME
-params.TREATMENT_NAME = TREATMENT_NAME
-params.MODEL_NAME = MODEL_NAME
+# overwrite mlp_params via command line arguments from papermill
+mlp_params.CELL_TYPE = CELL_TYPE
+mlp_params.MODEL_NAME = MODEL_NAME
+mlp_params.CONTROL_NAME = CONTROL_NAME
+mlp_params.TREATMENT_NAME = TREATMENT_NAME
+mlp_params.MODEL_NAME = MODEL_NAME
 
 # %% papermill={"duration": 56.196209, "end_time": "2023-08-06T18:57:37.166710", "exception": false, "start_time": "2023-08-06T18:56:40.970501", "status": "completed"} tags=[]
 # Import Data
 # set data file path under pathlib path for multi-system use
-file_path = Path(f"../../../data/{params.CELL_TYPE}_preprocessed_sc_norm.parquet")
+file_path = pathlib.path(
+    f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm.parquet"
+).resolve(strict=True)
 
 df = pq.read_table(file_path).to_pandas()
 
@@ -115,39 +97,39 @@ def test_loop(df, output_name, title):
         torch.FloatTensor(df_values_X.values), torch.FloatTensor(df_values_Y.values)
     )
 
-    params.IN_FEATURES = df_values_X.shape[1]
-    print("Number of in features: ", params.IN_FEATURES)
-    if params.MODEL_TYPE == "Regression":
-        params.OUT_FEATURES = 1
+    mlp_params.IN_FEATURES = df_values_X.shape[1]
+    print("Number of in features: ", mlp_params.IN_FEATURES)
+    if mlp_params.MODEL_TYPE == "Regression":
+        mlp_params.OUT_FEATURES = 1
     else:
-        params.OUT_FEATURES = len(
+        mlp_params.OUT_FEATURES = len(
             df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
         )
 
-    print("Number of out features: ", params.OUT_FEATURES)
+    print("Number of out features: ", mlp_params.OUT_FEATURES)
 
-    if params.OUT_FEATURES > 2:
-        params.MODEL_TYPE = "Multi_Class"
-    elif params.OUT_FEATURES == 2:
-        params.OUT_FEATURES = params.OUT_FEATURES - 1
-        params.MODEL_TYPE = "Binary_Classification"
-    elif params.OUT_FEATURES == 1:
-        params.MODEL_TYPE = "Regression"
+    if mlp_params.OUT_FEATURES > 2:
+        mlp_params.MODEL_TYPE = "Multi_Class"
+    elif mlp_params.OUT_FEATURES == 2:
+        mlp_params.OUT_FEATURES = mlp_params.OUT_FEATURES - 1
+        mlp_params.MODEL_TYPE = "Binary_Classification"
+    elif mlp_params.OUT_FEATURES == 1:
+        mlp_params.MODEL_TYPE = "Regression"
     else:
         pass
-    print(params.MODEL_TYPE)
+    print(mlp_params.MODEL_TYPE)
 
     # convert data class into a dataloader to be compatible with pytorch
     test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
-    model = optimized_model_create(params, params.MODEL_NAME)
+    model = optimized_model_create(mlp_params, mlp_params.MODEL_NAME)
     # calling the testing function and outputting list values of tested model
-    if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
+    if mlp_params.MODEL_TYPE == "Multi_Class" or mlp_params.MODEL_TYPE == "Regression":
         y_pred_list = test_optimized_model(
-            model, test_loader, params, model_name=params.MODEL_NAME
+            model, test_loader, mlp_params, model_name=mlp_params.MODEL_NAME
         )
-    elif params.MODEL_TYPE == "Binary_Classification":
+    elif mlp_params.MODEL_TYPE == "Binary_Classification":
         y_pred_list, y_pred_prob_list = test_optimized_model(
-            model, test_loader, params, model_name=params.MODEL_NAME
+            model, test_loader, mlp_params, model_name=mlp_params.MODEL_NAME
         )
     else:
         raise Exception("Model type must be specified for proper model testing")
@@ -160,22 +142,22 @@ def test_loop(df, output_name, title):
         pass
     # Call visualization function
     # calling the testing function and outputting list values of tested model
-    if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
+    if mlp_params.MODEL_TYPE == "Multi_Class" or mlp_params.MODEL_TYPE == "Regression":
         confusion_matrix_df = results_output(
             y_pred_list,
             df_values_Y,
-            params,
+            mlp_params,
             test_name=f"{output_name}_all_testing",
-            model_name=params.MODEL_NAME,
+            model_name=mlp_params.MODEL_NAME,
         )
-    elif params.MODEL_TYPE == "Binary_Classification":
+    elif mlp_params.MODEL_TYPE == "Binary_Classification":
         results_output(
             y_pred_list,
             df_values_Y,
-            params,
+            mlp_params,
             y_pred_prob_list,
             test_name=f"{output_name}_all_testing",
-            model_name=params.MODEL_NAME,
+            model_name=mlp_params.MODEL_NAME,
             title=title,
         )
     else:

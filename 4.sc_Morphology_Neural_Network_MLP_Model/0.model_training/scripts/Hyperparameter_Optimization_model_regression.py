@@ -76,7 +76,7 @@ df = pq.read_table(file_path).to_pandas()
 # In[3]:
 
 
-data = Path("../MLP_utils/config.toml")
+data = Path("../MLP_utils/config.toml").resolve(strict=True) 
 config = toml.load(data)
 params = Parameters()
 params = parameter_set(params, config)

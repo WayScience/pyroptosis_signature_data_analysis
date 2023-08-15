@@ -123,6 +123,8 @@ for (i in 1:length(loop_list)){
     lm_fig_gg <- (
         ggplot(df, aes(x = abs_oneb_Metadata_Treatment_Dose_Inhibitor_Dose, y = r2_score))
         + geom_point(aes(size = abs_Metadata_number_of_singlecells, color = channel_learned), alpha = 0.7)
+        + scale_size_continuous(range = c(2, 8), limits = c(0, 1))
+
 
         + theme_bw()
         + guides(
@@ -149,6 +151,8 @@ for (i in 1:length(loop_list)){
         + facet_wrap("~channel_learned")
         + geom_vline(xintercept = 0, linetype = "dashed", color = "red")
         + geom_hline(yintercept = 0, linetype = "dashed", color = "red")
+        + scale_size_continuous(range = c(2, 8), limits = c(0, 1))
+
         + theme_bw()
         + guides(
             color = guide_legend(title = "Feature group\n(if applicable)", order = 1),

@@ -23,7 +23,7 @@ and  files
 to visualize each model into one pdf
 
 #### Only for the single beta + cell count models:
-I have included a visualization from [CFReT Analysis](https://github.com/gwaybio/CFReT_data/blob/368f0baf7b027f5614de7173bbc7336add81fcb3/4.analyze-data/notebooks/linear_model/1.visualize_linear_model.ipynb) to look at the beta coefficients across morphology feature types and cellular compartments:
+I have included a visualization from [CFReT Analysis](https://github.com/gwaybio/CFReT_data/blob/368f0baf7b027f5614de7173bbc7336add81fcb3/4.analyze-data/notebooks/linear_model/1.visualize_linear_model.ipynb) to visluaize the beta coefficients across morphology feature types and cellular compartments:
 * Feature Types:
     * Texture
     * Radial Distribution

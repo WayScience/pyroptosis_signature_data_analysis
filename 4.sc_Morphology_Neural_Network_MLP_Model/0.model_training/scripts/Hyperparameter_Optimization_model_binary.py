@@ -57,7 +57,7 @@ from utils.utils import df_stats
 # %% [markdown]
 # ## Papermill is used for executing notebooks in the CLI with multiple parameters
 # Here the `injected-parameters` cell is used to inject parameters into the notebook via papermill.
-# This allows for multiple notebooks to be run with different parameters without having to manually change the parameters in the notebook or have multiple copies of the notebook.
+# This enables multiple notebooks to be executed with different parameters, preventing to manually update parameters or have multiple copies of the notebook.
 
 # %%
 # Parameters

@@ -12,7 +12,7 @@ This module contains the parameters dataclass used for the mlp_params in:
 This `utils` module contains helper functions for the MLP model.
 
 ## trained_models
-This directory contains the trained models from the hyperparameter optimization and training.
+This directory contains trained models generated from the hyperparameter optimization and training.
 This directory contains two subdirectories:
 * architectures
     * Saves the model hyperparameters and architecture of the neural network

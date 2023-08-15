@@ -1,6 +1,6 @@
 # MLP_utils
 ## `Exceptions.py`
-This file contains the exceptions rules for the MLP model.
+This module contains exceptions rules for the MLP model.
 
 ## `parameters.py`
 This file contains the parameters dataclass used for the mlp_params in:

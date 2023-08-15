@@ -14,15 +14,17 @@ args <- parser$parse_args()
 celltype <- args$celltype
 
 
-
+# lm file path
 lm_file <- file.path(paste0("./results/", celltype, "/lm_one_beta.tsv"))
 
+# figure paths
+# scatter plot of beta values
 lm_cp_fig <- file.path(paste0("./figures/", celltype, "/lm_one_beta_scatter.pdf"))
-
+# scatter plot of absolute beta values
 lm_cp_fig_abs <- file.path(paste0("./figures/", celltype, "/lm_one_beta_scatter_abs.pdf"))
-
+# scatter plot of beta values with facet and feature type coloring
 lm_facet_fig <- file.path(paste0("./figures/", celltype, "/lm_one_beta_facet_beta.pdf"))
-
+# plot of beta values per cellular compartment and feature type
 lm_coef_fig <- file.path(paste0("./figures/", celltype, "/lm_one_beta_coef_per_compartment.pdf"))
 
 # if path does not exist, create it
@@ -62,12 +64,6 @@ lm_df$channel_learned <- dplyr::recode(lm_df$channel_cleaned,
         .default = "other",
         .missing="other"
     )
-
-unique(lm_df$channel)
-
-unique(lm_df$channel_cleaned)
-
-unique(lm_df$channel_learned)
 
 head(lm_df, 2)
 

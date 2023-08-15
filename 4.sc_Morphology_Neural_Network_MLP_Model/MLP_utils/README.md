@@ -9,7 +9,7 @@ This module contains the parameters dataclass used for the mlp_params in:
 * Testing
 
 ## `utils.py`
-This file contains the utility/helper functions for the MLP model.
+This `utils` module contains helper functions for the MLP model.
 
 ## trained_models
 This directory contains the trained models from the hyperparameter optimization and training.

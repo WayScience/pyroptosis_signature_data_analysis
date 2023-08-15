@@ -3,7 +3,7 @@
 Using `Binary_Classifier_Call_testing.sh` to train the models on a slurm HPC system.
 The PBMC dataset is too large to test on a local machine.
 
-I submit the job via:
+Submit the job via:
 ```bash
 sbatch Binary_Classifier_Call_testing.sh
 ```

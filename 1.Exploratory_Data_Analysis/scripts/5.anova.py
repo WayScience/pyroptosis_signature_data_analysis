@@ -160,7 +160,7 @@ tukey_df_sig.head(2)
 # In[10]:
 
 
-# get all group1 rows that are DMSO and group2 rows that are LPS 100
+# get all group1 rows that are DMSO and group2 rows that are LPS treatment
 tukey_df_sig_trt_1v2 = tukey_df_sig[
     (tukey_df_sig["group1"] == f"{treatment1}")
     & (tukey_df_sig["group2"] == f"{treatment2}")

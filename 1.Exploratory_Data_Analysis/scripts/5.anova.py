@@ -170,7 +170,7 @@ tukey_df_sig_trt_1v3 = tukey_df_sig[
     (tukey_df_sig["group1"] == f"{treatment1}")
     & (tukey_df_sig["group2"] == f"{treatment3}")
 ]
-# get all group1 rows that are LPS 100 and group2 rows that are Thapsigargin 10
+# get all group1 rows that are LPS treatment and group2 rows that are Thapsigargin treatment
 tukey_df_sig_trt_2v3 = tukey_df_sig[
     (tukey_df_sig["group1"] == f"{treatment2}")
     & (tukey_df_sig["group2"] == f"{treatment3}")

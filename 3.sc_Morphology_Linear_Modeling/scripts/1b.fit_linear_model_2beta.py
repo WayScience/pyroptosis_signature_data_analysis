@@ -5,8 +5,8 @@
 
 
 import pathlib
-import sys
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -17,10 +17,6 @@ from matplotlib import pyplot as plt
 from pycytominer.cyto_utils import infer_cp_features
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import LabelEncoder
-
-sys.path.append("..")
-# from ..utils.utils import df_stats
-import matplotlib.pyplot as plt
 
 pd.set_option("mode.chained_assignment", None)
 
@@ -80,13 +76,12 @@ print(
 # In[6]:
 
 
-# Loop for each treatment then each feature
-
 # define the control and treatment
 # Setup linear modeling framework
 model_covariates = ["Metadata_number_of_singlecells"]
 control = "DMSO_DMSO_0.025__0.100"
 lm_results = []
+# Loop for each treatment then each feature
 for treatment in feature_df["twob_Metadata_Treatment_Dose_Inhibitor_Dose"].unique():
     dosage_treatments_list = [treatment, control]
     print(dosage_treatments_list)

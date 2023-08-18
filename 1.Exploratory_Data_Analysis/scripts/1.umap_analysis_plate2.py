@@ -14,17 +14,32 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 import seaborn as sns
+import toml
 import umap
 
 get_ipython().run_line_magic("matplotlib", "inline")
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
 
-# In[3]:
+# In[2]:
 
 
 # Parameters
 celltype = "PBMC"
+
+
+# In[3]:
+
+
+# read in toml file
+
+# set up the path
+toml_path = pathlib.Path("./utils/params.toml")
+# read in the toml file
+params = toml.load(toml_path)
+list_of_treatments = params["list_of_treatments"]["treatments"]
+print(len(list_of_treatments))
+print(list_of_treatments)
 
 
 # In[4]:
@@ -35,7 +50,8 @@ path = pathlib.Path(f"../data/{celltype}_preprocessed_sc_norm.parquet")
 # Read in parquet file
 df1 = pq.read_table(path).to_pandas()
 # subset data frame to 1000 samples too much data results in poor clustering
-df = df1.sample(n=1000)
+
+df = df1
 # save memory by deleting df1
 del df1
 
@@ -43,25 +59,26 @@ del df1
 # In[5]:
 
 
-# Code snippet for metadata extraction by Jenna Tomkinson
-df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
+# get rows that have values in column fourb_Metadata_Treatment_Dose_Inhibitor_Dose that match treatment list
+df = df[df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(list_of_treatments)]
 
-# define which columns are data and which are descriptive
-df_descriptive = df[df_metadata]
-df_values = df.drop(columns=df_metadata)
+df = (
+    df.groupby("fourb_Metadata_Treatment_Dose_Inhibitor_Dose")
+    .apply(lambda x: x.sample(n=100, random_state=0))
+    .droplevel(0)
+)
+# df = df.sample(n=1000, random_state=0, weights='fourb_Metadata_Treatment_Dose_Inhibitor_Dose')
 
 
 # In[6]:
 
 
-df_values = df_values.drop(
-    columns=[
-        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
-        "twob_Metadata_Treatment_Dose_Inhibitor_Dose",
-        "threeb_Metadata_Treatment_Dose_Inhibitor_Dose",
-        "fourb_Metadata_Treatment_Dose_Inhibitor_Dose",
-    ]
-)
+# Code snippet for metadata extraction by Jenna Tomkinson
+df_metadata = list(df.columns[df.columns.str.contains("Metadata")])
+
+# define which columns are data and which are descriptive
+df_descriptive = df[df_metadata]
+df_values = df.drop(columns=df_metadata)
 
 
 # In[7]:
@@ -90,14 +107,20 @@ df_values["umap_2"] = proj_2d[:, 1]
 # In[9]:
 
 
-df_values["Treatment"] = df_descriptive["Metadata_Treatment"]
+df_values["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
+    "fourb_Metadata_Treatment_Dose_Inhibitor_Dose"
+]
+
+
+# In[10]:
+
 
 # Figure Showing UMAP of Clusters vs Treatment
 sns.scatterplot(
     data=df_values,
     x="umap_1",
     y="umap_2",
-    hue="Treatment",
+    hue="fourb_Metadata_Treatment_Dose_Inhibitor_Dose",
     legend="full",
     alpha=0.7,
 )

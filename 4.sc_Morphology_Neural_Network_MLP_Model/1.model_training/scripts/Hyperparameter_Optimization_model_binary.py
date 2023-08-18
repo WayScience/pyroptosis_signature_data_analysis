@@ -1,29 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
-# ---
-# jupyter:
-#   jupytext:
-#     cell_metadata_filter: -all
-#     formats: ipynb,py
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.14.0
-#   kernelspec:
-#     display_name: Python 3 (ipykernel)
-#     language: python
-#     name: python3
-# ---
 
-# %% [markdown]
 # ## Hyperparameter tuning via Optuna
 
-# %% [markdown]
 # ### Being a binary model this notebook will be limited to predicting one class 1 or 0, yes or no.
 # ### Here I will be predicting if a cell received a treatment or not
 
-# %%
+# In[1]:
+
+
 import pathlib
 import sys
 
@@ -54,12 +39,13 @@ from MLP_utils.utils import (
 sys.path.append("../../..")
 from utils.utils import df_stats
 
-# %% [markdown]
 # ## Papermill is used for executing notebooks in the CLI with multiple parameters
 # Here the `injected-parameters` cell is used to inject parameters into the notebook via papermill.
 # This enables multiple notebooks to be executed with different parameters, preventing to manually update parameters or have multiple copies of the notebook.
 
-# %%
+# In[2]:
+
+
 # Parameters
 CELL_TYPE = "SHSY5Y"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
@@ -67,7 +53,10 @@ TREATMENT_NAME = "LPS_100.000_DMSO_0.025"
 MODEL_NAME = "DMSO_0.025_vs_LPS_100"
 SHUFFLE = True
 
-# %%
+
+# In[3]:
+
+
 ml_configs_file = pathlib.Path("../../MLP_utils/binary_config.toml").resolve(
     strict=True
 )
@@ -83,7 +72,10 @@ mlp_params.TREATMENT_NAME = TREATMENT_NAME
 mlp_params.MODEL_NAME = MODEL_NAME
 mlp_params.SHUFFLE = SHUFFLE
 
-# %%
+
+# In[4]:
+
+
 # Import Data
 # set data file path under pathlib path for multi-system use
 
@@ -93,14 +85,15 @@ file_path = pathlib.Path(
 
 df = pq.read_table(file_path).to_pandas()
 
-# %% [markdown]
+
 # #### Set up Data to be compatible with model
 
-# %% [markdown]
 # ##### Classification Models:
 # Comment out code if using regression
 
-# %%
+# In[5]:
+
+
 # filter the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column to only include the treatment and control via loc
 df = df.loc[
     df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
@@ -120,7 +113,10 @@ if mlp_params.DATA_SUBSET_OPTION == "True":
 else:
     print("Data Subset Is Off")
 
-# %%
+
+# In[6]:
+
+
 np.random.seed(seed=0)
 wells_to_hold = (
     df.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose")
@@ -136,7 +132,10 @@ print(
     "Wells to use for training, validation, and testing", df["Metadata_Well"].unique()
 )
 
-# %%
+
+# In[7]:
+
+
 # Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
 
@@ -144,7 +143,10 @@ df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
 df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
-# %%
+
+# In[8]:
+
+
 # Creating label encoder
 le = preprocessing.LabelEncoder()
 # Converting strings into numbers
@@ -163,10 +165,12 @@ df_values_X = df_values.drop(
 )
 df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
-# %% [markdown]
+
 # #### Split Data - All Models can proceed through this point
 
-# %%
+# In[9]:
+
+
 X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
     X_vals=df_values_X,
     y_vals=df_values_Y,
@@ -177,7 +181,10 @@ X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
     params=params,
 )
 
-# %%
+
+# In[10]:
+
+
 # produce data objects for train, val and test datasets
 train_data = Dataset_formatter(
     torch.FloatTensor(X_train.values), torch.FloatTensor(Y_train.values)
@@ -189,7 +196,10 @@ test_data = Dataset_formatter(
     torch.FloatTensor(X_test.values), torch.FloatTensor(Y_test.values)
 )
 
-# %%
+
+# In[11]:
+
+
 mlp_params.IN_FEATURES = X_train.shape[1]
 print("Number of in features: ", mlp_params.IN_FEATURES)
 if mlp_params.MODEL_TYPE == "Regression":
@@ -212,7 +222,10 @@ else:
     pass
 print(mlp_params.MODEL_TYPE)
 
-# %%
+
+# In[12]:
+
+
 # convert data class into a dataloader to be compatible with pytorch
 train_loader = torch.utils.data.DataLoader(
     dataset=train_data, batch_size=mlp_params.BATCH_SIZE
@@ -224,10 +237,16 @@ test_loader = torch.utils.data.DataLoader(
     dataset=test_data, batch_size=1, shuffle=mlp_params.SHUFFLE
 )
 
-# %%
+
+# In[13]:
+
+
 print(mlp_params.DEVICE)
 
-# %%
+
+# In[15]:
+
+
 # no accuracy function must be loss for regression
 if mlp_params.MODEL_TYPE == "Regression":
     mlp_params.METRIC = "loss"
@@ -260,7 +279,10 @@ objective_model_optimizer(
     return_info=True,
 )
 
-# %%
+
+# In[ ]:
+
+
 # create graph directory for this model
 graph_path = pathlib.Path(
     f"../../figures/{mlp_params.MODEL_TYPE}/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}"
@@ -275,7 +297,10 @@ graph_path = f"{graph_path}/plot_optimization_history_graph"
 fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
-# %%
+
+# In[ ]:
+
+
 # create graph directory for this model
 graph_path = pathlib.Path(
     f"../../figures/{mlp_params.MODEL_TYPE}/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}"
@@ -289,12 +314,18 @@ graph_path = f"{graph_path}/plot_intermediate_values_graph"
 fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
-# %%
+
+# In[ ]:
+
+
 param_dict = extract_best_trial_params(
     study.best_params, params, model_name=mlp_params.MODEL_NAME
 )
 
-# %%
+
+# In[ ]:
+
+
 # call the optimized training model
 train_loss, train_acc, valid_loss, valid_acc, epochs_ran, model = train_optimized_model(
     mlp_params.TRAIN_EPOCHS,
@@ -316,7 +347,10 @@ else:
         columns=["train_loss", "train_acc", "valid_loss", "valid_acc", "epochs_ran"],
     )
 
-# %%
+
+# In[ ]:
+
+
 if mlp_params.MODEL_TYPE == "Regression":
     pass
 else:
@@ -333,7 +367,10 @@ else:
         shuffle=False,
     )
 
-# %%
+
+# In[ ]:
+
+
 plot_metric_vs_epoch(
     training_stats,
     x="epochs_ran",
@@ -347,9 +384,13 @@ plot_metric_vs_epoch(
     shuffle=False,
 )
 
-# %%
 
-# %%
+# In[ ]:
+
+
+# In[ ]:
+
+
 # calling the testing function and outputting list values of tested model
 if any(
     model_type == mlp_params.MODEL_TYPE for model_type in ["Multi_Class", "Regression"]
@@ -372,7 +413,10 @@ if len(y_pred_list) != len(Y_test):
 else:
     pass
 
-# %%
+
+# In[ ]:
+
+
 # Call visualization function
 # calling the testing function and outputing list values of tested model
 if any(
@@ -401,10 +445,12 @@ elif mlp_params.MODEL_TYPE == "Binary_Classification":
 else:
     raise Exception("Model type must be specified for proper model testing")
 
-# %% [markdown]
+
 # #### look at the feature weights of the model
 
-# %%
+# In[ ]:
+
+
 # get all paramters from pytorch model
 lst = []
 for name, param in model.named_parameters():
@@ -412,17 +458,26 @@ for name, param in model.named_parameters():
     lst.append(param)
 feature_weights = model[0].weight.grad[0].detach().cpu().numpy()
 
-# %%
+
+# In[ ]:
+
+
 col_list = []
 for col in df_values.columns:
     # print(col)
     col_list.append(col)
 
-# %%
+
+# In[ ]:
+
+
 # remove last 4 columns from col_list that are not features
 col_list = col_list[:-4]
 
-# %%
+
+# In[ ]:
+
+
 pd.set_option("display.max_colwidth", None)
 
 df = pd.DataFrame(zip(col_list, feature_weights), columns=["feature", "weight"])
@@ -432,7 +487,10 @@ df["weight"] = df["weight"].astype(float)
 df = df.sort_values(by=["weight"], ascending=False)
 df
 
-# %%
+
+# In[ ]:
+
+
 # Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = list(df_holdout.columns[df_holdout.columns.str.startswith("Metadata")])
 
@@ -440,7 +498,10 @@ df_metadata = list(df_holdout.columns[df_holdout.columns.str.startswith("Metadat
 df_descriptive = df_holdout[df_metadata]
 df_values = df_holdout.drop(columns=df_metadata)
 
-# %%
+
+# In[ ]:
+
+
 # Creating label encoder
 le = preprocessing.LabelEncoder()
 # Converting strings into numbers
@@ -459,11 +520,14 @@ df_values_X = df_values.drop(
 )
 df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
-# %% [markdown]
+
 # ## Test the hold out wells
 
-# %%
+# In[ ]:
+
+
 for SHUFFLE in [True, False]:
+
     test_data = Dataset_formatter(
         torch.FloatTensor(df_values_X.values), torch.FloatTensor(df_values_Y.values)
     )
@@ -524,4 +588,5 @@ for SHUFFLE in [True, False]:
     else:
         raise Exception("Model type must be specified for proper model testing")
 
-# %%
+
+# In[ ]:

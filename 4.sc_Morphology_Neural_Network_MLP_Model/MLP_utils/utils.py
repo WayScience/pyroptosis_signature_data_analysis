@@ -5,7 +5,6 @@ These are helper functions meant to be called in a separate notebook or script
 
 import json
 import pathlib
-from pathlib import Path
 from typing import Tuple
 
 import matplotlib.pyplot as plt
@@ -18,6 +17,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from MLP_utils.exceptions import (
+    ModelNameError,
     ModelTypeError,
     OptimizationMetricError,
     TrainingValidationTestingSplitError,
@@ -88,6 +88,10 @@ def parameter_set(params: Parameters, config: toml) -> object:
     params.OPTIMIZER_LIST = config["MACHINE_LEARNING_PARAMS"]["OPTIMIZER_LIST"]
     params.METRIC = config["MACHINE_LEARNING_PARAMS"]["METRIC"]
     params.DIRECTION = config["MACHINE_LEARNING_PARAMS"]["DIRECTION"]
+    params.CONTROL_NAME = config["MACHINE_LEARNING_PARAMS"]["CONTROL_NAME"]
+    params.TREATMENT_NAME = config["MACHINE_LEARNING_PARAMS"]["TREATMENT_NAME"]
+    params.CELL_TYPE = config["MACHINE_LEARNING_PARAMS"]["CELL_TYPE"]
+    params.SHUFFLE = bool(config["MACHINE_LEARNING_PARAMS"]["SHUFFLE"])
     return params
 
 
@@ -139,7 +143,7 @@ def data_split(
         Ex. training is 0.8, validation is 0.1, and testing is 0.1
     """
 
-    if (train_proportion + test_proportion + val_proportion) != 1:
+    if (train_proportion + test_proportion + val_proportion) != 1.0:
         raise TrainingValidationTestingSplitError
 
     if params.MODEL_TYPE == "Regression":
@@ -672,24 +676,36 @@ def extract_best_trial_params(
     # write model architecture to file
 
     if MLP_params.MODEL_TYPE == "Multi_Class":
+        architecture_path = pathlib.Path(
+            f"../../trained_models/architectures/Multi_Class/{MLP_params.CELL_TYPE}"
+        )
+        pathlib.Path(architecture_path).mkdir(parents=True, exist_ok=True)
         with open(
-            f"../../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.json",
+            f"{architecture_path}/Multi_Class_{model_name}.json",
             "w",
         ) as f:
             json.dump(param_dict, f, indent=4)
         f.close()
 
     elif MLP_params.MODEL_TYPE == "Binary_Classification":
+        architecture_path = pathlib.Path(
+            f"../../trained_models/architectures/Binary_Classification/{MLP_params.CELL_TYPE}"
+        )
+        pathlib.Path(architecture_path).mkdir(parents=True, exist_ok=True)
         with open(
-            f"../../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.json",
+            f"{architecture_path}/Binary_Classification_{model_name}.json",
             "w",
         ) as f:
             json.dump(param_dict, f, indent=4)
         f.close()
 
     elif MLP_params.MODEL_TYPE == "Regression":
+        architecture_path = pathlib.Path(
+            f"../../trained_models/architectures/Regression/{MLP_params.CELL_TYPE}"
+        )
+        pathlib.Path(architecture_path).mkdir(parents=True, exist_ok=True)
         with open(
-            f"../../trained_models/architectures/Regression/Regression_{model_name}.json",
+            f"{architecture_path}/Regression_{model_name}.json",
             "w",
         ) as f:
             json.dump(param_dict, f, indent=4)
@@ -726,22 +742,31 @@ def optimized_model_create(
     """
     # load in model architecture from saved model architecture
     if params.MODEL_TYPE == "Multi_Class":
+        architecture_path = pathlib.Path(
+            f"../../trained_models/architectures/Multi_Class/{params.CELL_TYPE}"
+        )
         with open(
-            f"../../trained_models/architectures/Multi_Class/Multi_Class_{model_name}.json",
+            f"{architecture_path}/Multi_Class_{model_name}.json",
             "r",
         ) as f:
             parameter_dict = json.load(f)
         f.close()
     elif params.MODEL_TYPE == "Binary_Classification":
+        architecture_path = pathlib.Path(
+            f"../../trained_models/architectures/Binary_Classification/{params.CELL_TYPE}"
+        )
         with open(
-            f"../../trained_models/architectures/Binary_Classification/Binary_Classification_{model_name}.json",
+            f"{architecture_path}/Binary_Classification_{model_name}.json",
             "r",
         ) as f:
             parameter_dict = json.load(f)
         f.close()
     elif params.MODEL_TYPE == "Regression":
+        architecture_path = pathlib.Path(
+            f"../../trained_models/architectures/Regression/{params.CELL_TYPE}"
+        )
         with open(
-            f"../../trained_models/architectures/Regression/Regression_{model_name}.json",
+            f"{architecture_path}/Regression_{model_name}.json",
             "r",
         ) as f:
             parameter_dict = json.load(f)
@@ -765,7 +790,7 @@ def optimized_model_create(
         in_features = out_features
     layers.append(nn.Linear(in_features, params.OUT_FEATURES))
     # output new model to train and test
-    return nn.Sequential(*layers)
+    return nn.Sequential(*layers), parameter_dict
 
 
 # Model Training
@@ -773,9 +798,9 @@ def train_optimized_model(
     EPOCHS: int,
     train_loader: torch.utils.data.DataLoader,
     valid_loader: torch.utils.data.DataLoader,
-    parameter_dict: dict,
     params: Parameters,
     model_name: str,
+    shuffle: bool = True,
 ) -> tuple[float, float, float, float, int, torch.nn.Sequential]:
     """This function trains the optimized model on the training dataset
 
@@ -788,12 +813,12 @@ def train_optimized_model(
         DataLoader for train data integration to pytorch
     valid_loader : torch.utils.data.DataLoader
         DataLoader for train data integration to pytorch
-    parameter_dict : dict
-        dictionary of optimized model hyperparameters
     params : Parameters
         Dataclass containing constants and parameter spaces
     model_name : str
         name of the model to be added to the save name
+    shuffle : bool, optional
+        Whether to shuffle the data, by default True
 
     Returns
     -------
@@ -806,7 +831,8 @@ def train_optimized_model(
         model: torch.nn.Sequential
 
     """
-    model = optimized_model_create(params, model_name)
+
+    model, parameter_dict = optimized_model_create(params, model_name)
     model = model.to(params.DEVICE)
     # criterion is the method in which we measure our loss
     # isn't defined as loss as it doesn't represent the loss value but the method
@@ -818,6 +844,10 @@ def train_optimized_model(
         criterion = nn.MSELoss()
     else:
         raise ModelTypeError
+    if shuffle:
+        model_name = f"{model_name}_shuffle"
+    else:
+        pass
 
     optim_method = parameter_dict["optimizer"].strip("'")
     print(optim_method)
@@ -874,19 +904,31 @@ def train_optimized_model(
 
         if np.mean(valid_loss) <= valid_loss_min:
             if params.MODEL_TYPE == "Multi_Class":
+                save_state_path = pathlib.Path(
+                    f"../../trained_models/model_save_states/Multi_Class/{params.CELL_TYPE}"
+                )
+                pathlib.Path(save_state_path).mkdir(parents=True, exist_ok=True)
                 torch.save(
                     model.state_dict(),
-                    f"../../trained_models/model_save_states/Multi_Class/Multi_Class_{model_name}.pt",
+                    f"{save_state_path}/Multi_Class_{model_name}.pt",
                 )
             elif params.MODEL_TYPE == "Binary_Classification":
+                save_state_path = pathlib.Path(
+                    f"../../trained_models/model_save_states/Binary_Classification/{params.CELL_TYPE}"
+                )
+                pathlib.Path(save_state_path).mkdir(parents=True, exist_ok=True)
                 torch.save(
                     model.state_dict(),
-                    f"../../trained_models/model_save_states/Binary_Classification/Binary_Classification_{model_name}.pt",
+                    f"{save_state_path}/Binary_Classification_{model_name}.pt",
                 )
             elif params.MODEL_TYPE == "Regression":
+                save_state_path = pathlib.Path(
+                    f"../../trained_models/model_save_states/Regression/{params.CELL_TYPE}"
+                )
+                pathlib.Path(save_state_path).mkdir(parents=True, exist_ok=True)
                 torch.save(
                     model.state_dict(),
-                    f"../../trained_models/model_save_states/Regression/Regression_{model_name}.pt",
+                    f"{save_state_path}/Regression_{model_name}.pt",
                 )
             else:
                 raise ModelTypeError
@@ -923,6 +965,7 @@ def plot_metric_vs_epoch(
     y_axis_label: str,
     params: Parameters,
     model_name: str,
+    shuffle: bool = False,
 ) -> None:
     """Plot x vs y1 and x vs y2 using seaborn.
 
@@ -946,6 +989,8 @@ def plot_metric_vs_epoch(
         Dataclass containing constants and parameter spaces
     model_name : str
         name of the model to be added to the save name
+    shuffle : bool, optional
+        whether or not the data was shuffled, by default False
     """
     # sns.lineplot(x=x, y=y1, data=df)
     # sns.lineplot(x=x, y=y2, data=df)
@@ -955,9 +1000,23 @@ def plot_metric_vs_epoch(
     plt.xlabel(x_axis_label)
     plt.ylabel(y_axis_label)
     plt.legend()
-    graph_path = Path(
-        f"../../figures/{params.MODEL_TYPE}/{model_name}/{y_axis_label}_graph.png"
-    )
+    # create graph directory for this model
+    graph_path = pathlib.Path(
+        f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
+    ).resolve(strict=True)
+    pathlib.Path(graph_path).mkdir(parents=True, exist_ok=True)
+
+    if shuffle:
+        graph_path = pathlib.Path(
+            f"{graph_path}/{y_axis_label}_graph_shuffled_data.png"
+        ).resolve(strict=True)
+    elif not shuffle:
+        graph_path = pathlib.Path(f"{graph_path}/{y_axis_label}_graph.png").resolve(
+            strict=True
+        )
+    else:
+        raise ModelNameError
+
     plt.tight_layout()
     plt.savefig(graph_path)
 
@@ -967,6 +1026,7 @@ def test_optimized_model(
     test_loader: torch.utils.data.DataLoader,
     params: Parameters,
     model_name: str,
+    shuffle: bool = False,
 ) -> Tuple[list, list]:
     """test the trained model on test data
 
@@ -981,7 +1041,6 @@ def test_optimized_model(
     model_name : str
         name of the model to be used for loading
 
-
     Returns
     -------
     Tuple[list, list]
@@ -990,24 +1049,32 @@ def test_optimized_model(
         y_pred_prob_list: list of probabilities of
         those predicted values
     """
+    if shuffle:
+        model_name = f"{model_name}_shuffle"
+    else:
+        pass
+    print(model_name)
     model = model.to(params.DEVICE)
     if params.MODEL_TYPE == "Multi_Class":
+        save_state_path = pathlib.Path(
+            f"../../trained_models/model_save_states/Multi_Class/{params.CELL_TYPE}"
+        )
         model.load_state_dict(
-            torch.load(
-                f"../../trained_models/model_save_states/Multi_Class/Multi_Class_{model_name}.pt"
-            )
+            torch.load(f"{save_state_path}/Multi_Class_{model_name}.pt")
         )
     elif params.MODEL_TYPE == "Binary_Classification":
+        save_state_path = pathlib.Path(
+            f"../../trained_models/model_save_states/Binary_Classification/{params.CELL_TYPE}"
+        )
         model.load_state_dict(
-            torch.load(
-                f"../../trained_models/model_save_states/Binary_Classification/Binary_Classification_{model_name}.pt"
-            )
+            torch.load(f"{save_state_path}/Binary_Classification_{model_name}.pt")
         )
     elif params.MODEL_TYPE == "Regression":
+        save_state_path = pathlib.Path(
+            f"../../trained_models/model_save_states/Regression/{params.CELL_TYPE}"
+        )
         model.load_state_dict(
-            torch.load(
-                f"../../trained_models/model_save_states/Regression/Regression_{model_name}.pt"
-            )
+            torch.load(f"{save_state_path}/Regression_{model_name}.pt")
         )
     else:
         raise ModelTypeError
@@ -1075,6 +1142,7 @@ def results_output(
     test_name: str = "test",
     model_name: str = "model",
     title: str = "Test Results",
+    shuffle: bool = False,
 ) -> None:
     """Function outputs visualization of testing the model
 
@@ -1094,6 +1162,8 @@ def results_output(
         name of the model, by default "model"
     title : str, optional
         title of the graph, by default "Test Results"
+    shuffle : bool, optional
+        whether the data was shuffled or not, by default False
 
 
     Raises
@@ -1113,13 +1183,23 @@ def results_output(
         plt.title(f"Confusion Matrix for Binary Classifier \n {title}", fontsize=20)
         plt.xlabel("Actual Values", size=15)
         plt.ylabel("Predicted Values", size=15)
-        # make dir if dir not exist
-        graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{model_name}/")
-        if not pathlib.Path.exists(graph_path):
-            pathlib.Path.mkdir(graph_path)
-        graph_path = Path(
-            f"../../figures/{params.MODEL_TYPE}/{model_name}/confusion_matrix_graph_{test_name}.png"
-        )
+
+        # create graph directory for this model
+        graph_path = pathlib.Path(
+            f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
+        ).resolve(strict=True)
+        pathlib.Path(graph_path).mkdir(parents=True, exist_ok=True)
+        if shuffle:
+            graph_path = pathlib.Path(
+                f"{graph_path}/confusion_matrix_graph_{test_name}_shuffled_data.png"
+            )
+        elif not shuffle:
+            graph_path = pathlib.Path(
+                f"{graph_path}/confusion_matrix_graph_{test_name}.png"
+            )
+        else:
+            raise ModelNameError
+
         plt.tight_layout()
         plt.savefig(graph_path)
         for i in range(params.OUT_FEATURES):
@@ -1194,12 +1274,22 @@ def results_output(
         plt.ylabel("True Positive Rate")
         plt.title(f"Receiver Operating Characteristic (ROC) Curve \n {title}")
         plt.legend(loc="lower right")
-        graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{model_name}/")
-        if not pathlib.Path.exists(graph_path):
-            pathlib.Path.mkdir(graph_path)
-        graph_path = Path(
-            f"../../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
-        )
+        # create graph directory for this model
+        graph_path = pathlib.Path(
+            f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
+        ).resolve(strict=True)
+        pathlib.Path(graph_path).mkdir(parents=True, exist_ok=True)
+        if shuffle:
+            graph_path = pathlib.Path(
+                f"{graph_path}/ROC_graph_{test_name}_shuffled_data.png"
+            ).resolve(strict=True)
+        elif not shuffle:
+            graph_path = pathlib.Path(
+                f"{graph_path}/ROC_graph_{test_name}.png"
+            ).resolve(strict=True)
+        else:
+            raise ModelNameError
+
         plt.tight_layout()
         plt.savefig(graph_path)
         plt.show()
@@ -1215,12 +1305,22 @@ def results_output(
         plt.title(f"Confusion Matrix for Binary Classifier \n {title}", fontsize=20)
         plt.xlabel("Actual Values", size=15)
         plt.ylabel("Predicted Values", size=15)
-        graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{model_name}/")
-        if not pathlib.Path.exists(graph_path):
-            pathlib.Path.mkdir(graph_path)
-        graph_path = Path(
-            f"../../figures/{params.MODEL_TYPE}/{model_name}/confusion_matrix_graph_{test_name}.png"
-        )
+        # create graph directory for this model
+        graph_path = pathlib.Path(
+            f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
+        ).resolve(strict=True)
+        pathlib.Path(graph_path).mkdir(parents=True, exist_ok=True)
+        if shuffle:
+            graph_path = pathlib.Path(
+                f"{graph_path}/confusion_matrix_graph_{test_name}_shuffled_data.png"
+            )
+        elif not shuffle:
+            graph_path = pathlib.Path(
+                f"{graph_path}/confusion_matrix_graph_{test_name}.png"
+            )
+        else:
+            raise ModelNameError
+
         plt.tight_layout()
         plt.savefig(graph_path)
         # AUC graph of accuracy and false positive rates
@@ -1240,12 +1340,20 @@ def results_output(
             frameon=True,
             handlelength=0,
         )
-        graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{model_name}/")
-        if not pathlib.Path.exists(graph_path):
-            pathlib.Path.mkdir(graph_path)
-        graph_path = Path(
-            f"../../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
-        )
+        # create graph directory for this model
+        graph_path = pathlib.Path(
+            f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
+        ).resolve(strict=True)
+        pathlib.Path(graph_path).mkdir(parents=True, exist_ok=True)
+        if shuffle:
+            graph_path = pathlib.Path(
+                f"{graph_path}/ROC_graph_{test_name}_shuffled_data.png"
+            )
+        elif not shuffle:
+            graph_path = pathlib.Path(f"{graph_path}/ROC_graph_{test_name}.png")
+        else:
+            raise ModelNameError
+
         plt.tight_layout()
         plt.savefig(graph_path)
         plt.show()
@@ -1278,14 +1386,94 @@ def results_output(
             frameon=True,
             handlelength=0,
         )
-        graph_path = Path(f"../../figures/{params.MODEL_TYPE}/{model_name}/")
-        if not pathlib.Path.exists(graph_path):
-            pathlib.Path.mkdir(graph_path)
-        graph_path = Path(
-            f"../../figures/{params.MODEL_TYPE}/{model_name}/ROC_graph_{test_name}.png"
-        )
+        # create graph directory for this model
+        graph_path = pathlib.Path(
+            f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
+        ).resolve(strict=True)
+        pathlib.Path(graph_path).mkdir(parents=True, exist_ok=True)
+        if shuffle:
+            graph_path = pathlib.Path(
+                f"{graph_path}/ROC_graph_{test_name}_shuffled_data.png"
+            )
+        elif not shuffle:
+            graph_path = pathlib.Path(f"{graph_path}/ROC_graph_{test_name}.png")
+        else:
+            raise ModelNameError
+
         plt.tight_layout()
         plt.savefig(graph_path)
         plt.show()
+    else:
+        raise ModelTypeError
+
+
+def output_stats(
+    prediction_list: list,
+    test_data: list,
+    params: Parameters,
+    prediction_probability_list: list = False,
+    test_name: str = "test",
+    model_name: str = "model",
+    title: str = "Test Results",
+    shuffle: bool = False,
+) -> None:
+    """Function outputs visualization of testing the model
+
+    Parameters
+    ----------
+    prediction_list : list
+        lis of predicted values
+    test_data : list
+        actual values (true values)
+    params: Parameters
+        dataclass of parameters
+    prediction_probability_list : list, optional
+        list of probabilities of 0 or 1, by default False
+    test_name : str, optional
+        name of the test, by default "test"
+    model_name : str, optional
+        name of the model, by default "model"
+    title : str, optional
+        title of the graph, by default "Test Results"
+    shuffle : bool, optional
+        whether the data was shuffled or not, by default False
+
+    Raises
+    ------
+    Exception
+        raised if proper model type is not specified
+    """
+
+    # Classification report
+    from sklearn.metrics import (
+        f1_score,
+        precision_recall_curve,
+        precision_score,
+        recall_score,
+    )
+
+    if params.MODEL_TYPE == "Multi_Class":
+        print(classification_report(test_data, prediction_list))
+        return classification_report(test_data, prediction_list)
+    elif params.MODEL_TYPE == "Binary_Classification":
+        print(classification_report(test_data, prediction_list))
+        recall = recall_score(test_data, prediction_list, average="binary")
+        precision = precision_score(test_data, prediction_list, average="binary")
+        f1 = f1_score(test_data, prediction_list, average="binary")
+        precision_, recall_, threshold_ = precision_recall_curve(
+            test_data, prediction_probability_list
+        )
+        return (
+            classification_report(test_data, prediction_list, output_dict=True),
+            recall,
+            precision,
+            f1,
+            precision_,
+            recall_,
+            threshold_,
+        )
+
+    elif params.MODEL_TYPE == "Regression":
+        pass
     else:
         raise ModelTypeError

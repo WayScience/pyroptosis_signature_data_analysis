@@ -65,7 +65,6 @@ CELL_TYPE = "SHSY5Y"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
 TREATMENT_NAME = "LPS_100.000_DMSO_0.025"
 MODEL_NAME = "DMSO_0.025_vs_LPS_100"
-SHUFFLE = False
 
 # %%
 ml_configs_file = pathlib.Path("../../MLP_utils/binary_config.toml").resolve(
@@ -81,7 +80,6 @@ mlp_params.MODEL_NAME = MODEL_NAME
 mlp_params.CONTROL_NAME = CONTROL_NAME
 mlp_params.TREATMENT_NAME = TREATMENT_NAME
 mlp_params.MODEL_NAME = MODEL_NAME
-mlp_params.SHUFFLE = SHUFFLE
 
 # %%
 # Import Data
@@ -221,7 +219,8 @@ valid_loader = torch.utils.data.DataLoader(
     dataset=val_data, batch_size=mlp_params.BATCH_SIZE
 )
 test_loader = torch.utils.data.DataLoader(
-    dataset=test_data, batch_size=1, shuffle=mlp_params.SHUFFLE
+    dataset=test_data,
+    batch_size=1,
 )
 
 # %%

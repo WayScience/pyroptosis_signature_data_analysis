@@ -66,3 +66,4 @@ class Parameters:
     CONTROL_NAME: str = "Control"
     TREATMENT_NAME: str = "Treatment"
     CELL_TYPE: str = "Cell_Type"
+    SHUFFLE: bool = True

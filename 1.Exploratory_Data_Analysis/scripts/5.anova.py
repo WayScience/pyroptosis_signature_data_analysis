@@ -165,7 +165,7 @@ tukey_df_sig_trt_1v2 = tukey_df_sig[
     (tukey_df_sig["group1"] == f"{treatment1}")
     & (tukey_df_sig["group2"] == f"{treatment2}")
 ]
-# get all group1 rows that are DMSO and group2 rows that are Thapsigargin 10
+# get all group1 rows that are DMSO and group2 rows that are Thapsigargin treatment
 tukey_df_sig_trt_1v3 = tukey_df_sig[
     (tukey_df_sig["group1"] == f"{treatment1}")
     & (tukey_df_sig["group2"] == f"{treatment3}")

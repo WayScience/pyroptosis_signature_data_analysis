@@ -80,6 +80,19 @@ nomic_df["Metadata_inhibitor_concentration_value"] = nomic_df[
 # In[7]:
 
 
+nomic_df["Metadata_inhibitor"].replace("Media ctr", "Media_ctr", inplace=True)
+nomic_df["Metadata_inducer1"].replace("media ctr", "Media_ctr", inplace=True)
+
+
+# In[8]:
+
+
+nomic_df.replace("nan", np.nan, inplace=True)
+
+
+# In[9]:
+
+
 ## Clean up df
 nomic_df["Metadata_inducer1_concentration_value"] = nomic_df[
     "Metadata_inducer1_concentration_value"
@@ -120,16 +133,16 @@ nomic_df["Metadata_Dose"] = np.select(condlist=conditions, choicelist=results)
 # one beta of inudcer1, inducer1 concentration, inhibitor, and inhibitor concentration all as 1 beta term
 nomic_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     nomic_df["Metadata_Treatment"]
-    + "_"
+    + "__"
     + nomic_df["Metadata_Dose"].astype(str)
-    + "_"
+    + "__"
     + nomic_df["Metadata_inhibitor"].astype(str)
-    + "_"
+    + "__"
     + nomic_df["Metadata_inhibitor_concentration_value"].astype(str)
 ).astype(str)
 
 
-# In[8]:
+# In[10]:
 
 
 nomic_cleaned = nomic_df.copy()
@@ -144,28 +157,28 @@ nomic_df = nomic_df.drop(["Metadata_Treatment"], axis=1)
 nomic_df = nomic_df.drop(["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"], axis=1)
 
 
-# In[9]:
+# In[11]:
 
 
 scaler = MinMaxScaler()
 nomic_df = pd.DataFrame(scaler.fit_transform(nomic_df), columns=nomic_df.columns)
 
 
-# In[10]:
+# In[12]:
 
 
 # summary statistics of df to check min-max normalization
 nomic_df.describe()
 
 
-# In[11]:
+# In[13]:
 
 
 # add position_x back to df
 nomic_df.loc[:, "Metadata_position_x"] = nomic_df_raw["position_x"]
 
 
-# In[12]:
+# In[14]:
 
 
 nomic_df = nomic_df.assign(
@@ -175,13 +188,16 @@ nomic_df = nomic_df.assign(
 )
 
 
-# In[13]:
+# In[15]:
 
 
-nomic_df.head(3)
+nomic_df["inducer_dose_unit"] = nomic_df_raw["inducer1_concentration_unit"]
 
 
-# In[14]:
+# In[16]:
 
 
 nomic_df.to_csv(nomic_df_filtered_out_path, index=False)
+
+
+# In[ ]:

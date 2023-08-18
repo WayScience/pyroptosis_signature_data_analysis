@@ -1060,21 +1060,21 @@ def test_optimized_model(
         ).resolve(strict=True)
         model.load_state_dict(
             torch.load(f"{save_state_path}/Multi_Class_{model_name}.pt")
-        )
+        ).to(params.DEVICE)
     elif params.MODEL_TYPE == "Binary_Classification":
         save_state_path = pathlib.Path(
             f"../../trained_models/model_save_states/Binary_Classification/{params.CELL_TYPE}"
         ).resolve(strict=True)
         model.load_state_dict(
             torch.load(f"{save_state_path}/Binary_Classification_{model_name}.pt")
-        )
+        ).to(params.DEVICE)
     elif params.MODEL_TYPE == "Regression":
         save_state_path = pathlib.Path(
             f"../../trained_models/model_save_states/Regression/{params.CELL_TYPE}"
         ).resolve(strict=True)
         model.load_state_dict(
             torch.load(f"{save_state_path}/Regression_{model_name}.pt")
-        )
+        ).to(params.DEVICE)
     else:
         raise ModelTypeError
     y_pred_prob_list = []

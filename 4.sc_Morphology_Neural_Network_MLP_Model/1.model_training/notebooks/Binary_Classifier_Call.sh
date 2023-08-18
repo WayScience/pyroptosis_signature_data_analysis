@@ -29,7 +29,7 @@ for cell_type in "${cell_types[@]}"; do
                 -p CONTROL_NAME $control_name \
                 -p TREATMENT_NAME ${treatment_names[$treatment_name]} \
                 -p MODEL_NAME ${model_names[$treatment_name]} \
-                -p SHUFFLE_DATA $shuffle
+                -p SHUFFLE $shuffle
             done
         done
     done

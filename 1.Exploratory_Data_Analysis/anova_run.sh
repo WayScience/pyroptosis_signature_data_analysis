@@ -32,5 +32,5 @@ for treatment1 in ${treatment1s[@]}; do
     done
 done
 
-# conver the notebook to script
+# convert the notebook to script
 jupyter nbconvert --to=script --FilesWriter.build_directory=scripts *.ipynb

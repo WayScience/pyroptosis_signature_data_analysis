@@ -55,6 +55,7 @@ CELL_TYPE = "SHSY5Y"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
 TREATMENT_NAME = "LPS_10.000_DMSO_0.025"
 MODEL_NAME = "DMSO_0.025_vs_LPS_10"
+SHUFFLE = False
 
 # %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=[]
 ml_configs_file = pathlib.Path("../../MLP_utils/binary_config.toml").resolve(

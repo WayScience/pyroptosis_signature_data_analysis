@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --nodes=1
-#SBATCH --ntasks=16
+#SBATCH --ntasks=32
 #SBATCH --mem=300G
 #SBATCH --partition=amem
 #SBATCH --qos=mem

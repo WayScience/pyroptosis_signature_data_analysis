@@ -32,6 +32,7 @@ for shuffled_data in "${shuffled_datas[@]}"; do
                     -p TREATMENT_NAME ${treatment_names[$treatment_name]} \
                     -p MODEL_NAME ${model_names[$treatment_name]} \
                     -p SHUFFLE_DATA $shuffle
+                done
             done
         done
     done

@@ -1,5 +1,6 @@
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(ggplot2))
+supressPackagesStartupMessages(library(argparse))
 
 figure_theme_path <- file.path(
     "..","visulaization_utils", "figure_themes.R")
@@ -10,6 +11,7 @@ parser <- ArgumentParser(description = "Visualize MLP results")
 # add arguments
 parser$add_argument('--celltype', type='character', help='Cell type to visualize')
 parser$add_argument('--model_name', type='character', help='Model name to visualize')
+parser$add_argument('--selected_treatment_comparisons', type='character', help='Selected treatment comparisons to visualize')
 
 # parse arguments from command line
 args <- parser$parse_args()
@@ -17,10 +19,8 @@ args <- parser$parse_args()
 # define cell type
 celltype <- args$celltype
 model_name <- args$model_name
+selected_treatment_comparisons <- args$selected_treatment_comparisons
 
-
-celltype <- "SHSY5Y"
-model_name <- "DMSO_0.025_vs_LPS_100"
 
 output_file <- file.path(
     "..","..","figures","Binary_Classification",model_name,celltype,"pr_curves_testing.png"
@@ -35,27 +35,25 @@ results_file <- file.path(
 
 # Read in the results file
 df <- read.csv(results_file)
-head(df,15)
+head(df,3)
 
 unique_treatments <- unique(df$treatments_tested)
 
-for (treatment in 1:length(unique_treatments)){
-    print(unique_treatments[treatment])
-}
+# split string in R
+selected_treatment_comparisons <- unlist(strsplit(selected_treatment_comparisons, split = ","))
+selected_treatment_comparisons
 
-
-unique_treatments[treatment]
 
 # subset the df to only include unique_treatments = treatment
-tmp_df <- df[df$treatments_tested == unique_treatments[treatment],]
+tmp_df <- df[df$treatments_tested %in% selected_treatment_comparisons,]
 
 
-head(df)
+tmp_df$treatments_tested <- gsub(" vs ", "\n", tmp_df$treatments_tested)
 
-
+head(tmp_df)
 
 pr_curve_gg <- (
-    ggplot(df, aes(x = Recall, y = Precision))
+    ggplot(tmp_df, aes(x = Recall, y = Precision))
     + geom_line(aes(color = treatments_tested, linetype = shuffled_data))
     + theme_bw()
     + xlab("Recall")
@@ -84,19 +82,12 @@ pr_curve_gg <- (
     + theme(
         legend.spacing.y = unit(0.1, "cm"),
         legend.box.spacing = unit(0.2, "cm"),
-        legend.key.size = unit(0.7, "lines"),
+        legend.key.size = unit(2.5, "lines"),
         legend.key.width = unit(1, "lines")
     )
-    # hide the legend
-    + theme(
-        legend.position = "none"
-    )
+    + ggtitle(paste0("Precision-Recall Curve for ","\n", model_name))
 )
 
 ggsave(output_file, pr_curve_gg, height = 5.5, width = 8.5, dpi = 500)
-
-pr_curve_gg
-
-
 
 

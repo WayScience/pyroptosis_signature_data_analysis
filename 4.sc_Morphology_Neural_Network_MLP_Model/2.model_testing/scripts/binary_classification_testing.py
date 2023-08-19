@@ -13,7 +13,7 @@
 #     name: python3
 # ---
 
-# %% papermill={"duration": 3.641528, "end_time": "2023-08-06T18:56:40.949436", "exception": false, "start_time": "2023-08-06T18:56:37.307908", "status": "completed"} tags=[]
+# %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=[]
 import pathlib
 import sys
 
@@ -48,15 +48,15 @@ from sklearn.metrics import (
 
 sys.path.append("../../..")
 
-# %% papermill={"duration": 0.00606, "end_time": "2023-08-06T18:56:40.960224", "exception": false, "start_time": "2023-08-06T18:56:40.954164", "status": "completed"} tags=["injected-parameters"]
+# %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=["injected-parameters"]
 # Parameters
+SHUFFLE_DATA = False
 CELL_TYPE = "SHSY5Y"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
-TREATMENT_NAME = "LPS_100.000_DMSO_0.025"
-MODEL_NAME = "DMSO_0.025_vs_LPS_100"
-SHUFFLE = False
+TREATMENT_NAME = "LPS_10.000_DMSO_0.025"
+MODEL_NAME = "DMSO_0.025_vs_LPS_10"
 
-# %% papermill={"duration": 0.00696, "end_time": "2023-08-06T18:56:40.968861", "exception": false, "start_time": "2023-08-06T18:56:40.961901", "status": "completed"} tags=[]
+# %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=[]
 ml_configs_file = pathlib.Path("../../MLP_utils/binary_config.toml").resolve(
     strict=True
 )
@@ -72,7 +72,7 @@ mlp_params.TREATMENT_NAME = TREATMENT_NAME
 mlp_params.MODEL_NAME = MODEL_NAME
 mlp_params.SHUFFLE = SHUFFLE
 
-# %% papermill={"duration": 56.196209, "end_time": "2023-08-06T18:57:37.166710", "exception": false, "start_time": "2023-08-06T18:56:40.970501", "status": "completed"} tags=[]
+# %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=[]
 # Import Data
 # set data file path under pathlib path for multi-system use
 file_path = pathlib.Path(
@@ -82,7 +82,7 @@ file_path = pathlib.Path(
 df = pq.read_table(file_path).to_pandas()
 
 
-# %% papermill={"duration": 0.010934, "end_time": "2023-08-06T18:57:37.182482", "exception": false, "start_time": "2023-08-06T18:57:37.171548", "status": "completed"} tags=[]
+# %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=[]
 def test_loop(df, output_name, title):
     # Code snippet for metadata extraction by Jenna Tomkinson
     df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
@@ -201,10 +201,10 @@ def test_loop(df, output_name, title):
     )
 
 
-# %% papermill={"duration": 0.284008, "end_time": "2023-08-06T18:57:37.468142", "exception": false, "start_time": "2023-08-06T18:57:37.184134", "status": "completed"} tags=[]
+# %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=[]
 print(df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique().tolist())
 
-# %% papermill={"duration": 0.007431, "end_time": "2023-08-06T18:57:37.477993", "exception": false, "start_time": "2023-08-06T18:57:37.470562", "status": "completed"} tags=[]
+# %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=[]
 paired_treatment_list = [
     ["DMSO_0.100_DMSO_0.025", "LPS_100.000_DMSO_0.025"],
     ["DMSO_0.100_DMSO_0.025", "Thapsigargin_1.000_DMSO_0.025"],
@@ -236,7 +236,7 @@ paired_treatment_list = [
     ["LPS_0.010_DMSO_0.025", "Thapsigargin_10.000_DMSO_0.025"],
 ]
 
-# %%
+# %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=[]
 # create a dataframe to store the model stats
 model_stats_df = pd.DataFrame(
     columns=[
@@ -251,7 +251,7 @@ model_stats_df = pd.DataFrame(
 )
 model_stats_df
 
-# %% papermill={"duration": 1448.376356, "end_time": "2023-08-06T19:21:45.856103", "exception": false, "start_time": "2023-08-06T18:57:37.479747", "status": "completed"} tags=[]
+# %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=[]
 for i in paired_treatment_list:
     # filter df to only include the two treatments to test
     test_df = df.query(
@@ -297,10 +297,10 @@ for i in paired_treatment_list:
     stats_df
     model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
-# %%
+# %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=[]
 model_stats_df
 
-# %%
+# %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=[]
 # set path for the model training metrics
 metrics_path = pathlib.Path(
     f"../../results/{mlp_params.MODEL_TYPE}/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}"
@@ -320,4 +320,4 @@ if metrics_file.exists():
 else:
     model_stats_df.to_csv(metrics_file, index=False)
 
-# %%
+# %% papermill={"duration": null, "end_time": null, "exception": null, "start_time": null, "status": "pending"} tags=[]

@@ -25,7 +25,7 @@ output_file <- file.path(
 )
 
 results_dir <- file.path(
-    "..","..","results","Binary_Classification","DMSO_0.025_vs_LPS_100","SHSY5Y"
+    "..","..","results","Binary_Classification",model_name,celltype
 )
 results_file <- file.path(
     results_dir,"training_metrics.csv"

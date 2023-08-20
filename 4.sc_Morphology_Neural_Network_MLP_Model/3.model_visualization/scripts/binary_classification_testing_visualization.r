@@ -1,6 +1,6 @@
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(ggplot2))
-supressPackagesStartupMessages(library(argparse))
+suppressPackageStartupMessages(library(argparse))
 
 figure_theme_path <- file.path(
     "..","visulaization_utils", "figure_themes.R")

@@ -1,0 +1,72 @@
+Input Notebook:  6.heterogeneity_analnysis.ipynb
+Output Notebook: 6.heterogeneity_analnysis.ipynb
+
+Executing:   0%|          | 0/12 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   8%|▊         | 1/12 [00:02<00:24,  2.20s/cell]
+Executing:  17%|█▋        | 2/12 [00:07<00:38,  3.88s/cell]
+Executing:  42%|████▏     | 5/12 [00:12<00:15,  2.24s/cell]
+Executing:  50%|█████     | 6/12 [00:12<00:10,  1.71s/cell]
+Executing:  83%|████████▎ | 10/12 [00:52<00:13,  6.64s/cell]
+Executing: 100%|██████████| 12/12 [00:53<00:00,  4.88s/cell]
+Executing: 100%|██████████| 12/12 [00:54<00:00,  4.55s/cell]
+Input Notebook:  6.heterogeneity_analnysis.ipynb
+Output Notebook: 6.heterogeneity_analnysis.ipynb
+
+Executing:   0%|          | 0/12 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   8%|▊         | 1/12 [00:01<00:19,  1.81s/cell]
+Executing:  17%|█▋        | 2/12 [00:06<00:34,  3.50s/cell]
+Executing:  42%|████▏     | 5/12 [01:53<03:06, 26.61s/cell]
+Executing:  50%|█████     | 6/12 [01:54<02:00, 20.01s/cell]
+Executing:  67%|██████▋   | 8/12 [01:54<00:46, 11.64s/cell]
+Executing:  83%|████████▎ | 10/12 [04:44<01:18, 39.20s/cell]
+Executing: 100%|██████████| 12/12 [04:52<00:00, 26.77s/cell]
+Executing: 100%|██████████| 12/12 [04:53<00:00, 24.47s/cell]
+[NbConvertApp] WARNING | Config option `kernel_spec_manager_class` not recognized by `NbConvertApp`.
+[NbConvertApp] Converting notebook 0.nomic_cleanup.ipynb to script
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbformat/reader.py", line 20, in parse_json
+    nb_dict = json.loads(s, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 2395 column 1 (char 95764)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/jupyter-nbconvert", line 10, in <module>
+    sys.exit(main())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/jupyter_core/application.py", line 285, in launch_instance
+    return super().launch_instance(argv=argv, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/traitlets/config/application.py", line 1043, in launch_instance
+    app.start()
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbconvert/nbconvertapp.py", line 414, in start
+    self.convert_notebooks()
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbconvert/nbconvertapp.py", line 589, in convert_notebooks
+    self.convert_single_notebook(notebook_filename)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbconvert/nbconvertapp.py", line 555, in convert_single_notebook
+    output, resources = self.export_single_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbconvert/nbconvertapp.py", line 481, in export_single_notebook
+    output, resources = self.exporter.from_filename(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbconvert/exporters/templateexporter.py", line 388, in from_filename
+    return super().from_filename(filename, resources, **kw)  # type:ignore
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbconvert/exporters/exporter.py", line 201, in from_filename
+    return self.from_file(f, resources=resources, **kw)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbconvert/exporters/templateexporter.py", line 394, in from_file
+    return super().from_file(file_stream, resources, **kw)  # type:ignore
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbconvert/exporters/exporter.py", line 221, in from_file
+    nbformat.read(file_stream, as_version=4), resources=resources, **kw
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbformat/__init__.py", line 171, in read
+    return reads(buf, as_version, capture_validation_error, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbformat/__init__.py", line 89, in reads
+    nb = reader.reads(s, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbformat/reader.py", line 76, in reads
+    nb_dict = parse_json(s, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbformat/reader.py", line 26, in parse_json
+    raise NotJSONError(message) from e
+nbformat.reader.NotJSONError: Notebook does not appear to be JSON: '{\n "cells": [\n  {\n   "cell_type": "c...

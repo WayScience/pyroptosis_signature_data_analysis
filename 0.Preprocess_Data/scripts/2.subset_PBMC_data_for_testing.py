@@ -11,6 +11,8 @@ import pathlib
 
 import numpy as np
 import pandas as pd
+
+import papermill as pm
 import pyarrow as pa
 import pyarrow.parquet as pq
 
@@ -18,6 +20,9 @@ import pyarrow.parquet as pq
 
 
 # Parameters
+
+celltype = "SHSY5Y"
+
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
 TREATMENT_NAME = "LPS_100.000_DMSO_0.025"
 
@@ -26,10 +31,11 @@ TREATMENT_NAME = "LPS_100.000_DMSO_0.025"
 
 
 # Define inputs
-feature_file = pathlib.Path("../../data/PBMC_preprocessed_sc_norm.parquet")
+
+feature_file = pathlib.Path("../data/PBMC_preprocessed_sc_norm.parquet")
 df = pq.read_table(feature_file).to_pandas()
 output_dir = pathlib.Path(
-    f"../../data/PBMC_subset_sc_norm_{CONTROL_NAME}_{TREATMENT_NAME}.parquet"
+    f"../data/PBMC_subset_sc_norm_{CONTROL_NAME}_{TREATMENT_NAME}.parquet"
 )
 
 

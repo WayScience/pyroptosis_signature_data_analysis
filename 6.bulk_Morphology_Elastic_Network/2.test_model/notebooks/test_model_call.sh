@@ -29,7 +29,7 @@ command1="papermill \
     2.visualize_regression_multi_ouput.ipynb \
     2.visualize_regression_multi_ouput.ipynb"
 
-command2="Rscript 2.visualize_regression_multi_ouput.r"
+command2="Rscript ../scripts/2.visualize_regression_multi_ouput.r"
 
 $command1 \
 -p cell_type $cell_type \

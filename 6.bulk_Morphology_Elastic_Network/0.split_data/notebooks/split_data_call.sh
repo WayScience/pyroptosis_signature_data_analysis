@@ -25,7 +25,7 @@ shuffle_idx=$((job_id % ${#shuffles[@]}))
 cell_type_idx=$(((job_id / ${#shuffles[@]}) % ${#cell_types[@]}))
 aggregation_idx=$(((job_id / (${#shuffles[@]} * ${#cell_types[@]})) % ${#aggregation[@]}))
 
-shuffle=${shuffles[$shuffle_idx]}
+
 cell_type=${cell_types[$cell_type_idx]}
 aggregation=${aggregation[$aggregation_idx]}
 
@@ -39,7 +39,4 @@ echo $cell_type $aggregation $shuffle
 $command \
     -p cell_type $cell_type \
     -p aggregation $aggregation \
-    -p shuffle $shuffle \
-    -p aggregation True \
     -p nomic True \
-    -p flag True \

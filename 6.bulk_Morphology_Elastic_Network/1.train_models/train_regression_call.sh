@@ -8,6 +8,7 @@
 #SBATCH --qos=mem
 #SBATCH --time=24:00:00
 #SBATCH --output=sample-%j.out
+#SBATCH --array=1-8%4
 
 module load anaconda
 
@@ -15,22 +16,28 @@ conda activate Interstellar
 
 shuffles=(True False)
 cell_types=( SHSY5Y PBMC )
-# loop through the define cell types and if the data should be shuffled or not
-for shuffle in "${shuffles[@]}"; do
-    for cell_type in "${cell_types[@]}"; do
-        # use papermill to run the notebooks with injected parameters
-        papermill \
-            # input notebook
-            1.train_regression_multi_ouput.ipynb \
-            # output notebook
-            1.train_regression_multi_ouput.ipynb \
-            # parameters by name followed by the value
-            -p cell_type $cell_type \
-            -p aggregation True \
-            -p nomic True \
-            -p flag True \
-            -p control "DMSO_0.100_DMSO_0.025" \
-            -p treatment "LPS_100.000_DMSO_0.025" \
-            -p shuffle $shuffle
-    done
-done
+aggregation=( True False )
+
+# calculate the number of jobs
+job_id=$((SLURM_ARRAY_TASK_ID - 1))
+shuffle_idx=$((job_id % ${#shuffles[@]}))
+cell_type_idx=$(((job_id / ${#shuffles[@]}) % ${#cell_types[@]}))
+aggregation_idx=$(((job_id / (${#shuffles[@]} * ${#cell_types[@]})) % ${#aggregation[@]}))
+
+shuffle=${shuffles[$shuffle_idx]}
+cell_type=${cell_types[$cell_type_idx]}
+aggregation=${aggregation[$aggregation_idx]}
+
+command="papermill \
+    1.train_regression_multi_ouput.ipynb \
+    1.train_regression_multi_ouput.ipynb"
+
+echo $cell_type $aggregation $shuffle
+
+$command \
+    -p cell_type $cell_type \
+    -p aggregation $aggregation \
+    -p shuffle $shuffle \
+    -p aggregation True \
+    -p nomic True \
+    -p flag True \

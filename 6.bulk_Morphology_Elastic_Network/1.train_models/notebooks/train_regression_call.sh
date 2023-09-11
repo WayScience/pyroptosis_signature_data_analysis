@@ -29,8 +29,8 @@ cell_type=${cell_types[$cell_type_idx]}
 aggregation=${aggregation[$aggregation_idx]}
 
 command="papermill \
-    1.train_regression_multi_ouput.ipynb \
-    1.train_regression_multi_ouput.ipynb"
+    notebooks/1.train_regression_multi_ouput.ipynb \
+    notebooks/1.train_regression_multi_ouput.ipynb"
 
 echo $cell_type $aggregation $shuffle
 
@@ -40,4 +40,3 @@ $command \
     -p shuffle $shuffle \
     -p aggregation True \
     -p nomic True \
-    -p flag True \

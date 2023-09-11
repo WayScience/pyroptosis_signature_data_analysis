@@ -14,17 +14,14 @@ module load anaconda
 
 conda activate Interstellar
 
-shuffles=(True False)
 cell_types=( SHSY5Y PBMC )
 aggregations=( True False )
 
 # calculate the number of jobs
 job_id=$((SLURM_ARRAY_TASK_ID - 1))
-shuffle_idx=$((job_id % ${#shuffles[@]}))
 cell_type_idx=$(((job_id / ${#shuffles[@]}) % ${#cell_types[@]}))
 aggregation_idx=$(((job_id / (${#shuffles[@]} * ${#cell_types[@]})) % ${#aggregations[@]}))
 
-shuffle=${shuffles[$shuffle_idx]}
 cell_type=${cell_types[$cell_type_idx]}
 aggregation=${aggregations[$aggregation_idx]}
 
@@ -43,7 +40,4 @@ $command1 \
 
 $command2 \
     --aggregation $aggregation \
-    --cell_type $cell_type \
-    --nomic True \
-    --flag True \
-    --shuffle $shuffle
+    --cell_type $cell_type

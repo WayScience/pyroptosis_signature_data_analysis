@@ -28,7 +28,7 @@ repos:
     rev: v1.14.0  # CURRENT_TAG/COMMIT_HASH
     hooks:
     - id: jupytext
-      args: [--from, notebooks///ipynb, --to, "scripts///py:percent", --sync, --pipe, black]
+      args: [--from, notebooks//ipynb, --to, "scripts//py:percent", --sync, --pipe, black]
 
   # remove unused imports
   - repo: https://github.com/hadialqattan/pycln.git

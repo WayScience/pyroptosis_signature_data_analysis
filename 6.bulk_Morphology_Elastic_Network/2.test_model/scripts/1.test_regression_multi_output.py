@@ -1,0 +1,434 @@
+# ---
+# jupyter:
+#   jupytext:
+#     formats: ipynb,../scripts//py:percent
+#     text_representation:
+#       extension: .py
+#       format_name: percent
+#       format_version: '1.3'
+#       jupytext_version: 1.15.1
+#   kernelspec:
+#     display_name: Interstellar
+#     language: python
+#     name: python3
+# ---
+
+# %%
+import ast
+import itertools
+import pathlib
+
+import joblib
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pyarrow.parquet as pq
+
+# plot the predictions
+import seaborn as sns
+import toml
+from joblib import dump
+from sklearn.exceptions import ConvergenceWarning
+from sklearn.linear_model import ElasticNetCV, LogisticRegression, MultiTaskElasticNetCV
+
+# import mse
+from sklearn.metrics import mean_squared_error, r2_score
+
+# import RepeatedKFold
+from sklearn.model_selection import (
+    GridSearchCV,
+    LeaveOneOut,
+    RepeatedKFold,
+    StratifiedKFold,
+    cross_val_score,
+    train_test_split,
+)
+from sklearn.utils import parallel_backend
+
+# %%
+# Parameters
+cell_type = "PBMC"
+aggregation = True
+nomic = True
+flag = True
+control = "DMSO_0.100_DMSO_0.025"
+treatment = "LPS_100.000_DMSO_0.025"
+shuffle = True
+
+# %%
+# set shuffle value
+if shuffle:
+    shuffle = "shuffled_baseline"
+else:
+    shuffle = "final"
+
+# %%
+MODEL_TYPE = "regression"
+if flag == False:
+    # read in toml file and get parameters
+    toml_path = pathlib.Path("single_class_config.toml")
+    with open(toml_path, "r") as f:
+        config = toml.load(f)
+    control = config["logistic_regression_params"]["control"]
+    treatment = config["logistic_regression_params"]["treatments"]
+    aggregation = ast.literal_eval(config["logistic_regression_params"]["aggregation"])
+    nomic = ast.literal_eval(config["logistic_regression_params"]["nomic"])
+    cell_type = config["logistic_regression_params"]["cell_type"]
+
+# %%
+# load training data from indexes and features dataframe
+# data_split_path = pathlib.Path(f"../0.split_data/indexes/data_split_indexes.tsv")
+# data_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
+data_path = pathlib.Path(
+    "../../data/PBMC_subset_sc_norm_DMSO_0.100_DMSO_0.025_LPS_100.000_DMSO_0.025.parquet"
+)
+
+# dataframe with only the labeled data we want (exclude certain phenotypic classes)
+data_df = pq.read_table(data_path).to_pandas()
+
+# import nomic data
+nomic_df_path = pathlib.Path(
+    f"../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_cleanup4correlation.csv"
+)
+df_nomic = pd.read_csv(nomic_df_path)
+
+# clean up nomic data
+df_nomic = df_nomic.drop(columns=[col for col in df_nomic.columns if "[pgML]" in col])
+# drop first 25 columns (Metadata that is not needed)
+# df_nomic = df_nomic.drop(columns=df_nomic.columns[3:25])
+# df_nomic = df_nomic.drop(columns=df_nomic.columns[0:2])
+
+# %%
+if (aggregation == True) and (nomic == True):
+    data_split_path = pathlib.Path(
+        f"../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}/aggregated_sc_and_nomic_data_split_indexes.tsv"
+    )
+    data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
+    # subset each column that contains metadata
+    metadata = data_df.filter(regex="Metadata")
+    data_df = data_df.drop(metadata.columns, axis=1)
+    data_df = pd.concat([data_df, metadata["Metadata_Well"]], axis=1)
+    # groupby well and take mean of each well
+    data_df = data_df.groupby("Metadata_Well").mean()
+    # drop duplicate rows in the metadata_well column
+    metadata = metadata.drop_duplicates(subset=["Metadata_Well"])
+    # get the metadata for each well
+    data_df = pd.merge(
+        data_df, metadata, left_on="Metadata_Well", right_on="Metadata_Well"
+    )
+    data_df = pd.merge(
+        data_df,
+        df_nomic,
+        left_on=["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+        right_on=["Metadata_position_x", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+    )
+    data_df = data_df.drop(columns=["Metadata_position_x"])
+elif (aggregation == True) and (nomic == False):
+    data_split_path = pathlib.Path(
+        f"../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}/aggregated_sc_data_split_indexes.tsv"
+    )
+    data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
+    # subset each column that contains metadata
+    metadata = data_df.filter(regex="Metadata")
+    data_df = data_df.drop(metadata.columns, axis=1)
+    data_df = pd.concat([data_df, metadata["Metadata_Well"]], axis=1)
+    # groupby well and take mean of each well
+    data_df = data_df.groupby("Metadata_Well").mean()
+    # drop duplicate rows in the metadata_well column
+    metadata = metadata.drop_duplicates(subset=["Metadata_Well"])
+    # get the metadata for each well
+    data_df = pd.merge(
+        data_df,
+        df_nomic,
+        left_on=["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+        right_on=["Metadata_position_x", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+    )
+elif (aggregation == False) and (nomic == True):
+    data_split_path = pathlib.Path(
+        f"../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}/sc_and_nomic_data_split_indexes.tsv"
+    )
+    data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
+    data_df = pd.merge(
+        data_df,
+        df_nomic,
+        left_on=["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+        right_on=["Metadata_position_x", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+    )
+    data_df = data_df.drop(columns=["Metadata_position_x"])
+elif aggregation == False and nomic == False:
+    data_split_path = pathlib.Path(
+        f"../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}/sc_split_indexes.tsv"
+    )
+    data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
+else:
+    print("Error")
+
+# %%
+# select tht indexes for the training and test set
+train_indexes = data_split_indexes.loc[data_split_indexes["label"] == "train"]
+test_indexes = data_split_indexes.loc[data_split_indexes["label"] == "test"]
+
+# %%
+# subset data_df by indexes in data_split_indexes
+training_data = data_df.loc[train_indexes["labeled_data_index"]]
+testing_data = data_df.loc[test_indexes["labeled_data_index"]]
+
+# %%
+# get oneb_Metadata_Treatment_Dose_Inhibitor_Dose  =='DMSO_0.100_DMSO_0.025' and 'LPS_100.000_DMSO_0.025 and Thapsigargin_10.000_DMSO_0.025'
+training_data = training_data[
+    training_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
+        [control, treatment]
+    )
+]
+testing_data = testing_data[
+    testing_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
+        [control, treatment]
+    )
+]
+
+# %%
+# at random downsample the DMSO treatment to match the number of wells in the LPS treatment
+seed = 0
+# get the number of wells in the LPS treatment
+trt_wells = training_data[
+    training_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] == treatment
+].shape[0]
+# get the number of wells in the DMSO treatment
+dmso_wells = training_data[
+    training_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] == control
+].shape[0]
+# downsample the DMSO treatment to match the number of wells in the LPS treatment
+dmso_holdout = training_data[
+    training_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] == control
+].sample(n=trt_wells, random_state=seed)
+# remove the downsampled DMSO wells from the data
+training_data = training_data.drop(dmso_holdout.index)
+
+# %%
+# define metadata columns
+# subset each column that contains metadata
+metadata_train = training_data.filter(regex="Metadata")
+# drop all metadata columns
+train_data_x = training_data.drop(metadata_train.columns, axis=1)
+train_treatments = training_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
+# get all columns that contain "NSU" in the column name
+train_data_y_cols = train_data_x.filter(regex="NSU").columns
+train_data_y = training_data[train_data_y_cols]
+train_data_x = train_data_x.drop(train_data_y_cols, axis=1)
+
+
+# define metadata columns
+# subset each column that contains metadata
+metadata_test = testing_data.filter(regex="Metadata")
+# drop all metadata columns
+test_data_x = testing_data.drop(metadata_test.columns, axis=1)
+test_treatments = testing_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
+# get all columns that contain "NSU" in the column name
+test_data_y_cols = test_data_x.filter(regex="NSU").columns
+test_data_y = testing_data[test_data_y_cols]
+test_data_x = test_data_x.drop(test_data_y_cols, axis=1)
+
+# %%
+print(train_data_x.shape, train_data_y.shape, test_data_x.shape, test_data_y.shape)
+
+# %%
+# set model path from parameters
+if (aggregation == True) and (nomic == True):
+    model_path = pathlib.Path(
+        f"models/regression/{cell_type}/aggregated_with_nomic/{control}__{treatment}"
+    )
+elif (aggregation == True) and (nomic == False):
+    model_path = pathlib.Path(
+        f"models/regression/{cell_type}/aggregated/{control}__{treatment}"
+    )
+elif (aggregation == False) and (nomic == True):
+    model_path = pathlib.Path(
+        f"models/regression/{cell_type}/sc_with_nomic/{control}__{treatment}"
+    )
+elif (aggregation == False) and (nomic == False):
+    model_path = pathlib.Path(
+        f"models/regression/{cell_type}/sc/{control}__{treatment}"
+    )
+else:
+    print("Error")
+
+# %%
+data_dict = {
+    "train_data": {
+        "data_x": train_data_x,
+        "data_y": train_data_y,
+        "col_names": train_data_y_cols,
+        "metadata": metadata_train,
+    },
+    "test_data": {
+        "data_x": test_data_x,
+        "data_y": test_data_y,
+        "col_names": test_data_y_cols,
+        "metadata": metadata_test,
+    },
+}
+
+# %%
+# cross validation method
+loo = LeaveOneOut()
+
+# lsit of metrics to use
+metrics = ["explained_variance", "neg_mean_absolute_error", "neg_mean_squared_error"]
+output_metric_scores = {}
+
+# %%
+# blank df for concatenated results
+results_df = pd.DataFrame(
+    columns=[
+        "explained_variance",
+        "neg_mean_absolute_error",
+        "neg_mean_squared_error",
+        "well",
+        "treatment",
+        "r2",
+        "cytokine",
+        "data_split",
+        "shuffle",
+        "predicted_value",
+        "actual_value",
+        "log10_neg_mean_absolute_error",
+        "log10_neg_mean_squared_error",
+        "log10_explained_variance",
+    ]
+)
+
+# %%
+for cytokine in train_data_y_cols:
+    for data_split in data_dict:
+        print(data_split)
+        for i in data_dict[data_split]:
+            print(i)
+            data_x = data_dict[data_split]["data_x"]
+            data_y = data_dict[data_split]["data_y"]
+            col_names = data_dict[data_split]["col_names"]
+            metadata = data_dict[data_split]["metadata"]
+        if shuffle == "shuffled_baseline":
+            model = joblib.load(
+                f"../1.train_models/{model_path}/{cytokine}_shuffled_baseline__all_nomic.joblib"
+            )
+        elif shuffle == "final":
+            model = joblib.load(
+                f"../1.train_models/{model_path}/{cytokine}_final__all_nomic.joblib"
+            )
+        else:
+            print("Error")
+
+        # get the cytokine column of choice
+        y_selected = data_y[cytokine]
+
+        if shuffle == "shuffled_baseline":
+            for column in data_x:
+                np.random.shuffle(data_x[column].values)
+
+        # get predictions
+        predictions = model.predict(data_x)
+        for metric in metrics:
+            scores = cross_val_score(
+                model, data_x, y_selected, scoring=metric, cv=loo, n_jobs=-1
+            )
+            output_metric_scores[metric] = scores
+        r2 = r2_score(y_selected, predictions)
+        output_metric_scores["treatment"] = metadata[
+            "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+        ]
+        output_metric_scores["well"] = metadata["Metadata_Well"]
+        print(output_metric_scores)
+        df = pd.DataFrame.from_dict(output_metric_scores)
+        df["r2"] = r2
+        df["cytokine"] = cytokine
+        df["data_split"] = data_split
+        df["shuffle"] = shuffle
+        df["predicted_value"] = predictions
+        df["actual_value"] = y_selected
+        df["log10_neg_mean_absolute_error"] = -np.log10(-df["neg_mean_absolute_error"])
+        df["log10_neg_mean_squared_error"] = -np.log10(-df["neg_mean_squared_error"])
+        df["log10_explained_variance"] = -np.log10(df["explained_variance"])
+
+        # replace "[NSU]" with """
+        df["cytokine"] = df["cytokine"].replace("[ \[\]NSU]", "", regex=True)
+        df["cytokine"] = df["cytokine"].replace(" ", "_", regex=True)
+
+        # concat the dataframes
+        results_df = pd.concat([results_df, df], axis=0)
+
+# %%
+results_df
+
+# %%
+var_df = results_df.drop(
+    columns=[
+        "explained_variance",
+        "neg_mean_absolute_error",
+        "neg_mean_squared_error",
+        "well",
+        "treatment",
+        "r2",
+        "log10_neg_mean_absolute_error",
+        "log10_neg_mean_squared_error",
+        "log10_explained_variance",
+    ]
+)
+# calculate the variance of the actual and predicted values per cytokine
+var_df = var_df.groupby(["cytokine", "data_split", "shuffle"]).var()
+var_df = pd.merge(
+    var_df,
+    results_df.groupby(["cytokine", "data_split", "shuffle"]).r2.unique(),
+    left_index=True,
+    right_index=True,
+)
+var_df.reset_index(inplace=True)
+var_df.head()
+
+# %%
+# set model path from parameters
+if (aggregation == True) and (nomic == True):
+    results_path = pathlib.Path(
+        f"results/regression/{cell_type}/aggregated_with_nomic/{control}__{treatment}"
+    )
+elif (aggregation == True) and (nomic == False):
+    results_path = pathlib.Path(
+        f"results/regression/{cell_type}/aggregated/{control}__{treatment}"
+    )
+elif (aggregation == False) and (nomic == True):
+    results_path = pathlib.Path(
+        f"results/regression/{cell_type}/sc_with_nomic/{control}__{treatment}"
+    )
+elif (aggregation == False) and (nomic == False):
+    results_path = pathlib.Path(
+        f"results/regression/{cell_type}/sc/{control}__{treatment}"
+    )
+else:
+    print("Error")
+pathlib.Path(results_path).mkdir(parents=True, exist_ok=True)
+
+# %%
+# check if the model training metrics file exists
+metrics_file = pathlib.Path(f"{results_path}/model_stats.csv")
+if metrics_file.exists():
+    metrics_df = pd.read_csv(metrics_file)
+    if len(metrics_df["shuffle"].unique()) > 1:
+        pass
+    else:
+        metrics_df = pd.concat([metrics_df, results_df], axis=0)
+        metrics_df.to_csv(metrics_file, index=False)
+else:
+    results_df.to_csv(metrics_file, index=False)
+
+
+# do the same for the variance df
+# check if the model training metrics file exists
+metrics_file = pathlib.Path(f"{results_path}/variance_r2_stats.csv")
+if metrics_file.exists():
+    metrics_df = pd.read_csv(metrics_file)
+    if len(metrics_df["shuffle"].unique()) > 1:
+        pass
+    else:
+        metrics_df = pd.concat([metrics_df, var_df], axis=0)
+        metrics_df.to_csv(metrics_file, index=False)
+else:
+    var_df.to_csv(metrics_file, index=False)

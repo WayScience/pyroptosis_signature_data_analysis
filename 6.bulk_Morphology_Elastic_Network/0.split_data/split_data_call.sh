@@ -21,9 +21,9 @@ for shuffle in "${shuffles[@]}"; do
         # use papermill to run the notebooks with injected parameters
         papermill \
             # input notebook
-            1.train_regression_multi_ouput.ipynb \
+            0.split_data_regression.ipynb \
             # output notebook
-            1.train_regression_multi_ouput.ipynb \
+            0.split_data_regression.ipynb \
             # parameters by name followed by the value
             -p cell_type $cell_type \
             -p aggregation True \

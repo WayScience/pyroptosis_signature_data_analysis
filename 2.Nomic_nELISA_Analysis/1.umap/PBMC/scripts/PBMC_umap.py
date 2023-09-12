@@ -103,7 +103,7 @@ nELISA_orgingal_plate.to_csv(nELISA_plate_430420_out_path, index=False)
 # In[8]:
 
 
-# select treatments from the lsit of treatments from the df
+# select treatments from the list of treatments from the df
 nELISA_plate_430420_PBMC_treatments = nELISA_plate_430420_PBMC[
     nELISA_plate_430420_PBMC["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
         treatments

@@ -32,4 +32,4 @@ for cell_type in "${cell_types[@]}"; do
     done
 done
 
-jupyter nbconvert --to=script --FilesWriter.build_directory=../scripts *.ipynb
+jupyter nbconvert --to=script --FilesWriter.build_directory=../scripts ./*.ipynb

@@ -63,9 +63,8 @@ from utils.utils import df_stats
 
 # %%
 # Parameters
-CELL_TYPE = "PBMC"
+CELL_TYPE = "SHSY5Y"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
-# TREATMENT_NAME = "LPS_100.000_DMSO_0.025"
 TREATMENT_NAME = "LPS_100.000_DMSO_0.025"
 MODEL_NAME = "DMSO_0.025_vs_LPS_100"
 
@@ -89,20 +88,17 @@ mlp_params.SHUFFLE = False
 # set data file path under pathlib path for multi-system use
 
 # Commented out for now, using a different data set to trobleshoot
-# file_path = pathlib.Path(
-#     f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm.parquet"
-# ).resolve(strict=True)
-
 file_path = pathlib.Path(
-    "../../../data/PBMC_subset_sc_norm_DMSO_0.100_DMSO_0.025_LPS_100.000_DMSO_0.025.parquet"
-)
+    f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm.parquet"
+).resolve(strict=True)
+
 
 # set path for nomic data
 nomic_df_path = pathlib.Path(
     f"../../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{mlp_params.CELL_TYPE}_cleanup4correlation.csv"
 ).resolve(strict=True)
 
-df = pq.read_table(file_path).to_pandas()
+df = pd.read_parquet(file_path)
 nomic_df = pd.read_csv(nomic_df_path)
 
 # %%
@@ -150,16 +146,15 @@ print(df.shape)
 
 # %%
 # Code snippet for metadata extraction by Jenna Tomkinson
-df_metadata = list(df.columns[df.columns.str.contains("Metadata")])
+df_metadata = df.columns[df.columns.str.contains("Metadata")].to_list()
 
 # define which columns are data and which are descriptive
-df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 # %%
 df_values[
     ["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-] = df_descriptive[["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]]
+] = df_metadata[["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]]
 df = (
     df_values.groupby(["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"])
     .median()
@@ -205,10 +200,9 @@ print(
 
 # %%
 # Code snippet for metadata extraction by Jenna Tomkinson
-df_metadata = list(df.columns[df.columns.str.contains("Metadata")])
+df_metadata = df.columns[df.columns.str.contains("Metadata")].to_list()
 
 # define which columns are data and which are descriptive
-df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 # %%
@@ -218,7 +212,7 @@ df_values_X = df_values.drop(columns=df_values_Y.columns)
 # drop all columns except for IL1B and TNFa
 col = ["IL-1 beta [NSU]"]
 df_values_Y = df_values_Y[col]
-df_values_Y["Metadata_Well"] = df_descriptive["Metadata_Well"]
+df_values_Y["Metadata_Well"] = df_metadata["Metadata_Well"]
 print(df_values.shape)
 print(df_values_X.shape)
 print(df_values_Y.shape)

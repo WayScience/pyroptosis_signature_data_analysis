@@ -90,7 +90,7 @@ nomic_data_selected_treatments_plot <- (
 
 
 )
-# extrtact the legend
+# extract the legend
 nomic_data_selected_treatments_plot_legend <- get_legend(nomic_data_selected_treatments_plot)
 
 # remove the legend from the plot

@@ -48,20 +48,24 @@ nELISA_data_values = nELISA_orgingal_plate.filter(like="NSU", axis=1).astype("fl
 nELISA_data_values.head()
 
 
-# In[4]:
+# In[6]:
 
 
-# print mean and stdev of first data column before and after normalization to check normalization
-print(f"NSU nELISA mean of Activin A: {nELISA_data_values['Activin A [NSU]'].mean()}")
-print(f"NSU nELISA STDEV of Activin A: {nELISA_data_values['Activin A [NSU]'].std()}")
-print(f"NSU nELISA min of Activin A: {nELISA_data_values['Activin A [NSU]'].min()}")
-print(f"NSU nELISA max of Activin A: {nELISA_data_values['Activin A [NSU]'].max()}")
+print(
+    f"""
+NSU nELISA mean of Activin A: {nELISA_data_values['Activin A [NSU]'].mean()}
+NSU nELISA STDEV of Activin A: {nELISA_data_values['Activin A [NSU]'].std()}
+NSU nELISA min of Activin A: {nELISA_data_values['Activin A [NSU]'].min()}
+NSU nELISA max of Activin A: {nELISA_data_values['Activin A [NSU]'].max()}
+"""
+)
 
 
 # In[5]:
 
 
 # rename columns to remove special character "/"
+# with "/" in the column names file nameing is not possible
 nELISA_orgingal_plate.columns = nELISA_orgingal_plate.columns.str.replace("/", "_")
 
 # set umap parameters
@@ -112,10 +116,8 @@ nELISA_plate_430420_PBMC_treatments = nELISA_plate_430420_PBMC[
 # select data only columns and make floats
 nELISA_plate_430420_PBMC_treatments_values = nELISA_plate_430420_PBMC_treatments.filter(
     like="NSU", axis=1
-)
-nELISA_plate_430420_PBMC_treatments_values = (
-    nELISA_plate_430420_PBMC_treatments_values.astype("float")
-)
+).astype("float")
+
 # fit and transform data for umap
 proj_2d = umap_params.fit_transform(nELISA_plate_430420_PBMC_treatments_values)
 

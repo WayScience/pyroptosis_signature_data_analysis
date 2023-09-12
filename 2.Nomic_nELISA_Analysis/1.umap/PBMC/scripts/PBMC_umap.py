@@ -44,8 +44,7 @@ nELISA_orgingal_plate = nELISA_plate_430420_PBMC.copy()
 
 
 # select data only columns and make floats
-nELISA_data_values = nELISA_orgingal_plate.filter(like="NSU", axis=1)
-nELISA_data_values = nELISA_data_values.astype("float")
+nELISA_data_values = nELISA_orgingal_plate.filter(like="NSU", axis=1).astype("float")
 nELISA_data_values.head()
 
 

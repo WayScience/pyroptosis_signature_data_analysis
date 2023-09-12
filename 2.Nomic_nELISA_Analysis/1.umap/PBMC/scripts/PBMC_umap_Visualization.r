@@ -1,13 +1,16 @@
 library(ggplot2)
 library(gridExtra)
 library(cowplot)
+library(styler)
 
 cell_type <- "PBMC"
 
 # import paths
 
-nomic_data_path <- "./results/nELISA_plate_430420_umap_PBMC.csv"
-nomic_data_selected_treatments_path <- "./results/nELISA_plate_430420_umap_PBMC_selected_treatments.csv"
+nomic_data_path <- file.path("./results/nELISA_plate_430420_umap_PBMC.csv")
+nomic_data_selected_treatments_path <- file.path("./results/nELISA_plate_430420_umap_PBMC_selected_treatments.csv")
+
+figure_output_path <- file.path("./figures/")
 
 # read data
 nomic_data <- read.csv(nomic_data_path)
@@ -43,10 +46,10 @@ nomic_data_plot <- (
 
 
 )
-# extrtact the legend
+# extract the legend
 legend <- get_legend(nomic_data_plot)
 
-# remove the legend from the plot
+# remove the legend from the plot # will be saved separately
 nomic_data_plot <- (
     nomic_data_plot
     + theme(legend.position = "none")
@@ -58,8 +61,8 @@ legend
 
 # save the plot
 # set the path
-plot_path <- paste0("./figures/","umap_by_all_treatment.png")
-plot_legend_path <- paste0("./figures/","umap_by_all_treatment_legend.png")
+plot_path <- file.path(paste0(figure_output_path,"umap_by_all_treatment.png"))
+plot_legend_path <- file.path(paste0(figure_output_path,"umap_by_all_treatment_legend.png"))
 # save the plot
 ggsave(plot_path, nomic_data_plot, width = 8.5, height = 5.5, dpi = 500)
 ggsave(plot_legend_path, legend,dpi = 500, scale = 2)
@@ -70,7 +73,7 @@ ggsave(plot_legend_path, legend,dpi = 500, scale = 2)
 nomic_data_selected_treatments_plot <- (
     ggplot(nomic_data_selected_treatments, aes(x = umap_1, y = umap_2, color = oneb_Metadata_Treatment_Dose_Inhibitor_Dose))
     + geom_point(size = 5)
-    # detach the legend and plot it separately
+    # detach the legend and plot it separately # save separately too
     + theme_bw()
     + theme(
         legend.position = "right",
@@ -105,8 +108,8 @@ nomic_data_selected_treatments_plot_legend
 
 # save the plot
 # set the path
-plot_path <- paste0("./figures/","umap_by_selected_treatment.png")
-plot_legend_path <- paste0("./figures/","umap_by_selected_treatment_legend.png")
+plot_path <- file.path(paste0(figure_output_path,"umap_by_selected_treatment.png"))
+plot_legend_path <- file.path(paste0(figure_output_path,"umap_by_selected_treatment_legend.png"))
 # save the plot
 ggsave(plot_path, nomic_data_selected_treatments_plot, width = 8.5, height = 5.5, dpi = 500)
 ggsave(plot_legend_path, nomic_data_selected_treatments_plot_legend, dpi = 500, scale = 2)

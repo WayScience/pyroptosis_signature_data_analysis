@@ -13,5 +13,7 @@ conda activate Interstellar
 
 papermill 1.preprocessing.ipynb 1.preprocessing.ipynb -p celltype "SHSY5Y"
 papermill 1.preprocessing.ipynb 1.preprocessing.ipynb -p celltype "PBMC"
+papermill 2.data_aggregation.ipynb 2.data_aggregation.ipynb -p celltype "SHSY5Y"
+papermill 2.data_aggregation.ipynb 2.data_aggregation.ipynb -p celltype "PBMC"
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=scripts *.ipynb

@@ -27,7 +27,6 @@ from sklearn.model_selection import (
 )
 from sklearn.utils import parallel_backend
 
-
 # In[ ]:
 
 
@@ -72,95 +71,17 @@ MODEL_TYPE = "regression"
 
 
 # load training data from indexes and features dataframe
-# data_split_path = pathlib.Path(f"../0.split_data/indexes/data_split_indexes.tsv")
-data_path = pathlib.Path(f"../../../data/{cell_type}_preprocessed_sc_norm.parquet")
+data_split_path = pathlib.Path(
+    f"../../0.split_data/indexes/{cell_type}/regression/aggregated_sc_and_nomic_data_split_indexes.tsv"
+)
+data_path = pathlib.Path(
+    f"../../../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
+)
 
 # dataframe with only the labeled data we want (exclude certain phenotypic classes)
-data_df = pq.read_table(data_path).to_pandas()
+data_df = pd.read_parquet(data_path)
 
-# import nomic data
-nomic_df_path = pathlib.Path(
-    f"../../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_cleanup4correlation.csv"
-)
-df_nomic = pd.read_csv(nomic_df_path)
-
-# clean up nomic data
-df_nomic = df_nomic.drop(columns=[col for col in df_nomic.columns if "[pgML]" in col])
-# drop first 25 columns (Metadata that is not needed)
-# df_nomic = df_nomic.drop(columns=df_nomic.columns[3:25])
-# df_nomic = df_nomic.drop(columns=df_nomic.columns[0:2])
-
-
-# In[ ]:
-
-
-# verify that the data are min max scaled
-print(df_nomic["Activin A [NSU]"].describe())
-
-
-# In[ ]:
-
-
-if (aggregation == True) and (nomic == True):
-    data_split_path = pathlib.Path(
-        f"../../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/aggregated_sc_and_nomic_data_split_indexes.tsv"
-    )
-    data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
-    # subset each column that contains metadata
-    metadata = data_df.filter(regex="Metadata")
-    data_df = data_df.drop(metadata.columns, axis=1)
-    data_df = pd.concat([data_df, metadata["Metadata_Well"]], axis=1)
-    # groupby well and take mean of each well
-    data_df = data_df.groupby("Metadata_Well").mean()
-    # drop duplicate rows in the metadata_well column
-    metadata = metadata.drop_duplicates(subset=["Metadata_Well"])
-    # get the metadata for each well
-    data_df = pd.merge(
-        data_df, metadata, left_on="Metadata_Well", right_on="Metadata_Well"
-    )
-    data_df = pd.merge(
-        data_df,
-        df_nomic,
-        left_on=["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-        right_on=["Metadata_position_x", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-    )
-    data_df = data_df.drop(columns=["Metadata_position_x"])
-elif (aggregation == True) and (nomic == False):
-    data_split_path = pathlib.Path(
-        f"../../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/aggregated_sc_data_split_indexes.tsv"
-    )
-    data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
-    # subset each column that contains metadata
-    metadata = data_df.filter(regex="Metadata")
-    data_df = data_df.drop(metadata.columns, axis=1)
-    data_df = pd.concat([data_df, metadata["Metadata_Well"]], axis=1)
-    # groupby well and take mean of each well
-    data_df = data_df.groupby("Metadata_Well").mean()
-    # drop duplicate rows in the metadata_well column
-    metadata = metadata.drop_duplicates(subset=["Metadata_Well"])
-    # get the metadata for each well
-    data_df = pd.merge(
-        data_df, metadata, left_on="Metadata_Well", right_on="Metadata_Well"
-    )
-elif (aggregation == False) and (nomic == True):
-    data_split_path = pathlib.Path(
-        f"../../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/sc_and_nomic_data_split_indexes.tsv"
-    )
-    data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
-    data_df = pd.merge(
-        data_df,
-        df_nomic,
-        left_on=["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-        right_on=["Metadata_position_x", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-    )
-    data_df = data_df.drop(columns=["Metadata_position_x"])
-elif aggregation == False and nomic == False:
-    data_split_path = pathlib.Path(
-        f"../../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/sc_split_indexes.tsv"
-    )
-    data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
-else:
-    print("Error")
+data_split_indexes = pd.read_csv(data_split_path, sep="\t")
 
 
 # In[ ]:
@@ -289,4 +210,3 @@ with open(config_copy_path, "w") as f:
     f.write(f"nomic={nomic}\n")
     f.write(f"cell_type='{cell_type}'\n")
     f.write(f"feature=all\n")
-

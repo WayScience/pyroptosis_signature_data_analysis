@@ -1,18 +1,10 @@
-# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.15.1
-#   kernelspec:
-#     display_name: Interstellar
-#     language: python
-#     name: python3
-# ---
+#!/usr/bin/env python
+# coding: utf-8
 
-# %% papermill={"duration": 1.193087, "end_time": "2023-07-22T05:40:47.784792", "exception": false, "start_time": "2023-07-22T05:40:46.591705", "status": "completed"}
+# In[ ]:
+
+
+import argparse
 import itertools
 import pathlib
 import warnings
@@ -35,27 +27,47 @@ from sklearn.model_selection import (
 )
 from sklearn.utils import parallel_backend, shuffle
 
-# import mse
+# In[ ]:
 
-# %% papermill={"duration": 0.005605, "end_time": "2023-07-22T05:40:47.792730", "exception": false, "start_time": "2023-07-22T05:40:47.787125", "status": "completed"} tags=["injected-parameters"]
-# Parameters
-cell_type = "SHSY5Y"
+
+argparser = argparse.ArgumentParser()
+argparser.add_argument("--cell_type", type=str, default="all")
+argparser.add_argument("--shuffle", type=bool, default=False)
+argparser.add_argument("--cytokine", type=str, default="cytokine")
+
+args = argparser.parse_args()
+cell_type = args.cell_type
+cytokine = args.cytokine
+shuffle = args.shuffle
+print(cell_type, shuffle, cytokine)
+
+
+# In[ ]:
+
+
 aggregation = True
 nomic = True
-flag = True
-shuffle = True
 
-# %%
+
+# In[ ]:
+
+
 # set shuffle value
 if shuffle:
     shuffle = "shuffled_baseline"
 else:
     shuffle = "final"
 
-# %% papermill={"duration": 0.005391, "end_time": "2023-07-22T05:40:47.799818", "exception": false, "start_time": "2023-07-22T05:40:47.794427", "status": "completed"}
+
+# In[ ]:
+
+
 MODEL_TYPE = "regression"
 
-# %% papermill={"duration": 214.792447, "end_time": "2023-07-22T05:44:22.593856", "exception": false, "start_time": "2023-07-22T05:40:47.801409", "status": "completed"}
+
+# In[ ]:
+
+
 # load training data from indexes and features dataframe
 # data_split_path = pathlib.Path(f"../0.split_data/indexes/data_split_indexes.tsv")
 data_path = pathlib.Path(f"../../../data/{cell_type}_preprocessed_sc_norm.parquet")
@@ -75,10 +87,17 @@ df_nomic = df_nomic.drop(columns=[col for col in df_nomic.columns if "[pgML]" in
 # df_nomic = df_nomic.drop(columns=df_nomic.columns[3:25])
 # df_nomic = df_nomic.drop(columns=df_nomic.columns[0:2])
 
-# %%
+
+# In[ ]:
+
+
+# verify that the data are min max scaled
 print(df_nomic["Activin A [NSU]"].describe())
 
-# %% papermill={"duration": 0.162062, "end_time": "2023-07-22T05:44:22.812544", "exception": false, "start_time": "2023-07-22T05:44:22.650482", "status": "completed"}
+
+# In[ ]:
+
+
 if (aggregation == True) and (nomic == True):
     data_split_path = pathlib.Path(
         f"../../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/aggregated_sc_and_nomic_data_split_indexes.tsv"
@@ -140,48 +159,24 @@ elif aggregation == False and nomic == False:
 else:
     print("Error")
 
-# %% papermill={"duration": 0.028408, "end_time": "2023-07-22T05:44:22.842747", "exception": false, "start_time": "2023-07-22T05:44:22.814339", "status": "completed"}
+
+# In[ ]:
+
+
 # select tht indexes for the training and test set
 train_indexes = data_split_indexes.loc[data_split_indexes["label"] == "train"]
 
-# %% papermill={"duration": 0.529615, "end_time": "2023-07-22T05:44:23.373993", "exception": false, "start_time": "2023-07-22T05:44:22.844378", "status": "completed"}
+
+# In[ ]:
+
+
 # subset data_df by indexes in data_split_indexes
 training_data = data_df.loc[train_indexes["labeled_data_index"]]
 
-# %%
-training_data.head()
 
-# %% papermill={"duration": 0.352839, "end_time": "2023-07-22T05:44:23.728560", "exception": false, "start_time": "2023-07-22T05:44:23.375721", "status": "completed"}
-# # get oneb_Metadata_Treatment_Dose_Inhibitor_Dose  =='DMSO_0.100_DMSO_0.025' and 'LPS_100.000_DMSO_0.025 and Thapsigargin_10.000_DMSO_0.025'
-# training_data = training_data[
-#     training_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
-#         [control, treatment]
-#     )
-# ]
+# In[ ]:
 
-# %%
-# TODO holdout certain treatments and different percentages of hold out for each treatment
-# where holdout is the test set
 
-# %% papermill={"duration": 1.687722, "end_time": "2023-07-22T05:44:25.418506", "exception": false, "start_time": "2023-07-22T05:44:23.730784", "status": "completed"}
-# # at random downsample the DMSO treatment to match the number of wells in the LPS treatment
-# seed = 0
-# # get the number of wells in the LPS treatment
-# trt_wells = training_data[
-#     training_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] == treatment
-# ].shape[0]
-# # get the number of wells in the DMSO treatment
-# dmso_wells = training_data[
-#     training_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] == control
-# ].shape[0]
-# # downsample the DMSO treatment to match the number of wells in the LPS treatment
-# dmso_holdout = training_data[
-#     training_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] == control
-# ].sample(n=trt_wells, random_state=seed)
-# # remove the downsampled DMSO wells from the data
-# training_data = training_data.drop(dmso_holdout.index)
-
-# %% papermill={"duration": 0.179094, "end_time": "2023-07-22T05:44:25.601137", "exception": false, "start_time": "2023-07-22T05:44:25.422043", "status": "completed"}
 # define metadata columns
 # subset each column that contains metadata
 metadata = training_data.filter(regex="Metadata")
@@ -193,14 +188,20 @@ data_y_cols = data_x.filter(regex="NSU").columns
 train_y = training_data[data_y_cols]
 train_x = data_x.drop(data_y_cols, axis=1)
 
-# %%
+
+# In[ ]:
+
+
 from sklearn.model_selection import LeaveOneOut
 
 loo = LeaveOneOut()
 loo.get_n_splits(train_x)
 loo.get_n_splits(train_y)
 
-# %%
+
+# In[ ]:
+
+
 for cytokine in train_y.columns:
     train_data_y = train_y[cytokine]
     model = ElasticNetCV(

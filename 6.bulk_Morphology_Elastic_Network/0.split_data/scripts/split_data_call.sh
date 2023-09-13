@@ -8,7 +8,7 @@
 #SBATCH --qos=mem
 #SBATCH --time=24:00:00
 #SBATCH --output=sample-%j.out
-#SBATCH --array=1-3%2
+#SBATCH --array=1-2
 
 module load anaconda
 
@@ -17,9 +17,9 @@ conda activate Interstellar
 # define the search parameters
 cell_types=( "SHSY5Y" "PBMC" )
 
-# Calculate the current combination of input parameters based on the job ID
+# calculate the number of jobs
 job_id=$((SLURM_ARRAY_TASK_ID - 1))
-cell_type_idx=$((job_id % ${cell_types[@]}))
+cell_type_idx=$((job_id % ${#cell_types[@]}))
 
 cell_type=${cell_types[$cell_type_idx]}
 

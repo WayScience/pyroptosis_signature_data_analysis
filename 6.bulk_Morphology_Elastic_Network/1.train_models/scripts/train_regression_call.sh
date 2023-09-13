@@ -8,7 +8,7 @@
 #SBATCH --qos=mem
 #SBATCH --time=72:00:00
 #SBATCH --output=sample-%j.out
-#SBATCH --array=1-750%10
+#SBATCH --array=1-750%20
 
 module load anaconda
 
@@ -19,7 +19,7 @@ filename="../../0.split_data/cytokine_list/cytokine_list.txt"
 # read all lines of the file to an array
 readarray -t cytokine_array < $filename
 
-shuffles=(True False)
+shuffles=( True False)
 cell_types=( SHSY5Y PBMC )
 # calculate the number of jobs
 

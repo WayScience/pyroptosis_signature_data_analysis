@@ -25,13 +25,15 @@ from sklearn.model_selection import (
     cross_val_score,
     train_test_split,
 )
+from sklearn.utils import parallel_backend
+
 
 # In[ ]:
 
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("--cell_type", type=str, default="all")
-argparser.add_argument("--shuffle", type=str, default="False")
+argparser.add_argument("--shuffle", type=bool, default=False)
 argparser.add_argument("--cytokine", type=str, default="cytokine")
 
 args = argparser.parse_args()
@@ -59,7 +61,7 @@ if shuffle:
 else:
     shuffle = "final"
 
-print(shuffle)
+
 # In[ ]:
 
 
@@ -287,3 +289,4 @@ with open(config_copy_path, "w") as f:
     f.write(f"nomic={nomic}\n")
     f.write(f"cell_type='{cell_type}'\n")
     f.write(f"feature=all\n")
+

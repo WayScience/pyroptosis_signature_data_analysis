@@ -8,6 +8,7 @@
 #SBATCH --qos=mem
 #SBATCH --time=72:00:00
 #SBATCH --output=sample-%j.out
+#SBATCH --array=1-750%10
 
 module load anaconda
 
@@ -21,8 +22,6 @@ readarray -t cytokine_array < $filename
 shuffles=(True False)
 cell_types=( SHSY5Y PBMC )
 # calculate the number of jobs
-num_jobs=$(( ${#shuffles[@]} * ${#cell_types[@]} * ${#cytokine_array[@]} ))
-#SBATCH --array=1-$num_jobs%8
 
 # calculate the number of jobs
 job_id=$((SLURM_ARRAY_TASK_ID - 1))

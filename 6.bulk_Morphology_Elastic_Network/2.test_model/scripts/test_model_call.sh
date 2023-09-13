@@ -6,7 +6,7 @@
 #SBATCH --mem=500G
 #SBATCH --partition=amem
 #SBATCH --qos=mem
-#SBATCH --time=72:00:00
+#SBATCH --time=24:00:00
 #SBATCH --output=sample-%j.out
 
 module load anaconda
@@ -34,6 +34,6 @@ shuffle=${shuffles[$shuffle_idx]}
 cell_type=${cell_types[$cell_type_idx]}
 cytokine=${cytokine_array[$cytokine_idx]}
 
-command="python 1.train_regression_multi_output.py"
+command="python 1.test_regression_multi_output.py"
 
-$command --cell_type "$cell_type" --cytokine "$cytokine" --shuffle "$shuffle"
+$command --cell_type "$cell_type" --shuffle "$shuffle" --cytokine "$cytokine"

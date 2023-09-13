@@ -3,21 +3,52 @@ suppressWarnings(suppressPackageStartupMessages(library(platetools)))
 suppressWarnings(suppressPackageStartupMessages(library(gridExtra)))
 suppressWarnings(suppressPackageStartupMessages(library(cowplot)))
 suppressWarnings(suppressPackageStartupMessages(library(viridis)))
+suppressWarnings(suppressPackageStartupMessages(library(argparser)))
 
 
-# import csv file
-df <- read.csv(
-    "../results/regression/PBMC/aggregated_with_nomic/DMSO_0.100_DMSO_0.025__LPS_100.000_DMSO_0.025/model_stats.csv"
+# set up argparse
+parser <- arg_parser("Visualize regression results")
+
+parser <- add_argument(parser, "--cell_type", help = "String of the type of cell used", required = TRUE)
+
+args <- parse_args(parser)
+
+cell_type <- args$cell_type
+
+if aggregation == "True" {
+    df_stats_path <- file.path(
+        paste0("../results/regression/",cell_type,"/aggregated_with_nomic/model_stats.csv"
+        )
     )
-head(df,2)
+    df_variance_path <- file.path(
+        paste0("../results/regression/",cell_type,"/aggregated_with_nomic/variance_r2_stats.csv"
+        )
+    )
+    # import csv file
+    df <- read.csv(df_path)
+    df_var <- read.csv(df_variance_path)
 
-df_var <- read.csv(
-    "../results/regression/PBMC/aggregated_with_nomic/DMSO_0.100_DMSO_0.025__LPS_100.000_DMSO_0.025/variance_r2_stats.csv"
-)
-head(df_var,2)
+    # set up figure path
+    enet_cp_fig_path <- paste0("../figures/regression/",cell_type,"/aggregated_with_nomic/")
+} else {
+        df_stats_path <- file.path(
+        paste0("../results/regression/",cell_type,"/sc_with_nomic/model_stats.csv"
+        )
+    )
+    df_variance_path <- file.path(
+        paste0("../results/regression/",cell_type,"/sc_with_nomic/variance_r2_stats.csv"
+        )
+    )
+    # import csv file
+    df <- read.csv(df_path)
+    df_var <- read.csv(df_variance_path)
+
+    # set up figure path
+    enet_cp_fig_path <- paste0("../figures/regression/",cell_type,"/sc_with_nomic/")
+}
 
 
-enet_cp_fig <- "../figures/regression/PBMC/aggregated_with_nomic/DMSO_0.100_DMSO_0.025__LPS_100.000_DMSO_0.025/enet_cp.pdf"
+
 # if path does not exist, create it
 if (!file.exists(dirname(enet_cp_fig))) {
     print(dirname(enet_cp_fig))
@@ -29,7 +60,7 @@ print(unique(df$shuffle))
 print(length(unique(df$cytokine)))
 
 # set output path
-global_prediction_trend_path <- "./figures/regression/PBMC/aggregated_with_nomic/DMSO_0.100_DMSO_0.025__LPS_100.000_DMSO_0.025/global_prediction_trend.png"
+global_prediction_trend_path <- file.path(paste0(enet_cp_fig_path,"global_prediction_trend.png"))
 # if path does not exist, create it
 if (!file.exists(dirname(global_prediction_trend_path))) {
     print(dirname(global_prediction_trend_path))
@@ -50,6 +81,7 @@ global_prediction_trend <- (
 ggsave(global_prediction_trend_path, global_prediction_trend, width=5, height=5, dpi=500)
 global_prediction_trend
 
+enet_cp_fig <- file.path(paste0(enet_cp_fig_path,"Predicted_vs_Actual_all_cytokines.pdf"))
 pdf(file=enet_cp_fig)
 # set plot size
 options(repr.plot.width=6, repr.plot.height=8)
@@ -80,7 +112,7 @@ df_var$r2 <- as.numeric(df_var$r2)
 head(df_var)
 
 # set output path
-global_variance_r2_path <- "../figures/regression/PBMC/aggregated_with_nomic/DMSO_0.100_DMSO_0.025__LPS_100.000_DMSO_0.025/global_variance_r2.png"
+global_variance_r2_path <- file.path(paste0(enet_cp_fig_path,"global_variance_r2.png"))
 # if path does not exist, create it
 if (!file.exists(dirname(global_prediction_trend_path))) {
     print(dirname(global_prediction_trend_path))
@@ -97,7 +129,7 @@ variance_r2_plot <- (
 ggsave(global_variance_r2_path, variance_r2_plot, width=5, height=5, dpi=500)
 variance_r2_plot
 
-local_variance_r2_path <- "../figures/regression/PBMC/aggregated_with_nomic/DMSO_0.100_DMSO_0.025__LPS_100.000_DMSO_0.025/local_variance_r2.png"
+local_variance_r2_path <- file.path(paste0(enet_cp_fig_path,"local_variance_r2.png"))
 # if path does not exist, create it
 if (!file.exists(dirname(global_prediction_trend_path))) {
     print(dirname(global_prediction_trend_path))
@@ -127,7 +159,7 @@ colnames(agg_df) <- c("shuffle", "data_split", "cytokine", "treatment","mean_log
 
 
 # set output path
-prediction_metric <- "../figures/regression/PBMC/aggregated_with_nomic/DMSO_0.100_DMSO_0.025__LPS_100.000_DMSO_0.025/prediction_metric.png"
+prediction_metric <- file.path(paste0(enet_cp_fig_path,"prediction_metric.png"))
 # if path does not exist, create it
 if (!file.exists(dirname(global_prediction_trend_path))) {
     print(dirname(global_prediction_trend_path))
@@ -165,7 +197,7 @@ for ( i in 1:length(unique(agg_df$cytokine))){
     tmp_df <- agg_df[agg_df$cytokine == unique(agg_df$cytokine)[i],]
 
     # set output path
-    prediction_metric <- paste0("../figures/regression/PBMC/aggregated_with_nomic/DMSO_0.100_DMSO_0.025__LPS_100.000_DMSO_0.025/individual_cytokines/prediction_metric",unique(agg_df$cytokine)[i],".png")
+    prediction_metric <- file.path(paste0(enet_cp_fig_path,"individual_cytokines/prediction_metric",unique(agg_df$cytokine)[i],".png"))
     # if path does not exist, create it
     if (!file.exists(dirname(global_prediction_trend_path))) {
         print(dirname(global_prediction_trend_path))
@@ -194,7 +226,7 @@ for ( i in 1:length(unique(agg_df$cytokine))){
 list_of_cytokines <- unique(df$cytokine)
 list_of_data_frames <- list('final', 'shuffled_baseline')
 
-pdf(file="../figures/regression/PBMC/aggregated_with_nomic/DMSO_0.100_DMSO_0.025__LPS_100.000_DMSO_0.025/prediction_per_well_platemap_all_cytokines.pdf"
+pdf(file=file.path(paste0(enet_cp_fig_path,"prediction_per_well_platemap_all_cytokines.pdf"))
  )
 # set plot size
 options(repr.plot.width=8, repr.plot.height=8)
@@ -226,7 +258,7 @@ for (df_type in (list_of_data_frames)){
 }
 dev.off()
 
-treatment_well_platemap <- "../figures/regression/PBMC/aggregated_with_nomic/DMSO_0.100_DMSO_0.025__LPS_100.000_DMSO_0.025/treatment_platemap.png"
+treatment_well_platemap <- file.path(paste0(enet_cp_fig_path,"treatment_platemap.png"))
 
 platemap_plot <- (
     raw_map(
@@ -251,7 +283,7 @@ platemap_df$inducer1[platemap_df$inducer1 == ""] <- "blank"
 # plot size
 options(repr.plot.width=18, repr.plot.height=18)
 # platemap of experimental contitions (cell type and inducer)
-cell_type_well_platemap <- "../figures/regression/PBMC/aggregated_with_nomic/DMSO_0.100_DMSO_0.025__LPS_100.000_DMSO_0.025/cell_type_well_platemap.png"
+cell_type_well_platemap <- file.path(paste0(enet_cp_fig_path,"cell_type_well_platemap.png"))
 # if path does not exist, create it
 if (!file.exists(dirname(global_prediction_trend_path))) {
     print(dirname(global_prediction_trend_path))
@@ -268,7 +300,7 @@ ggsave(cell_type_well_platemap, platemap_plot, width=5, height=5, dpi=500)
 platemap_plot
 
 
-inducer_well_platemap <- "../figures/regression/PBMC/aggregated_with_nomic/DMSO_0.100_DMSO_0.025__LPS_100.000_DMSO_0.025/inducer_well_platemap.png"
+inducer_well_platemap <- file.path(paste0(enet_cp_fig_path,"inducer_well_platemap.png"))
 # if path does not exist, create it
 if (!file.exists(dirname(global_prediction_trend_path))) {
     print(dirname(global_prediction_trend_path))
@@ -284,5 +316,3 @@ platemap_plot <- (
 )
 # ggsave(inducer_well_platemap, platemap_plot, width=5, height=5, dpi=500)
 platemap_plot
-
-

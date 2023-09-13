@@ -25,20 +25,21 @@ from sklearn.model_selection import (
     cross_val_score,
     train_test_split,
 )
-from sklearn.utils import parallel_backend, shuffle
 
 # In[ ]:
 
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("--cell_type", type=str, default="all")
-argparser.add_argument("--shuffle", type=bool, default=False)
+argparser.add_argument("--shuffle", type=str, default="False")
 argparser.add_argument("--cytokine", type=str, default="cytokine")
 
 args = argparser.parse_args()
+
 cell_type = args.cell_type
 cytokine = args.cytokine
 shuffle = args.shuffle
+shuffle = bool(shuffle == "True")
 print(cell_type, shuffle, cytokine)
 
 
@@ -58,7 +59,7 @@ if shuffle:
 else:
     shuffle = "final"
 
-
+print(shuffle)
 # In[ ]:
 
 

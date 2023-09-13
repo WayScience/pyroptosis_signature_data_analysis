@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[18]:
 
 
 import argparse
@@ -28,21 +28,21 @@ args = argparser.parse_args()
 cell_type = args.cell_type
 
 
-# In[2]:
+# In[20]:
 
 
 # Parameters
-aggregation = False
+aggregation = True
 nomic = True
 
 
-# In[3]:
+# In[21]:
 
 
 MODEL_TYPE = "regression"
 
 
-# In[4]:
+# In[22]:
 
 
 # toml file path
@@ -55,38 +55,19 @@ test_100_percent = data_splits_by_treatments["splits"]["data_splits_100"]
 test_75_percent = data_splits_by_treatments["splits"]["data_splits_75"]
 
 
-# In[5]:
+# In[23]:
 
 
-path = pathlib.Path(f"../../../data/{cell_type}_preprocessed_sc_norm.parquet")
+path = pathlib.Path(
+    f"../../../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
+)
 
 data_df = pq.read_table(path).to_pandas()
 
 data_df.head()
 
 
-# In[6]:
-
-
-if nomic == True:
-    # import nomic data
-    nomic_df_path = pathlib.Path(
-        f"../../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_cleanup4correlation.csv"
-    )
-    df_nomic = pd.read_csv(nomic_df_path)
-
-    # drop columns that contain [pgML]
-    df_nomic = df_nomic.drop(
-        columns=[col for col in df_nomic.columns if "[pgML]" in col]
-    )
-    # drop first 25 columns
-    # df_nomic = df_nomic.drop(columns=df_nomic.columns[3:25])
-    # df_nomic = df_nomic.drop(columns=df_nomic.columns[0:2])
-else:
-    df_nomic = None
-
-
-# In[7]:
+# In[24]:
 
 
 # subset each column that contains metadata
@@ -103,83 +84,16 @@ metadata_well = metadata[
 data_df = pd.merge(data, metadata_well, left_index=True, right_index=True)
 
 
-# In[8]:
-
-
-if (aggregation == True) and (nomic == True):
-
-    # subset each column that contains metadata
-    metadata = data_df.filter(regex="Metadata")
-    data_df = data_df.drop(metadata.columns, axis=1)
-    data_df = pd.concat([data_df, metadata["Metadata_Well"]], axis=1)
-    # groupby well and take mean of each well
-    data_df = data_df.groupby("Metadata_Well").mean()
-    # drop duplicate rows in the metadata_well column
-    metadata = metadata.drop_duplicates(subset=["Metadata_Well"])
-    # get the metadata for each well
-    data_df = pd.merge(
-        data_df, metadata, left_on="Metadata_Well", right_on="Metadata_Well"
-    )
-    data_df = pd.merge(
-        data_df,
-        df_nomic,
-        left_on=["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-        right_on=["Metadata_position_x", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-    )
-    data_df = data_df.drop(columns=["Metadata_position_x"])
-    # drop all metadata columns
-    labeled_data = data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    data_x = data_df.drop(metadata.columns, axis=1)
-
-elif (aggregation == True) and (nomic == False):
-    # subset each column that contains metadata
-    metadata = data.filter(regex="Metadata")
-    data_df = data_df.drop(metadata.columns, axis=1)
-    data_df = pd.concat([data_df, metadata["Metadata_Well"]], axis=1)
-    # groupby well and take mean of each well
-    data_df = data_df.groupby("Metadata_Well").mean()
-    # drop duplicate rows in the metadata_well column
-    metadata = metadata.drop_duplicates(subset=["Metadata_Well"])
-    # get the metadata for each well
-    data_df = pd.merge(
-        data_df,
-        df_nomic,
-        left_on=["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-        right_on=["Metadata_position_x", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-    )
-elif (aggregation == False) and (nomic == True):
-    data_df = pd.merge(
-        data_df,
-        df_nomic,
-        left_on=["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-        right_on=["Metadata_position_x", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-    )
-    data_df = data_df.drop(columns=["Metadata_position_x"])
-elif aggregation == False and nomic == False:
-    pass
-else:
-    print("Error")
-
-
 # This model and code is both inspired and reused from: https://github.com/WayScience/phenotypic_profiling_model/blob/main/1.split_data/split_data.ipynb
 # The bulk of this work was done by **Roshan Kern** I have only made minor changes to the code to make it more modular and easier to use for my purposes.
 
-# In[9]:
-
-
-# get oneb_Metadata_Treatment_Dose_Inhibitor_Dose  =='DMSO_0.100_DMSO_0.025' and 'LPS_100.000_DMSO_0.025 and Thapsigargin_10.000_DMSO_0.025'
-# data_df = data_df[
-#     data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin([control, treatment])
-# ]
-
-
-# In[10]:
+# In[25]:
 
 
 data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
 
 
-# In[11]:
+# In[26]:
 
 
 # variable test and train set splits
@@ -209,7 +123,7 @@ test_set_50 = test_set_50[
 print(test_set_all.shape, test_set_75.shape, test_set_50.shape)
 
 
-# In[12]:
+# In[27]:
 
 
 # get the train test splits from each group
@@ -249,7 +163,7 @@ print(
 )
 
 
-# In[13]:
+# In[28]:
 
 
 # combine all testing sets together while preserving the index
@@ -273,7 +187,7 @@ testing_data_set_index = testing_data_set.index
 training_data_set_index = training_data_set.index
 
 
-# In[14]:
+# In[29]:
 
 
 # create pandas dataframe with all indexes and their respective labels, stratified by phenotypic class
@@ -287,7 +201,7 @@ for index in testing_data_set_index:
 index_data = pd.DataFrame(index_data).sort_values(["labeled_data_index"])
 
 
-# In[15]:
+# In[30]:
 
 
 # set save path
@@ -309,7 +223,7 @@ print(save_path)
 save_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[16]:
+# In[31]:
 
 
 # save indexes as tsv file
@@ -327,3 +241,6 @@ elif aggregation == False:
         index_data.to_csv(f"{save_path}/sc_split_indexes.tsv", sep="\t")
 else:
     print("Error")
+
+
+# In[ ]:

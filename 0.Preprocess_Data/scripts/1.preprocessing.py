@@ -30,6 +30,13 @@ feature_df = pq.read_table(feature_file).to_pandas()
 # In[4]:
 
 
+# replace all " " with "_" in all values of the dataframe
+feature_df = feature_df.replace(to_replace=" ", value="_", regex=True)
+
+
+# In[5]:
+
+
 # remove uM in each row of the Metadata_inducer1_concentration column if it is present
 if "Metadata_inducer1_concentration" in feature_df.columns:
     feature_df["Metadata_inducer1_concentration"] = feature_df[
@@ -37,27 +44,27 @@ if "Metadata_inducer1_concentration" in feature_df.columns:
     ].str.replace("µM", "")
 
 
-# In[5]:
+# In[6]:
 
 
 feature_df["Metadata_inducer1_concentration"].unique()
 
 
-# In[6]:
+# In[7]:
 
 
 # define output file path
 feature_df_out_path = pathlib.Path(f"../data/{celltype}_preprocessed_sc_norm.parquet")
 
 
-# In[7]:
+# In[8]:
 
 
 print(feature_df.shape)
 feature_df.head()
 
 
-# In[8]:
+# In[9]:
 
 
 # removing costes features as they behave with great variance across all data
@@ -66,14 +73,14 @@ print(feature_df.shape)
 feature_df.head()
 
 
-# In[9]:
+# In[10]:
 
 
 # replacing '/' in treatment dosage column to avoid errors in file interpolation including such strings
 feature_df = feature_df.replace(to_replace="/", value="_per_", regex=True)
 
 
-# In[10]:
+# In[11]:
 
 
 # replace nan values with 0
@@ -90,7 +97,7 @@ feature_df["Metadata_inhibitor_concentration"] = feature_df[
 
 # #### Combine Inducer1 and Inducer2 into one column
 
-# In[11]:
+# In[12]:
 
 
 # treatment column merge
@@ -124,7 +131,7 @@ results = [
 feature_df["Metadata_Dose"] = np.select(condlist=conditions, choicelist=results)
 
 
-# In[12]:
+# In[13]:
 
 
 feature_df["Metadata_inducer1_concentration"] = pd.to_numeric(
@@ -135,7 +142,7 @@ feature_df["Metadata_inducer1_concentration"] = pd.to_numeric(
 # ## N Beta Column condition generation
 # columns generated to used for linear modeling where terms separated by '__' will be a beta coefficient
 
-# In[13]:
+# In[14]:
 
 
 # one beta of inudcer1, inducer1 concentration, inhibitor, and inhibitor concentration all as 1 beta term
@@ -184,7 +191,7 @@ feature_df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
 ).astype(str)
 
 
-# In[14]:
+# In[15]:
 
 
 feature_df_table = pa.Table.from_pandas(feature_df)

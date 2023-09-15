@@ -2,11 +2,10 @@
 # This script is used to train the regression models for the elastic network
 
 #SBATCH --nodes=1
-#SBATCH --ntasks=8
-#SBATCH --mem=500G
+#SBATCH --ntasks=20
 #SBATCH --partition=amem
 #SBATCH --qos=mem
-#SBATCH --time=72:00:00
+#SBATCH --time=142:00:00
 #SBATCH --output=sample-%j.out
 #SBATCH --array=1-750%20
 
@@ -22,7 +21,6 @@ readarray -t cytokine_array < $filename
 shuffles=( True False)
 cell_types=( SHSY5Y PBMC )
 # calculate the number of jobs
-
 # calculate the number of jobs
 job_id=$((SLURM_ARRAY_TASK_ID - 1))
 shuffle_idx=$((job_id % ${#shuffles[@]}))

@@ -3,7 +3,7 @@ suppressWarnings(suppressPackageStartupMessages(library(platetools)))
 suppressWarnings(suppressPackageStartupMessages(library(gridExtra)))
 suppressWarnings(suppressPackageStartupMessages(library(cowplot)))
 suppressWarnings(suppressPackageStartupMessages(library(viridis)))
-suppressWarnings(suppressPackageStartupMessages(library(argparser)))
+suppressWarnings(suppressPackageStartupMessages(library(argparse)))
 
 
 # set up argparse
@@ -15,46 +15,30 @@ args <- parse_args(parser)
 
 cell_type <- args$cell_type
 
-if aggregation == "True" {
-    df_stats_path <- file.path(
-        paste0("../results/regression/",cell_type,"/aggregated_with_nomic/model_stats.csv"
-        )
-    )
-    df_variance_path <- file.path(
-        paste0("../results/regression/",cell_type,"/aggregated_with_nomic/variance_r2_stats.csv"
-        )
-    )
-    # import csv file
-    df <- read.csv(df_path)
-    df_var <- read.csv(df_variance_path)
+cell_type <- "SHSY5Y"
 
-    # set up figure path
-    enet_cp_fig_path <- paste0("../figures/regression/",cell_type,"/aggregated_with_nomic/")
-} else {
-        df_stats_path <- file.path(
-        paste0("../results/regression/",cell_type,"/sc_with_nomic/model_stats.csv"
-        )
-    )
-    df_variance_path <- file.path(
-        paste0("../results/regression/",cell_type,"/sc_with_nomic/variance_r2_stats.csv"
-        )
-    )
-    # import csv file
-    df <- read.csv(df_path)
-    df_var <- read.csv(df_variance_path)
 
-    # set up figure path
-    enet_cp_fig_path <- paste0("../figures/regression/",cell_type,"/sc_with_nomic/")
-}
+df_stats_path <- file.path(
+    paste0("../results/regression/",cell_type,"/aggregated_with_nomic/model_stats.csv"
+    )
+)
+df_variance_path <- file.path(
+    paste0("../results/regression/",cell_type,"/aggregated_with_nomic/variance_r2_stats.csv"
+    )
+)
+# import csv file
+df <- read.csv(df_stats_path)
+df_var <- read.csv(df_variance_path)
 
+# set up figure path
+enet_cp_fig_path <- paste0("../figures/regression/",cell_type,"/aggregated_with_nomic/")
 
 
 # if path does not exist, create it
-if (!file.exists(dirname(enet_cp_fig))) {
-    print(dirname(enet_cp_fig))
-    dir.create(dirname(enet_cp_fig), recursive = TRUE)
+if (!file.exists(dirname(enet_cp_fig_path))) {
+    print(dirname(enet_cp_fig_path))
+    dir.create(dirname(enet_cp_fig_path), recursive = TRUE)
 }
-
 
 print(unique(df$shuffle))
 print(length(unique(df$cytokine)))
@@ -68,7 +52,7 @@ if (!file.exists(dirname(global_prediction_trend_path))) {
 }
 # plot the data
 global_prediction_trend <- (
-    ggplot(df, aes(x=actual_value, y=predicted_value, col=shuffle))
+    ggplot(final_df, aes(x=actual_value, y=predicted_value, col=shuffle))
     + geom_point()
     + geom_smooth(method=lm, se=TRUE,)
     + labs(x="Actual", y="Predicted")
@@ -78,7 +62,7 @@ global_prediction_trend <- (
 )
 
 # save the plot
-ggsave(global_prediction_trend_path, global_prediction_trend, width=5, height=5, dpi=500)
+# ggsave(global_prediction_trend_path, global_prediction_trend, width=5, height=5, dpi=500)
 global_prediction_trend
 
 enet_cp_fig <- file.path(paste0(enet_cp_fig_path,"Predicted_vs_Actual_all_cytokines.pdf"))

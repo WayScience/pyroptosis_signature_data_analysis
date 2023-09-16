@@ -5,6 +5,7 @@
 
 
 import argparse
+import ast
 import itertools
 import pathlib
 
@@ -46,8 +47,9 @@ argparser.add_argument("--cytokine", default="all")
 args = argparser.parse_args()
 
 cell_type = args.cell_type
-shuffle = args.shuffle
+shuffle = ast.literal_eval(args.shuffle)
 cytokine = args.cytokine
+print(cell_type, shuffle, cytokine)
 
 
 # In[ ]:
@@ -62,7 +64,7 @@ nomic = True
 
 
 # set shuffle value
-if shuffle:
+if shuffle == True:
     shuffle = "shuffled_baseline"
 else:
     shuffle = "final"
@@ -327,27 +329,13 @@ pathlib.Path(results_path).mkdir(parents=True, exist_ok=True)
 
 
 # check if the model training metrics file exists
-metrics_file = pathlib.Path(f"{results_path}/{cytokine}_model_stats.csv")
-if metrics_file.exists():
-    metrics_df = pd.read_csv(metrics_file)
-    if len(metrics_df["shuffle"].unique()) > 1:
-        pass
-    else:
-        metrics_df = pd.concat([metrics_df, results_df], axis=0)
-        metrics_df.to_csv(metrics_file, index=False)
-else:
-    results_df.to_csv(metrics_file, index=False)
+metrics_file = pathlib.Path(f"{results_path}/{cytokine}_{shuffle}_model_stats.csv")
 
+results_df.to_csv(metrics_file, index=False)
 
 # do the same for the variance df
 # check if the model training metrics file exists
-metrics_file = pathlib.Path(f"{results_path}/{cytokine}_variance_r2_stats.csv")
-if metrics_file.exists():
-    metrics_df = pd.read_csv(metrics_file)
-    if len(metrics_df["shuffle"].unique()) > 1:
-        pass
-    else:
-        metrics_df = pd.concat([metrics_df, var_df], axis=0)
-        metrics_df.to_csv(metrics_file, index=False)
-else:
-    var_df.to_csv(metrics_file, index=False)
+metrics_file = pathlib.Path(
+    f"{results_path}/{cytokine}_{shuffle}_variance_r2_stats.csv"
+)
+var_df.to_csv(metrics_file, index=False)

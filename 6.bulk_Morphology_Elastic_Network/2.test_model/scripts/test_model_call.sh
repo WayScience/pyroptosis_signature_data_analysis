@@ -18,7 +18,7 @@ filename="../../0.split_data/cytokine_list/cytokine_list.txt"
 readarray -t cytokine_array < $filename
 
 
-shuffles=( True False )
+shuffles=( "True" "False" )
 cell_types=( SHSY5Y PBMC )
 
 # calculate the number of jobs

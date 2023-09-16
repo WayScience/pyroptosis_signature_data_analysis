@@ -5,7 +5,7 @@
 #SBATCH --ntasks=20
 #SBATCH --partition=amem
 #SBATCH --qos=mem
-#SBATCH --time=142:00:00
+#SBATCH --time=72:00:00
 #SBATCH --output=sample-%j.out
 #SBATCH --array=1-750%20
 
@@ -18,7 +18,8 @@ filename="../../0.split_data/cytokine_list/cytokine_list.txt"
 # read all lines of the file to an array
 readarray -t cytokine_array < $filename
 
-shuffles=( True False)
+
+shuffles=( True False )
 cell_types=( SHSY5Y PBMC )
 # calculate the number of jobs
 # calculate the number of jobs

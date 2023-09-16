@@ -32,7 +32,6 @@ from sklearn.utils import parallel_backend
 argparser = argparse.ArgumentParser()
 argparser.add_argument("--cell_type", default="all")
 argparser.add_argument("--shuffle", default="False")
-argparser.add_argument("--cytokine", default="cytokine ")
 
 args = argparser.parse_args()
 

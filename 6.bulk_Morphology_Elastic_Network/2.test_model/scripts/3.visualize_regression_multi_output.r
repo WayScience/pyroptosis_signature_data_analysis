@@ -15,7 +15,7 @@ args <- parse_args(parser)
 
 cell_type <- args$cell_type
 
-cell_type <- "SHSY5Y"
+cell_type <- "PBMC"
 
 
 df_stats_path <- file.path(
@@ -52,18 +52,21 @@ if (!file.exists(dirname(global_prediction_trend_path))) {
 }
 # plot the data
 global_prediction_trend <- (
-    ggplot(final_df, aes(x=actual_value, y=predicted_value, col=shuffle))
+    ggplot(df, aes(x=actual_value, y=predicted_value, col=shuffle))
     + geom_point()
     + geom_smooth(method=lm, se=TRUE,)
     + labs(x="Actual", y="Predicted")
     + theme_bw()
+    + labs(title="Global Prediction Trends of Cytokine Concentrations")
     # add y=x line
     + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
 )
 
 # save the plot
-# ggsave(global_prediction_trend_path, global_prediction_trend, width=5, height=5, dpi=500)
+ggsave(global_prediction_trend_path, global_prediction_trend, width=5, height=5, dpi=500)
 global_prediction_trend
+
+head(df)
 
 enet_cp_fig <- file.path(paste0(enet_cp_fig_path,"Predicted_vs_Actual_all_cytokines.pdf"))
 pdf(file=enet_cp_fig)
@@ -71,7 +74,7 @@ pdf(file=enet_cp_fig)
 options(repr.plot.width=6, repr.plot.height=8)
 # facet by secrete
 for (i in 1:length(unique(df$cytokine))){
-    sub_df <- df[df$cytokine == (unique(df$secrete)[i]),]
+    sub_df <- df[df$cytokine == (unique(df$cytokine)[i]),]
     p <- (
         ggplot(sub_df, aes(x=actual_value, y=predicted_value, col=shuffle))
         + geom_point()
@@ -123,13 +126,41 @@ if (!file.exists(dirname(global_prediction_trend_path))) {
 variance_r2_plot <- (
     ggplot(df_var, aes(x=r2, y=actual_value, col=shuffle, shape = data_split))
     + geom_point()
-    + labs(x="r2", y="variance")
+    + labs(x="R2 score", y="variance")
     + theme_bw()
     + xlim(0, max(df_var$r2))
     + ylim(0, max(df_var$actual_value))
 )
 ggsave(local_variance_r2_path, variance_r2_plot, width=5, height=5, dpi=500)
 variance_r2_plot
+
+# remove all cytokines that have r2 < 0 for both test and train set
+neg_r2 <- df_var[df_var$r2 < 0,]
+remove_cytokine_list <- neg_r2[neg_r2$shuffle == "final",]$cytokine
+# remove cytokines from df
+df_var <- df_var[!(df_var$cytokine %in% remove_cytokine_list),]
+# create a new column tha combine the shuffle columnm and the data_split column
+df_var$shuffle_data_split <- paste0(df_var$shuffle, "_", df_var$data_split)
+
+
+# set size of the plot
+options(repr.plot.width=25, repr.plot.height=15)
+# get only the final models
+# df_var_final <- df_var[df_var$shuffle == "final",]
+# set the order of the cytokines by the r2 score for the test set
+# df_var_final$cytokine <- factor(df_var_pos$cytokine, levels = df_var_pos[order(df_var_pos$r2, decreasing = TRUE),]$cytokine)
+# plot the df_var_pos df on a bar plot
+variance_r2_bar_plot <- (
+    ggplot(df_var, aes(x = reorder(cytokine, r2, decreasing=T), y=r2, fill=shuffle_data_split))
+    + geom_bar(stat="identity", position=position_dodge())
+    + labs(x="Shuffle", y="R2 score")
+    + theme_bw()
+    # make x ticks labels larger and rotate them 90 degrees
+    + theme(axis.text.x = element_text(size=16, angle=90, hjust=1))
+
+)
+ggsave(file.path(paste0(enet_cp_fig_path,"variance_r2_bar_plot.png")), variance_r2_bar_plot, width=20, height=15, dpi=500)
+variance_r2_bar_plot
 
 # calculate the se of each metric for each shuffle, data_split, and cytokine in R
 agg_df <- aggregate(log10_neg_mean_absolute_error ~ shuffle + data_split + cytokine + treatment, df, function(x) c(mean = mean(x), sd = sd(x)))
@@ -243,16 +274,17 @@ for (df_type in (list_of_data_frames)){
 dev.off()
 
 treatment_well_platemap <- file.path(paste0(enet_cp_fig_path,"treatment_platemap.png"))
-
+# plot size set
+options(repr.plot.width=12, repr.plot.height=8)
 platemap_plot <- (
     raw_map(
         data = df$treatment,
         well = df$well,
         plate = 384)
-    + ggtitle("Predictive Performance per Well")
+    + ggtitle("Selected Treatment Platemap")
     + theme_dark()
 )
-ggsave(treatment_well_platemap, platemap_plot, width=5, height=5, dpi=500)
+ggsave(treatment_well_platemap, platemap_plot, width=12, height=8, dpi=500)
 platemap_plot
 
 # generate a platemap plot for the meta data
@@ -265,7 +297,7 @@ platemap_df$cell_type[platemap_df$cell_type == ""] <- "blank"
 platemap_df$inducer1[platemap_df$inducer1 == ""] <- "blank"
 
 # plot size
-options(repr.plot.width=18, repr.plot.height=18)
+options(repr.plot.width=8, repr.plot.height=8)
 # platemap of experimental contitions (cell type and inducer)
 cell_type_well_platemap <- file.path(paste0(enet_cp_fig_path,"cell_type_well_platemap.png"))
 # if path does not exist, create it
@@ -298,5 +330,7 @@ platemap_plot <- (
     + theme_dark()
     + ggplot2::geom_point(aes(shape = platemap_df$cell_type))
 )
-# ggsave(inducer_well_platemap, platemap_plot, width=5, height=5, dpi=500)
+ggsave(inducer_well_platemap, platemap_plot, width=8, height=8, dpi=500)
 platemap_plot
+
+

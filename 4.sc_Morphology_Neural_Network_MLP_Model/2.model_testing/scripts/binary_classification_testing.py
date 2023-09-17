@@ -53,8 +53,10 @@ sys.path.append("../../..")
 CELL_TYPE = "SHSY5Y"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
 TREATMENT_NAME = "LPS_100.000_DMSO_0.025"
-MODEL_NAME = "DMSO_0.025_vs_LPS_100"
 SHUFFLE = True
+
+# %%
+MODEL_NAME = CONTROL_NAME + "_vs_" + TREATMENT_NAME
 
 # %% papermill={"duration": 0.007664, "end_time": "2023-08-20T02:37:17.030110", "exception": false, "start_time": "2023-08-20T02:37:17.022446", "status": "completed"} tags=[]
 ml_configs_file = pathlib.Path("../../MLP_utils/binary_config.toml").resolve(

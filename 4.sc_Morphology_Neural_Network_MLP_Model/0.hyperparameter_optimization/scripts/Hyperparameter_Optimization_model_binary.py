@@ -64,7 +64,9 @@ from utils.utils import df_stats
 CELL_TYPE = "PBMC"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
 TREATMENT_NAME = "Thapsigargin_1.000_DMSO_0.025"
-MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_1"
+
+# %%
+MODEL_NAME = CONTROL_NAME + "_vs_" + TREATMENT_NAME
 
 # %%
 ml_configs_file = pathlib.Path("../../MLP_utils/binary_config.toml").resolve(

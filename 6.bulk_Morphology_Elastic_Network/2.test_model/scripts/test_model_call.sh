@@ -4,7 +4,7 @@
 #SBATCH --partition=amilan
 #SBATCH --qos=normal
 #SBATCH --output=sample-%j.out
-#SBATCH --array=1-750%64
+#SBATCH --array=1-750%100
 #SBATCH --time=24:00:00
 #SBATCH --mem-per-cpu=200G
 

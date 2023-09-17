@@ -46,10 +46,19 @@ treatment_names=(
     Thapsigargin_1.000_DMSO_0.025
     H2O2_100.000_DMSO_0.025 )
 
+num_jobs=$(( ${#control_names[@]} * ${#treatment_names[@]} * ${#cell_types[@]} * ${#shuffles[@]} ))
+echo "num_jobs: $num_jobs"
+job=1
+
+
 for cell_type in "${cell_types[@]}"; do
     for control_name in "${!control_names[@]}"; do
         for treatment_name in "${!treatment_names[@]}"; do
             for shuffle in "${!shuffles[@]}"; do
+                echo "cell_type: $cell_type" control_name: "${control_names[$control_name]}" treatment_name: "${treatment_names[$treatment_name]}" shuffle: "${shuffles[$shuffle]}"
+                job=$(( $job + 1 ))
+                progress=$(( $job * 100 / $num_jobs ))
+                echo "progress: $progress"
                 # if treatment_name is not equal to control_name
                 if [[ $treatment_name != "$control_name" ]]; then
                     papermill \

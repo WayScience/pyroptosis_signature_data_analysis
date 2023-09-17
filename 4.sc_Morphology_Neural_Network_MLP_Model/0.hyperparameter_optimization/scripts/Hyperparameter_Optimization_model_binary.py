@@ -1,29 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
-# ---
-# jupyter:
-#   jupytext:
-#     cell_metadata_filter: -all
-#     formats: ipynb,py
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.14.0
-#   kernelspec:
-#     display_name: Python 3 (ipykernel)
-#     language: python
-#     name: python3
-# ---
 
-# %% [markdown]
 # ## Hyperparameter tuning via Optuna
 
-# %% [markdown]
 # ### Being a binary model this notebook will be limited to predicting one class 1 or 0, yes or no.
 # ### Here I will be predicting if a cell received a treatment or not
 
-# %%
+# In[1]:
+
+
 import pathlib
 import sys
 
@@ -54,21 +39,28 @@ from MLP_utils.utils import (
 sys.path.append("../../..")
 from utils.utils import df_stats
 
-# %% [markdown]
 # ## Papermill is used for executing notebooks in the CLI with multiple parameters
 # Here the `injected-parameters` cell is used to inject parameters into the notebook via papermill.
 # This enables multiple notebooks to be executed with different parameters, preventing to manually update parameters or have multiple copies of the notebook.
 
-# %%
+# In[2]:
+
+
 # Parameters
 CELL_TYPE = "PBMC"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
 TREATMENT_NAME = "Thapsigargin_1.000_DMSO_0.025"
 
-# %%
+
+# In[ ]:
+
+
 MODEL_NAME = CONTROL_NAME + "_vs_" + TREATMENT_NAME
 
-# %%
+
+# In[3]:
+
+
 ml_configs_file = pathlib.Path("../../MLP_utils/binary_config.toml").resolve(
     strict=True
 )
@@ -83,7 +75,10 @@ mlp_params.CONTROL_NAME = CONTROL_NAME
 mlp_params.TREATMENT_NAME = TREATMENT_NAME
 mlp_params.MODEL_NAME = MODEL_NAME
 
-# %%
+
+# In[4]:
+
+
 # Import Data
 # set data file path under pathlib path for multi-system use
 
@@ -93,14 +88,15 @@ file_path = pathlib.Path(
 
 df = pq.read_table(file_path).to_pandas()
 
-# %% [markdown]
+
 # #### Set up Data to be compatible with model
 
-# %% [markdown]
 # ##### Classification Models:
 # Comment out code if using regression
 
-# %%
+# In[5]:
+
+
 # filter the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column to only include the treatment and control via loc
 df = df.loc[
     df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
@@ -120,7 +116,10 @@ if mlp_params.DATA_SUBSET_OPTION == "True":
 else:
     print("Data Subset Is Off")
 
-# %%
+
+# In[6]:
+
+
 np.random.seed(seed=0)
 wells_to_hold = (
     df.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose")
@@ -136,7 +135,10 @@ print(
     "Wells to use for training, validation, and testing", df["Metadata_Well"].unique()
 )
 
-# %%
+
+# In[7]:
+
+
 # Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
 
@@ -144,7 +146,10 @@ df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
 df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
-# %%
+
+# In[8]:
+
+
 # Creating label encoder
 le = preprocessing.LabelEncoder()
 # Converting strings into numbers
@@ -163,10 +168,12 @@ df_values_X = df_values.drop(
 )
 df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
-# %% [markdown]
+
 # #### Split Data - All Models can proceed through this point
 
-# %%
+# In[9]:
+
+
 X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
     X_vals=df_values_X,
     y_vals=df_values_Y,
@@ -177,7 +184,10 @@ X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
     params=params,
 )
 
-# %%
+
+# In[10]:
+
+
 # produce data objects for train, val and test datasets
 train_data = Dataset_formatter(
     torch.FloatTensor(X_train.values), torch.FloatTensor(Y_train.values)
@@ -189,7 +199,10 @@ test_data = Dataset_formatter(
     torch.FloatTensor(X_test.values), torch.FloatTensor(Y_test.values)
 )
 
-# %%
+
+# In[11]:
+
+
 mlp_params.IN_FEATURES = X_train.shape[1]
 print("Number of in features: ", mlp_params.IN_FEATURES)
 if mlp_params.MODEL_TYPE == "Regression":
@@ -212,7 +225,10 @@ else:
     pass
 print(mlp_params.MODEL_TYPE)
 
-# %%
+
+# In[12]:
+
+
 # convert data class into a dataloader to be compatible with pytorch
 train_loader = torch.utils.data.DataLoader(
     dataset=train_data, batch_size=mlp_params.BATCH_SIZE
@@ -225,10 +241,16 @@ test_loader = torch.utils.data.DataLoader(
     batch_size=1,
 )
 
-# %%
+
+# In[13]:
+
+
 print(mlp_params.DEVICE)
 
-# %%
+
+# In[14]:
+
+
 # no accuracy function must be loss for regression
 if mlp_params.MODEL_TYPE == "Regression":
     mlp_params.METRIC = "loss"
@@ -261,7 +283,10 @@ objective_model_optimizer(
     return_info=True,
 )
 
-# %%
+
+# In[15]:
+
+
 # create graph directory for this model
 graph_path = pathlib.Path(
     f"../../figures/{mlp_params.MODEL_TYPE}/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}/hyperparameter_optimization"
@@ -276,7 +301,10 @@ graph_path = f"{graph_path}/plot_optimization_history_graph"
 fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
-# %%
+
+# In[16]:
+
+
 # create graph directory for this model
 graph_path = pathlib.Path(
     f"../../figures/{mlp_params.MODEL_TYPE}/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}/hyperparameter_optimization"
@@ -290,9 +318,13 @@ graph_path = f"{graph_path}/plot_intermediate_values_graph"
 fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
-# %%
+
+# In[17]:
+
+
 param_dict = extract_best_trial_params(
     study.best_params, params, model_name=mlp_params.MODEL_NAME
 )
 
-# %%
+
+# In[ ]:

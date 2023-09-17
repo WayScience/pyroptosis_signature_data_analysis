@@ -81,10 +81,21 @@ done
 # save notebooks to scripts
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb*
 
+# get the number of combination of control_names treatment_names and cell_types
+# this is the number of jobs
+num_jobs=$(( ${#cell_types[@]} * ${#model_names[@]} * ${#selected_treatment_comparisons[@]} ))
+echo "num_jobs: $num_jobs"
+job=1
+
+
 # loop through all cell types, model names, and selected_treatment_comparisons
 for cell_type in "${cell_types[@]}"; do
     for model_name in "${model_names[@]}"; do
         for selected_treatment_comparison in "${selected_treatment_comparisons[@]}"; do
+            echo "cell_type: $cell_type" model_name: "$model_name" selected_treatment_comparison: "$selected_treatment_comparison"
+            job=$(( $job + 1 ))
+            progress=$(( $job * 100 / $num_jobs ))
+            echo "progress: $progress"
             Rscript \
             binary_classification_testing_visualization.r \
             --celltype "$cell_type" \

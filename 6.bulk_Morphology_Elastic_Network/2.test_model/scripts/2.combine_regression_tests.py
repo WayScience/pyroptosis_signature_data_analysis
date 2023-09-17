@@ -58,11 +58,11 @@ variance_r2_stats_df.to_csv(variance_r2_stats_final_output_path, index=False)
 
 
 # delete the individual files
-for f in model_stats_files:
-    f.unlink()
+# for f in model_stats_files:
+#    f.unlink()
 
-for f in variance_r2_stats_files:
-    f.unlink()
+# for f in variance_r2_stats_files:
+#    f.unlink()
 
 
 # In[ ]:

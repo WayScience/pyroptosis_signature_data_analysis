@@ -37,9 +37,6 @@ from MLP_utils.utils import (
 sys.path.append("../../..")
 from utils.utils import df_stats
 
-# In[ ]:
-
-
 # ## Papermill is used for executing notebooks in the CLI with multiple parameters
 # Here the `injected-parameters` cell is used to inject parameters into the notebook via papermill.
 # This enables multiple notebooks to be executed with different parameters, preventing to manually update parameters or have multiple copies of the notebook.
@@ -51,8 +48,13 @@ from utils.utils import df_stats
 CELL_TYPE = "PBMC"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
 TREATMENT_NAME = "Thapsigargin_1.000_DMSO_0.025"
-MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_1"
 SHUFFLE = False
+
+
+# In[ ]:
+
+
+MODEL_NAME = CONTROL_NAME + "_vs_" + TREATMENT_NAME
 
 
 # In[3]:
@@ -85,18 +87,6 @@ file_path = pathlib.Path(
 ).resolve(strict=True)
 
 df = pq.read_table(file_path).to_pandas()
-
-
-# In[5]:
-
-
-# # change model name to match shuffle
-# if mlp_params.SHUFFLE:
-#     mlp_params.MODEL_NAME = f'{mlp_params.MODEL_NAME}_shuffle'
-# elif mlp_params.SHUFFLE != True:
-#     pass
-# else:
-#     raise ValueError('SHUFFLE must be True or False')
 
 
 # #### Set up Data to be compatible with model

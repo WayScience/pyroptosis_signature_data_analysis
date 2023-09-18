@@ -5,6 +5,7 @@
 
 
 import argparse
+import ast
 import pathlib
 import sys
 
@@ -67,8 +68,8 @@ parser.add_argument(
 )
 parser.add_argument(
     "--shuffle",
-    type=bool,
-    default=False,
+    type=str,
+    default="False",
     help="shuffle data before training",
 )
 
@@ -77,7 +78,7 @@ args = parser.parse_args()
 CELL_TYPE = args.cell_type
 CONTROL_NAME = args.control_name
 TREATMENT_NAME = args.treatment_name
-SHUFFLE = args.shuffle
+SHUFFLE = ast.literal_eval(args.shuffle)
 print(
     f"CELL_TYPE: {CELL_TYPE}",
     f"CONTROL_NAME: {CONTROL_NAME}",
@@ -85,7 +86,7 @@ print(
     f"SHUFFLE: {SHUFFLE}",
     sep="\n",
 )
-
+print(SHUFFLE.type)
 
 # In[ ]:
 

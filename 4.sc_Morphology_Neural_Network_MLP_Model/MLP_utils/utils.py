@@ -1064,6 +1064,8 @@ def test_optimized_model(
         save_state_path = pathlib.Path(
             f"../../trained_models/model_save_states/Binary_Classification/{params.CELL_TYPE}"
         )
+        print(save_state_path)
+        print(model_name)
         model.load_state_dict(
             torch.load(f"{save_state_path}/Binary_Classification_{model_name}.pt")
         )

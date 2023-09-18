@@ -1003,17 +1003,15 @@ def plot_metric_vs_epoch(
     # create graph directory for this model
     graph_path = pathlib.Path(
         f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
-    ).resolve(strict=True)
+    )
     pathlib.Path(graph_path).mkdir(parents=True, exist_ok=True)
 
     if shuffle:
         graph_path = pathlib.Path(
             f"{graph_path}/{y_axis_label}_graph_shuffled_data.png"
-        ).resolve(strict=True)
-    elif not shuffle:
-        graph_path = pathlib.Path(f"{graph_path}/{y_axis_label}_graph.png").resolve(
-            strict=True
         )
+    elif not shuffle:
+        graph_path = pathlib.Path(f"{graph_path}/{y_axis_label}_graph.png")
     else:
         raise ModelNameError
 

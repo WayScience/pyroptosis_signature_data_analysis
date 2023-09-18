@@ -1,0 +1,31 @@
+[NbConvertApp] WARNING | Config option `kernel_spec_manager_class` not recognized by `NbConvertApp`.
+[NbConvertApp] Converting notebook ../notebooks/Hyperparameter_Optimization_model_binary.ipynb to script
+[NbConvertApp] Writing 8579 bytes to Hyperparameter_Optimization_model_binary.py
+cell_type: PBMC control_name: LPS_0.010_DMSO_0.025 treatment_name: Thapsigargin_10.000_DMSO_0.025
+[I 2023-09-17 20:32:10,894] A new study created in memory with name: no-name-4dd17dbb-b253-46af-bb80-2e8c8bd105de
+[I 2023-09-17 20:33:30,303] Trial 0 finished with value: 0.40541170806988425 and parameters: {'n_layers': 1, 'n_units_l0': 8, 'dropout_0': 0.22232460704721851, 'learning_rate': 0.07683494073263698, 'optimizer': 'RMSprop'}. Best is trial 0 with value: 0.40541170806988425.
+[I 2023-09-17 20:34:47,889] Trial 1 finished with value: 0.40926483143930853 and parameters: {'n_layers': 1, 'n_units_l0': 2, 'dropout_0': 0.2807172089972294, 'learning_rate': 0.06347933170478573, 'optimizer': 'SGD'}. Best is trial 0 with value: 0.40541170806988425.
+[I 2023-09-17 20:36:12,034] Trial 2 finished with value: 0.39567180581714795 and parameters: {'n_layers': 3, 'n_units_l0': 7, 'dropout_0': 0.37966853405488066, 'n_units_l1': 2, 'dropout_1': 0.28246677983696755, 'n_units_l2': 10, 'dropout_2': 0.364044110550627, 'learning_rate': 0.06741397857495596, 'optimizer': 'SGD'}. Best is trial 2 with value: 0.39567180581714795.
+[I 2023-09-17 20:37:34,815] Trial 3 finished with value: 0.279270209721897 and parameters: {'n_layers': 2, 'n_units_l0': 7, 'dropout_0': 0.1044200874577819, 'n_units_l1': 10, 'dropout_1': 0.2704314097777751, 'learning_rate': 0.09174064471552394, 'optimizer': 'SGD'}. Best is trial 3 with value: 0.279270209721897.
+[I 2023-09-17 20:38:55,313] Trial 4 finished with value: 0.27274500313012495 and parameters: {'n_layers': 1, 'n_units_l0': 8, 'dropout_0': 0.17766138423891292, 'learning_rate': 0.05748920076358068, 'optimizer': 'Adam'}. Best is trial 4 with value: 0.27274500313012495.
+[I 2023-09-17 20:38:57,009] Trial 5 pruned.
+[I 2023-09-17 20:38:58,706] Trial 6 pruned.
+[I 2023-09-17 20:40:18,288] Trial 7 finished with value: 0.3049980585860169 and parameters: {'n_layers': 1, 'n_units_l0': 5, 'dropout_0': 0.15638889911938333, 'learning_rate': 0.09815921238813854, 'optimizer': 'Adam'}. Best is trial 4 with value: 0.27274500313012495.
+[I 2023-09-17 20:40:19,881] Trial 8 pruned.
+[I 2023-09-17 20:40:21,588] Trial 9 pruned.
+Selected Catagories are:
+['LPS_0.010_DMSO_0.025' 'Thapsigargin_10.000_DMSO_0.025']
+The dimensions of the data are: (310064, 1270)
+Number of total missing values across all columns: 620128
+Data Subset Is Off
+Wells held out for testing: ['B08' 'L06']
+Wells to use for training, validation, and testing ['B02' 'B03' 'B09' 'E06' 'E07' 'L07']
+Number of in features:  1245
+Number of out features:  2
+Binary_Classification
+cpu
+Validation Accuracy: 88.29059379926431
+Validation Loss: 0.2745721507720325
+Training Accuracy: 86.50237573899715
+Training Loss: 0.30150342486758047
+completed

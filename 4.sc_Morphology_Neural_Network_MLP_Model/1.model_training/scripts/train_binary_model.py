@@ -4,6 +4,7 @@
 # In[1]:
 
 
+import argparse
 import pathlib
 import sys
 
@@ -41,14 +42,49 @@ from utils.utils import df_stats
 # Here the `injected-parameters` cell is used to inject parameters into the notebook via papermill.
 # This enables multiple notebooks to be executed with different parameters, preventing to manually update parameters or have multiple copies of the notebook.
 
-# In[2]:
+# In[ ]:
 
 
-# Parameters
-CELL_TYPE = "PBMC"
-CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
-TREATMENT_NAME = "Thapsigargin_1.000_DMSO_0.025"
-SHUFFLE = False
+# set up the parser
+parser = argparse.ArgumentParser(description="Train MLP model")
+parser.add_argument(
+    "--cell_type",
+    type=str,
+    default="cell_type",
+    help="cell type to train model on",
+)
+parser.add_argument(
+    "--control_name",
+    type=str,
+    default="control_name",
+    help="control name to train model on",
+)
+parser.add_argument(
+    "--treatment_name",
+    type=str,
+    default="treatment_name",
+    help="treatment name to train model on",
+)
+parser.add_argument(
+    "--shuffle",
+    type=bool,
+    default=False,
+    help="shuffle data before training",
+)
+
+# parse the arguments
+args = parser.parse_args()
+CELL_TYPE = args.cell_type
+CONTROL_NAME = args.control_name
+TREATMENT_NAME = args.treatment_name
+SHUFFLE = args.shuffle
+print(
+    f"CELL_TYPE: {CELL_TYPE}",
+    f"CONTROL_NAME: {CONTROL_NAME}",
+    f"TREATMENT_NAME: {TREATMENT_NAME}",
+    f"SHUFFLE: {SHUFFLE}",
+    sep="\n",
+)
 
 
 # In[ ]:

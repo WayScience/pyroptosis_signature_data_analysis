@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#SBATCH --nodes=1
-#SBATCH --ntasks=100
-#SBATCH --mem=250G
-#SBATCH --partition=amlian
+#SBACTH --nodes=1
+#SBATCH --ntasks=50
+#SBATCH --mem=200G
+#SBATCH --partition=amilan
 #SBATCH --qos=normal
 #SBATCH --time=24:00:00
 #SBATCH --output=sample-%j.out

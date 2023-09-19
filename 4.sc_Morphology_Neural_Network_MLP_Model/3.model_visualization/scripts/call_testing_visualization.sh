@@ -59,24 +59,13 @@ done
 selected_treatment_comparisons=()
 for model_name in "${model_names[@]}"; do
     for model_name_2 in "${model_names[@]}"; do
-        if [[ $model_name != "$model_name_2" ]]; then
+	echo $model_name $model_name_2
+	 if [[ $model_name != "$model_name_2" ]]; then
             selected_treatment_comparisons+=("${model_name},${model_name_2}")
         fi
     done
 done
 
-# generate selected_treatment_comparisons from model_names (4 by 4)
-for model_name in "${model_names[@]}"; do
-    for model_name_2 in "${model_names[@]}"; do
-        for model_name_3 in "${model_names[@]}"; do
-            for model_name_4 in "${model_names[@]}"; do
-                if [[ $model_name != "$model_name_2" ]] && [[ $model_name != "$model_name_3" ]] && [[ $model_name != "$model_name_4" ]] && [[ $model_name_2 != "$model_name_3" ]] && [[ $model_name_2 != "$model_name_4" ]] && [[ $model_name_3 != "$model_name_4" ]]; then
-                    selected_treatment_comparisons+=("${model_name},${model_name_2},${model_name_3},${model_name_4}")
-                fi
-            done
-        done
-    done
-done
 
 # save notebooks to scripts
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb*
@@ -87,20 +76,18 @@ num_jobs=$(( ${#cell_types[@]} * ${#model_names[@]} * ${#selected_treatment_comp
 echo "num_jobs: $num_jobs"
 job=1
 
+job_id=$(( SLURM_ARRAY_TASK_ID - 1 ))
+cell_type_idx=$(( job_id % "${#cell_types[@]}" ))
+model_name_idx=$(( job_id / "${#cell_types[@]}" % "${model_names[@]}" ))
+treatment_comparisons_idx=$(( job_id / "${cell_types[@]}" / "${model_names[@]}" % "${treatment_comparisons[@]}" ))
 
-# loop through all cell types, model names, and selected_treatment_comparisons
-for cell_type in "${cell_types[@]}"; do
-    for model_name in "${model_names[@]}"; do
-        for selected_treatment_comparison in "${selected_treatment_comparisons[@]}"; do
-            echo "cell_type: $cell_type" model_name: "$model_name" selected_treatment_comparison: "$selected_treatment_comparison"
-            job=$(( $job + 1 ))
-            progress=$(( $job * 100 / $num_jobs ))
-            echo "progress: $progress"
-            Rscript \
-            binary_classification_testing_visualization.r \
-            --celltype "$cell_type" \
-            --model_name "$model_name" \
-            --selected_treatment_comparisons "{$selected_treatment_comparison}"
-        done
-    done
-done
+cell_type=${cell_types[$cell_type_idx]}
+model_name=${model_names[$model_name_idx]}
+treatment_comparison=${treatment_comparisons[$treatment_comparisons_idx]}
+
+echo $cell_type $model_name $treatment_comparison
+
+#command="Rscript binary_classification_testing_visualization.r"
+#$command --cell_type "$cell_type" --model_name "$model_name" --selected_treatment_comparisons "{$selected_treatment_comparison}"
+
+

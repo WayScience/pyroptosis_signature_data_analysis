@@ -1,0 +1,31 @@
+[NbConvertApp] WARNING | Config option `kernel_spec_manager_class` not recognized by `NbConvertApp`.
+[NbConvertApp] Converting notebook ../notebooks/Hyperparameter_Optimization_model_binary.ipynb to script
+[NbConvertApp] Writing 8579 bytes to Hyperparameter_Optimization_model_binary.py
+cell_type: PBMC control_name: H2O2_100.000_DMSO_0.025 treatment_name: LPS_0.010_DMSO_0.025
+[I 2023-09-19 01:26:12,404] A new study created in memory with name: no-name-4d413f39-50a0-438e-8098-bee33d818243
+[I 2023-09-19 01:28:07,181] Trial 0 finished with value: 0.43873119823634626 and parameters: {'n_layers': 3, 'n_units_l0': 2, 'dropout_0': 0.2882620499592153, 'n_units_l1': 8, 'dropout_1': 0.3441829354215068, 'n_units_l2': 7, 'dropout_2': 0.3121838180888606, 'learning_rate': 0.06369853575968638, 'optimizer': 'SGD'}. Best is trial 0 with value: 0.43873119823634626.
+[I 2023-09-19 01:29:58,771] Trial 1 finished with value: 0.4080670992098749 and parameters: {'n_layers': 1, 'n_units_l0': 3, 'dropout_0': 0.11483786293199268, 'learning_rate': 0.06748413912615947, 'optimizer': 'RMSprop'}. Best is trial 1 with value: 0.4080670992098749.
+[I 2023-09-19 01:31:59,601] Trial 2 finished with value: 0.43807249849662183 and parameters: {'n_layers': 3, 'n_units_l0': 10, 'dropout_0': 0.26580964306737154, 'n_units_l1': 5, 'dropout_1': 0.3330072470911592, 'n_units_l2': 3, 'dropout_2': 0.22688962980933863, 'learning_rate': 0.07200215978780558, 'optimizer': 'Adam'}. Best is trial 1 with value: 0.4080670992098749.
+[I 2023-09-19 01:33:51,237] Trial 3 finished with value: 0.5611806400679051 and parameters: {'n_layers': 1, 'n_units_l0': 6, 'dropout_0': 0.3539653036710113, 'learning_rate': 0.09010998434314064, 'optimizer': 'RMSprop'}. Best is trial 1 with value: 0.4080670992098749.
+[I 2023-09-19 01:35:43,015] Trial 4 finished with value: 0.35587378496304156 and parameters: {'n_layers': 1, 'n_units_l0': 9, 'dropout_0': 0.3806549717220421, 'learning_rate': 0.04000021460216548, 'optimizer': 'RMSprop'}. Best is trial 4 with value: 0.35587378496304156.
+[I 2023-09-19 01:37:35,023] Trial 5 finished with value: 0.40267740389332174 and parameters: {'n_layers': 1, 'n_units_l0': 2, 'dropout_0': 0.32714209273230255, 'learning_rate': 0.016709681370190157, 'optimizer': 'Adam'}. Best is trial 4 with value: 0.35587378496304156.
+[I 2023-09-19 01:39:28,464] Trial 6 finished with value: 0.30578959236852826 and parameters: {'n_layers': 1, 'n_units_l0': 8, 'dropout_0': 0.22163416692108673, 'learning_rate': 0.08019995248925049, 'optimizer': 'Adam'}. Best is trial 6 with value: 0.30578959236852826.
+[I 2023-09-19 01:39:30,600] Trial 7 pruned.
+[I 2023-09-19 01:41:28,421] Trial 8 finished with value: 0.3051262987405062 and parameters: {'n_layers': 2, 'n_units_l0': 10, 'dropout_0': 0.36147181332168365, 'n_units_l1': 7, 'dropout_1': 0.34662454431478873, 'learning_rate': 0.03390257870140699, 'optimizer': 'Adam'}. Best is trial 8 with value: 0.3051262987405062.
+[I 2023-09-19 01:41:30,864] Trial 9 pruned.
+Selected Catagories are:
+['LPS_0.010_DMSO_0.025' 'H2O2_100.000_DMSO_0.025']
+The dimensions of the data are: (383616, 1270)
+Number of total missing values across all columns: 767232
+Data Subset Is Off
+Wells held out for testing: ['B09' 'I10']
+Wells to use for training, validation, and testing ['B02' 'B03' 'B08' 'H04' 'I04' 'H05' 'I05' 'H10' 'H11' 'I11']
+Number of in features:  1245
+Number of out features:  2
+Binary_Classification
+cpu
+Validation Accuracy: 87.30304076317194
+Validation Loss: 0.2966621000599116
+Training Accuracy: 83.07477288061129
+Training Loss: 0.3741952038465762
+completed

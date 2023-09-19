@@ -9,7 +9,7 @@ source(figure_theme_path)
 # define command line arguments
 parser <- ArgumentParser(description = "Visualize MLP results")
 # add arguments
-parser$add_argument('--celltype', type='character', help='Cell type to visualize')
+parser$add_argument('--cell_type', type='character', help='Cell type to visualize')
 parser$add_argument('--model_name', type='character', help='Model name to visualize')
 parser$add_argument('--selected_treatment_comparisons', type='character', help='Selected treatment comparisons to visualize')
 
@@ -17,10 +17,9 @@ parser$add_argument('--selected_treatment_comparisons', type='character', help='
 args <- parser$parse_args()
 
 # define cell type
-celltype <- args$celltype
+celltype <- args$cell_type
 model_name <- args$model_name
 selected_treatment_comparisons <- args$selected_treatment_comparisons
-
 
 output_file <- file.path(
     "..","..","figures","Binary_Classification",model_name,celltype,"pr_curves_testing.png"
@@ -59,13 +58,6 @@ pr_curve_gg <- (
     + xlab("Recall")
     + ylab("Precision")
 
-    # # set the colors of the lines
-    # + scale_color_manual(
-    #     name = "Data\nsplit",
-    #     labels = data_split_labels,
-    #     values = data_split_colors
-    # )
-
     + scale_linetype_manual(
         name = "Shuffled\ntraining\ndata",
         labels = shuffled_labels,
@@ -85,9 +77,7 @@ pr_curve_gg <- (
         legend.key.size = unit(2.5, "lines"),
         legend.key.width = unit(1, "lines")
     )
-    + ggtitle(paste0("Precision-Recall Curve for ","\n", model_name))
+    + ggtitle(paste0("Precision-Recall Curve for ","\n", model_name, " model"))
 )
 
 ggsave(output_file, pr_curve_gg, height = 5.5, width = 8.5, dpi = 500)
-
-

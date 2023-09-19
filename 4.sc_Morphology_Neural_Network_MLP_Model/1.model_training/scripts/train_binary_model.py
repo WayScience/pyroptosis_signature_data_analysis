@@ -86,7 +86,8 @@ print(
     f"SHUFFLE: {SHUFFLE}",
     sep="\n",
 )
-print(SHUFFLE.type)
+print(SHUFFLE)
+
 
 # In[ ]:
 

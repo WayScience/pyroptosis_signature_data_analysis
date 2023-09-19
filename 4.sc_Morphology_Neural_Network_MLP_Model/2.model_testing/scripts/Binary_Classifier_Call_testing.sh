@@ -1,12 +1,13 @@
 #!/bin/bash
 
 #SBATCH --nodes=1
-#SBATCH --ntasks=16
-#SBATCH --mem=300G
+#SBATCH --ntasks=4
+#SBATCH --mem=260G
 #SBATCH --partition=amem
 #SBATCH --qos=mem
-#SBATCH --time=24:00:00
+#SBATCH --time=48:00:00
 #SBATCH --output=sample-%j.out
+#SBATCH --array=1-784%100
 
 module load anaconda
 conda activate Interstellar
@@ -60,7 +61,7 @@ treatment_name=${treatment_names[$treatment_name_idx]}
 
 echo cell_type: $cell_type control_name: $control_name treatment_name: $treatment_name shuffle: $shuffle
 
-command="python binaary_classification_testing.py"
+command="python binary_classification_testing.py"
 $command --cell_type "$cell_type" --control_name "$control_name" --treatment_name "$treatment_name" --shuffle "$shuffle"
 
 echo "completed"

@@ -1,19 +1,11 @@
-# ---
-# jupyter:
-#   jupytext:
-#     formats: ipynb,py
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.14.0
-#   kernelspec:
-#     display_name: Interstellar
-#     language: python
-#     name: python3
-# ---
+#!/usr/bin/env python
+# coding: utf-8
 
-# %% papermill={"duration": 3.463583, "end_time": "2023-09-18T19:27:19.760485", "exception": false, "start_time": "2023-09-18T19:27:16.296902", "status": "completed"} tags=[]
+# In[1]:
+
+
+import argparse
+import ast
 import pathlib
 import sys
 
@@ -48,17 +40,59 @@ from sklearn.metrics import (
 
 sys.path.append("../../..")
 
-# %% papermill={"duration": 0.006828, "end_time": "2023-09-18T19:27:19.774261", "exception": false, "start_time": "2023-09-18T19:27:19.767433", "status": "completed"} tags=["injected-parameters"]
-# Parameters
-CELL_TYPE = "SHSY5Y"
-CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
-TREATMENT_NAME = "LPS_Nigericin_1.000_10.0_DMSO_0.025"
-SHUFFLE = True
 
-# %% papermill={"duration": 0.005965, "end_time": "2023-09-18T19:27:19.782270", "exception": false, "start_time": "2023-09-18T19:27:19.776305", "status": "completed"} tags=[]
+# In[ ]:
+
+
+# set up the argument parser
+argparser = argparse.ArgumentParser(description="MLP binary classification testing")
+
+argparser.add_argument(
+    "--cell_type",
+    type=str,
+    default="cells",
+    help="The type of data to be used.",
+)
+argparser.add_argument(
+    "--control_name",
+    type=str,
+    default="control",
+    help="The name of the control condition.",
+)
+argparser.add_argument(
+    "--treatment_name",
+    type=str,
+    default="treatment",
+    help="The name of the treatment condition.",
+)
+argparser.add_argument(
+    "--shuffle",
+    type=str,
+    default="False",
+    help="Whether to shuffle the data before training.",
+)
+
+# get the arguments
+args = argparser.parse_args()
+
+CELL_TYPE = args.cell_type
+CONTROL_NAME = args.control_name
+TREATMENT_NAME = args.treatment_name
+SHUFFLE = ast.literal_eval(args.shuffle)
+print(
+    f"CELL_TYPE: {CELL_TYPE} CONTROL_NAME: {CONTROL_NAME} TREATMENT_NAME: {TREATMENT_NAME} SHUFFLE: {SHUFFLE}"
+)
+
+
+# In[3]:
+
+
 MODEL_NAME = CONTROL_NAME + "_vs_" + TREATMENT_NAME
 
-# %% papermill={"duration": 0.007692, "end_time": "2023-09-18T19:27:19.792091", "exception": false, "start_time": "2023-09-18T19:27:19.784399", "status": "completed"} tags=[]
+
+# In[4]:
+
+
 ml_configs_file = pathlib.Path("../../MLP_utils/binary_config.toml").resolve(
     strict=True
 )
@@ -74,7 +108,10 @@ mlp_params.TREATMENT_NAME = TREATMENT_NAME
 mlp_params.MODEL_NAME = MODEL_NAME
 mlp_params.SHUFFLE = SHUFFLE
 
-# %% papermill={"duration": 1.800296, "end_time": "2023-09-18T19:27:21.594368", "exception": false, "start_time": "2023-09-18T19:27:19.794072", "status": "completed"} tags=[]
+
+# In[5]:
+
+
 # Import Data
 # set data file path under pathlib path for multi-system use
 file_path = pathlib.Path(
@@ -84,8 +121,10 @@ file_path = pathlib.Path(
 df = pq.read_table(file_path).to_pandas()
 
 
-# %% papermill={"duration": 0.013007, "end_time": "2023-09-18T19:27:21.611141", "exception": false, "start_time": "2023-09-18T19:27:21.598134", "status": "completed"} tags=[]
-def test_loop(df, output_name, title):
+# In[6]:
+
+
+def test_loop(df, output_name, title, mlp_params):
     # Code snippet for metadata extraction by Jenna Tomkinson
     df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
 
@@ -203,10 +242,15 @@ def test_loop(df, output_name, title):
     )
 
 
-# %% papermill={"duration": 0.036576, "end_time": "2023-09-18T19:27:21.649741", "exception": false, "start_time": "2023-09-18T19:27:21.613165", "status": "completed"} tags=[]
+# In[7]:
+
+
 print(df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique().tolist())
 
-# %% papermill={"duration": 0.007563, "end_time": "2023-09-18T19:27:21.659427", "exception": false, "start_time": "2023-09-18T19:27:21.651864", "status": "completed"} tags=[]
+
+# In[8]:
+
+
 paired_treatment_list = [
     ["DMSO_0.100_DMSO_0.025", "LPS_100.000_DMSO_0.025"],
     ["DMSO_0.100_DMSO_0.025", "Thapsigargin_1.000_DMSO_0.025"],
@@ -238,7 +282,10 @@ paired_treatment_list = [
     ["LPS_0.010_DMSO_0.025", "Thapsigargin_10.000_DMSO_0.025"],
 ]
 
-# %% papermill={"duration": 0.014218, "end_time": "2023-09-18T19:27:21.675781", "exception": false, "start_time": "2023-09-18T19:27:21.661563", "status": "completed"} tags=[]
+
+# In[9]:
+
+
 # create a dataframe to store the model stats
 model_stats_df = pd.DataFrame(
     columns=[
@@ -253,7 +300,10 @@ model_stats_df = pd.DataFrame(
 )
 model_stats_df
 
-# %% papermill={"duration": 150.497879, "end_time": "2023-09-18T19:29:52.175873", "exception": false, "start_time": "2023-09-18T19:27:21.677994", "status": "completed"} tags=[]
+
+# In[10]:
+
+
 for i in paired_treatment_list:
     # filter df to only include the two treatments to test
     test_df = df.query(
@@ -276,7 +326,7 @@ for i in paired_treatment_list:
         recall_,
         threshold_,
         dict_of_treatments,
-    ) = test_loop(test_df, output_name, title)
+    ) = test_loop(test_df, output_name, title, mlp_params)
     print(recall, precision, f1)
 
     threshold_ = np.append(threshold_, None)
@@ -299,10 +349,16 @@ for i in paired_treatment_list:
     stats_df
     model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
-# %% papermill={"duration": 0.015659, "end_time": "2023-09-18T19:29:52.199425", "exception": false, "start_time": "2023-09-18T19:29:52.183766", "status": "completed"} tags=[]
+
+# In[11]:
+
+
 model_stats_df
 
-# %% papermill={"duration": null, "end_time": null, "exception": false, "start_time": "2023-09-18T19:29:52.204013", "status": "running"} tags=[]
+
+# In[12]:
+
+
 # set path for the model training metrics
 metrics_path = pathlib.Path(
     f"../../results/{mlp_params.MODEL_TYPE}/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}"

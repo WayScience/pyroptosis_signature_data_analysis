@@ -1,0 +1,413 @@
+[NbConvertApp] WARNING | Config option `kernel_spec_manager_class` not recognized by `NbConvertApp`.
+[NbConvertApp] Converting notebook ../notebooks/Hyperparameter_Optimization_model_multi-class.ipynb to script
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbformat/__init__.py:93: DuplicateCellId: Non-unique cell id '3e2c848c' detected. Corrected to '6e6f86c5'.
+  validate(nb)
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbformat/__init__.py:93: DuplicateCellId: Non-unique cell id '3c53f7e4' detected. Corrected to 'a464539b'.
+  validate(nb)
+[NbConvertApp] Writing 14456 bytes to Hyperparameter_Optimization_model_multi-class.py
+[NbConvertApp] Converting notebook ../notebooks/Hyperparameter_Optimization_model_regression.ipynb to script
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbformat/__init__.py:93: DuplicateCellId: Non-unique cell id '3e2c848c' detected. Corrected to '6b77b7e7'.
+  validate(nb)
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbformat/__init__.py:93: DuplicateCellId: Non-unique cell id '3c53f7e4' detected. Corrected to '8f9ed3a2'.
+  validate(nb)
+[NbConvertApp] Writing 12852 bytes to Hyperparameter_Optimization_model_regression.py
+[NbConvertApp] Converting notebook ../notebooks/train_binary_model.ipynb to script
+[NbConvertApp] Writing 19547 bytes to train_binary_model.py
+cell_type: PBMC control_name: Flagellin_0.100_DMSO_0.025 treatment_name: DMSO_0.100_DMSO_0.025 shuffle: False
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:997: UserWarning: Ignoring `palette` because no `hue` variable has been assigned.
+  sns.lineplot(x=df[x], y=df[y1], palette="blue", label="Train")
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:998: UserWarning: Ignoring `palette` because no `hue` variable has been assigned.
+  sns.lineplot(x=df[x], y=df[y2], palette="orange", label="Validation")
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:997: UserWarning: Ignoring `palette` because no `hue` variable has been assigned.
+  sns.lineplot(x=df[x], y=df[y1], palette="blue", label="Train")
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:998: UserWarning: Ignoring `palette` because no `hue` variable has been assigned.
+  sns.lineplot(x=df[x], y=df[y2], palette="orange", label="Validation")
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1018: UserWarning: The figure layout has changed to tight
+  plt.tight_layout()
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1324: UserWarning: The figure layout has changed to tight
+  plt.tight_layout()
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1324: UserWarning: The figure layout has changed to tight
+  plt.tight_layout()
+CELL_TYPE: PBMC
+CONTROL_NAME: Flagellin_0.100_DMSO_0.025
+TREATMENT_NAME: DMSO_0.100_DMSO_0.025
+SHUFFLE: False
+False
+Selected Catagories are:
+['DMSO_0.100_DMSO_0.025' 'Flagellin_0.100_DMSO_0.025']
+The dimensions of the data are: (311045, 1270)
+Number of total missing values across all columns: 622090
+Data Subset Is Off
+Wells held out for testing: ['J06' 'L10']
+Wells to use for training, validation, and testing ['B06' 'C06' 'B07' 'C07' 'I06' 'I07' 'J07' 'L05' 'L11']
+Number of in features:  1245
+Number of out features:  2
+Binary_Classification
+SGD
+Epoch 0: Validation loss decreased (inf --> 0.484124).  Saving model ...
+	 Train_Loss: 0.5381 Train_Acc: 73.367 Val_Loss: 0.4841  BEST VAL Loss: 0.4841  Val_Acc: 76.357
+
+Epoch 1: Validation loss decreased (0.484124 --> 0.460192).  Saving model ...
+	 Train_Loss: 0.5044 Train_Acc: 77.532 Val_Loss: 0.4602  BEST VAL Loss: 0.4602  Val_Acc: 79.604
+
+Epoch 2: Validation loss decreased (0.460192 --> 0.441997).  Saving model ...
+	 Train_Loss: 0.4809 Train_Acc: 79.658 Val_Loss: 0.4420  BEST VAL Loss: 0.4420  Val_Acc: 81.948
+
+Epoch 3: Validation loss decreased (0.441997 --> 0.427945).  Saving model ...
+	 Train_Loss: 0.4633 Train_Acc: 81.094 Val_Loss: 0.4279  BEST VAL Loss: 0.4279  Val_Acc: 82.743
+
+Epoch 4: Validation loss decreased (0.427945 --> 0.416668).  Saving model ...
+	 Train_Loss: 0.4499 Train_Acc: 81.800 Val_Loss: 0.4167  BEST VAL Loss: 0.4167  Val_Acc: 83.310
+
+Epoch 5: Validation loss decreased (0.416668 --> 0.407599).  Saving model ...
+	 Train_Loss: 0.4391 Train_Acc: 82.401 Val_Loss: 0.4076  BEST VAL Loss: 0.4076  Val_Acc: 83.757
+
+Epoch 6: Validation loss decreased (0.407599 --> 0.400046).  Saving model ...
+	 Train_Loss: 0.4301 Train_Acc: 82.717 Val_Loss: 0.4000  BEST VAL Loss: 0.4000  Val_Acc: 83.993
+
+Epoch 7: Validation loss decreased (0.400046 --> 0.393701).  Saving model ...
+	 Train_Loss: 0.4225 Train_Acc: 82.997 Val_Loss: 0.3937  BEST VAL Loss: 0.3937  Val_Acc: 84.253
+
+Epoch 8: Validation loss decreased (0.393701 --> 0.388110).  Saving model ...
+	 Train_Loss: 0.4161 Train_Acc: 83.243 Val_Loss: 0.3881  BEST VAL Loss: 0.3881  Val_Acc: 84.448
+
+Epoch 9: Validation loss decreased (0.388110 --> 0.383361).  Saving model ...
+	 Train_Loss: 0.4106 Train_Acc: 83.324 Val_Loss: 0.3834  BEST VAL Loss: 0.3834  Val_Acc: 84.480
+
+Epoch 10: Validation loss decreased (0.383361 --> 0.379158).  Saving model ...
+	 Train_Loss: 0.4056 Train_Acc: 83.593 Val_Loss: 0.3792  BEST VAL Loss: 0.3792  Val_Acc: 84.784
+
+Epoch 11: Validation loss decreased (0.379158 --> 0.375518).  Saving model ...
+	 Train_Loss: 0.4012 Train_Acc: 83.681 Val_Loss: 0.3755  BEST VAL Loss: 0.3755  Val_Acc: 84.856
+
+Epoch 12: Validation loss decreased (0.375518 --> 0.372121).  Saving model ...
+	 Train_Loss: 0.3973 Train_Acc: 83.802 Val_Loss: 0.3721  BEST VAL Loss: 0.3721  Val_Acc: 84.908
+
+Epoch 13: Validation loss decreased (0.372121 --> 0.369213).  Saving model ...
+	 Train_Loss: 0.3938 Train_Acc: 83.856 Val_Loss: 0.3692  BEST VAL Loss: 0.3692  Val_Acc: 84.868
+
+Epoch 14: Validation loss decreased (0.369213 --> 0.366356).  Saving model ...
+	 Train_Loss: 0.3906 Train_Acc: 83.978 Val_Loss: 0.3664  BEST VAL Loss: 0.3664  Val_Acc: 85.223
+
+Epoch 15: Validation loss decreased (0.366356 --> 0.363842).  Saving model ...
+	 Train_Loss: 0.3876 Train_Acc: 84.050 Val_Loss: 0.3638  BEST VAL Loss: 0.3638  Val_Acc: 85.123
+
+Epoch 16: Validation loss decreased (0.363842 --> 0.361458).  Saving model ...
+	 Train_Loss: 0.3849 Train_Acc: 84.123 Val_Loss: 0.3615  BEST VAL Loss: 0.3615  Val_Acc: 85.131
+
+Epoch 17: Validation loss decreased (0.361458 --> 0.359351).  Saving model ...
+	 Train_Loss: 0.3823 Train_Acc: 84.303 Val_Loss: 0.3594  BEST VAL Loss: 0.3594  Val_Acc: 85.267
+
+Epoch 18: Validation loss decreased (0.359351 --> 0.357381).  Saving model ...
+	 Train_Loss: 0.3800 Train_Acc: 84.260 Val_Loss: 0.3574  BEST VAL Loss: 0.3574  Val_Acc: 85.419
+
+Epoch 19: Validation loss decreased (0.357381 --> 0.355569).  Saving model ...
+	 Train_Loss: 0.3778 Train_Acc: 84.357 Val_Loss: 0.3556  BEST VAL Loss: 0.3556  Val_Acc: 85.331
+
+Epoch 20: Validation loss decreased (0.355569 --> 0.353834).  Saving model ...
+	 Train_Loss: 0.3758 Train_Acc: 84.411 Val_Loss: 0.3538  BEST VAL Loss: 0.3538  Val_Acc: 85.407
+
+Epoch 21: Validation loss decreased (0.353834 --> 0.352204).  Saving model ...
+	 Train_Loss: 0.3739 Train_Acc: 84.452 Val_Loss: 0.3522  BEST VAL Loss: 0.3522  Val_Acc: 85.662
+
+Epoch 22: Validation loss decreased (0.352204 --> 0.350713).  Saving model ...
+	 Train_Loss: 0.3721 Train_Acc: 84.438 Val_Loss: 0.3507  BEST VAL Loss: 0.3507  Val_Acc: 85.439
+
+Epoch 23: Validation loss decreased (0.350713 --> 0.349481).  Saving model ...
+	 Train_Loss: 0.3704 Train_Acc: 84.578 Val_Loss: 0.3495  BEST VAL Loss: 0.3495  Val_Acc: 85.323
+
+Epoch 24: Validation loss decreased (0.349481 --> 0.348340).  Saving model ...
+	 Train_Loss: 0.3688 Train_Acc: 84.644 Val_Loss: 0.3483  BEST VAL Loss: 0.3483  Val_Acc: 85.315
+
+Epoch 25: Validation loss decreased (0.348340 --> 0.347223).  Saving model ...
+	 Train_Loss: 0.3673 Train_Acc: 84.574 Val_Loss: 0.3472  BEST VAL Loss: 0.3472  Val_Acc: 85.483
+
+Epoch 26: Validation loss decreased (0.347223 --> 0.346118).  Saving model ...
+	 Train_Loss: 0.3659 Train_Acc: 84.539 Val_Loss: 0.3461  BEST VAL Loss: 0.3461  Val_Acc: 85.515
+
+Epoch 27: Validation loss decreased (0.346118 --> 0.344924).  Saving model ...
+	 Train_Loss: 0.3645 Train_Acc: 84.710 Val_Loss: 0.3449  BEST VAL Loss: 0.3449  Val_Acc: 85.734
+
+Epoch 28: Validation loss decreased (0.344924 --> 0.344063).  Saving model ...
+	 Train_Loss: 0.3633 Train_Acc: 84.656 Val_Loss: 0.3441  BEST VAL Loss: 0.3441  Val_Acc: 85.099
+
+Epoch 29: Validation loss decreased (0.344063 --> 0.343060).  Saving model ...
+	 Train_Loss: 0.3620 Train_Acc: 84.699 Val_Loss: 0.3431  BEST VAL Loss: 0.3431  Val_Acc: 85.678
+
+Epoch 30: Validation loss decreased (0.343060 --> 0.342070).  Saving model ...
+	 Train_Loss: 0.3608 Train_Acc: 84.745 Val_Loss: 0.3421  BEST VAL Loss: 0.3421  Val_Acc: 85.770
+
+Epoch 31: Validation loss decreased (0.342070 --> 0.341130).  Saving model ...
+	 Train_Loss: 0.3597 Train_Acc: 84.744 Val_Loss: 0.3411  BEST VAL Loss: 0.3411  Val_Acc: 85.798
+
+Epoch 32: Validation loss decreased (0.341130 --> 0.340308).  Saving model ...
+	 Train_Loss: 0.3587 Train_Acc: 84.714 Val_Loss: 0.3403  BEST VAL Loss: 0.3403  Val_Acc: 85.722
+
+Epoch 33: Validation loss decreased (0.340308 --> 0.339444).  Saving model ...
+	 Train_Loss: 0.3576 Train_Acc: 84.900 Val_Loss: 0.3394  BEST VAL Loss: 0.3394  Val_Acc: 85.898
+
+Epoch 34: Validation loss decreased (0.339444 --> 0.338672).  Saving model ...
+	 Train_Loss: 0.3566 Train_Acc: 84.810 Val_Loss: 0.3387  BEST VAL Loss: 0.3387  Val_Acc: 86.038
+
+Epoch 35: Validation loss decreased (0.338672 --> 0.337961).  Saving model ...
+	 Train_Loss: 0.3557 Train_Acc: 84.850 Val_Loss: 0.3380  BEST VAL Loss: 0.3380  Val_Acc: 85.898
+
+Epoch 36: Validation loss decreased (0.337961 --> 0.337276).  Saving model ...
+	 Train_Loss: 0.3548 Train_Acc: 84.892 Val_Loss: 0.3373  BEST VAL Loss: 0.3373  Val_Acc: 85.770
+
+Epoch 37: Validation loss decreased (0.337276 --> 0.336522).  Saving model ...
+	 Train_Loss: 0.3539 Train_Acc: 84.910 Val_Loss: 0.3365  BEST VAL Loss: 0.3365  Val_Acc: 86.030
+
+Epoch 38: Validation loss decreased (0.336522 --> 0.335831).  Saving model ...
+	 Train_Loss: 0.3531 Train_Acc: 84.927 Val_Loss: 0.3358  BEST VAL Loss: 0.3358  Val_Acc: 85.974
+
+Epoch 39: Validation loss decreased (0.335831 --> 0.335169).  Saving model ...
+	 Train_Loss: 0.3523 Train_Acc: 84.868 Val_Loss: 0.3352  BEST VAL Loss: 0.3352  Val_Acc: 85.986
+
+Epoch 40: Validation loss decreased (0.335169 --> 0.334483).  Saving model ...
+	 Train_Loss: 0.3515 Train_Acc: 84.928 Val_Loss: 0.3345  BEST VAL Loss: 0.3345  Val_Acc: 86.142
+
+Epoch 41: Validation loss decreased (0.334483 --> 0.333858).  Saving model ...
+	 Train_Loss: 0.3507 Train_Acc: 85.029 Val_Loss: 0.3339  BEST VAL Loss: 0.3339  Val_Acc: 86.078
+
+Epoch 42: Validation loss decreased (0.333858 --> 0.333280).  Saving model ...
+	 Train_Loss: 0.3499 Train_Acc: 84.892 Val_Loss: 0.3333  BEST VAL Loss: 0.3333  Val_Acc: 85.810
+
+Epoch 43: Validation loss decreased (0.333280 --> 0.332683).  Saving model ...
+	 Train_Loss: 0.3492 Train_Acc: 84.936 Val_Loss: 0.3327  BEST VAL Loss: 0.3327  Val_Acc: 86.174
+
+Epoch 44: Validation loss decreased (0.332683 --> 0.332097).  Saving model ...
+	 Train_Loss: 0.3485 Train_Acc: 85.085 Val_Loss: 0.3321  BEST VAL Loss: 0.3321  Val_Acc: 86.030
+
+Epoch 45: Validation loss decreased (0.332097 --> 0.331580).  Saving model ...
+	 Train_Loss: 0.3478 Train_Acc: 85.048 Val_Loss: 0.3316  BEST VAL Loss: 0.3316  Val_Acc: 85.982
+
+Epoch 46: Validation loss decreased (0.331580 --> 0.331006).  Saving model ...
+	 Train_Loss: 0.3472 Train_Acc: 85.006 Val_Loss: 0.3310  BEST VAL Loss: 0.3310  Val_Acc: 86.182
+
+Epoch 47: Validation loss decreased (0.331006 --> 0.330456).  Saving model ...
+	 Train_Loss: 0.3466 Train_Acc: 84.997 Val_Loss: 0.3305  BEST VAL Loss: 0.3305  Val_Acc: 86.361
+
+Epoch 48: Validation loss decreased (0.330456 --> 0.330004).  Saving model ...
+	 Train_Loss: 0.3459 Train_Acc: 85.095 Val_Loss: 0.3300  BEST VAL Loss: 0.3300  Val_Acc: 86.010
+
+Epoch 49: Validation loss decreased (0.330004 --> 0.329470).  Saving model ...
+	 Train_Loss: 0.3454 Train_Acc: 85.052 Val_Loss: 0.3295  BEST VAL Loss: 0.3295  Val_Acc: 86.285
+
+Epoch 50: Validation loss decreased (0.329470 --> 0.329050).  Saving model ...
+	 Train_Loss: 0.3448 Train_Acc: 85.130 Val_Loss: 0.3291  BEST VAL Loss: 0.3291  Val_Acc: 86.138
+
+Epoch 51: Validation loss decreased (0.329050 --> 0.328622).  Saving model ...
+	 Train_Loss: 0.3442 Train_Acc: 85.082 Val_Loss: 0.3286  BEST VAL Loss: 0.3286  Val_Acc: 86.102
+
+Epoch 52: Validation loss decreased (0.328622 --> 0.328134).  Saving model ...
+	 Train_Loss: 0.3437 Train_Acc: 84.983 Val_Loss: 0.3281  BEST VAL Loss: 0.3281  Val_Acc: 86.269
+
+Epoch 53: Validation loss decreased (0.328134 --> 0.327664).  Saving model ...
+	 Train_Loss: 0.3432 Train_Acc: 85.021 Val_Loss: 0.3277  BEST VAL Loss: 0.3277  Val_Acc: 86.413
+
+Epoch 54: Validation loss decreased (0.327664 --> 0.327251).  Saving model ...
+	 Train_Loss: 0.3426 Train_Acc: 85.207 Val_Loss: 0.3273  BEST VAL Loss: 0.3273  Val_Acc: 86.281
+
+Epoch 55: Validation loss decreased (0.327251 --> 0.326835).  Saving model ...
+	 Train_Loss: 0.3421 Train_Acc: 85.121 Val_Loss: 0.3268  BEST VAL Loss: 0.3268  Val_Acc: 86.281
+
+Epoch 56: Validation loss decreased (0.326835 --> 0.326493).  Saving model ...
+	 Train_Loss: 0.3416 Train_Acc: 85.158 Val_Loss: 0.3265  BEST VAL Loss: 0.3265  Val_Acc: 86.245
+
+Epoch 57: Validation loss decreased (0.326493 --> 0.326112).  Saving model ...
+	 Train_Loss: 0.3412 Train_Acc: 85.201 Val_Loss: 0.3261  BEST VAL Loss: 0.3261  Val_Acc: 86.317
+
+Epoch 58: Validation loss decreased (0.326112 --> 0.325758).  Saving model ...
+	 Train_Loss: 0.3407 Train_Acc: 85.120 Val_Loss: 0.3258  BEST VAL Loss: 0.3258  Val_Acc: 86.214
+
+Epoch 59: Validation loss decreased (0.325758 --> 0.325363).  Saving model ...
+	 Train_Loss: 0.3402 Train_Acc: 85.142 Val_Loss: 0.3254  BEST VAL Loss: 0.3254  Val_Acc: 86.365
+
+Epoch 60: Validation loss decreased (0.325363 --> 0.325030).  Saving model ...
+	 Train_Loss: 0.3398 Train_Acc: 85.139 Val_Loss: 0.3250  BEST VAL Loss: 0.3250  Val_Acc: 86.453
+
+Epoch 61: Validation loss decreased (0.325030 --> 0.324699).  Saving model ...
+	 Train_Loss: 0.3394 Train_Acc: 85.165 Val_Loss: 0.3247  BEST VAL Loss: 0.3247  Val_Acc: 86.229
+
+Epoch 62: Validation loss decreased (0.324699 --> 0.324354).  Saving model ...
+	 Train_Loss: 0.3389 Train_Acc: 85.235 Val_Loss: 0.3244  BEST VAL Loss: 0.3244  Val_Acc: 86.373
+
+Epoch 63: Validation loss decreased (0.324354 --> 0.324019).  Saving model ...
+	 Train_Loss: 0.3385 Train_Acc: 85.219 Val_Loss: 0.3240  BEST VAL Loss: 0.3240  Val_Acc: 86.445
+
+Epoch 64: Validation loss decreased (0.324019 --> 0.323674).  Saving model ...
+	 Train_Loss: 0.3381 Train_Acc: 85.204 Val_Loss: 0.3237  BEST VAL Loss: 0.3237  Val_Acc: 86.585
+
+Epoch 65: Validation loss decreased (0.323674 --> 0.323375).  Saving model ...
+	 Train_Loss: 0.3377 Train_Acc: 85.198 Val_Loss: 0.3234  BEST VAL Loss: 0.3234  Val_Acc: 86.190
+
+Epoch 66: Validation loss decreased (0.323375 --> 0.323054).  Saving model ...
+	 Train_Loss: 0.3373 Train_Acc: 85.236 Val_Loss: 0.3231  BEST VAL Loss: 0.3231  Val_Acc: 86.325
+
+Epoch 67: Validation loss decreased (0.323054 --> 0.322741).  Saving model ...
+	 Train_Loss: 0.3369 Train_Acc: 85.110 Val_Loss: 0.3227  BEST VAL Loss: 0.3227  Val_Acc: 86.433
+
+Epoch 68: Validation loss decreased (0.322741 --> 0.322429).  Saving model ...
+	 Train_Loss: 0.3366 Train_Acc: 85.238 Val_Loss: 0.3224  BEST VAL Loss: 0.3224  Val_Acc: 86.237
+
+Epoch 69: Validation loss decreased (0.322429 --> 0.322118).  Saving model ...
+	 Train_Loss: 0.3362 Train_Acc: 85.233 Val_Loss: 0.3221  BEST VAL Loss: 0.3221  Val_Acc: 86.441
+
+Epoch 70: Validation loss decreased (0.322118 --> 0.321869).  Saving model ...
+	 Train_Loss: 0.3358 Train_Acc: 85.211 Val_Loss: 0.3219  BEST VAL Loss: 0.3219  Val_Acc: 86.397
+
+Epoch 71: Validation loss decreased (0.321869 --> 0.321586).  Saving model ...
+	 Train_Loss: 0.3355 Train_Acc: 85.135 Val_Loss: 0.3216  BEST VAL Loss: 0.3216  Val_Acc: 86.461
+
+Epoch 72: Validation loss decreased (0.321586 --> 0.321320).  Saving model ...
+	 Train_Loss: 0.3351 Train_Acc: 85.245 Val_Loss: 0.3213  BEST VAL Loss: 0.3213  Val_Acc: 86.401
+
+Epoch 73: Validation loss decreased (0.321320 --> 0.321052).  Saving model ...
+	 Train_Loss: 0.3348 Train_Acc: 85.232 Val_Loss: 0.3211  BEST VAL Loss: 0.3211  Val_Acc: 86.461
+
+Epoch 74: Validation loss decreased (0.321052 --> 0.320793).  Saving model ...
+	 Train_Loss: 0.3345 Train_Acc: 85.271 Val_Loss: 0.3208  BEST VAL Loss: 0.3208  Val_Acc: 86.429
+
+Epoch 75: Validation loss decreased (0.320793 --> 0.320566).  Saving model ...
+	 Train_Loss: 0.3341 Train_Acc: 85.224 Val_Loss: 0.3206  BEST VAL Loss: 0.3206  Val_Acc: 86.329
+
+Epoch 76: Validation loss decreased (0.320566 --> 0.320357).  Saving model ...
+	 Train_Loss: 0.3338 Train_Acc: 85.249 Val_Loss: 0.3204  BEST VAL Loss: 0.3204  Val_Acc: 86.186
+
+Epoch 77: Validation loss decreased (0.320357 --> 0.320156).  Saving model ...
+	 Train_Loss: 0.3335 Train_Acc: 85.232 Val_Loss: 0.3202  BEST VAL Loss: 0.3202  Val_Acc: 86.325
+
+Epoch 78: Validation loss decreased (0.320156 --> 0.319931).  Saving model ...
+	 Train_Loss: 0.3332 Train_Acc: 85.335 Val_Loss: 0.3199  BEST VAL Loss: 0.3199  Val_Acc: 86.325
+
+Epoch 79: Validation loss decreased (0.319931 --> 0.319711).  Saving model ...
+	 Train_Loss: 0.3329 Train_Acc: 85.283 Val_Loss: 0.3197  BEST VAL Loss: 0.3197  Val_Acc: 86.481
+
+Epoch 80: Validation loss decreased (0.319711 --> 0.319486).  Saving model ...
+	 Train_Loss: 0.3326 Train_Acc: 85.242 Val_Loss: 0.3195  BEST VAL Loss: 0.3195  Val_Acc: 86.501
+
+Epoch 81: Validation loss decreased (0.319486 --> 0.319270).  Saving model ...
+	 Train_Loss: 0.3323 Train_Acc: 85.295 Val_Loss: 0.3193  BEST VAL Loss: 0.3193  Val_Acc: 86.537
+
+Epoch 82: Validation loss decreased (0.319270 --> 0.319056).  Saving model ...
+	 Train_Loss: 0.3321 Train_Acc: 85.163 Val_Loss: 0.3191  BEST VAL Loss: 0.3191  Val_Acc: 86.373
+
+Epoch 83: Validation loss decreased (0.319056 --> 0.318866).  Saving model ...
+	 Train_Loss: 0.3318 Train_Acc: 85.217 Val_Loss: 0.3189  BEST VAL Loss: 0.3189  Val_Acc: 86.601
+
+Epoch 84: Validation loss decreased (0.318866 --> 0.318661).  Saving model ...
+	 Train_Loss: 0.3315 Train_Acc: 85.330 Val_Loss: 0.3187  BEST VAL Loss: 0.3187  Val_Acc: 86.525
+
+Epoch 85: Validation loss decreased (0.318661 --> 0.318457).  Saving model ...
+	 Train_Loss: 0.3312 Train_Acc: 85.360 Val_Loss: 0.3185  BEST VAL Loss: 0.3185  Val_Acc: 86.409
+
+Epoch 86: Validation loss decreased (0.318457 --> 0.318230).  Saving model ...
+	 Train_Loss: 0.3310 Train_Acc: 85.255 Val_Loss: 0.3182  BEST VAL Loss: 0.3182  Val_Acc: 86.741
+
+Epoch 87: Validation loss decreased (0.318230 --> 0.318043).  Saving model ...
+	 Train_Loss: 0.3307 Train_Acc: 85.375 Val_Loss: 0.3180  BEST VAL Loss: 0.3180  Val_Acc: 86.577
+
+Epoch 88: Validation loss decreased (0.318043 --> 0.317846).  Saving model ...
+	 Train_Loss: 0.3304 Train_Acc: 85.341 Val_Loss: 0.3178  BEST VAL Loss: 0.3178  Val_Acc: 86.645
+
+Epoch 89: Validation loss decreased (0.317846 --> 0.317663).  Saving model ...
+	 Train_Loss: 0.3302 Train_Acc: 85.318 Val_Loss: 0.3177  BEST VAL Loss: 0.3177  Val_Acc: 86.653
+
+Epoch 90: Validation loss decreased (0.317663 --> 0.317493).  Saving model ...
+	 Train_Loss: 0.3299 Train_Acc: 85.305 Val_Loss: 0.3175  BEST VAL Loss: 0.3175  Val_Acc: 86.445
+
+Epoch 91: Validation loss decreased (0.317493 --> 0.317302).  Saving model ...
+	 Train_Loss: 0.3297 Train_Acc: 85.303 Val_Loss: 0.3173  BEST VAL Loss: 0.3173  Val_Acc: 86.565
+
+Epoch 92: Validation loss decreased (0.317302 --> 0.317150).  Saving model ...
+	 Train_Loss: 0.3294 Train_Acc: 85.318 Val_Loss: 0.3171  BEST VAL Loss: 0.3171  Val_Acc: 86.417
+
+Epoch 93: Validation loss decreased (0.317150 --> 0.316969).  Saving model ...
+	 Train_Loss: 0.3292 Train_Acc: 85.288 Val_Loss: 0.3170  BEST VAL Loss: 0.3170  Val_Acc: 86.557
+
+Epoch 94: Validation loss decreased (0.316969 --> 0.316785).  Saving model ...
+	 Train_Loss: 0.3290 Train_Acc: 85.370 Val_Loss: 0.3168  BEST VAL Loss: 0.3168  Val_Acc: 86.593
+
+Epoch 95: Validation loss decreased (0.316785 --> 0.316605).  Saving model ...
+	 Train_Loss: 0.3287 Train_Acc: 85.363 Val_Loss: 0.3166  BEST VAL Loss: 0.3166  Val_Acc: 86.821
+
+Epoch 96: Validation loss decreased (0.316605 --> 0.316440).  Saving model ...
+	 Train_Loss: 0.3285 Train_Acc: 85.321 Val_Loss: 0.3164  BEST VAL Loss: 0.3164  Val_Acc: 86.581
+
+Epoch 97: Validation loss decreased (0.316440 --> 0.316292).  Saving model ...
+	 Train_Loss: 0.3283 Train_Acc: 85.353 Val_Loss: 0.3163  BEST VAL Loss: 0.3163  Val_Acc: 86.585
+
+Epoch 98: Validation loss decreased (0.316292 --> 0.316139).  Saving model ...
+	 Train_Loss: 0.3281 Train_Acc: 85.282 Val_Loss: 0.3161  BEST VAL Loss: 0.3161  Val_Acc: 86.477
+
+Epoch 99: Validation loss decreased (0.316139 --> 0.315993).  Saving model ...
+	 Train_Loss: 0.3278 Train_Acc: 85.350 Val_Loss: 0.3160  BEST VAL Loss: 0.3160  Val_Acc: 86.561
+
+Flagellin_0.100_DMSO_0.025_vs_DMSO_0.100_DMSO_0.025
+../../trained_models/model_save_states/Binary_Classification/PBMC
+Flagellin_0.100_DMSO_0.025_vs_DMSO_0.100_DMSO_0.025
+              precision    recall  f1-score   support
+
+           0       0.89      0.96      0.92    149884
+           1       0.84      0.63      0.72     50422
+
+    accuracy                           0.88    200306
+   macro avg       0.87      0.80      0.82    200306
+weighted avg       0.88      0.88      0.87    200306
+
+Flagellin_0.100_DMSO_0.025_vs_DMSO_0.100_DMSO_0.025
+../../trained_models/model_save_states/Binary_Classification/PBMC
+Flagellin_0.100_DMSO_0.025_vs_DMSO_0.100_DMSO_0.025
+              precision    recall  f1-score   support
+
+           0       0.88      0.95      0.91     18736
+           1       0.81      0.61      0.69      6303
+
+    accuracy                           0.87     25039
+   macro avg       0.85      0.78      0.80     25039
+weighted avg       0.86      0.87      0.86     25039
+
+Flagellin_0.100_DMSO_0.025_vs_DMSO_0.100_DMSO_0.025
+../../trained_models/model_save_states/Binary_Classification/PBMC
+Flagellin_0.100_DMSO_0.025_vs_DMSO_0.100_DMSO_0.025
+              precision    recall  f1-score   support
+
+           0       0.88      0.95      0.91     18736
+           1       0.81      0.61      0.70      6303
+
+    accuracy                           0.87     25039
+   macro avg       0.85      0.78      0.81     25039
+weighted avg       0.86      0.87      0.86     25039
+
+              precision    recall  f1-score   support
+
+           0       0.88      0.95      0.91     18736
+           1       0.81      0.61      0.70      6303
+
+    accuracy                           0.87     25039
+   macro avg       0.85      0.78      0.81     25039
+weighted avg       0.86      0.87      0.86     25039
+
+Flagellin_0.100_DMSO_0.025_vs_DMSO_0.100_DMSO_0.025
+../../trained_models/model_save_states/Binary_Classification/PBMC
+Flagellin_0.100_DMSO_0.025_vs_DMSO_0.100_DMSO_0.025
+              precision    recall  f1-score   support
+
+           0       0.70      0.92      0.80     27774
+           1       0.91      0.67      0.77     32887
+
+    accuracy                           0.78     60661
+   macro avg       0.80      0.79      0.78     60661
+weighted avg       0.81      0.78      0.78     60661
+
+              precision    recall  f1-score   support
+
+           0       0.70      0.92      0.80     27774
+           1       0.91      0.67      0.77     32887
+
+    accuracy                           0.78     60661
+   macro avg       0.80      0.79      0.78     60661
+weighted avg       0.81      0.78      0.78     60661
+
+completed

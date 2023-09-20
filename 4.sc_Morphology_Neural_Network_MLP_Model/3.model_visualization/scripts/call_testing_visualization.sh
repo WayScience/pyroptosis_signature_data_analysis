@@ -8,9 +8,9 @@
 #SBATCH --time=24:00:00
 #SBATCH --output=sample-%j.out
 
-module load anaconda
+# module load anaconda
 
-conda activate Interstellar
+# conda activate Interstellar
 
 cell_types=( SHSY5Y PBMC )
 control_names=(
@@ -74,7 +74,6 @@ jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipy
 # this is the number of jobs
 num_jobs=$(( ${#cell_types[@]} * ${#model_names[@]} * ${#selected_treatment_comparisons[@]} ))
 echo "num_jobs: $num_jobs"
-job=1
 
 job_id=$(( SLURM_ARRAY_TASK_ID - 1 ))
 cell_type_idx=$(( job_id % "${#cell_types[@]}" ))

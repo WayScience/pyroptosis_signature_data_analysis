@@ -25,7 +25,7 @@ from sklearn.manifold import TSNE
 
 
 # Parameters
-cell_type = "SHSY5Y"
+cell_type = "PBMC"
 
 
 # In[3]:
@@ -52,7 +52,7 @@ df = pq.read_table(path).to_pandas()
 df
 
 
-# In[ ]:
+# In[5]:
 
 
 df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
@@ -61,7 +61,7 @@ df = df[df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] == "DMSO_0.100_DMSO_0.
 df
 
 
-# In[ ]:
+# In[6]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -72,7 +72,7 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[ ]:
+# In[7]:
 
 
 # set umap parameters
@@ -86,7 +86,7 @@ umap_params = umap.UMAP(
 )
 
 
-# In[ ]:
+# In[8]:
 
 
 # fit and transform data for umap
@@ -97,7 +97,7 @@ df_values["umap_1"] = proj_2d[:, 0]
 df_values["umap_2"] = proj_2d[:, 1]
 
 
-# In[ ]:
+# In[9]:
 
 
 df_values["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
@@ -106,7 +106,7 @@ df_values["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
 df_values["Metadata_Well"] = df_descriptive["Metadata_Well"]
 
 
-# In[ ]:
+# In[10]:
 
 
 # Figure Showing UMAP of Clusters vs Treatment

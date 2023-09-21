@@ -20,6 +20,8 @@
 # ## Hyperparameter tuning via Optuna
 
 # %% [markdown]
+# %% [markdown]
+# %% [markdown]
 # ### Being a binary model this notebook will be limited to predicting one class 1 or 0, yes or no.
 # ### Here I will be predicting if a cell received a treatment or not
 

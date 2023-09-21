@@ -4,33 +4,21 @@
 # In[1]:
 
 
-# Parameters
-celltype = "PBMC"
-
-
-# In[2]:
-
-
 import pathlib
 
 import numpy as np
 import pandas as pd
 
-# In[3]:
-
-
-cell_type = "SHSY5Y"
-
-
-# In[4]:
+# In[2]:
 
 
 # Parameters
+cell_type = "PBMC"
 aggregation = True
 nomic = True
 
 
-# In[5]:
+# In[3]:
 
 
 path = pathlib.Path(f"../data/{cell_type}_preprocessed_sc_norm.parquet")
@@ -57,7 +45,7 @@ else:
     df_nomic = None
 
 
-# In[6]:
+# In[4]:
 
 
 # subset each column that contains metadata
@@ -74,7 +62,7 @@ metadata_well = metadata[
 data_df = pd.merge(data, metadata_well, left_index=True, right_index=True)
 
 
-# In[7]:
+# In[5]:
 
 
 if (aggregation == True) and (nomic == True):
@@ -101,6 +89,11 @@ if (aggregation == True) and (nomic == True):
     # drop all metadata columns
     labeled_data = data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
     data_x = data_df.drop(metadata.columns, axis=1)
+    # set path to save the data
+    aggregated_data_path = pathlib.Path(
+        f"../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
+    )
+
 
 elif (aggregation == True) and (nomic == False):
     # subset each column that contains metadata
@@ -118,6 +111,10 @@ elif (aggregation == True) and (nomic == False):
         left_on=["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
         right_on=["Metadata_position_x", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
     )
+    # set path to save the data
+    aggregated_data_path = pathlib.Path(
+        f"../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
+    )
 elif (aggregation == False) and (nomic == True):
     data_df = pd.merge(
         data_df,
@@ -126,13 +123,17 @@ elif (aggregation == False) and (nomic == True):
         right_on=["Metadata_position_x", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
     )
     data_df = data_df.drop(columns=["Metadata_position_x"])
+    # set path to save the data
+    aggregated_data_path = pathlib.Path(
+        f"../data/{cell_type}_preprocessed_sc_norm_with_nomic.parquet"
+    )
 elif aggregation == False and nomic == False:
     pass
 else:
     print("Error")
 
 
-# In[8]:
+# In[6]:
 
 
 # set path to save the data

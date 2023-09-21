@@ -16,7 +16,7 @@ import pyarrow.parquet as pq
 
 
 # Parameters
-cell_type = "PBMC"
+celltype = "SHSY5Y"
 
 
 # In[3]:
@@ -37,12 +37,27 @@ feature_df = feature_df.replace(to_replace=" ", value="_", regex=True)
 # In[5]:
 
 
+# replace all " " with "_" in all values of the dataframe
+feature_df = feature_df.replace(to_replace=" ", value="_", regex=True)
+
+
+# In[5]:
+
+
+# replace all " " with "_" in all values of the dataframe
+feature_df = feature_df.replace(to_replace=" ", value="_", regex=True)
+
+
+# In[5]:
+
+
 # remove uM in each row of the Metadata_inducer1_concentration column
 feature_df["Metadata_inducer1_concentration"] = feature_df[
     "Metadata_inducer1_concentration"
 ].str.replace("µM", "")
 
 
+# In[6]:
 # In[6]:
 
 

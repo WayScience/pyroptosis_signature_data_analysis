@@ -266,7 +266,12 @@ def build_model_custom(
 
         layers.append(nn.Linear(in_features, out_features))
         # activation function
-        layers.append(nn.ReLU())
+        if params.MODEL_TYPE == "Multi_Class":
+            layers.append(nn.ReLU())
+        elif params.MODEL_TYPE == "Binary_Classification":
+            layers.append(nn.ReLU())
+        elif params.MODEL_TYPE == "Regression":
+            layers.append(nn.Sigmoid())
         # dropout rate
         p = trial.suggest_float(
             (f"dropout_{i}"), params.DROPOUT_MIN, params.DROPOUT_MAX
@@ -277,7 +282,6 @@ def build_model_custom(
 
     # final layer append
     layers.append(nn.Linear(in_features, params.OUT_FEATURES))
-
     # add layers to the model
     return nn.Sequential(*layers)
 
@@ -800,7 +804,7 @@ def train_optimized_model(
     valid_loader: torch.utils.data.DataLoader,
     params: Parameters,
     model_name: str,
-    shuffle: bool = True,
+    shuffle: bool = False,
 ) -> tuple[float, float, float, float, int, torch.nn.Sequential]:
     """This function trains the optimized model on the training dataset
 
@@ -1003,17 +1007,15 @@ def plot_metric_vs_epoch(
     # create graph directory for this model
     graph_path = pathlib.Path(
         f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
-    ).resolve(strict=True)
+    )
     pathlib.Path(graph_path).mkdir(parents=True, exist_ok=True)
 
     if shuffle:
         graph_path = pathlib.Path(
             f"{graph_path}/{y_axis_label}_graph_shuffled_data.png"
-        ).resolve(strict=True)
-    elif not shuffle:
-        graph_path = pathlib.Path(f"{graph_path}/{y_axis_label}_graph.png").resolve(
-            strict=True
         )
+    elif not shuffle:
+        graph_path = pathlib.Path(f"{graph_path}/{y_axis_label}_graph.png")
     else:
         raise ModelNameError
 

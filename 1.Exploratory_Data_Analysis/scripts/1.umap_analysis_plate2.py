@@ -25,7 +25,7 @@ from sklearn.manifold import TSNE
 
 
 # Parameters
-celltype = "PBMC"
+celltype = "SHSY5Y"
 
 
 # In[3]:
@@ -67,7 +67,6 @@ df = (
     .apply(lambda x: x.sample(n=100, random_state=0))
     .droplevel(0)
 )
-# df = df.sample(n=1000, random_state=0, weights='fourb_Metadata_Treatment_Dose_Inhibitor_Dose')
 
 
 # In[6]:
@@ -81,7 +80,7 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[7]:
+# In[8]:
 
 
 # set umap parameters
@@ -93,7 +92,7 @@ umap_params = umap.UMAP(
 )
 
 
-# In[8]:
+# In[9]:
 
 
 # fit and transform data for umap
@@ -104,7 +103,7 @@ df_values["umap_1"] = proj_2d[:, 0]
 df_values["umap_2"] = proj_2d[:, 1]
 
 
-# In[9]:
+# In[ ]:
 
 
 df_values["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[

@@ -16,14 +16,14 @@ import pyarrow.parquet as pq
 
 
 # Parameters
-celltype = "PBMC"
+cell_type = "PBMC"
 
 
 # In[3]:
 
 
 # Define inputs
-feature_file = pathlib.Path(f"../data/{celltype}_sc_norm_fs.parquet")
+feature_file = pathlib.Path(f"../data/{cell_type}_sc_norm_fs.parquet")
 feature_df = pq.read_table(feature_file).to_pandas()
 
 
@@ -37,11 +37,10 @@ feature_df = feature_df.replace(to_replace=" ", value="_", regex=True)
 # In[5]:
 
 
-# remove uM in each row of the Metadata_inducer1_concentration column if it is present
-if "Metadata_inducer1_concentration" in feature_df.columns:
-    feature_df["Metadata_inducer1_concentration"] = feature_df[
-        "Metadata_inducer1_concentration"
-    ].str.replace("µM", "")
+# remove uM in each row of the Metadata_inducer1_concentration column
+feature_df["Metadata_inducer1_concentration"] = feature_df[
+    "Metadata_inducer1_concentration"
+].str.replace("µM", "")
 
 
 # In[6]:
@@ -54,7 +53,7 @@ feature_df["Metadata_inducer1_concentration"].unique()
 
 
 # define output file path
-feature_df_out_path = pathlib.Path(f"../data/{celltype}_preprocessed_sc_norm.parquet")
+feature_df_out_path = pathlib.Path(f"../data/{cell_type}_preprocessed_sc_norm.parquet")
 
 
 # In[8]:
@@ -84,15 +83,13 @@ feature_df = feature_df.replace(to_replace="/", value="_per_", regex=True)
 
 
 # replace nan values with 0
-feature_df["Metadata_inducer1_concentration"] = feature_df[
-    "Metadata_inducer1_concentration"
-].fillna(0)
-feature_df["Metadata_inducer2_concentration"] = feature_df[
-    "Metadata_inducer2_concentration"
-].fillna(0)
-feature_df["Metadata_inhibitor_concentration"] = feature_df[
-    "Metadata_inhibitor_concentration"
-].fillna(0)
+
+columns_to_fill = [
+    "Metadata_inducer1_concentration",
+    "Metadata_inducer2_concentration",
+    "Metadata_inhibitor_concentration",
+]
+feature_df[columns_to_fill].fillna(0, inplace=True)
 
 
 # #### Combine Inducer1 and Inducer2 into one column
@@ -114,14 +111,10 @@ results = [
 ]
 feature_df["Metadata_Treatment"] = np.select(condlist=conditions, choicelist=results)
 
-# dose column merge
-conditions = [
-    (feature_df["Metadata_inducer2"].isnull()),
-    feature_df["Metadata_inducer2"].notnull(),
-]
 
+# dose column merge
 results = [
-    (feature_df["Metadata_inducer1_concentration"].astype(str)).astype(str),
+    (feature_df["Metadata_inducer1_concentration"].astype(str)),
     (
         feature_df["Metadata_inducer1_concentration"].astype(str)
         + "_"

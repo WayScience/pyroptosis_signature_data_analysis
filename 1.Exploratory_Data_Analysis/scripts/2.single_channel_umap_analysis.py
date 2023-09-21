@@ -176,6 +176,18 @@ df_PM_descriptive.loc[:, "Metadata_compartment"] = "PM"
 # In[12]:
 
 
+dictionary_of_channels = {
+    "Nuclei": [df_nuclei_values, df_nuclei_descriptive],
+    "Mito": [df_mito_values, df_mito_descriptive],
+    "ER": [df_ER_values, df_ER_descriptive],
+    "gasdermin": [df_gasdermin_values, df_gasdermin_descriptive],
+    "PM": [df_PM_values, df_PM_descriptive],
+}
+
+
+# In[13]:
+
+
 # set umap parameters
 umap_params = umap.UMAP(
     n_components=2,
@@ -185,25 +197,12 @@ umap_params = umap.UMAP(
 )
 
 
-# In[13]:
+# In[14]:
 
 
-lst_of_dfs_values = [
-    df_nuclei_values,
-    df_mito_values,
-    df_ER_values,
-    df_gasdermin_values,
-    df_PM_values,
-]
-lst_of_dfs_descriptive = [
-    df_nuclei_descriptive,
-    df_mito_descriptive,
-    df_ER_descriptive,
-    df_gasdermin_descriptive,
-    df_PM_descriptive,
-]
-for df_values, df_descriptive in zip(lst_of_dfs_values, lst_of_dfs_descriptive):
-    # umap analysis of treatment groups for nuclei channel
+for channel in dictionary_of_channels:
+    df_values = dictionary_of_channels[channel][0]
+    df_descriptive = dictionary_of_channels[channel][1]
     proj_2d = umap_params.fit_transform(df_values)
     # add umap coordinates to dataframe of metadata and raw data
     df_values.loc[:, "umap_1"] = proj_2d[:, 0]
@@ -211,7 +210,6 @@ for df_values, df_descriptive in zip(lst_of_dfs_values, lst_of_dfs_descriptive):
     df_values.loc[:, "Treatment"] = df_descriptive[
         "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
     ]
-    channel = df_descriptive["Metadata_compartment"].unique()[0]
 
     # Figure Showing umap of Clusters vs Treatment
     sns.scatterplot(
@@ -231,7 +229,7 @@ for df_values, df_descriptive in zip(lst_of_dfs_values, lst_of_dfs_descriptive):
                {treatment}"""
     )
     # set save path for figure
-    save_path = pathlib.Path(f"./Figures/umap_plate2/{cell_type}")
+    save_path = pathlib.Path(f"./Figures/umap_plate2/{cell_type}").resolve(strict=True)
     save_path.mkdir(exist_ok=True, parents=True)
     plt.savefig(f"{save_path}/{channel}_{control}_{treatment}.png", bbox_inches="tight")
     plt.show()

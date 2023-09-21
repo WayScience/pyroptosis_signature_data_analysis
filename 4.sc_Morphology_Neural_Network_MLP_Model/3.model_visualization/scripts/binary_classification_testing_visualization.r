@@ -1,6 +1,8 @@
+# import the libraries
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(argparse))
+suppressPackageStartupMessages(library(cowplot))
 
 figure_theme_path <- file.path(
     "..","visulaization_utils", "figure_themes.R")
@@ -21,8 +23,16 @@ celltype <- args$cell_type
 model_name <- args$model_name
 selected_treatment_comparisons <- args$selected_treatment_comparisons
 
-output_file <- file.path(
-    "..","..","figures","Binary_Classification",model_name,celltype,"pr_curves_testing.png"
+celltype <- "PBMC"
+model_name <- "LPS_100.000_DMSO_0.025_vs_DMSO_0.100_DMSO_0.025"
+selected_treatment_comparisons <- "DMSO_0.100_DMSO_0.025 vs LPS_100.000_DMSO_0.025, DMSO_0.100_DMSO_0.025 vs Thapsigargin_10.000_DMSO_0.025, LPS_100.000_DMSO_0.025 vs Thapsigargin_10.000_DMSO_0.025"
+
+
+output_file_plot <- file.path(
+    "..","..","figures","Binary_Classification",model_name,celltype,"pr_curves_testing_plot.png"
+)
+output_file_legend <- file.path(
+    "..","..","figures","Binary_Classification",model_name,celltype,"pr_curves_testing_legend.png"
 )
 
 results_dir <- file.path(
@@ -36,19 +46,17 @@ results_file <- file.path(
 df <- read.csv(results_file)
 head(df,3)
 
-unique_treatments <- unique(df$treatments_tested)
+unique(df$treatments_tested)
 
-# split string in R
-selected_treatment_comparisons <- unlist(strsplit(selected_treatment_comparisons, split = ","))
+selected_treatment_comparisons <- unlist(strsplit(selected_treatment_comparisons,", "))
 selected_treatment_comparisons
 
+# filter the df by selected treatment comparisons in the treatment column
+tmp_df <- df[which(df$treatment %in% selected_treatment_comparisons),]
+unique(tmp_df$treatments_tested)
 
-# subset the df to only include unique_treatments = treatment
-tmp_df <- df[df$treatments_tested %in% selected_treatment_comparisons,]
-
-
+head(tmp_df)
 tmp_df$treatments_tested <- gsub(" vs ", "\n", tmp_df$treatments_tested)
-
 head(tmp_df)
 
 pr_curve_gg <- (
@@ -79,5 +87,11 @@ pr_curve_gg <- (
     )
     + ggtitle(paste0("Precision-Recall Curve for ","\n", model_name, " model"))
 )
+# detach the legend
+legend <- get_legend(pr_curve_gg)
+pr_curve_gg <- pr_curve_gg + theme(legend.position = "none")
 
-ggsave(output_file, pr_curve_gg, height = 5.5, width = 8.5, dpi = 500)
+
+
+ggsave(output_file_plot, pr_curve_gg, height = 5.5, width = 8.5, dpi = 500)
+ggsave(output_file_legend, legend, height = 5.5, width = 8.5, dpi = 500)

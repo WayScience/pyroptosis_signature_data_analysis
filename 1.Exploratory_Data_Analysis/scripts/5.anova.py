@@ -18,9 +18,12 @@ import pyarrow.parquet as pq
 import seaborn as sns
 import statsmodels.api as sm
 import toml
+from matplotlib import rcParams
+
+rcParams.update({"figure.autolayout": True})
 
 # create a venn diagram of the features that are significant in all conditions
-from matplotlib_venn import venn2, venn3
+from matplotlib_venn import venn2, venn3, venn3_unweighted
 
 warnings.filterwarnings("ignore")
 from pycytominer.cyto_utils import infer_cp_features
@@ -32,10 +35,10 @@ from statsmodels.stats.multicomp import MultiComparison, pairwise_tukeyhsd
 
 
 # Parameters
-cell_type = "PBMC"
+cell_type = "SHSY5Y"
 treatment1 = "DMSO_0.100_DMSO_0.025"
-treatment2 = "LPS_0.010_DMSO_0.025"
-treatment3 = "H202_100_DMSO_0.025"
+treatment2 = "LPS_100.000_DMSO_0.025"
+treatment3 = "Thapsigargin_10.000_DMSO_0.025"
 
 
 # In[3]:
@@ -64,28 +67,9 @@ trt3 = df[
 ]
 
 
-# In[5]:
-
-
-# df_LPS_100 = df[df['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].str.contains('LPS_100.000_DMSO_0.025')]
-# df_LPS_100['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].unique()
-# df_LPS_10 = df[df['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].str.contains('LPS_10.000_DMSO_0.025')]
-# df_LPS_10['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].unique()
-# df_flag = df[df['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].str.contains('Flagellin_1.000_DMSO_0.025')]
-# df_flag['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].unique()
-# df_DMSO = df[df['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].str.contains('DMSO_0.100_DMSO_0.025')]
-# df_DMSO['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].unique()
-# df_thapsi10 = df[df['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].str.contains('Thapsigargin_10.000_DMSO_0.025')]
-# df_thapsi10['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].unique()
-# df_thapsi_DMSO = df[df['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].str.contains('Thapsigargin_10.000_DMSO_0.025','DMSO_0.100_DMSO_0.025')]
-# df_thapsi_DMSO['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].unique()
-# df_thapsi1 = df[df['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].str.contains('Thapsigargin_1.000_DMSO_0.025')]
-# df_thapsi1['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'].unique()
-
-
 # ### Set up DF
 
-# In[6]:
+# In[5]:
 
 
 combined_df = pd.concat([trt1, trt2, trt3], axis=0)
@@ -95,7 +79,7 @@ combined_df.head(3)
 
 # ## Anova + Post Hoc testing (tukeyHSD)
 
-# In[7]:
+# In[6]:
 
 
 # anova for each feature in the dataframe with posthoc tukey test to determine which groups are different from each other
@@ -104,7 +88,6 @@ for i in cp_features:
     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
     model = ols(formula, combined_df).fit()
     aov_table = sm.stats.anova_lm(model, typ=2)
-    # posthoc = MultiComparison(df_DMSO_thapsi[i], df_DMSO_thapsi['oneb_Metadata_Treatment_Dose_Inhibitor_Dose'])
     posthoc = pairwise_tukeyhsd(
         combined_df[i],
         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
@@ -114,13 +97,11 @@ for i in cp_features:
     lst.append([posthoc, i])
 
 
-# In[8]:
+# In[7]:
 
 
-# add all tukey test results to a dataframe from the list of tukey test results
 tukey_df = pd.DataFrame()
 for i in lst:
-    # create data frame from tukey test results with feature name as column name and the results as the rows
     j = pd.DataFrame(i[0]._results_table.data[1:])
     j["features"] = np.repeat(i[1], len(j))
     tukey_df = pd.concat([tukey_df, j], axis=0)
@@ -140,12 +121,12 @@ tukey_df.columns = [
 tukey_df.head(3)
 
 
-# In[9]:
+# In[8]:
 
 
+# drop the other organelle
 # make new column with the absolute value of the p-adj
 tukey_df["p-adj_abs"] = abs(tukey_df["p-adj"])
-# get all p-adj values that are less than 0.05
 tukey_df_sig = tukey_df[tukey_df["p-adj_abs"] < 0.01]
 # make new column that states if the relationship is positive or negative
 tukey_df_sig["pos_neg"] = np.where(tukey_df_sig["p-adj"] > 0, "positive", "negative")
@@ -157,7 +138,7 @@ tukey_df_sig.head(2)
 
 # #### Venn diagram prep
 
-# In[10]:
+# In[9]:
 
 
 # get all group1 rows that are DMSO and group2 rows that are LPS treatment
@@ -177,17 +158,9 @@ tukey_df_sig_trt_2v3 = tukey_df_sig[
 ]
 
 
-# In[11]:
-
-
-from matplotlib import rcParams
-
-rcParams.update({"figure.autolayout": True})
-
-
 # ### Venn Diagram 2 groups
 
-# In[12]:
+# In[10]:
 
 
 venn2(
@@ -199,8 +172,6 @@ save_path = pathlib.Path(
     f"./Figures/anova_of_features/{treatment1}_vs_{treatment2}_vs_{treatment3}"
 )
 save_path.mkdir(parents=True, exist_ok=True)
-# plt.tight_layout()
-# plt.autoscale()
 plt.subplots_adjust(left=0.15)
 plt.savefig(
     f"{save_path}/{treatment1}_vs_{treatment2}_number_sig_overlaping_features_per_organelle.png",
@@ -210,14 +181,10 @@ plt.savefig(
 plt.show()
 
 
-# In[ ]:
-
-
-# In[13]:
+# In[11]:
 
 
 # create a venn diagram of the features that are significant in all conditions
-from matplotlib_venn import venn2, venn3_unweighted
 
 venn3_unweighted(
     [
@@ -245,24 +212,24 @@ plt.savefig(
 plt.show()
 
 
-# In[14]:
+# In[12]:
 
 
-# get the features that are only in the DMSO vs LPS 100 condition and not in the other two conditions
+# get the features that are only in the treatment1 vs treatment2 condition and not in the other two conditions
 tukey_df_sig_trt_1v2_unique = tukey_df_sig_trt_1v2[
     ~tukey_df_sig_trt_1v2["features"].isin(tukey_df_sig_trt_1v3["features"])
 ]
 tukey_df_sig_trt_1v2_unique = tukey_df_sig_trt_1v2_unique[
     ~tukey_df_sig_trt_1v2_unique["features"].isin(tukey_df_sig_trt_2v3["features"])
 ]
-# get the features that are only in the DMSO vs Thapsigargin 10 condition and not in the other two conditions
+# get the features that are only in the treatment1 vs treatmen3 condition and not in the other two conditions
 tukey_df_sig_trt_1v3_unique = tukey_df_sig_trt_1v3[
     ~tukey_df_sig_trt_1v3["features"].isin(tukey_df_sig_trt_1v2["features"])
 ]
 tukey_df_sig_trt_1v3_unique = tukey_df_sig_trt_1v3_unique[
     ~tukey_df_sig_trt_1v3_unique["features"].isin(tukey_df_sig_trt_2v3["features"])
 ]
-# get the features that are only in the LPS 100 vs Thapsigargin 10 condition and not in the other two conditions
+# get the features that are only in the treatment2 vs treatment3 condition and not in the other two conditions
 tukey_df_sig_trt_2v3_unique = tukey_df_sig_trt_2v3[
     ~tukey_df_sig_trt_2v3["features"].isin(tukey_df_sig_trt_1v2["features"])
 ]
@@ -281,7 +248,7 @@ print(
 
 # ## Get organelle names
 
-# In[15]:
+# In[13]:
 
 
 # split each feature by "_" and get the organelle name
@@ -291,55 +258,28 @@ tukey_df_sig_trt_1v2_unique["organelle"] = tukey_df_sig_trt_1v2_unique[
 tukey_df_sig_trt_1v2_unique["organelle"].unique()
 
 
-# In[16]:
+# In[14]:
 
 
+org_replace_dict = {
+    "CorrGasdermin": "GasderminD",
+    "CorrER": "ER",
+    "CorrMito": "Mito",
+    "CorrDNA": "DNA",
+    "CorrPM": "PM",
+}
+# set a value for all other strings that represent "organelle", which come from either AreaShape or Neighbors module
+default_value = "Other"
+
+# replace values to represent organelle or other
 tukey_df_sig_trt_1v2_unique["organelle"] = tukey_df_sig_trt_1v2_unique[
     "organelle"
-].replace(
-    [
-        None,
-        "1" "0",
-        "CorrGasdermin",
-        "CorrER",
-        "CorrMito",
-        "CorrDNA",
-        "CorrPM",
-        "2",
-        "4",
-        "9",
-        "Adjacent",
-        "8",
-        "6",
-        "5",
-        "3",
-        "7",
-    ],
-    [
-        "Other",
-        "Other" "Other",
-        "GasderminD",
-        "ER",
-        "Mito",
-        "DNA",
-        "PM",
-        "Other",
-        "Other",
-        "Other",
-        "Other",
-        "Other",
-        "Other",
-        "Other",
-        "Other",
-        "Other",
-    ],
-)
-print(tukey_df_sig_trt_1v2_unique["organelle"].unique())
+].apply(lambda x: org_replace_dict.get(x, default_value))
 
 
 # #### Plot number of significant features by organelle
 
-# In[17]:
+# In[15]:
 
 
 # drop the other organelle
@@ -368,9 +308,6 @@ for p in plt.gca().patches:
 plt.xlabel("Organelle", size=20)
 plt.ylabel("Number of Significant Features \n (p-adj. < 0.01)", size=20)
 plt.ylim(0, 175)
-# rotate the x axis labels
-# plt.xticks(rotation=45, ha='right')
-# plt.tight_layout()
 save_path = pathlib.Path(
     f"./Figures/anova_of_features/{treatment1}_vs_{treatment2}_vs_{treatment3}"
 )
@@ -380,6 +317,3 @@ plt.savefig(
     dpi=300,
 )
 plt.show()
-
-
-# In[ ]:

@@ -3,7 +3,7 @@
 
 # # This notebook looks into the cell heterogeneity in the control treatments
 
-# In[ ]:
+# In[1]:
 
 
 import itertools
@@ -21,14 +21,14 @@ get_ipython().run_line_magic("matplotlib", "inline")
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
 
-# In[ ]:
+# In[2]:
 
 
 # Parameters
 cell_type = "SHSY5Y"
 
 
-# In[ ]:
+# In[3]:
 
 
 # read in toml file
@@ -42,7 +42,7 @@ print(len(list_of_treatments))
 print(list_of_treatments)
 
 
-# In[ ]:
+# In[4]:
 
 
 # Set path to parquet file

@@ -16,10 +16,10 @@ aggragates=( True False )
 nomics=( True False )
 
 for cell_type in $cell_types; do
+    papermill 1.preprocessing.ipynb 1.preprocessing.ipynb -p cell_type $cell_type
     for aggragate in $aggragates; do
         for nomic in $nomics; do
             echo $cell_type $aggragate $nomic
-            papermill 1.preprocessing.ipynb 1.preprocessing.ipynb -p cell_type $cell_type -p aggregation $aggragate -p nomic $nomic
             papermill 2.data_aggregation.ipynb 2.data_aggregation.ipynb -p cell_type $cell_type -p aggregation $aggragate -p nomic $nomic
         done
     done

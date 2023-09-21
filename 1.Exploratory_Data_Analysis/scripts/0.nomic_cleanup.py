@@ -61,27 +61,30 @@ pd.set_option("display.max_columns", None)
 nomic_df.head(3)
 
 
-def add_trailing_zeros(x):
+def add_trailing_zeros_3(x):
     return "{:.3f}".format(x)
+
+
+def add_trailing_zeros_1(x):
+    return "{:.1f}".format(x)
 
 
 # Apply the function to the 'column_name' column
 nomic_df["Metadata_inducer1_concentration_value"] = nomic_df[
     "Metadata_inducer1_concentration_value"
-].apply(add_trailing_zeros)
+].apply(add_trailing_zeros_3)
 nomic_df["Metadata_inducer2_concentration_value"] = nomic_df[
     "Metadata_inducer2_concentration_value"
-].apply(add_trailing_zeros)
+].apply(add_trailing_zeros_1)
 nomic_df["Metadata_inhibitor_concentration_value"] = nomic_df[
     "Metadata_inhibitor_concentration_value"
-].apply(add_trailing_zeros)
+].apply(add_trailing_zeros_3)
 
 
 # In[7]:
 
 
-nomic_df["Metadata_inhibitor"].replace("Media ctr", "Media_ctr", inplace=True)
-nomic_df["Metadata_inducer1"].replace("media ctr", "Media_ctr", inplace=True)
+nomic_df["Metadata_inducer2_concentration_value"].unique()
 
 
 # In[8]:
@@ -141,8 +144,19 @@ nomic_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     + nomic_df["Metadata_inhibitor_concentration_value"].astype(str)
 ).astype(str)
 
+# four beta of inudcer1, inducer1 concentration, inhibitor, and inhibitor concentration all as 1 beta term
+nomic_df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
+    nomic_df["Metadata_Treatment"]
+    + "__"
+    + nomic_df["Metadata_Dose"].astype(str)
+    + "__"
+    + nomic_df["Metadata_inhibitor"].astype(str)
+    + "__"
+    + nomic_df["Metadata_inhibitor_concentration_value"].astype(str)
+).astype(str)
 
-# In[10]:
+
+# In[9]:
 
 
 nomic_cleaned = nomic_df.copy()
@@ -155,36 +169,42 @@ nomic_df.drop(nomic_df.columns[0], axis=1, inplace=True)
 nomic_df = nomic_df.drop(["Metadata_Dose"], axis=1)
 nomic_df = nomic_df.drop(["Metadata_Treatment"], axis=1)
 nomic_df = nomic_df.drop(["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"], axis=1)
+nomic_df = nomic_df.drop(["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"], axis=1)
 
 
-# In[11]:
+# In[10]:
 
 
 scaler = MinMaxScaler()
 nomic_df = pd.DataFrame(scaler.fit_transform(nomic_df), columns=nomic_df.columns)
 
 
-# In[12]:
+# In[11]:
 
 
 # summary statistics of df to check min-max normalization
 nomic_df.describe()
 
 
-# In[13]:
+# In[12]:
 
 
 # add position_x back to df
 nomic_df.loc[:, "Metadata_position_x"] = nomic_df_raw["position_x"]
 
 
-# In[14]:
+# In[13]:
 
 
 nomic_df = nomic_df.assign(
     oneb_Metadata_Treatment_Dose_Inhibitor_Dose=nomic_cleaned[
         "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-    ]
+    ],
+)
+nomic_df = nomic_df.assign(
+    fourb_Metadata_Treatment_Dose_Inhibitor_Dose=nomic_cleaned[
+        "fourb_Metadata_Treatment_Dose_Inhibitor_Dose"
+    ],
 )
 
 

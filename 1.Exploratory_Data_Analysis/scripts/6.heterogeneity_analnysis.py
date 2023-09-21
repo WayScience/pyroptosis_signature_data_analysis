@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# ## Plate 2
+# # This notebook looks into the cell heterogeneity in the control treatments
 
 # In[1]:
 
@@ -25,7 +25,7 @@ from sklearn.manifold import TSNE
 
 
 # Parameters
-celltype = "SHSY5Y"
+cell_type = "PBMC"
 
 
 # In[3]:
@@ -46,27 +46,19 @@ print(list_of_treatments)
 
 
 # Set path to parquet file
-path = pathlib.Path(f"../data/{celltype}_preprocessed_sc_norm.parquet")
+path = pathlib.Path(f"../data/{cell_type}_preprocessed_sc_norm.parquet")
 # Read in parquet file
-df1 = pq.read_table(path).to_pandas()
-# subset data frame to 1000 samples too much data results in poor clustering
-
-df = df1
-# save memory by deleting df1
-del df1
+df = pq.read_table(path).to_pandas()
+df
 
 
 # In[5]:
 
 
-# get rows that have values in column fourb_Metadata_Treatment_Dose_Inhibitor_Dose that match treatment list
-df = df[df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(list_of_treatments)]
-
-df = (
-    df.groupby("fourb_Metadata_Treatment_Dose_Inhibitor_Dose")
-    .apply(lambda x: x.sample(n=100, random_state=0))
-    .droplevel(0)
-)
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
+# subset the df for the control
+df = df[df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] == "DMSO_0.100_DMSO_0.025"]
+df
 
 
 # In[6]:
@@ -80,19 +72,21 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[8]:
+# In[7]:
 
 
 # set umap parameters
 umap_params = umap.UMAP(
     n_components=2,
     spread=1.1,
-    init="random",
     random_state=0,
+    n_neighbors=6,
+    min_dist=0.8,
+    metric="cosine",
 )
 
 
-# In[9]:
+# In[8]:
 
 
 # fit and transform data for umap
@@ -103,12 +97,13 @@ df_values["umap_1"] = proj_2d[:, 0]
 df_values["umap_2"] = proj_2d[:, 1]
 
 
-# In[ ]:
+# In[9]:
 
 
 df_values["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
     "fourb_Metadata_Treatment_Dose_Inhibitor_Dose"
 ]
+df_values["Metadata_Well"] = df_descriptive["Metadata_Well"]
 
 
 # In[10]:
@@ -119,12 +114,18 @@ sns.scatterplot(
     data=df_values,
     x="umap_1",
     y="umap_2",
-    hue="fourb_Metadata_Treatment_Dose_Inhibitor_Dose",
+    hue="Metadata_Well",
     legend="full",
-    alpha=0.7,
+    # make points smaller,
+    s=10,
+    alpha=0.3,
 )
-plt.title("Visualized on umap")
+# add contour lines to the plot
+
+plt.title(f"Visualized {cell_type} on umap")
 plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0)
 
 # if path does not exist create it
-plt.savefig(f"Figures/umap_plate2/{celltype}_umap.png", bbox_inches="tight")
+plt.savefig(
+    f"Figures/umap_plate2/cell_heterogeneity_{cell_type}_umap.png", bbox_inches="tight"
+)

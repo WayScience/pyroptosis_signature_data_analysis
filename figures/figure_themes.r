@@ -2,12 +2,11 @@
 
 suppressPackageStartupMessages(library(ggplot2))
 
-platte <- (
-    '#D81B60'
-    '#1E88E5'
-    '#FFC107'
-    '#004D40'
-    '#519C09'
+platte <- c('#D81B60',
+    '#1E88E5',
+    '#FFC107',
+    '#004D40',
+    '#519C09',
     '#980CAB')
 
 figure_theme <- (

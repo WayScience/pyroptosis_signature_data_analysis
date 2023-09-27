@@ -127,7 +127,7 @@ cytokine_values_melted$Cytokine <- factor(cytokine_values_melted$Cytokine, level
 
 head(cytokine_values_melted)
 
-# aggreate the data to get both the mean and the standard deviation
+# aggregate the data to get both the mean and the standard deviation
 cytokine_values_melted_agg <- cytokine_values_melted %>%
     group_by(Cytokine, oneb_Metadata_Treatment_Dose_Inhibitor_Dose) %>%
     summarise(

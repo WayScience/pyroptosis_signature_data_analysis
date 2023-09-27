@@ -272,7 +272,7 @@ heatmap_anova_cytokines <- (
 
 heatmap_anova_cytokines
 
-# read in the uamp results
+# read in the umap results
 umap_results_path <- file.path("..","..","2.Nomic_nELISA_Analysis/1.umap/PBMC/results/nELISA_plate_430420_umap_PBMC.csv")
 
 umap_results_selected_treatments_path <- file.path("..","..","2.Nomic_nELISA_Analysis/1.umap/PBMC/results/nELISA_plate_430420_umap_PBMC_selected_treatments.csv")

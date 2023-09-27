@@ -2,7 +2,7 @@
 
 suppressPackageStartupMessages(library(ggplot2))
 
-platte <- c('#D81B60',
+palette <- c('#D81B60',
     '#1E88E5',
     '#FFC107',
     '#004D40',

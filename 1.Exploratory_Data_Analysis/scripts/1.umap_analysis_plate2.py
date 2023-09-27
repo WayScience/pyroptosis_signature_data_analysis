@@ -25,7 +25,7 @@ from sklearn.manifold import TSNE
 
 
 # Parameters
-celltype = "SHSY5Y"
+celltype = "PBMC"
 
 
 # In[3]:
@@ -48,12 +48,8 @@ print(list_of_treatments)
 # Set path to parquet file
 path = pathlib.Path(f"../data/{celltype}_preprocessed_sc_norm.parquet")
 # Read in parquet file
-df1 = pq.read_table(path).to_pandas()
+df = pq.read_table(path).to_pandas()
 # subset data frame to 1000 samples too much data results in poor clustering
-
-df = df1
-# save memory by deleting df1
-del df1
 
 
 # In[5]:
@@ -62,11 +58,11 @@ del df1
 # get rows that have values in column fourb_Metadata_Treatment_Dose_Inhibitor_Dose that match treatment list
 df = df[df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(list_of_treatments)]
 
-df = (
-    df.groupby("fourb_Metadata_Treatment_Dose_Inhibitor_Dose")
-    .apply(lambda x: x.sample(n=100, random_state=0))
-    .droplevel(0)
-)
+# df = (
+#     df.groupby("fourb_Metadata_Treatment_Dose_Inhibitor_Dose")
+#     .apply(lambda x: x.sample(n=100, random_state=0))
+#     .droplevel(0)
+# )
 
 
 # In[6]:
@@ -80,19 +76,22 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[8]:
+# In[7]:
 
 
 # set umap parameters
 umap_params = umap.UMAP(
     n_components=2,
     spread=1.1,
+    min_dist=0.8,
     init="random",
+    metric="cosine",
     random_state=0,
+    n_jobs=-1,
 )
 
 
-# In[9]:
+# In[8]:
 
 
 # fit and transform data for umap
@@ -103,7 +102,7 @@ df_values["umap_1"] = proj_2d[:, 0]
 df_values["umap_2"] = proj_2d[:, 1]
 
 
-# In[ ]:
+# In[9]:
 
 
 df_values["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
@@ -114,6 +113,21 @@ df_values["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
 # In[10]:
 
 
+# randomize the rows of the dataframe to plot the order of the data evenly
+df_values = df_values.sample(frac=1, random_state=0)
+
+df_values_path = pathlib.Path(
+    f"./results/{celltype}_umap_values_morphology_all_cells.parquet"
+)
+# if path does not exist create it
+df_values_path.parent.mkdir(parents=True, exist_ok=True)
+# save the dataframe as a parquet file
+df_values.to_parquet(df_values_path)
+
+
+# In[11]:
+
+
 # Figure Showing UMAP of Clusters vs Treatment
 sns.scatterplot(
     data=df_values,
@@ -121,7 +135,7 @@ sns.scatterplot(
     y="umap_2",
     hue="fourb_Metadata_Treatment_Dose_Inhibitor_Dose",
     legend="full",
-    alpha=0.7,
+    alpha=0.3,
 )
 plt.title("Visualized on umap")
 plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0)

@@ -14,25 +14,43 @@ import pandas as pd
 import pyarrow.parquet as pq
 import seaborn as sns
 
-# In[3]:
+# In[2]:
 
 
 # Parameters
 celltype = "PBMC"
 
 
-# In[4]:
+# In[3]:
 
 
 # Set Path
 path = pathlib.Path(f"../data/{celltype}_preprocessed_sc_norm.parquet")
 
 
-# In[5]:
+# In[4]:
 
 
 # import data
 df = pq.read_table(path).to_pandas()
+
+
+# In[5]:
+
+
+subset_df = df[
+    [
+        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
+        "Metadata_number_of_singlecells",
+        "Metadata_Well",
+        "Metadata_Treatment",
+    ]
+]
+
+subset_df_path = pathlib.Path(f"./results/{celltype}_cell_counts.parquet")
+# if path does not exist, create it
+subset_df_path.parent.mkdir(parents=True, exist_ok=True)
+subset_df.to_parquet(subset_df_path)
 
 
 # In[6]:
@@ -42,7 +60,7 @@ df = pq.read_table(path).to_pandas()
 sns.barplot(
     x="Metadata_Treatment",
     y="Metadata_number_of_singlecells",
-    data=df,
+    data=subset_df,
     estimator=np.mean,
     errorbar=("sd"),
 )

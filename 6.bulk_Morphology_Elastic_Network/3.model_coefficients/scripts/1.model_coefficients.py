@@ -72,5 +72,5 @@ for model_file in model_files:
     # get the file name of the model
     # replace the joblib ending with csv
     file_name = pathlib.Path(model_file).name.replace(".joblib", ".csv")
-    # create the output path
+    # write to output path
     df_coefficients.to_csv(output_path / file_name, index=False)

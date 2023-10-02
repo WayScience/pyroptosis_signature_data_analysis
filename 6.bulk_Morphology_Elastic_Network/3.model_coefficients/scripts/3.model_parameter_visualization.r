@@ -29,7 +29,7 @@ for (i in 1:length(files)){
 }
 head(model_df)
 
-# plot soze
+# plot size
 options(repr.plot.width=10, repr.plot.height=5)
 # plot model parameters
 model_params_plot <- (

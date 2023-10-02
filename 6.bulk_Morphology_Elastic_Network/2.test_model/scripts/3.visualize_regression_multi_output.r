@@ -5,7 +5,6 @@ suppressWarnings(suppressPackageStartupMessages(library(cowplot)))
 suppressWarnings(suppressPackageStartupMessages(library(viridis)))
 suppressWarnings(suppressPackageStartupMessages(library(argparse)))
 
-
 # set up argparse
 parser <- arg_parser("Visualize regression results")
 
@@ -51,20 +50,39 @@ if (!file.exists(dirname(global_prediction_trend_path))) {
     dir.create(dirname(global_prediction_trend_path), recursive = TRUE)
 }
 # plot the data
-global_prediction_trend <- (
+global_prediction_trend_scatter <- (
     ggplot(df, aes(x=actual_value, y=predicted_value, col=shuffle))
-    + geom_point()
-    + geom_smooth(method=lm, se=TRUE,)
+    + geom_point(alpha=0.5, size=0.5)
+    # add geom smooth with each line being a different color
     + labs(x="Actual", y="Predicted")
     + theme_bw()
     + labs(title="Global Prediction Trends of Cytokine Concentrations")
     # add y=x line
     + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
+    + facet_wrap(~shuffle, ncol=2)
 )
 
 # save the plot
-ggsave(global_prediction_trend_path, global_prediction_trend, width=5, height=5, dpi=500)
-global_prediction_trend
+ggsave(global_prediction_trend_path, global_prediction_trend_scatter, width=5, height=5, dpi=500)
+global_prediction_trend_scatter
+
+global_prediction_trend_line <- (
+    ggplot(df, aes(x=actual_value, y=predicted_value, col=shuffle))
+    # add geom smooth with each line being a different color
+    + geom_smooth(method="lm", se=TRUE, alpha=0.5, size=0.5, aes(col=shuffle))
+    # make colors different for each line
+    + scale_color_viridis(discrete=TRUE, option="plasma")
+    + labs(x="Actual", y="Predicted")
+    + theme_bw()
+    + labs(title="Global Prediction Trends of Cytokine Concentrations")
+    # add y=x line
+    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
+    + facet_wrap(~shuffle, ncol=2)
+    + ylim(0, 1)
+    + xlim(0, 1)
+)
+ggsave(global_prediction_trend_path, global_prediction_trend_line, width=5, height=5, dpi=500)
+global_prediction_trend_line
 
 head(df)
 
@@ -78,7 +96,7 @@ for (i in 1:length(unique(df$cytokine))){
     p <- (
         ggplot(sub_df, aes(x=actual_value, y=predicted_value, col=shuffle))
         + geom_point()
-        + geom_smooth(method=lm, se=TRUE)
+        + geom_smooth(method=lm, se=TRUE, formula = y ~ x)
         + labs(x="Actual", y="Predicted")
         + theme_bw()
         + ggtitle(unique(df$cytokine)[i])
@@ -98,6 +116,8 @@ df_var$r2 <- gsub("\\[|\\]", "", df_var$r2)
 df_var$r2 <- as.numeric(df_var$r2)
 head(df_var)
 
+# set plot size
+options(repr.plot.width=5, repr.plot.height=5)
 # set output path
 global_variance_r2_path <- file.path(paste0(enet_cp_fig_path,"global_variance_r2.png"))
 # if path does not exist, create it
@@ -117,6 +137,7 @@ ggsave(global_variance_r2_path, variance_r2_plot, width=5, height=5, dpi=500)
 variance_r2_plot
 
 local_variance_r2_path <- file.path(paste0(enet_cp_fig_path,"local_variance_r2.png"))
+local_variance_r2_legend_path <- file.path(paste0(enet_cp_fig_path,"local_variance_r2_legend.png"))
 # if path does not exist, create it
 if (!file.exists(dirname(global_prediction_trend_path))) {
     print(dirname(global_prediction_trend_path))
@@ -125,14 +146,31 @@ if (!file.exists(dirname(global_prediction_trend_path))) {
 # same plot but only in the positive quadrant
 variance_r2_plot <- (
     ggplot(df_var, aes(x=r2, y=actual_value, col=shuffle, shape = data_split))
-    + geom_point()
-    + labs(x="R2 score", y="variance")
+    + geom_point(size=3)
+    + labs(x="R2 score", y="Explained Variance")
     + theme_bw()
     + xlim(0, max(df_var$r2))
     + ylim(0, max(df_var$actual_value))
+    # change the x and y axis text size
+    + theme(
+        axis.text.x = element_text(size=13),
+        axis.text.y = element_text(size=13),
+        legend.text=element_text(size=16),
+        axis.title=element_text(size=16),
+        legend.title=element_text(size=16)
+    )
+    # make legend points bigger
+    + guides(
+        colour = guide_legend(override.aes = list(size=3)),
+        shape = guide_legend(override.aes = list(size=3))
+    )
 )
+legend <- get_legend(variance_r2_plot)
+variance_r2_plot <- variance_r2_plot + theme(legend.position = "none")
 ggsave(local_variance_r2_path, variance_r2_plot, width=5, height=5, dpi=500)
+ggsave(local_variance_r2_legend_path, legend, width=5, height=5, dpi=500)
 variance_r2_plot
+plot(legend)
 
 # remove all cytokines that have r2 < 0 for both test and train set
 neg_r2 <- df_var[df_var$r2 < 0,]
@@ -144,7 +182,7 @@ df_var$shuffle_data_split <- paste0(df_var$shuffle, "_", df_var$data_split)
 
 
 # set size of the plot
-options(repr.plot.width=25, repr.plot.height=15)
+options(repr.plot.width=26, repr.plot.height=10)
 # get only the final models
 # df_var_final <- df_var[df_var$shuffle == "final",]
 # set the order of the cytokines by the r2 score for the test set
@@ -155,16 +193,24 @@ variance_r2_bar_plot <- (
     + geom_bar(stat="identity", position=position_dodge())
     + labs(x="Shuffle", y="R2 score")
     + theme_bw()
+    + theme(legend.text=element_text(size=16))
     # make x ticks labels larger and rotate them 90 degrees
     + theme(axis.text.x = element_text(size=16, angle=90, hjust=1))
 
 )
-ggsave(file.path(paste0(enet_cp_fig_path,"variance_r2_bar_plot.png")), variance_r2_bar_plot, width=20, height=15, dpi=500)
+# get the legend
+legend <- get_legend(variance_r2_bar_plot)
+# remove the legend
+variance_r2_bar_plot <- variance_r2_bar_plot + theme(legend.position="none")
+
+ggsave(file.path(paste0(enet_cp_fig_path,"variance_r2_bar_plot.png")), variance_r2_bar_plot, width=26, height=10, dpi=500)
+ggsave(file.path(paste0(enet_cp_fig_path,"variance_r2_bar_plot_legend.png")), legend, width=5, height=5, dpi=500)
 variance_r2_bar_plot
+options(repr.plot.width=5, repr.plot.height=5)
+plot(legend)
 
 # calculate the se of each metric for each shuffle, data_split, and cytokine in R
 agg_df <- aggregate(log10_neg_mean_absolute_error ~ shuffle + data_split + cytokine + treatment, df, function(x) c(mean = mean(x), sd = sd(x)))
-# aggregate(log10_neg_mean_absolute_error ~ shuffle + data_split + cytokine, df, mean)
 # split the log10_neg_mean_absolute_error column into two columns
 agg_df <- cbind(agg_df, agg_df$log10_neg_mean_absolute_error)
 # remove the log10_neg_mean_absolute_error column by name
@@ -193,7 +239,7 @@ bar_plot <- (
     + labs(x="Data Split", y="log10_neg_mean_absolute_error")
     + theme_bw()
     + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-    + facet_grid(data_split	 ~ shuffle	)
+    + facet_wrap(data_split	 ~ shuffle, ncol=1)
     #add viridis color scale
     + scale_fill_viridis(discrete = TRUE, option = "inferno", direction = -1)
     # order the x axis by the mean of the log10_neg_mean_absolute_error
@@ -202,40 +248,52 @@ bar_plot <- (
 # detach the legend
 # get the legend from the plot
 bar_plot <- bar_plot + theme(legend.position="none")
-# ggsave(prediction_metric, bar_plot, width=5, height=5, dpi=500)
+ggsave(prediction_metric, bar_plot, width=30, height=12, dpi=500)
 print(bar_plot)
 
 
 # per cytokine graph
+file_path <- file.path(paste0(enet_cp_fig_path))
+# if path does not exist, create it
+if (!file.exists(dirname(file_path))) {
+    print(dirname(file_path))
+    dir.create(dirname(file_path), recursive = TRUE)
+}
+pdf(file=file.path(paste0(file_path,"individual_cytokine_prediction_metric.pdf")))
 for ( i in 1:length(unique(agg_df$cytokine))){
     # print(unique(agg_df$cytokine)[i])
-    tmp_df <- agg_df[agg_df$cytokine == unique(agg_df$cytokine)[i],]
-
     # set output path
-    prediction_metric <- file.path(paste0(enet_cp_fig_path,"individual_cytokines/prediction_metric",unique(agg_df$cytokine)[i],".png"))
-    # if path does not exist, create it
-    if (!file.exists(dirname(global_prediction_trend_path))) {
-        print(dirname(global_prediction_trend_path))
-        dir.create(dirname(global_prediction_trend_path), recursive = TRUE)
-    }
     # set plot size
     options(repr.plot.width=12, repr.plot.height=12)
     # plot a bar plot of the mean log10_neg_mean_absolute_error for each data split, cytokine, and shuffle with error bars
-    bar_plot <- (
-        ggplot(tmp_df, aes(x=data_split, y=mean_log10_neg_mean_absolute_error, fill=shuffle))
-        + geom_bar(stat="identity", position=position_dodge())
-        + geom_errorbar(aes(ymin=mean_log10_neg_mean_absolute_error-sd_log10_neg_mean_absolute_error, ymax=mean_log10_neg_mean_absolute_error+sd_log10_neg_mean_absolute_error), width=.2, position=position_dodge(.9))
-        + labs(x="Data Split", y="log10_neg_mean_absolute_error")
-        + ggtitle(unique(agg_df$cytokine)[i])
-        + theme_bw()
-        + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    tmp_df <- agg_df[agg_df$cytokine == unique(agg_df$cytokine)[i],]
+    # get the mean and sd of the log10_neg_mean_absolute_error for each data split, cytokine, and shuffle
+    tmp_df <- aggregate(mean_log10_neg_mean_absolute_error ~ shuffle + data_split, tmp_df, function(x) c(mean = mean(x), sd = sd(x)))
+    # split the log10_neg_mean_absolute_error column into two columns
+    tmp_df <- cbind(tmp_df, tmp_df$mean_log10_neg_mean_absolute_error)
+    # drop the log10_neg_mean_absolute_error column by name
+    tmp_df <- tmp_df[, !names(tmp_df) %in% c('mean_log10_neg_mean_absolute_error')]
+    # split the mean_log10_neg_mean_absolute_error column into two columns
 
+    tmp_plot <- (
+        ggplot(tmp_df, aes(x=data_split, y=mean, fill=shuffle))
+            + geom_bar(stat="identity", position=position_dodge())
+            + geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.2, position=position_dodge(.9))
+            + labs(x="Data Split", y="log10_neg_mean_absolute_error")
+            + ggtitle(unique(agg_df$cytokine)[i])
+            + theme_bw()
+            + theme(
+                axis.text.x = element_text(hjust = 1, size=16),
+                axis.text.y = element_text(size=16),
+                axis.title.x = element_text(size=20),
+                axis.title.y = element_text(size=20),
+                plot.title = element_text(size=20)
+            )
+            + ylab("-log10(MSE)")
     )
-    # detach the legend
-    # get the legend from the plot
-    ggsave(prediction_metric, bar_plot, width=5, height=5, dpi=500)
-    bar_plot
+    plot(tmp_plot)
 }
+dev.off()
 
 # set lists to iterate over
 list_of_cytokines <- unique(df$cytokine)
@@ -332,5 +390,3 @@ platemap_plot <- (
 )
 ggsave(inducer_well_platemap, platemap_plot, width=8, height=8, dpi=500)
 platemap_plot
-
-

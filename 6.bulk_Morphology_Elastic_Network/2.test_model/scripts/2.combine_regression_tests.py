@@ -54,17 +54,6 @@ model_stats_df.to_csv(model_stats_final_output_path, index=False)
 variance_r2_stats_df.to_csv(variance_r2_stats_final_output_path, index=False)
 
 
-# In[4]:
-
-
-# delete the individual files
-# for f in model_stats_files:
-#     f.unlink()
-
-# for f in variance_r2_stats_files:
-#     f.unlink()
-
-
 # In[ ]:
 
 

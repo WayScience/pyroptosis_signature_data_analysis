@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# ## This notebook pre-processes the results of the model performance evaluation to be used in the model performance visualization notebook.
+
 # In[1]:
 
 
@@ -35,9 +37,11 @@ all_model_performance = pd.DataFrame()
 # In[5]:
 
 
-for model_file in list(model_path.glob("*.csv")):
-    model_df = pd.read_csv(model_file)
-    all_model_performance = pd.concat([all_model_performance, model_df])
+for model_file in model_path.glob("*.csv"):
+    all_model_performance = pd.concat(
+        # concat the model performance
+        [all_model_performance, pd.read_csv(model_file)]
+    )
 
 
 # In[6]:

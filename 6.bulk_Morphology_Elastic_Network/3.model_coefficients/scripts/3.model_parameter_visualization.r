@@ -33,10 +33,11 @@ head(model_df)
 options(repr.plot.width=10, repr.plot.height=5)
 # plot model parameters
 model_params_plot <- (
-    ggplot(model_df, aes(x=l1_ratio, y=r2, fill=alpha))
+    ggplot(model_df, aes(x=l1_ratio, y=r2))
     + geom_point()
     + theme_bw()
     + facet_wrap(.~shuffle, ncol=2)
-    + labs(x="l1 ratio", y="R2 score", color="alpha")
+    + labs(x="l1 ratio", y="R2 score")
+    + ggtitle("ElasticNet model parameters")
 )
 model_params_plot

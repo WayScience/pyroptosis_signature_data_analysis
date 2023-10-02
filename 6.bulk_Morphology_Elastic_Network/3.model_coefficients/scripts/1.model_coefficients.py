@@ -36,7 +36,7 @@ model_stats_path = pathlib.Path(
 )
 
 
-# In[15]:
+# In[5]:
 
 
 for model_file in list(model_path.glob("*.joblib")):
@@ -51,15 +51,12 @@ for model_file in list(model_path.glob("*.joblib")):
         "r2"
     ].unique()[0]
     r2 = np.float64(r2.strip("[]"))
-    assert r2.dtype == np.float64
     # import model
     model = joblib.load(model_file)
     # create a df with the coefficients
     df_coefficients = pd.DataFrame(
         model.coef_, index=model.feature_names_in_, columns=["coefficients"]
     )
-
-    # print(basename.split("_")[0], "__",basename.split("_")[1])
 
     # sort by absolute value of coefficients
     df_coefficients = df_coefficients.reindex(

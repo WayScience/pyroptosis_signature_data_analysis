@@ -54,7 +54,7 @@ process_subset_data <- function(data_path){
 # get all files in a directory
 files <- list.files(path = input_file_path, pattern = "*.csv", full.names = TRUE)
 coef_gg_file <- file.path(paste0(output_path,"/","top_abs_val_coefficients_enet.pdf"))
-pdf(file=coef_gg_file, width=8, height=8)
+pdf(file=coef_gg_file, width=7, height=4)
 for (i in files){
     filename <- basename(i)
     # split the string at the first _
@@ -67,7 +67,7 @@ for (i in files){
     coef_gg <- (
         ggplot(data, aes(x = channel_learned, y = feature_group))
         + geom_point(aes(fill = abs(coefficients)), pch = 22, size = 6)
-        + facet_wrap("~compartment", ncol = 1)
+        + facet_wrap("~compartment", ncol = 3)
         + theme_bw()
         + scale_fill_continuous(
             name="Top Abs. val\ntreatment\nlinear model\ncoefficient",
@@ -81,9 +81,11 @@ for (i in files){
             axis.title = element_text(size = 10),
             title = element_text(size = 14),
             legend.title = element_text(size = 12),
-            legend.text = element_text(size = 12)
+            legend.text = element_text(size = 12),
         )
-        + ggtitle(paste0("Top Abs. val treatment linear model coefficient\n for ",cytokine,shuffle," model"))
+        # rotate x axis labels
+        + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+        + ggtitle(paste0("Top Abs. val treatment ElasticNet coefficients for \n",cytokine,"\n",shuffle," model"))
         + theme(plot.title = element_text(hjust = 0.5))
     )
     plot(coef_gg)

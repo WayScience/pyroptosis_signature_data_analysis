@@ -260,7 +260,7 @@ model_heatmap <- as.ggplot(model_heatmap)
 model_heatmap <- model_heatmap +   theme(plot.margin = unit(c(1, 1, 1, 1), "cm"))
 
 # save the figure
-ggsave(file = paste0(figure_path, "filtered_features.svg"), plot = model_heatmap, width = 15, height = 15, units = "in", dpi = 500)
-ggsave(file = paste0(figure_path, "filtered_features.png"), plot = model_heatmap, width = 15, height = 15, units = "in", dpi = 500)
+ggsave(file = paste0(figure_path, "filtered_features.svg"), plot = model_heatmap, width = 15, height = 20, units = "in", dpi = 500)
+ggsave(file = paste0(figure_path, "filtered_features.png"), plot = model_heatmap, width = 15, height = 20, units = "in", dpi = 500)
 
 model_heatmap

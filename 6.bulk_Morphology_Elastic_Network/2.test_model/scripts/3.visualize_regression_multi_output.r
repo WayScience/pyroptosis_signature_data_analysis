@@ -33,6 +33,7 @@ if (!file.exists(dirname(enet_cp_fig_path))) {
 print(unique(df$shuffle))
 print(length(unique(df$cytokine)))
 
+options(repr.plot.width=6, repr.plot.height=5)
 # set output path
 global_prediction_trend_path <- file.path(paste0(enet_cp_fig_path,"global_prediction_trend.png"))
 # if path does not exist, create it
@@ -62,7 +63,7 @@ global_prediction_trend_line <- (
     # add geom smooth with each line being a different color
     + geom_smooth(method="lm", se=TRUE, alpha=0.5, size=0.5, aes(col=shuffle))
     # make colors different for each line
-    + scale_color_viridis(discrete=TRUE, option="plasma")
+    + scale_fill_gradientn(colours = viridis(10))
     + labs(x="Actual", y="Predicted")
     + theme_bw()
     + labs(title="Global Prediction Trends of Cytokine Concentrations")

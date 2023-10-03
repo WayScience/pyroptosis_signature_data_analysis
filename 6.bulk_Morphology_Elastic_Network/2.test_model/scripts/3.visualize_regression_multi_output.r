@@ -5,15 +5,6 @@ suppressWarnings(suppressPackageStartupMessages(library(cowplot)))
 suppressWarnings(suppressPackageStartupMessages(library(viridis)))
 suppressWarnings(suppressPackageStartupMessages(library(argparse)))
 
-# set up argparse
-parser <- arg_parser("Visualize regression results")
-
-parser <- add_argument(parser, "--cell_type", help = "String of the type of cell used", required = TRUE)
-
-args <- parse_args(parser)
-
-cell_type <- args$cell_type
-
 cell_type <- "PBMC"
 
 
@@ -59,7 +50,7 @@ global_prediction_trend_scatter <- (
     + labs(title="Global Prediction Trends of Cytokine Concentrations")
     # add y=x line
     + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
-    + facet_wrap(~shuffle, ncol=2)
+    + facet_wrap(data_split~shuffle, ncol=2)
 )
 
 # save the plot
@@ -77,34 +68,61 @@ global_prediction_trend_line <- (
     + labs(title="Global Prediction Trends of Cytokine Concentrations")
     # add y=x line
     + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
-    + facet_wrap(~shuffle, ncol=2)
+    + facet_wrap(data_split~shuffle, ncol=2)
     + ylim(0, 1)
     + xlim(0, 1)
 )
 ggsave(global_prediction_trend_path, global_prediction_trend_line, width=5, height=5, dpi=500)
 global_prediction_trend_line
 
-head(df)
+df$shuffle_plus_data_split <- paste0(df$shuffle, "_", df$data_split)
+# replace 'final_test_data' with 'Final + Test' and 'final_train_data' with 'Final + Train'
+df$shuffle_plus_data_split <- gsub("final_test_data", "Final + Test", df$shuffle_plus_data_split)
+df$shuffle_plus_data_split <- gsub("final_train_data", "Final + Train", df$shuffle_plus_data_split)
+df$shuffle_plus_data_split <- gsub("shuffled_baseline_test_data", "Shuffled + Test", df$shuffle_plus_data_split)
+df$shuffle_plus_data_split <- gsub("shuffled_baseline_train_data", "Shuffled + Train", df$shuffle_plus_data_split)
 
 enet_cp_fig <- file.path(paste0(enet_cp_fig_path,"Predicted_vs_Actual_all_cytokines.pdf"))
 pdf(file=enet_cp_fig)
 # set plot size
-options(repr.plot.width=6, repr.plot.height=8)
+options(repr.plot.width=6, repr.plot.height=4)
 # facet by secrete
 for (i in 1:length(unique(df$cytokine))){
     sub_df <- df[df$cytokine == (unique(df$cytokine)[i]),]
-    p <- (
-        ggplot(sub_df, aes(x=actual_value, y=predicted_value, col=shuffle))
-        + geom_point()
-        + geom_smooth(method=lm, se=TRUE, formula = y ~ x)
-        + labs(x="Actual", y="Predicted")
-        + theme_bw()
-        + ggtitle(unique(df$cytokine)[i])
-        + ylim(0, 1)
-        + xlim(0, 1)
+# plot
+p <- (
+    ggplot(sub_df, aes(x=actual_value, y=predicted_value, col=shuffle_plus_data_split))
+    + geom_point()
+    + theme_bw()
+    + geom_smooth(method=lm, se=TRUE, formula = y ~ x, alpha=0.5, size=0.5)
+    + labs(x="Actual", y="Predicted")
 
+    + ggtitle(unique(df$cytokine)[i])
+    + ylim(0, 1)
+    + xlim(0, 1)
+    + theme(
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        # center the title
+        plot.title = element_text(hjust = 0.5)
     )
+    + labs(color="Model", hjust=0.5)
 
+    # change facet label size
+    + theme(strip.text.x = element_text(size = 12))
+    + theme(strip.text.y = element_text(size = 12))
+    # change legend text size
+    + theme(legend.text=element_text(size=12))
+    # change legend title size
+    + theme(legend.title=element_text(size=14))
+    # change legend title
+    # make kegend key background white
+    + guides(color = guide_legend(override.aes = list(fill = NA)),
+         linetype = guide_legend(override.aes = list(fill = NA)))
+    + theme(legend.key = element_rect(fill = "white"))
+    )
     plot(p)
 }
 dev.off()
@@ -390,3 +408,4 @@ platemap_plot <- (
 )
 ggsave(inducer_well_platemap, platemap_plot, width=8, height=8, dpi=500)
 platemap_plot
+

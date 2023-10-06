@@ -21,7 +21,7 @@ nomic = True
 # In[ ]:
 
 
-if aggregation == True & nomic == True:
+if aggregation and nomic:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
     )

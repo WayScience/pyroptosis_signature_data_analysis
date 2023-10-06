@@ -16,10 +16,7 @@ import pyarrow.parquet as pq
 import seaborn as sns
 import toml
 import umap
-
-get_ipython().run_line_magic("matplotlib", "inline")
 from sklearn.cluster import KMeans
-from sklearn.manifold import TSNE
 
 # In[2]:
 

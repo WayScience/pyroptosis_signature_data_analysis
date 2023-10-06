@@ -35,9 +35,9 @@ level = args$level
 group = args$group
 
 # temp code
-# cell_type = "PBMC"
-# level = "nomic"
-# group = "wells"
+cell_type = "SHSY5Y"
+level = "nomic"
+group = "wells"
 
 
 if (group == "selected_treatments"){
@@ -103,3 +103,4 @@ p <- ggplot(df, aes(x = !!X, y = !!Y)) +
     ggtitle(title)
 
 ggsave(file_path, p)
+p

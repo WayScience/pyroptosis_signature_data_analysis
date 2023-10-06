@@ -29,7 +29,7 @@ elif aggregation == False & nomic == True:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_nomic.parquet"
     )
-elif aggregation == True & nomic == False:
+elif aggregation and not nomic:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
     )

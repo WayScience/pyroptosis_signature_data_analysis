@@ -30,8 +30,6 @@ warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
 
 # Parameters
 cell_type = "SHSY5Y"
-control = "DMSO_0.100_DMSO_0.025"
-treatment = "LPS_100.000_DMSO_0.025"
 
 
 # In[3]:
@@ -47,21 +45,12 @@ data = pd.read_parquet(data_dir)
 # In[4]:
 
 
-# get the list of treatments to filter for
-treatments = [control] + [treatment]
-# subset data from oneb_Metadata_Treatment_Dose_Inhibitor_Dose column
-data = data[data.oneb_Metadata_Treatment_Dose_Inhibitor_Dose.isin(treatments)]
-
-
-# In[5]:
-
-
 # subsample
 print(data.shape)
 
 
 if len(data) > 5000:
-    df = data.sample(n=500, random_state=42)
+    df = data.sample(n=5000, random_state=0)
     del data
 else:
     pass
@@ -69,7 +58,7 @@ else:
 print(df.shape)
 
 
-# In[6]:
+# In[5]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -80,15 +69,14 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[7]:
+# In[6]:
 
 
-df_values
 split_df = df_values.columns.str.split("_", expand=True).to_list()
 split_df = pd.DataFrame(split_df)
 
 
-# In[8]:
+# In[7]:
 
 
 # get each column name and split by the delimiter "_" to get the metadata category
@@ -112,7 +100,7 @@ split_df.columns = [
 ]
 
 
-# In[9]:
+# In[8]:
 
 
 # Define the recoding dictionary
@@ -129,7 +117,7 @@ split_df["channel_learned"] = split_df["channel"].replace(recode_dict)
 split_df["channel_learned"] = split_df["channel_learned"].fillna("other")
 
 
-# In[10]:
+# In[9]:
 
 
 # split the df into 5 dataframes based on the channel_learned column
@@ -142,7 +130,7 @@ df_gasdermin = split_df[split_df["channel_learned"] == "gasdermin"].set_index(
 df_PM = split_df[split_df["channel_learned"] == "PM"].set_index("features")
 
 
-# In[11]:
+# In[10]:
 
 
 # based on indexes get the metadata nd values for each channel
@@ -173,7 +161,7 @@ df_PM_descriptive = df_descriptive.loc[df_PM_values.index.to_list()]
 df_PM_descriptive.loc[:, "Metadata_compartment"] = "PM"
 
 
-# In[12]:
+# In[11]:
 
 
 dictionary_of_channels = {
@@ -185,7 +173,7 @@ dictionary_of_channels = {
 }
 
 
-# In[13]:
+# In[12]:
 
 
 # set umap parameters
@@ -197,25 +185,35 @@ umap_params = umap.UMAP(
 )
 
 
+# In[13]:
+
+
+final_df = pd.DataFrame()
+
+
 # In[14]:
 
 
 for channel in dictionary_of_channels:
     df_values = dictionary_of_channels[channel][0]
     df_descriptive = dictionary_of_channels[channel][1]
-    proj_2d = umap_params.fit_transform(df_values)
-    # add umap coordinates to dataframe of metadata and raw data
-    df_values.loc[:, "umap_1"] = proj_2d[:, 0]
-    df_values.loc[:, "umap_2"] = proj_2d[:, 1]
-    df_values.loc[:, "Treatment"] = df_descriptive[
-        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-    ]
+    umap_2d = umap_params.fit_transform(df_values)
+
+    # new dataframe for each channel
+    df_umap_values = pd.DataFrame(
+        {
+            "UMAP1": umap_2d[:, 0],
+            "UMAP2": umap_2d[:, 1],
+            "Treatment": df_descriptive["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+        }
+    )
+    final_df = pd.concat([final_df, df_umap_values], axis=0)
 
     # Figure Showing umap of Clusters vs Treatment
     sns.scatterplot(
-        data=df_values,
-        x="umap_1",
-        y="umap_2",
+        data=df_umap_values,
+        x="UMAP1",
+        y="UMAP2",
         hue="Treatment",
         legend="full",
         alpha=0.7,
@@ -223,13 +221,25 @@ for channel in dictionary_of_channels:
     plt.title("Visualized on umap")
     plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0)
     # plt.tight_layout()
-    plt.title(
-        f"""UMAP of {channel} channel
-              {cell_type} cells treated with
-               {treatment}"""
-    )
+    plt.title(f"""UMAP of {channel} channel""")
     # set save path for figure
-    save_path = pathlib.Path(f"./Figures/umap_plate2/{cell_type}").resolve(strict=True)
+    save_path = pathlib.Path(f"./Figures/umap_plate2/{cell_type}")
     save_path.mkdir(exist_ok=True, parents=True)
-    plt.savefig(f"{save_path}/{channel}_{control}_{treatment}.png", bbox_inches="tight")
+    plt.savefig(f"{save_path}/{channel}.png", bbox_inches="tight")
     plt.show()
+
+
+# In[15]:
+
+
+final_df
+
+
+# In[16]:
+
+
+# write the final_df to a parquet file
+outpath = pathlib.Path(f"./results/umap_per_channel_all_treatments.parquet")
+# make a directory if it doesn't exist
+outpath.parent.mkdir(exist_ok=True, parents=True)
+final_df.to_parquet(outpath)

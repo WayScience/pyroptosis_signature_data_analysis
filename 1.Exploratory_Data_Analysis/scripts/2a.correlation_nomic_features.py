@@ -20,7 +20,7 @@ import pandas as pd
 
 
 # Parameters
-cell_type = "PBMC"
+cell_type = "SHSY5Y"
 
 
 # In[3]:

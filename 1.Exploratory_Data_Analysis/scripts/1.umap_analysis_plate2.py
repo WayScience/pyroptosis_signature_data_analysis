@@ -25,7 +25,7 @@ from sklearn.manifold import TSNE
 
 
 # Parameters
-celltype = "PBMC"
+celltype = "SHSY5Y"
 
 
 # In[3]:
@@ -56,7 +56,7 @@ df = pq.read_table(path).to_pandas()
 
 
 # get rows that have values in column fourb_Metadata_Treatment_Dose_Inhibitor_Dose that match treatment list
-df = df[df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(list_of_treatments)]
+# df = df[df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(list_of_treatments)]
 
 # df = (
 #     df.groupby("fourb_Metadata_Treatment_Dose_Inhibitor_Dose")
@@ -105,8 +105,8 @@ df_values["umap_2"] = proj_2d[:, 1]
 # In[9]:
 
 
-df_values["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
-    "fourb_Metadata_Treatment_Dose_Inhibitor_Dose"
+df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
 ]
 
 
@@ -133,7 +133,7 @@ sns.scatterplot(
     data=df_values,
     x="umap_1",
     y="umap_2",
-    hue="fourb_Metadata_Treatment_Dose_Inhibitor_Dose",
+    hue="oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
     legend="full",
     alpha=0.3,
 )
@@ -141,4 +141,4 @@ plt.title("Visualized on umap")
 plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0)
 
 # if path does not exist create it
-plt.savefig(f"Figures/umap_plate2/{celltype}_umap.png", bbox_inches="tight")
+# plt.savefig(f"Figures/umap_plate2/{celltype}_umap.png", bbox_inches="tight")

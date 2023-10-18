@@ -17,7 +17,7 @@ import umap
 
 
 nELISA_plate_430420_PBMC_path = pathlib.Path(
-    "../../Data/clean/Plate2/nELISA_plate_430420_PBMC_cleanup4correlation.csv"
+    "../../Data/clean/Plate2/nELISA_plate_430420_PBMC_clean.parquet"
 )
 manual_cluster_1_path = pathlib.Path(
     "../../Data/clean/Plate2/Manual_Treatment_Clusters_1.csv"
@@ -32,7 +32,7 @@ treatment_clusters_path = pathlib.Path(
 )
 
 
-nELISA_plate_430420_PBMC = pd.read_csv(nELISA_plate_430420_PBMC_path)
+nELISA_plate_430420_PBMC = pd.read_parquet(nELISA_plate_430420_PBMC_path)
 manual_clusters_1 = pd.read_csv(manual_cluster_1_path)
 manual_clusters_2 = pd.read_csv(manual_cluster_2_path)
 treatments = toml.load(treatment_clusters_path)["list_of_treatments"]["treatments"]
@@ -48,7 +48,7 @@ nELISA_data_values = nELISA_orgingal_plate.filter(like="NSU", axis=1).astype("fl
 nELISA_data_values.head()
 
 
-# In[6]:
+# In[4]:
 
 
 print(
@@ -104,14 +104,12 @@ nELISA_orgingal_plate.to_csv(nELISA_plate_430420_out_path, index=False)
 
 # ### Selected Treatments
 
-# In[8]:
+# In[10]:
 
 
 # select treatments from the list of treatments from the df
 nELISA_plate_430420_PBMC_treatments = nELISA_plate_430420_PBMC[
-    nELISA_plate_430420_PBMC["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
-        treatments
-    )
+    nELISA_plate_430420_PBMC["oneb_Treatment_Dose_Inhibitor_Dose"].isin(treatments)
 ]
 # select data only columns and make floats
 nELISA_plate_430420_PBMC_treatments_values = nELISA_plate_430420_PBMC_treatments.filter(
@@ -133,6 +131,3 @@ nELISA_plate_430420_selected_treatments_out_path = pathlib.Path(
 nELISA_plate_430420_PBMC_treatments.to_csv(
     nELISA_plate_430420_selected_treatments_out_path, index=False
 )
-
-
-# In[ ]:

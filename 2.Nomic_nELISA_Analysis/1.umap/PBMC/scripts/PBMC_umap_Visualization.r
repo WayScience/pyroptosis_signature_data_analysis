@@ -24,7 +24,7 @@ head(nomic_data_selected_treatments,2)
 # set the plot size
 # options(repr.plot.width=10, repr.plot.height=10)
 nomic_data_plot <- (
-    ggplot(nomic_data, aes(x = umap_1, y = umap_2, color = oneb_Metadata_Treatment_Dose_Inhibitor_Dose))
+    ggplot(nomic_data, aes(x = umap_1, y = umap_2, color = oneb_Treatment_Dose_Inhibitor_Dose))
     + geom_point(size = 5)
     # detach the legend and plot it separately
     + theme_bw()
@@ -71,7 +71,7 @@ ggsave(plot_legend_path, legend,dpi = 500, scale = 2)
 # set the plot size
 # options(repr.plot.width=10, repr.plot.height=10)
 nomic_data_selected_treatments_plot <- (
-    ggplot(nomic_data_selected_treatments, aes(x = umap_1, y = umap_2, color = oneb_Metadata_Treatment_Dose_Inhibitor_Dose))
+    ggplot(nomic_data_selected_treatments, aes(x = umap_1, y = umap_2, color = oneb_Treatment_Dose_Inhibitor_Dose))
     + geom_point(size = 5)
     # detach the legend and plot it separately # save separately too
     + theme_bw()

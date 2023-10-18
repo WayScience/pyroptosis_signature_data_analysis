@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# This noteboook pre-processes the single cell morphology data to be ready for exploratory analysis and machine learning.
+
 # In[1]:
 
 
@@ -92,9 +94,31 @@ columns_to_fill = [
 feature_df[columns_to_fill].fillna(0, inplace=True)
 
 
+# In[12]:
+
+
+# replace all None values with 0
+feature_df["Metadata_inducer1_concentration"].fillna(0, inplace=True)
+
+
+# In[13]:
+
+
+# using an f string make "inducer1_concentration" have 3 decimal places
+feature_df["Metadata_inducer1_concentration"] = feature_df[
+    "Metadata_inducer1_concentration"
+].apply(lambda x: f"{float(x):.3f}" if float(x) != 0 else float(x))
+feature_df["Metadata_inducer2_concentration"] = feature_df[
+    "Metadata_inducer2_concentration"
+].apply(lambda x: f"{float(x):.3f}" if float(x) != 0 else float(x))
+feature_df["Metadata_inhibitor_concentration"] = feature_df[
+    "Metadata_inhibitor_concentration"
+].apply(lambda x: f"{float(x):.3f}" if float(x) != 0 else float(x))
+
+
 # #### Combine Inducer1 and Inducer2 into one column
 
-# In[12]:
+# In[14]:
 
 
 # treatment column merge
@@ -134,18 +158,10 @@ results = [
 feature_df["Metadata_Dose"] = np.select(condlist=conditions, choicelist=results)
 
 
-# In[13]:
-
-
-feature_df["Metadata_inducer1_concentration"] = pd.to_numeric(
-    feature_df["Metadata_inducer1_concentration"]
-)
-
-
 # ## N Beta Column condition generation
 # columns generated to used for linear modeling where terms separated by '__' will be a beta coefficient
 
-# In[14]:
+# In[15]:
 
 
 # one beta of inudcer1, inducer1 concentration, inhibitor, and inhibitor concentration all as 1 beta term
@@ -153,9 +169,9 @@ feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     feature_df["Metadata_Treatment"]
     + "_"
     + feature_df["Metadata_Dose"].astype(str)
-    + "_"
-    # + feature_df['Metadata_inducer1_concentration_unit'].astype(str)
     # + "_"
+    # + feature_df['Metadata_inducer1_concentration_unit'].astype(str)
+    + "_"
     + feature_df["Metadata_inhibitor"].astype(str)
     + "_"
     + feature_df["Metadata_inhibitor_concentration"].astype(str)
@@ -170,8 +186,8 @@ feature_df["twob_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     + "_"
     + feature_df["Metadata_inhibitor"].astype(str)
     + "_"
-    # + feature_df["Metadata_inhibitor_concentration"].astype(str)
-    # + "__"
+    + feature_df["Metadata_inhibitor_concentration"].astype(str)
+    + "__"
     + feature_df["Metadata_Dose"].astype(str)
 ).astype(str)
 
@@ -181,8 +197,8 @@ feature_df["threeb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     + "__"
     + feature_df["Metadata_Dose"].astype(str)
     + "__"
-    # + feature_df['Metadata_inducer1_concentration_unit'].astype(str)
-    # + "_"
+    + feature_df["Metadata_inducer1_concentration_unit"].astype(str)
+    + "_"
     + feature_df["Metadata_inhibitor"].astype(str)
     + "_"
     + feature_df["Metadata_inhibitor_concentration"].astype(str)
@@ -194,91 +210,49 @@ feature_df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
     + "__"
     + feature_df["Metadata_Dose"].astype(str)
     + "__"
-    # + feature_df['Metadata_inducer1_concentration_unit'].astype(str)
-    # + "_"
+    + feature_df["Metadata_inducer1_concentration_unit"].astype(str)
+    + "_"
     + feature_df["Metadata_inhibitor"].astype(str)
     + "__"
     + feature_df["Metadata_inhibitor_concentration"].astype(str)
 ).astype(str)
 
 
-# In[15]:
-
-
-# fix strings in Metadata_Treatment column
-# replaceall "None" with "0"
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("None", "0")
-# replace all mu with u
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("µ", "u")
-# replace all "nan" with "0"
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("nan", "0")
-
-
 # In[16]:
 
 
-# _0.03 to _0.025
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_0.03", "_0.025")
-# _0.10_ to _0.100_
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_0.10_", "_0.100_")
-# _0.10_ to _0.100_
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_0.10_", "_0.100_")
-# _1_ to _1.000_
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_1.0_", "_1.000_")
-# _10_ to _10.000_
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_10.0_", "_10.000_")
-# _100_ to _100.000_
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_100.0_", "_100.000_")
-# _5_ to _5.000_
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_5.0_", "_5.000_")
-# _20_ to _20.000_
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_20.0_", "_20.000_")
-# _3.0_ to _3.000_
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_3.0_", "_3.000_")
-# _0.1_ to _0.100_
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_0.1_", "_0.100_")
-# _2.5_ to _2.500_
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_2.5_", "_2.500_")
-
-# mix the media treatment
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("media_ctr_0_ug_per_ml_Media_ctr_0_0", "media_ctr_0_0_Media_ctr_0.0_0")
-feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("media_ctr_0_0_Media_ctr_0_0", "media_ctr_0_0_Media_ctr_0.0_0")
+replacement_dict = {
+    "None": "0",
+    "µ": "u",
+    "nan": "0",
+}
+for pattern, replacement in replacement_dict.items():
+    print(pattern, replacement)
+    feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
+        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+    ].replace(to_replace=str(pattern), value=str(replacement), regex=True)
 
 
 # In[17]:
 
 
-feature_df_table = pa.Table.from_pandas(feature_df)
-pq.write_table(feature_df_table, feature_df_out_path)
+feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].str.replace("media_ctr_0.0_0_Media_ctr_0_0", "media_ctr_0.0_0_Media_ctr_0.0_0")
+
+
+# In[18]:
+
+
+# need to convert to strings to save as parquet
+# if the column is an object then convert it to a string
+for column in feature_df.columns:
+    if feature_df[column].dtype == "object":
+        feature_df[column] = feature_df[column].astype(str)
+
+
+# In[19]:
+
+
+# write to parquet file
+feature_df.to_parquet(feature_df_out_path)

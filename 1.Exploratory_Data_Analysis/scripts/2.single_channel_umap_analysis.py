@@ -39,26 +39,10 @@ cell_type = "SHSY5Y"
 data_dir = pathlib.Path(f"../data/{cell_type}_preprocessed_sc_norm.parquet")
 
 # read in the data
-data = pd.read_parquet(data_dir)
+df = pd.read_parquet(data_dir)
 
 
 # In[4]:
-
-
-# subsample
-print(data.shape)
-
-
-if len(data) > 5000:
-    df = data.sample(n=5000, random_state=0)
-    del data
-else:
-    pass
-
-print(df.shape)
-
-
-# In[5]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -69,14 +53,14 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[6]:
+# In[5]:
 
 
 split_df = df_values.columns.str.split("_", expand=True).to_list()
 split_df = pd.DataFrame(split_df)
 
 
-# In[7]:
+# In[6]:
 
 
 # get each column name and split by the delimiter "_" to get the metadata category
@@ -100,7 +84,7 @@ split_df.columns = [
 ]
 
 
-# In[8]:
+# In[7]:
 
 
 # Define the recoding dictionary
@@ -117,7 +101,7 @@ split_df["channel_learned"] = split_df["channel"].replace(recode_dict)
 split_df["channel_learned"] = split_df["channel_learned"].fillna("other")
 
 
-# In[9]:
+# In[8]:
 
 
 # split the df into 5 dataframes based on the channel_learned column
@@ -130,7 +114,7 @@ df_gasdermin = split_df[split_df["channel_learned"] == "gasdermin"].set_index(
 df_PM = split_df[split_df["channel_learned"] == "PM"].set_index("features")
 
 
-# In[10]:
+# In[9]:
 
 
 # based on indexes get the metadata nd values for each channel
@@ -161,7 +145,7 @@ df_PM_descriptive = df_descriptive.loc[df_PM_values.index.to_list()]
 df_PM_descriptive.loc[:, "Metadata_compartment"] = "PM"
 
 
-# In[11]:
+# In[10]:
 
 
 dictionary_of_channels = {
@@ -173,25 +157,28 @@ dictionary_of_channels = {
 }
 
 
-# In[12]:
+# In[11]:
 
 
 # set umap parameters
 umap_params = umap.UMAP(
     n_components=2,
     spread=1.1,
+    min_dist=0.8,
     init="random",
+    metric="cosine",
     random_state=0,
+    n_jobs=-1,
 )
 
 
-# In[13]:
+# In[12]:
 
 
 final_df = pd.DataFrame()
 
 
-# In[14]:
+# In[13]:
 
 
 for channel in dictionary_of_channels:
@@ -207,8 +194,11 @@ for channel in dictionary_of_channels:
             "Treatment": df_descriptive["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
         }
     )
+
     final_df = pd.concat([final_df, df_umap_values], axis=0)
 
+    # randomize the rows of the dataframe to plot the order of the data evenly
+    df_umap_values = df_umap_values.sample(frac=1, random_state=0)
     # Figure Showing umap of Clusters vs Treatment
     sns.scatterplot(
         data=df_umap_values,
@@ -216,12 +206,11 @@ for channel in dictionary_of_channels:
         y="UMAP2",
         hue="Treatment",
         legend="full",
-        alpha=0.7,
+        alpha=0.4,
     )
-    plt.title("Visualized on umap")
     plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0)
     # plt.tight_layout()
-    plt.title(f"""UMAP of {channel} channel""")
+    plt.title(f"UMAP of {channel} channel")
     # set save path for figure
     save_path = pathlib.Path(f"./Figures/umap_plate2/{cell_type}")
     save_path.mkdir(exist_ok=True, parents=True)
@@ -229,13 +218,7 @@ for channel in dictionary_of_channels:
     plt.show()
 
 
-# In[15]:
-
-
-final_df
-
-
-# In[16]:
+# In[14]:
 
 
 # write the final_df to a parquet file

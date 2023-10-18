@@ -1,19 +1,9 @@
-# ---
-# jupyter:
-#   jupytext:
-#     formats: ipynb,py
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.14.0
-#   kernelspec:
-#     display_name: Interstellar
-#     language: python
-#     name: python3
-# ---
+#!/usr/bin/env python
+# coding: utf-8
 
-# %%
+# In[ ]:
+
+
 import sys
 from pathlib import Path
 
@@ -58,7 +48,9 @@ from MLP_utils.utils import (
 sys.path.append("../..")
 from utils.utils import df_stats
 
-# %%
+# In[ ]:
+
+
 # Import Data
 # set data file path under pathlib path for multi-system use
 file_path = Path(
@@ -67,7 +59,10 @@ file_path = Path(
 
 df = pq.read_table(file_path).to_pandas()
 
-# %%
+
+# In[ ]:
+
+
 data = Path("../MLP_utils/config.toml")
 config = toml.load(data)
 params = Parameters()
@@ -75,7 +70,9 @@ params = parameter_set(params, config)
 params.MODEL_TYPE
 
 
-# %%
+# In[ ]:
+
+
 def test_loop(df, output_name, title):
     # Code snippet for metadata extraction by Jenna Tomkinson
     df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
@@ -172,10 +169,15 @@ def test_loop(df, output_name, title):
         raise Exception("Model type must be specified for proper model testing")
 
 
-# %%
+# In[ ]:
+
+
 df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
 
-# %%
+
+# In[ ]:
+
+
 paired_treatment_list = [
     ["LPS_100.000_DMSO_0.025", "H2O2_100.000_DMSO_0.025", "DMSO_0.100_DMSO_0.025"],
     [
@@ -205,7 +207,10 @@ paired_treatment_list = [
     ],
 ]
 
-# %%
+
+# In[ ]:
+
+
 for i, j, k in paired_treatment_list:
     # print(i,j,k)
     test_df = df.query(
@@ -219,5 +224,3 @@ for i, j, k in paired_treatment_list:
     title = f'{output_name.split(" ")[0].split("_")[0]} vs {(" ").join(output_name.split(" ")[1].split("_")[:2])} vs {(" ").join(output_name.split(" ")[2].split("_")[:2])}'
 
     test_loop(test_df, output_name, title)
-
-# %%

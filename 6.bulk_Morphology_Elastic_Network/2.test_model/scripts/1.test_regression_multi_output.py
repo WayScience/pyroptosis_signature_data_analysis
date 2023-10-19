@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import argparse
@@ -52,7 +52,7 @@ cytokine = args.cytokine
 print(cell_type, shuffle, cytokine)
 
 
-# In[ ]:
+# In[3]:
 
 
 # Parameters
@@ -60,7 +60,7 @@ aggregation = True
 nomic = True
 
 
-# In[ ]:
+# In[5]:
 
 
 # set shuffle value
@@ -70,13 +70,13 @@ else:
     shuffle = "final"
 
 
-# In[ ]:
+# In[6]:
 
 
 MODEL_TYPE = "regression"
 
 
-# In[ ]:
+# In[7]:
 
 
 # load training data from indexes and features dataframe
@@ -93,7 +93,7 @@ data_df = pd.read_parquet(data_path)
 data_split_indexes = pd.read_csv(data_split_path, sep="\t")
 
 
-# In[ ]:
+# In[8]:
 
 
 # select tht indexes for the training and test set
@@ -101,7 +101,7 @@ train_indexes = data_split_indexes.loc[data_split_indexes["label"] == "train"]
 test_indexes = data_split_indexes.loc[data_split_indexes["label"] == "test"]
 
 
-# In[ ]:
+# In[9]:
 
 
 # subset data_df by indexes in data_split_indexes
@@ -109,7 +109,7 @@ training_data = data_df.loc[train_indexes["labeled_data_index"]]
 testing_data = data_df.loc[test_indexes["labeled_data_index"]]
 
 
-# In[ ]:
+# In[10]:
 
 
 # define metadata columns
@@ -136,13 +136,13 @@ test_data_y = testing_data[test_data_y_cols]
 test_data_x = test_data_x.drop(test_data_y_cols, axis=1)
 
 
-# In[ ]:
+# In[11]:
 
 
 print(train_data_x.shape, train_data_y.shape, test_data_x.shape, test_data_y.shape)
 
 
-# In[ ]:
+# In[12]:
 
 
 # set model path from parameters
@@ -158,7 +158,7 @@ else:
     print("Error")
 
 
-# In[ ]:
+# In[13]:
 
 
 data_dict = {
@@ -177,7 +177,7 @@ data_dict = {
 }
 
 
-# In[ ]:
+# In[14]:
 
 
 # cross validation method
@@ -188,7 +188,7 @@ metrics = ["explained_variance", "neg_mean_absolute_error", "neg_mean_squared_er
 output_metric_scores = {}
 
 
-# In[ ]:
+# In[15]:
 
 
 # blank df for concatenated results
@@ -212,7 +212,7 @@ results_df = pd.DataFrame(
 )
 
 
-# In[ ]:
+# In[16]:
 
 
 for data_split in data_dict:
@@ -272,7 +272,7 @@ for data_split in data_dict:
     results_df = pd.concat([results_df, df], axis=0)
 
 
-# In[ ]:
+# In[17]:
 
 
 results_df

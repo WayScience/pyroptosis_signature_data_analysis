@@ -53,6 +53,11 @@ df_variance$r2 <- as.numeric(df_variance$r2)
 head(df_variance)
 
 
+df_variance$shuffle <- gsub("final", "Final", df_variance$shuffle)
+df_variance$shuffle <- gsub("shuffled_baseline", "Shuffled Baseline", df_variance$shuffle)
+df_variance$data_split <- gsub("test_data", "Test Data", df_variance$data_split)
+df_variance$data_split <- gsub("train_data", "Train Data", df_variance$data_split)
+
 # set plot size
 options(repr.plot.width=5, repr.plot.height=5)
 # set output path
@@ -95,13 +100,6 @@ variance_r2_plot_local <- (
     + xlim(0, max(df_variance$r2))
     + ylim(0, max(df_variance$actual_value))
     # change the x and y axis text size
-    + theme(
-        axis.text.x = element_text(size=13),
-        axis.text.y = element_text(size=13),
-        legend.text=element_text(size=16),
-        axis.title=element_text(size=16),
-        legend.title=element_text(size=16)
-    )
     + scale_shape_manual(values=c(16, 4))
     + labs(shape = "Data Split", col = "Model Shuffle")
     # make legend points bigger
@@ -109,6 +107,9 @@ variance_r2_plot_local <- (
         colour = guide_legend(override.aes = list(size=3)),
         shape = guide_legend(override.aes = list(size=3))
     )
+    + figure_theme
+    # change the legend values
+
 )
 legend <- get_legend(variance_r2_plot_local)
 ggsave(local_variance_r2_path, variance_r2_plot_local, width=5, height=5, dpi=500)
@@ -177,28 +178,13 @@ pred_v_actual_plot <- function(df, cytokine){
         + geom_point()
         + theme_bw()
         + geom_smooth(method=lm, se=TRUE, formula = y ~ x, alpha=0.5, size=0.5)
-        + labs(x="Actual", y="Predicted")
+        + labs(x=paste0("Actual ",cytokine), y=paste0("Predicted ", cytokine))
 
         + ggtitle(cytokine)
         + ylim(0, 1)
         + xlim(0, 1)
-        + theme(
-            axis.text.x = element_text(size = 12),
-            axis.text.y = element_text(size = 12),
-            axis.title.x = element_text(size = 16),
-            axis.title.y = element_text(size = 16),
-            # center the title
-            plot.title = element_text(hjust = 0.5)
-        )
+        + figure_theme
         + labs(color="Model", hjust=0.5)
-
-        # change facet label size
-        + theme(strip.text.x = element_text(size = 12))
-        + theme(strip.text.y = element_text(size = 12))
-        # change legend text size
-        + theme(legend.text=element_text(size=12))
-        # change legend title size
-        + theme(legend.title=element_text(size=14))
         # change legend title
         # make kegend key background white
         + guides(color = guide_legend(override.aes = list(fill = NA)),
@@ -265,13 +251,7 @@ model_performance_il1b <- (
         + labs(x="Data Split", y="log10_neg_mean_absolute_error")
         + ggtitle(cytokine)
         + theme_bw()
-        + theme(
-            axis.text.x = element_text(hjust = 1, size=16),
-            axis.text.y = element_text(size=16),
-            axis.title.x = element_text(size=20),
-            axis.title.y = element_text(size=20),
-            plot.title = element_text(size=20)
-        )
+        + figure_theme
         + ylab("-log10(MSE)")
 )
 model_performance_il1b
@@ -290,9 +270,9 @@ colnames(agg_df) <- c("shuffle_plus_data_split","mean_r2", "sd_r2")
 
 head(df_stats)
 
-width = 8
-height = 5
-options(repr.plot.width=width, repr.plot.height=height)
+# width = 8
+# height = 5
+# options(repr.plot.width=width, repr.plot.height=height)
 r2_boxplot <- (
     ggplot(df_stats, aes(x=r2, y=shuffle_plus_data_split, fill=shuffle_plus_data_split))
         + geom_boxplot()
@@ -302,7 +282,7 @@ r2_boxplot <- (
         # change legend labels
         + labs(fill = "Model", hjust=0.5)
         # change legend title size
-        + theme(legend.title=element_text(size=20))
+        + figure_theme
 )
 r2_boxplot
 
@@ -373,10 +353,10 @@ plot_coeffs <- function(df, cytokine, shuffle){
 
     + figure_theme
     + theme(
-        axis.text = element_text(size = 14),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 14),
     )
     # rotate x axis labels
-    + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    + theme(axis.text.x = element_text(angle = 45, hjust = 1))
     + ggtitle(paste0("Top Abs. val treatment ElasticNet coefficients for \n",cytokine,shuffle," model"))
     + theme(plot.title = element_text(hjust = 0.5))
     )
@@ -884,7 +864,6 @@ il1beta_final_plot <- il1beta_final_plot + theme(plot.title = element_blank())
 # model_heatmap <- model_heatmap + theme(plot.title = element_blank())
 
 
-
 # pathwork layout of each plot ( letters correspond to the order in which the plots are defined below in the pathwork figure)
 # where A is the first plot defined and B is the second plot defined, etc.
 design <-   "AB
@@ -904,7 +883,7 @@ layout <- c(
 # set plot size
 width <- 17
 height <- 17
-options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 500)
+options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
 fig2 <- (
 
     IL1beta_a_v_p
@@ -922,3 +901,5 @@ fig2
 # save the figure
 ggsave(file = paste0(figure_path, "figure2.png"), plot = fig2, width = width, height = height, units = "in", dpi = 600)
 ggsave(file = paste0(figure_path, "figure2.svg"), plot = fig2, width = width, height = height, units = "in", dpi = 600)
+
+

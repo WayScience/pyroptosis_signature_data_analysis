@@ -884,7 +884,7 @@ layout <- c(
 width <- 17
 height <- 17
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
-fig2 <- (
+fig4 <- (
 
     IL1beta_a_v_p
     + r2_boxplot
@@ -896,10 +896,8 @@ fig2 <- (
     # make bottom plot not align
     + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
 )
-fig2
+fig4
 
 # save the figure
-ggsave(file = paste0(figure_path, "figure2.png"), plot = fig2, width = width, height = height, units = "in", dpi = 600)
-ggsave(file = paste0(figure_path, "figure2.svg"), plot = fig2, width = width, height = height, units = "in", dpi = 600)
-
-
+ggsave(file = paste0(figure_path, "figure4.png"), plot = fig4, width = width, height = height, units = "in", dpi = 600)
+ggsave(file = paste0(figure_path, "figure4.svg"), plot = fig4, width = width, height = height, units = "in", dpi = 600)

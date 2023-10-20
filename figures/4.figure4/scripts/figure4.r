@@ -340,7 +340,7 @@ plot_coeffs <- function(df, cytokine, shuffle){
 # plot the data
     coef_gg <- (
     ggplot(df, aes(x = channel_learned, y = feature_group))
-    + geom_point(aes(fill = abs(coefficients)), pch = 22, size = 6)
+    + geom_point(aes(fill = abs(coefficients)), pch = 22, size = 5.75)
     + facet_wrap("~compartment", ncol = 3)
     + theme_bw()
     + scale_fill_continuous(

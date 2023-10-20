@@ -12,11 +12,11 @@ palette <- c('#D81B60',
 figure_theme <- (
     theme_bw()
     + theme(
-        axis.text = element_text(size = 7),
-        axis.title = element_text(size = 10),
-        legend.text = element_text(size = 9),
-        legend.title = element_text(size = 10),
-        strip.text = element_text(size = 8),
+        axis.text = element_text(size = 20),
+        axis.title = element_text(size = 20),
+        legend.text = element_text(size = 20),
+        legend.title = element_text(size = 15),
+        strip.text = element_text(size = 16),
     )
 )
 

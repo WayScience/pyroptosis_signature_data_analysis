@@ -13,8 +13,9 @@ suppressPackageStartupMessages(suppressWarnings(library(viridis)))
 suppressPackageStartupMessages(suppressWarnings(library(platetools)))
 suppressPackageStartupMessages(suppressWarnings(library(circlize)))
 suppressPackageStartupMessages(suppressWarnings(library(reshape2)))
-
-
+suppressPackageStartupMessages(suppressWarnings(library(stringr)))
+suppressPackageStartupMessages(suppressWarnings(library(purrr)))
+source("../utils/figure_themes.r")
 
 # set the cell type
 cell_type <- "PBMC"
@@ -70,20 +71,12 @@ variance_r2_plot_global <- (
     # update the legend title
     + labs(shape = "Data Split", col = "Model Shuffle")
     # alter the text size of the legend title
-    + theme(
-        legend.title=element_text(size=14),
-        legend.text=element_text(size=12),
-        axis.text.x = element_text(size=12),
-        axis.text.y = element_text(size=12),
-        axis.title.x = element_text(size=14),
-        axis.title.y = element_text(size=14)
-    )
+    + figure_theme
+    + scale_shape_manual(values=c(16, 4))
 
 )
 ggsave(global_variance_r2_path, variance_r2_plot_global, width=5, height=5, dpi=500)
 variance_r2_plot_global
-
-
 
 
 local_variance_r2_path <- file.path(paste0(enet_cp_fig_path,"local_variance_r2.png"))
@@ -109,6 +102,7 @@ variance_r2_plot_local <- (
         axis.title=element_text(size=16),
         legend.title=element_text(size=16)
     )
+    + scale_shape_manual(values=c(16, 4))
     + labs(shape = "Data Split", col = "Model Shuffle")
     # make legend points bigger
     + guides(
@@ -117,9 +111,7 @@ variance_r2_plot_local <- (
     )
 )
 legend <- get_legend(variance_r2_plot_local)
-variance_r2_plot_local <- variance_r2_plot_local + theme(legend.position = "none")
 ggsave(local_variance_r2_path, variance_r2_plot_local, width=5, height=5, dpi=500)
-ggsave(local_variance_r2_legend_path, legend, width=5, height=5, dpi=500)
 variance_r2_plot_local
 plot(legend)
 
@@ -285,6 +277,35 @@ model_performance_il1b <- (
 model_performance_il1b
 
 
+head(df_stats)
+
+# calculate the se of each metric for each shuffle, data_split, and cytokine in R
+agg_df <- aggregate(r2 ~ shuffle_plus_data_split, df_stats, function(x) c(mean = mean(x), sd = sd(x)))
+# split the log10_neg_mean_absolute_error column into two columns
+agg_df <- cbind(agg_df, agg_df$r2)
+# remove the log10_neg_mean_absolute_error column by name
+agg_df <- agg_df[, !names(agg_df) %in% c('r2')]
+# rename the columns
+colnames(agg_df) <- c("shuffle_plus_data_split","mean_r2", "sd_r2")
+
+head(df_stats)
+
+width = 8
+height = 5
+options(repr.plot.width=width, repr.plot.height=height)
+r2_boxplot <- (
+    ggplot(df_stats, aes(x=r2, y=shuffle_plus_data_split, fill=shuffle_plus_data_split))
+        + geom_boxplot()
+        + figure_theme
+        + ylab("Model")
+        + xlab("R2")
+        # change legend labels
+        + labs(fill = "Model", hjust=0.5)
+        # change legend title size
+        + theme(legend.title=element_text(size=20))
+)
+r2_boxplot
+
 # path set
 input_file_path <- file.path(paste0("../../6.bulk_Morphology_Elastic_Network/3.model_coefficients/results/regression/",cell_type))
 # read in the data
@@ -349,12 +370,10 @@ plot_coeffs <- function(df, cytokine, shuffle){
     )
     + xlab("Channel")
     + ylab("Feature")
+
+    + figure_theme
     + theme(
-        axis.text = element_text(size = 10),
-        axis.title = element_text(size = 10),
-        title = element_text(size = 14),
-        legend.title = element_text(size = 12),
-        legend.text = element_text(size = 12),
+        axis.text = element_text(size = 14),
     )
     # rotate x axis labels
     + theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -421,6 +440,199 @@ figure_path <- file.path(paste0("../figures/regression/", cell_type, "/"))
 dir.create(figure_path, recursive = TRUE, showWarnings = FALSE)
 
 
+# fix the col name
+df <- df %>%
+  mutate(secreted_proteins = case_when(
+    secreted_proteins == "MMP-1 [NSU]" ~ "MMP-1",
+    secreted_proteins == "VEGFR-1 [NSU]" ~ "VEGFR-1",
+    secreted_proteins == "CCL4 [NSU]" ~ "CCL4",
+    secreted_proteins == "MMP-12 [NSU]" ~ "MMP-12",
+    secreted_proteins == "CCL18 [NSU]" ~ "CCL18",
+    secreted_proteins == "IL-9 [NSU]" ~ "IL-9",
+    secreted_proteins == "TWEAK [NSU]" ~ "TWEAK",
+    secreted_proteins == "EGFR [NSU]" ~ "EGFR",
+    secreted_proteins == "IL-21 [NSU]" ~ "IL-21",
+    secreted_proteins == "FGF-1 [NSU]" ~ "FGF-1",
+    secreted_proteins == "FAS-L [NSU]" ~ "FAS-L",
+    secreted_proteins == "CXCL12 (beta) [NSU]" ~ "CXCL12 (beta)",
+    secreted_proteins == "CXCL12 (alpha) [NSU]" ~ "CXCL12 (alpha)",
+    secreted_proteins == "CXCL14 [NSU]" ~ "CXCL14",
+    secreted_proteins == "HGF [NSU]" ~ "HGF",
+    secreted_proteins == "IL-3 [NSU]" ~ "IL-3",
+    secreted_proteins == "CXCL7 [NSU]" ~ "CXCL7",
+    secreted_proteins == "CCL25 [NSU]" ~ "CCL25",
+    secreted_proteins == "BMP9 [NSU]" ~ "BMP9",
+    secreted_proteins == "IL-12 p35 [NSU]" ~ "IL-12 p35",
+    secreted_proteins == "CCL16 [NSU]" ~ "CCL16",
+    secreted_proteins == "CCL2 [NSU]" ~ "CCL2",
+    secreted_proteins == "LIF [NSU]" ~ "LIF",
+    secreted_proteins == "CXCL9 [NSU]" ~ "CXCL9",
+    secreted_proteins == "CNTF [NSU]" ~ "CNTF",
+    secreted_proteins == "TSLP [NSU]" ~ "TSLP",
+    secreted_proteins == "Flt-3 Ligand [NSU]" ~ "Flt-3 Ligand",
+    secreted_proteins == "CD14 [NSU]" ~ "CD14",
+    secreted_proteins == "IL-16 [NSU]" ~ "IL-16",
+    secreted_proteins == "FGF-21 [NSU]" ~ "FGF-21",
+    secreted_proteins == "IL-29 [NSU]" ~ "IL-29",
+    secreted_proteins == "IL-17C [NSU]" ~ "IL-17C",
+    secreted_proteins == "IFN-epsilon [NSU]" ~ "IFN-epsilon",
+    secreted_proteins == "PCSK9 [NSU]" ~ "PCSK9",
+    secreted_proteins == "TPO (Thrombopoietin) [NSU]" ~ "Thrombopoietin",
+    secreted_proteins == "TREM2 [NSU]" ~ "TREM2",
+    secreted_proteins == "Growth Hormone (Somatotropin) [NSU]" ~ "Somatotropin",
+    secreted_proteins == "CCL1 [NSU]" ~ "CCL1",
+    secreted_proteins == "LOX1 (OLR1) [NSU]" ~ "LOX1 (OLR1)",
+    secreted_proteins == "MMP-3 [NSU]" ~ "MMP-3",
+    secreted_proteins == "IL-32 (alpha) [NSU]" ~ "IL-32 (alpha)",
+    secreted_proteins == "IL-7 [NSU]" ~ "IL-7",
+    secreted_proteins == "CCL21 [NSU]" ~ "CCL21",
+    secreted_proteins == "CD276 (B7-H3) [NSU]" ~ "CD276 (B7-H3)",
+    secreted_proteins == "IL-2 RA [NSU]" ~ "IL-2 RA",
+    secreted_proteins == "Calbindin [NSU]" ~ "Calbindin",
+    secreted_proteins == "CCL3 [NSU]" ~ "CCL3",
+    secreted_proteins == "ICAM-1 [NSU]" ~ "ICAM-1",
+    secreted_proteins == "IL-17A [NSU]" ~ "IL-17A",
+    secreted_proteins == "CCL28 [NSU]" ~ "CCL28",
+    secreted_proteins == "TIMP1 [NSU]" ~ "TIMP1",
+    secreted_proteins == "GDF-15 (MIC-1) [NSU]" ~ "GDF-15 (MIC-1)",
+    secreted_proteins == "CXCL17 [NSU]" ~ "CXCL17",
+    secreted_proteins == "M-CSF R (CD115) [NSU]" ~ "M-CSF R (CD115)",
+    secreted_proteins == "CCL7 [NSU]" ~ "CCL7",
+    secreted_proteins == "Granzyme B [NSU]" ~ "Granzyme B",
+    secreted_proteins == "CXCL4 [NSU]" ~ "CXCL4",
+    secreted_proteins == "PDGF-BB [NSU]" ~ "PDGF-BB",
+    secreted_proteins == "CX3CL1 [NSU]" ~ "CX3CL1",
+    secreted_proteins == "FGF-6 [NSU]" ~ "FGF-6",
+    secreted_proteins == "IL-35 [NSU]" ~ "IL-35",
+    secreted_proteins == "MMP-7 [NSU]" ~ "MMP-7",
+    secreted_proteins == "GM-CSF [NSU]" ~ "GM-CSF",
+    secreted_proteins == "CCL24 [NSU]" ~ "CCL24",
+    secreted_proteins == "IL-12 p40 [NSU]" ~ "IL-12 p40",
+    secreted_proteins == "IL-5 [NSU]" ~ "IL-5",
+    secreted_proteins == "BCMA (TNFRSF17) [NSU]" ~ "BCMA (TNFRSF17)",
+    secreted_proteins == "Tissue Factor (TF) [NSU]" ~ "Tissue Factor",
+    secreted_proteins == "IL-1 beta [NSU]" ~ "IL-1 beta",
+    secreted_proteins == "CD30 [NSU]" ~ "CD30",
+    secreted_proteins == "CCL27 [NSU]" ~ "CCL27",
+    secreted_proteins == "ICAM-2 [NSU]" ~ "ICAM-2",
+    secreted_proteins == "CXCL16 [NSU]" ~ "CXCL16",
+    secreted_proteins == "VEGF-A (165) [NSU]" ~ "VEGF-A (165)",
+    secreted_proteins == "IL-2 [NSU]" ~ "IL-2",
+    secreted_proteins == "HVEM [NSU]" ~ "HVEM",
+    secreted_proteins == "PTX3 (Pentraxin 3) [NSU]" ~ "PTX3",
+    secreted_proteins == "IL-1 alpha [NSU]" ~ "IL-1 alpha",
+    secreted_proteins == "CXCL3 [NSU]" ~ "CXCL3",
+    secreted_proteins == "Oncostatin M (OSM) [NSU]" ~ "Oncostatin M",
+    secreted_proteins == "CCL8 [NSU]" ~ "CCL8",
+    secreted_proteins == "CCL15 [NSU]" ~ "CCL15",
+    secreted_proteins == "FLRG (FSTL3) [NSU]" ~ "FLRG",
+    secreted_proteins == "CXCL5 [NSU]" ~ "CXCL5",
+    secreted_proteins == "CD163 [NSU]" ~ "CD163",
+    secreted_proteins == "IL-17E (IL-25) [NSU]" ~ "IL-17E",
+    secreted_proteins == "NF-L [NSU]" ~ "NF-L",
+    secreted_proteins == "IFN alpha 2 (alpha 2b) [NSU]" ~ "IFN alpha 2",
+    secreted_proteins == "TNF RI [NSU]" ~ "TNF RI",
+    secreted_proteins == "CD40L [NSU]" ~ "CD40L",
+    secreted_proteins == "IFN beta [NSU]" ~ "IFN beta",
+    secreted_proteins == "VEGF Receptor 2 (Flk-1) [NSU]" ~ "VEGF Receptor 2",
+    secreted_proteins == "BDNF [NSU]" ~ "BDNF",
+    secreted_proteins == "Amyloid beta [NSU]" ~ "Amyloid beta",
+    secreted_proteins == "MMP-2 [NSU]" ~ "MMP-2",
+    secreted_proteins == "SAA [NSU]" ~ "SAA",
+    secreted_proteins == "uPA [NSU]" ~ "uPA",
+    secreted_proteins == "IL-22 BP [NSU]" ~ "IL-22 BP",
+    secreted_proteins == "TRAIL [NSU]" ~ "TRAIL",
+    secreted_proteins == "Mesothelin [NSU]" ~ "Mesothelin",
+    secreted_proteins == "Activin A [NSU]" ~ "Activin A",
+    secreted_proteins == "MMP-9 [NSU]" ~ "MMP-9",
+    secreted_proteins == "CCL13 [NSU]" ~ "CCL13",
+    secreted_proteins == "CXCL11 [NSU]" ~ "CXCL11",
+    secreted_proteins == "IL-31 [NSU]" ~ "IL-31",
+    secreted_proteins == "MIF [NSU]" ~ "MIF",
+    secreted_proteins == "BMP7 [NSU]" ~ "BMP7",
+    secreted_proteins == "IL-12 p70 [NSU]" ~ "IL-12 p70",
+    secreted_proteins == "CCL19 [NSU]" ~ "CCL19",
+    secreted_proteins == "CCL5 [NSU]" ~ "CCL5",
+    secreted_proteins == "IL-33 [NSU]" ~ "IL-33",
+    secreted_proteins == "IL-22 [NSU]" ~ "IL-22",
+    secreted_proteins == "CCL11 [NSU]" ~ "CCL11",
+    secreted_proteins == "IL-8 [NSU]" ~ "IL-8",
+    secreted_proteins == "SCF [NSU]" ~ "SCF",
+    secreted_proteins == "TNF RII [NSU]" ~ "TNF RII",
+    secreted_proteins == "FGF-2 [NSU]" ~ "FGF-2",
+    secreted_proteins == "Leptin [NSU]" ~ "Leptin",
+    secreted_proteins == "CXCL13 [NSU]" ~ "CXCL13",
+    secreted_proteins == "TNF alpha [NSU]" ~ "TNF alpha",
+    secreted_proteins == "IL-4 [NSU]" ~ "IL-4",
+    secreted_proteins == "CCL23 [NSU]" ~ "CCL23",
+    secreted_proteins == "IGF-1 [NSU]" ~ "IGF-1",
+    secreted_proteins == "FGF-4 [NSU]" ~ "FGF-4",
+    secreted_proteins == "GDF-11 (BMP-11) [NSU]" ~ "GDF-11 (BMP-11)",
+    secreted_proteins == "IL-10 [NSU]" ~ "IL-10",
+    secreted_proteins == "IL-23 [NSU]" ~ "IL-23",
+    secreted_proteins == "TNF RIII (Lymphotoxin Beta R) [NSU]" ~ "TNF RIII",
+    secreted_proteins == "IL-17B [NSU]" ~ "IL-17B",
+    secreted_proteins == "ST2 (IL-33R) [NSU]" ~ "ST2 (IL-33R)",
+    secreted_proteins == "PLGF [NSU]" ~ "PLGF",
+    secreted_proteins == "VEGF-D [NSU]" ~ "VEGF-D",
+    secreted_proteins == "XCL1 (Lymphotactin) [NSU]" ~ "XCL1",
+    secreted_proteins == "GDNF [NSU]" ~ "GDNF",
+    secreted_proteins == "C5 [NSU]" ~ "C5",
+    secreted_proteins == "IL-1 RA" ~ "IL-1 RA",
+    secreted_proteins == "IL-17D [NSU]" ~ "IL-17D",
+    secreted_proteins == "IL-27 [NSU]" ~ "IL-27",
+    secreted_proteins == "Osteopontin (OPN) [NSU]" ~ "Osteopontin",
+    secreted_proteins == "FGF-9 [NSU]" ~ "FGF-9",
+    secreted_proteins == "BAFF [NSU]" ~ "BAFF",
+    secreted_proteins == "TGF-beta 3 [NSU]" ~ "TGF-beta 3",
+    secreted_proteins == "EGF [NSU]" ~ "EGF",
+    secreted_proteins == "IL-5 [NSU]" ~ "IL-5",
+    secreted_proteins == "FGF-7 (KGF) [NSU]" ~ "FGF-7 (KGF)",
+    secreted_proteins == "APRIL [NSU]" ~ "APRIL",
+    secreted_proteins == "WISP-1 (CCN4) [NSU]" ~ "WISP-1 (CCN4)",
+    secreted_proteins == "CCL22 [NSU]" ~ "CCL22",
+    secreted_proteins == "FGF-19 [NSU]" ~ "FGF-19",
+    secreted_proteins == "M-CSF [NSU]" ~ "M-CSF",
+    secreted_proteins == "CXCL10 [NSU]" ~ "CXCL10",
+    secreted_proteins == "TGF-beta 1 (total) [NSU]" ~ "TGF-beta 1 ",
+    secreted_proteins == "Tie-2 [NSU]" ~ "Tie-2",
+    secreted_proteins == "TGF-beta 1 (LAP domain in precursor) [NSU]" ~ "TGF-beta 1",
+    secreted_proteins == "FGFR3 (IIIc) [NSU]" ~ "FGFR3 (IIIc)",
+    secreted_proteins == "AITRL (GITR Ligand) [NSU]" ~ "AITRL (GITR Ligand)",
+    secreted_proteins == "Amphiregulin [NSU]" ~ "Amphiregulin",
+    secreted_proteins == "BMP4 [NSU]" ~ "BMP4",
+    secreted_proteins == "G-CSF [NSU]" ~ "G-CSF",
+    secreted_proteins == "TGF-beta 2 [NSU]" ~ "TGF-beta 2",
+    secreted_proteins == "IL-6 R alpha [NSU]" ~ "IL-6 R alpha",
+    secreted_proteins == "BMP6 [NSU]" ~ "BMP6",
+    secreted_proteins == "NGF beta [NSU]" ~ "NGF beta",
+    secreted_proteins == "IL-1 R1 [NSU]" ~ "IL-1 R1",
+    secreted_proteins == "MMP-10 [NSU]" ~ "MMP-10",
+    secreted_proteins == "IL-17F [NSU]" ~ "IL-17F",
+    secreted_proteins == "IL-18 [NSU]" ~ "IL-18",
+    secreted_proteins == "CXCL6 [NSU]" ~ "CXCL6",
+    secreted_proteins == "IL-6 [NSU]" ~ "IL-6",
+    secreted_proteins == "CXCL1 [NSU]" ~ "CXCL1",
+    secreted_proteins == "VEGF-C [NSU]" ~ "VEGF-C",
+    secreted_proteins == "Resistin [NSU]" ~ "Resistin",
+    secreted_proteins == "EMMPRIN [NSU]" ~ "EMMPRIN",
+    secreted_proteins == "IFN gamma [NSU]" ~ "IFN gamma",
+    secreted_proteins == "CCL20 [NSU]" ~ "CCL20",
+    secreted_proteins == "CRP [NSU]" ~ "CRP",
+    secreted_proteins == "VCAM-1 [NSU]" ~ "VCAM-1",
+    secreted_proteins == "Cytochrome C [NSU]" ~ "Cytochrome C",
+    secreted_proteins == "BMP3 [NSU]" ~ "BMP3",
+    secreted_proteins == "IL-24 [NSU]" ~ "IL-24",
+    secreted_proteins == "IL-28A [NSU]" ~ "IL-28A",
+    secreted_proteins == "CCL17 [NSU]" ~ "CCL17",
+    secreted_proteins == "BMP2 [NSU]" ~ "BMP2",
+    secreted_proteins == "CD27L [NSU]" ~ "CD27L",
+    secreted_proteins == "NRG1 beta 1 [NSU]" ~ "NRG1 beta 1",
+    secreted_proteins == "IL-11 [NSU]" ~ "IL-11",
+    TRUE ~ secreted_proteins
+  ))
+
+
 # select MMP-1 secreted protein as the target
 df <- df %>% filter(shuffle == "final")
 
@@ -453,13 +665,13 @@ features <- features %>%
 
     # Clean channel for visualization
     features$channel_learned <- dplyr::recode(features$channel,
-            "CorrDNA" = "nuclei",
+            "CorrDNA" = "Nuclei",
             "CorrMito" = "Mito",
             "CorrER" = "ER",
-            "CorrGasdermin" = "gasdermin",
+            "CorrGasdermin" = "Gasdermin",
             "CorrPM" = "PM",
-            .default = "other",
-            .missing="other"
+            .default = "Other",
+            .missing="Other"
     )
 
 
@@ -468,12 +680,15 @@ r2_df <- unique(r2_df)
 column_ha <- HeatmapAnnotation(
     df = r2_df,
     show_legend = TRUE,
-    annotation_name_side = "right",
+    annotation_name_side = "left",
     # rotate the title
     annotation_legend_param = list(
         title_gp = gpar(fontsize = 16, angle = 0),
-        labels_gp = gpar(fontsize = 16, angle = 0)
+        labels_gp = gpar(fontsize = 16, angle = 0),
+        title_position = "topcenter",
+        title_gp = gpar(fontsize = 16, angle = 0)
     ),
+    annotation_name_gp = gpar(fontsize = 16),
     # set color bar for r2 continuous value with brewer palette
     col = list(r2 = colorRamp2(c(0, 1), c(brewer.pal(9,"YlGn")[1], brewer.pal(9,"YlGn")[7])))
 )
@@ -513,91 +728,151 @@ features <- features %>%
 
     # Clean channel for visualization
     features$channel_learned <- dplyr::recode(features$channel,
-            "CorrDNA" = "nuclei",
+            "CorrDNA" = "Nuclei",
             "CorrMito" = "Mito",
             "CorrER" = "ER",
-            "CorrGasdermin" = "gasdermin",
+            "CorrGasdermin" = "Gasdermin",
             "CorrPM" = "PM",
-            .default = "other",
-            .missing="other"
+            .default = "Other",
+            .missing="Other"
     )
 
 # set annotations
-row_ha <- rowAnnotation(
+row_ha_1 <- rowAnnotation(
     Compartment = features$compartment,
-    Feature_Type = features$feature_group,
-    Channel = features$channel_learned,
     show_legend = TRUE,
-    annotation_legend_param = list(title_position = "topcenter", title_gp = gpar(fontsize = 16, angle = 0), labels_gp = gpar(fontsize = 16, title = gpar(fontsize = 16))),
+    # change the legend titles
+    annotation_legend_param = list(
+        title_position = "topcenter",
+        title_gp = gpar(fontsize = 16, angle = 0),
+        labels_gp = gpar(fontsize = 16,
+        title = gpar(fontsize = 16))),
     annotation_name_side = "bottom",
-
+    annotation_name_gp = gpar(fontsize = 16),
     # color
     col = list(
         Compartment = c(
             "Cells" = brewer.pal(12, "Accent")[7],
             "Cytoplasm" = brewer.pal(12, "Accent")[6],
             "Nuclei" = brewer.pal(12, "Accent")[5]
-        ),
-        Feature_Type = c(
+        )
+
+
+    )
+)
+
+row_ha_2 <- rowAnnotation(
+        FeatureType = features$feature_group,
+       annotation_legend_param = list(
+        title_position = "topcenter",
+        title_gp = gpar(fontsize = 16, angle = 0),
+        labels_gp = gpar(fontsize = 16,
+        title = gpar(fontsize = 16))),
+    annotation_name_side = "bottom",
+    annotation_name_gp = gpar(fontsize = 16),
+    col = list(
+            Feature_Type = c(
             "AreaShape" = brewer.pal(12, "Paired")[1],
             "Correlation" = brewer.pal(12, "Paired")[2],
             "Granularity" = brewer.pal(12, "Paired")[5],
             "Neighbors" = brewer.pal(12, "Paired")[8],
             "RadialDistribution" = brewer.pal(12, "Paired")[10],
             "Texture" = brewer.pal(12, "Paired")[11]
-        ),
-        # manually define the color for each channel to match the wavelegnth-ish
-        Channel = c(
-            "nuclei" = "#0000AB",
-            "Mito" = "#B000B0",
-            "ER" = "#00D55B",
-            "gasdermin" = "#FFFF00",
-            "PM" = "#C90000",
-            "other" = "#B09FB0")
+        )
     )
 )
+
+
+row_ha_3 <- rowAnnotation(
+    Channel = features$channel_learned,
+    annotation_legend_param = list(
+        title_position = "topcenter",
+        title_gp = gpar(fontsize = 16, angle = 0),
+        labels_gp = gpar(fontsize = 16,
+        title = gpar(fontsize = 16),
+        # make annotation bar text bigger
+        legend = gpar(fontsize = 16),
+        annotation_name = gpar(fontsize = 16),
+        legend_height = unit(20, "cm"),
+        legend_width = unit(1, "cm"),
+        # make legend taller
+        # legend_key_width = unit(10, "cm"),
+        # legend_key_height = unit(10, "cm"),
+        legend_height = unit(10, "cm"),
+        legend_width = unit(1, "cm"),
+        legend_key = gpar(fontsize = 16)
+
+            )
+        ),
+    annotation_name_side = "bottom",
+    # make font size bigger
+    annotation_name_gp = gpar(fontsize = 16),
+    col = list(
+    Channel = c(
+            "Nuclei" = "#0000AB",
+            "Mito" = "#B000B0",
+            "ER" = "#00D55B",
+            "Gasdermin" = "#FFFF00",
+            "PM" = "#C90000",
+            "Other" = "#B09FB0")
+    )
+)
+
 
 # drop the feature names column
 mat <- mat %>% select(-feature_names)
 mat <- as.matrix(mat)
 
 
+
+
 # plot size
-width <- 25
+width <- 40
 height <- 10
 options(repr.plot.width=width, repr.plot.height=height)
 # change margins
-par(mar = c(1, 1, 1, 1))
+# par(mar = c(1, 1, 1, 1))
 
 model_heatmap <- (
         Heatmap(
         mat,
         cluster_rows = TRUE,    # Cluster rows
         cluster_columns = TRUE, # Cluster columns
-        show_row_names = TRUE,  # Show row names
+        show_row_names = FALSE,  # Show row names
         show_column_names = TRUE, # Show column names
         column_names_gp = gpar(fontsize = 16), # Column name label formatting
         row_names_gp = gpar(fontsize = 14),    # Row name label formatting
-        right_annotation = row_ha,
+        right_annotation = c(row_ha_1,row_ha_2,row_ha_3),
         bottom_annotation = column_ha,
         # rename fill legend
-        heatmap_legend_param = list(title = "Coef", title_position = "topcenter", title_gp = gpar(fontsize = 16)),
-        column_names_max_height = unit(7, "in"),
-        row_names_max_width = unit(5.5, "in"),
-        # color bar text size bigger
+        heatmap_legend_param = list(
+                title = "Coef",
+                title_position = "topcenter",
+                title_gp = gpar(fontsize = 16),
+                labels_gp = gpar(fontsize = 16)
+                # legend_height = unit(3, "cm"),
+                # legend_width = unit(1, "cm")
+                ),
+        column_dend_height = unit(4, "cm"),
+        row_dend_width = unit(4, "cm"),
+
+
         )
 )
 
+# Heatmap(draw(model_heatmap, merge_legend = TRUE))
+# dont use above line cannot get back into grob object
+
 # ggplotify model_heatmap
 model_heatmap <- as.ggplot(model_heatmap)
-model_heatmap <- model_heatmap +   theme(plot.margin = unit(c(1, 1, 1, 1), "cm"))
 
-# save the figure
+# model_heatmap <- model_heatmap +   theme(plot.margin = unit(c(1, 1, 1, 1), "cm"))
+
+# # save the figure
 ggsave(file = paste0(figure_path, "filtered_features.svg"), plot = model_heatmap, width = width, height = height, units = "in", dpi = 500)
 ggsave(file = paste0(figure_path, "filtered_features.png"), plot = model_heatmap, width = width, height = height, units = "in", dpi = 500)
-
+# fix the position of the plot
 model_heatmap
-
 
 # preprocess the figures
 
@@ -606,33 +881,44 @@ variance_r2_plot_local <- variance_r2_plot_local + theme(plot.title = element_bl
 IL1beta_a_v_p <- IL1beta_a_v_p + theme(plot.title = element_blank())
 model_performance_il1b <- model_performance_il1b + theme(plot.title = element_blank())
 il1beta_final_plot <- il1beta_final_plot + theme(plot.title = element_blank())
-model_heatmap <- model_heatmap + theme(plot.title = element_blank())
+# model_heatmap <- model_heatmap + theme(plot.title = element_blank())
 
 
 
 # pathwork layout of each plot ( letters correspond to the order in which the plots are defined below in the pathwork figure)
 # where A is the first plot defined and B is the second plot defined, etc.
-design <-   "
-            EEEE#
-             EEEE#
-             EEEE#
-             AABB#
-             CCDD#
+design <-   "AB
+             CD
+             EE
+             EE
+             EE
              "
 
+layout <- c(
+    area(t=1, b=1, l=1, r=1), # A
+    area(t=1, b=1, l=2, r=2), # B
+    area(t=2, b=2, l=1, r=1), # C
+    area(t=2, b=2, l=2, r=2), # D
+    area(t=3, b=5, l=0, r=2) # E
+)
 # set plot size
-width <- 25
-height <- 20
-options(repr.plot.width=width, repr.plot.height=height)
+width <- 17
+height <- 17
+options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 500)
 fig2 <- (
-    variance_r2_plot_local
-    + IL1beta_a_v_p
-    # + TNFalpha_a_v_p
-    + model_performance_il1b
+
+    IL1beta_a_v_p
+    + r2_boxplot
+    + variance_r2_plot_local
     + il1beta_final_plot
-    + model_heatmap
-    + plot_layout(design = design)
-    + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 16))
+    + wrap_elements(full = model_heatmap)
+    # + model_heatmap
+    + plot_layout(design = layout, widths = c(10, 10))
+    # make bottom plot not align
+    + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
 )
 fig2
 
+# save the figure
+ggsave(file = paste0(figure_path, "figure2.png"), plot = fig2, width = width, height = height, units = "in", dpi = 600)
+ggsave(file = paste0(figure_path, "figure2.svg"), plot = fig2, width = width, height = height, units = "in", dpi = 600)

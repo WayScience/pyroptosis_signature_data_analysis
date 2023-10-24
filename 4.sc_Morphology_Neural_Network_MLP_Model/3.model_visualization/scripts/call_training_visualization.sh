@@ -12,7 +12,7 @@ module load anaconda
 
 conda activate Interstellar
 
-cell_types=( SHSY5Y PBMC)
+cell_types=( SHSY5Y PBMC )
 model_names=( DMSO_0.025_vs_LPS_100 DMSO_0.025_vs_Thapsigargin_10 DMSO_0.025_vs_LPS_10 DMSO_0.025_vs_LPS_1 DMSO_0.025_vs_LPS_0.1 DMSO_0.025_vs_LPS_0.01 DMSO_0.025_vs_Thapsigargin_1 )
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb*

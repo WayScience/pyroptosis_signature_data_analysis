@@ -46,37 +46,24 @@ print(list_of_treatments)
 
 
 # Set path to parquet file
-path = pathlib.Path(f"../data/{celltype}_preprocessed_sc_norm.parquet")
+path = pathlib.Path(f"../data/{celltype}_preprocessed_sc_norm.parquet").resolve(
+    strict=True
+)
 # Read in parquet file
 df = pq.read_table(path).to_pandas()
-# subset data frame to 1000 samples too much data results in poor clustering
 
 
 # In[5]:
 
 
-# get rows that have values in column fourb_Metadata_Treatment_Dose_Inhibitor_Dose that match treatment list
-# df = df[df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(list_of_treatments)]
-
-# df = (
-#     df.groupby("fourb_Metadata_Treatment_Dose_Inhibitor_Dose")
-#     .apply(lambda x: x.sample(n=100, random_state=0))
-#     .droplevel(0)
-# )
-
-
-# In[6]:
-
-
 # Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = list(df.columns[df.columns.str.contains("Metadata")])
-
 # define which columns are data and which are descriptive
 df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[7]:
+# In[6]:
 
 
 # set umap parameters
@@ -91,18 +78,17 @@ umap_params = umap.UMAP(
 )
 
 
-# In[8]:
+# In[7]:
 
 
 # fit and transform data for umap
 proj_2d = umap_params.fit_transform(df_values)
-
 # add umap coordinates to dataframe of metadata and raw data
 df_values["umap_1"] = proj_2d[:, 0]
 df_values["umap_2"] = proj_2d[:, 1]
 
 
-# In[9]:
+# In[8]:
 
 
 df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
@@ -110,7 +96,7 @@ df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
 ]
 
 
-# In[10]:
+# In[9]:
 
 
 # randomize the rows of the dataframe to plot the order of the data evenly
@@ -125,10 +111,12 @@ df_values_path.parent.mkdir(parents=True, exist_ok=True)
 df_values.to_parquet(df_values_path)
 
 
-# In[11]:
+# In[10]:
 
 
 # Figure Showing UMAP of Clusters vs Treatment
+# figure size set
+plt.figure(figsize=(10, 10))
 sns.scatterplot(
     data=df_values,
     x="umap_1",
@@ -139,6 +127,5 @@ sns.scatterplot(
 )
 plt.title("Visualized on umap")
 plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0)
-
 # if path does not exist create it
-# plt.savefig(f"Figures/umap_plate2/{celltype}_umap.png", bbox_inches="tight")
+plt.savefig(f"Figures/umap_plate2/{celltype}_umap.png", bbox_inches="tight")

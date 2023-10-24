@@ -13,9 +13,25 @@ module load anaconda
 conda activate Interstellar
 
 cell_types=( SHSY5Y PBMC )
-control_names=( DMSO_0.100_DMSO_0.025 )
-treatment_names=( LPS_100.000_DMSO_0.025 Thapsigargin_10.000_DMSO_0.025 LPS_10.000_DMSO_0.025 LPS_1.000_DMSO_0.025 LPS_0.100_DMSO_0.025 LPS_0.010_DMSO_0.025 Thapsigargin_1.000_DMSO_0.025 )
-model_names=( DMSO_0.025_vs_LPS_100 DMSO_0.025_vs_Thapsigargin_10 DMSO_0.025_vs_LPS_10 DMSO_0.025_vs_LPS_1 DMSO_0.025_vs_LPS_0.1 DMSO_0.025_vs_LPS_0.01 DMSO_0.025_vs_Thapsigargin_1 )
+control_names=( "DMSO_0.100_%_DMSO_0.025_%" )
+treatment_names=(
+    "LPS_100.000_ug_per_ml_DMSO_0.025_%"
+    "Thapsigargin_10.000_uM_DMSO_0.025_%"
+    "LPS_10.000_ug_per_ml_DMSO_0.025_%"
+    "LPS_1.000_ug_per_ml_DMSO_0.025_%"
+    "LPS_0.100_ug_per_ml_DMSO_0.025_%"
+    "LPS_0.010_ug_per_ml_DMSO_0.025_%"
+    "Thapsigargin_1.000_uM_DMSO_0.025_%"
+    )
+model_names=(
+    DMSO_0.025_vs_LPS_100
+    DMSO_0.025_vs_Thapsigargin_10
+    DMSO_0.025_vs_LPS_10
+    DMSO_0.025_vs_LPS_1
+    DMSO_0.025_vs_LPS_0.1
+    DMSO_0.025_vs_LPS_0.01
+    DMSO_0.025_vs_Thapsigargin_1
+    )
 
 for cell_type in "${cell_types[@]}"; do
     for control_name in "${control_names[@]}"; do

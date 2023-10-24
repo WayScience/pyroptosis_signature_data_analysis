@@ -1,19 +1,9 @@
-# ---
-# jupyter:
-#   jupytext:
-#     formats: ipynb,py
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.14.0
-#   kernelspec:
-#     display_name: Interstellar
-#     language: python
-#     name: python3
-# ---
+#!/usr/bin/env python
+# coding: utf-8
 
-# %% papermill={"duration": 3.641528, "end_time": "2023-08-06T18:56:40.949436", "exception": false, "start_time": "2023-08-06T18:56:37.307908", "status": "completed"} tags=[]
+# In[ ]:
+
+
 import pathlib
 import sys
 
@@ -48,15 +38,22 @@ from sklearn.metrics import (
 
 sys.path.append("../../..")
 
-# %% papermill={"duration": 0.00606, "end_time": "2023-08-06T18:56:40.960224", "exception": false, "start_time": "2023-08-06T18:56:40.954164", "status": "completed"} tags=["injected-parameters"]
-# Parameters
-CELL_TYPE = "SHSY5Y"
-CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
-TREATMENT_NAME = "LPS_100.000_DMSO_0.025"
-MODEL_NAME = "DMSO_0.025_vs_LPS_100"
-SHUFFLE = False
 
-# %% papermill={"duration": 0.00696, "end_time": "2023-08-06T18:56:40.968861", "exception": false, "start_time": "2023-08-06T18:56:40.961901", "status": "completed"} tags=[]
+# In[ ]:
+
+
+# Parameters
+SHUFFLE = True
+CELL_TYPE = "SHSY5Y"
+CONTROL_NAME = "DMSO_0.100_%_DMSO_0.025_%"
+TREATMENT_NAME = "LPS_100.000_ug_per_ml_DMSO_0.025_%"
+MODEL_NAME = "DMSO_0.025_vs_LPS_100"
+SHUFFLE_DATA = False
+
+
+# In[ ]:
+
+
 ml_configs_file = pathlib.Path("../../MLP_utils/binary_config.toml").resolve(
     strict=True
 )
@@ -72,7 +69,10 @@ mlp_params.TREATMENT_NAME = TREATMENT_NAME
 mlp_params.MODEL_NAME = MODEL_NAME
 mlp_params.SHUFFLE = SHUFFLE
 
-# %% papermill={"duration": 56.196209, "end_time": "2023-08-06T18:57:37.166710", "exception": false, "start_time": "2023-08-06T18:56:40.970501", "status": "completed"} tags=[]
+
+# In[ ]:
+
+
 # Import Data
 # set data file path under pathlib path for multi-system use
 file_path = pathlib.Path(
@@ -82,7 +82,9 @@ file_path = pathlib.Path(
 df = pq.read_table(file_path).to_pandas()
 
 
-# %% papermill={"duration": 0.010934, "end_time": "2023-08-06T18:57:37.182482", "exception": false, "start_time": "2023-08-06T18:57:37.171548", "status": "completed"} tags=[]
+# In[ ]:
+
+
 def test_loop(df, output_name, title):
     # Code snippet for metadata extraction by Jenna Tomkinson
     df_metadata = list(df.columns[df.columns.str.startswith("Metadata")])
@@ -201,42 +203,72 @@ def test_loop(df, output_name, title):
     )
 
 
-# %% papermill={"duration": 0.284008, "end_time": "2023-08-06T18:57:37.468142", "exception": false, "start_time": "2023-08-06T18:57:37.184134", "status": "completed"} tags=[]
-print(df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique().tolist())
+# In[ ]:
 
-# %% papermill={"duration": 0.007431, "end_time": "2023-08-06T18:57:37.477993", "exception": false, "start_time": "2023-08-06T18:57:37.470562", "status": "completed"} tags=[]
+
+print(df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique())
+
+
+# In[ ]:
+
+
+# list of treatments to test with controls varying
 paired_treatment_list = [
-    ["DMSO_0.100_DMSO_0.025", "LPS_100.000_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "Thapsigargin_1.000_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "Thapsigargin_10.000_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "LPS_0.100_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "LPS_1.000_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "LPS_10.000_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "LPS_100.000_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "Flagellin_0.100_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "Flagellin_1.000_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "Flagellin_1.000_Disulfiram_1.0"],
-    ["DMSO_0.100_DMSO_0.025", "LPS_Nigericin_100.000_1.0_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "LPS_Nigericin_100.000_3.0_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "LPS_Nigericin_100.000_10.0_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "LPS_Nigericin_1.000_1.0_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "LPS_Nigericin_1.000_3.0_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "LPS_Nigericin_1.000_10.0_DMSO_0.025"],
-    ["DMSO_0.100_DMSO_0.025", "H2O2_100.000_Z-VAD-FMK_100.0"],
-    ["DMSO_0.100_DMSO_0.025", "H2O2_100.000_DMSO_0.025"],
-    ["LPS_100.000_DMSO_0.025", "Thapsigargin_1.000_DMSO_0.025"],
-    ["LPS_100.000_DMSO_0.025", "Thapsigargin_10.000_DMSO_0.025"],
-    ["LPS_10.000_DMSO_0.025", "Thapsigargin_1.000_DMSO_0.025"],
-    ["LPS_10.000_DMSO_0.025", "Thapsigargin_10.000_DMSO_0.025"],
-    ["LPS_1.000_DMSO_0.025", "Thapsigargin_1.000_DMSO_0.025"],
-    ["LPS_1.000_DMSO_0.025", "Thapsigargin_10.000_DMSO_0.025"],
-    ["LPS_0.100_DMSO_0.025", "Thapsigargin_1.000_DMSO_0.025"],
-    ["LPS_0.100_DMSO_0.025", "Thapsigargin_10.000_DMSO_0.025"],
-    ["LPS_0.010_DMSO_0.025", "Thapsigargin_1.000_DMSO_0.025"],
-    ["LPS_0.010_DMSO_0.025", "Thapsigargin_10.000_DMSO_0.025"],
+    # DMSO control
+    ["DMSO_0.100_%_DMSO_0.025_%", "LPS_100.000_ug_per_ml_DMSO_0.025_%"],
+    ["DMSO_0.100_%_DMSO_0.025_%", "Thapsigargin_1.000_uM_DMSO_0.025_%"],
+    ["DMSO_0.100_%_DMSO_0.025_%", "Thapsigargin_10.000_uM_DMSO_0.025_%"],
+    ["DMSO_0.100_%_DMSO_0.025_%", "LPS_0.010_ug_per_ml_DMSO_0.025_%"],
+    ["DMSO_0.100_%_DMSO_0.025_%", "LPS_0.100_ug_per_ml_DMSO_0.025_%"],
+    ["DMSO_0.100_%_DMSO_0.025_%", "LPS_1.000_ug_per_ml_DMSO_0.025_%"],
+    ["DMSO_0.100_%_DMSO_0.025_%", "LPS_10.000_ug_per_ml_DMSO_0.025_%"],
+    ["DMSO_0.100_%_DMSO_0.025_%", "Flagellin_0.100_ug_per_ml_DMSO_0.025_%"],
+    ["DMSO_0.100_%_DMSO_0.025_%", "Flagellin_1.000_ug_per_ml_DMSO_0.025_%"],
+    ["DMSO_0.100_%_DMSO_0.025_%", "Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM"],
+    [
+        "DMSO_0.100_%_DMSO_0.025_%",
+        "LPS_Nigericin_100.000_ug_per_ml_1.000_uM_DMSO_0.025_%",
+    ],
+    [
+        "DMSO_0.100_%_DMSO_0.025_%",
+        "LPS_Nigericin_100.000_ug_per_ml_3.000_uM_DMSO_0.025_%",
+    ],
+    [
+        "DMSO_0.100_%_DMSO_0.025_%",
+        "LPS_Nigericin_100.000_ug_per_ml_10.000_uM_DMSO_0.025_%",
+    ],
+    [
+        "DMSO_0.100_%_DMSO_0.025_%",
+        "LPS_Nigericin_1.000_ug_per_ml_1.000_uM_DMSO_0.025_%",
+    ],
+    [
+        "DMSO_0.100_%_DMSO_0.025_%",
+        "LPS_Nigericin_1.000_ug_per_ml_3.000_uM_DMSO_0.025_%",
+    ],
+    [
+        "DMSO_0.100_%_DMSO_0.025_%",
+        "LPS_Nigericin_1.000_ug_per_ml_10.000_uM_DMSO_0.025_%",
+    ],
+    ["DMSO_0.100_%_DMSO_0.025_%", "H2O2_100.000_uM_Z-VAD-FMK_100.000_uM"],
+    ["DMSO_0.100_%_DMSO_0.025_%", "H2O2_100.000_uM_DMSO_0.025_%"],
+    ["DMSO_0.100_%_DMSO_0.025_%", "H2O2_100.000_nM_DMSO_0.025_%"],
+    # LPS (pyroptosis) control
+    ["LPS_100.000_ug_per_ml_DMSO_0.025_%", "Thapsigargin_1.000_uM_DMSO_0.025_%"],
+    ["LPS_100.000_ug_per_ml_DMSO_0.025_%", "Thapsigargin_10.000_uM_DMSO_0.025_%"],
+    ["LPS_10.000_ug_per_ml_DMSO_0.025_%", "Thapsigargin_1.000_uM_DMSO_0.025_%"],
+    ["LPS_10.000_ug_per_ml_DMSO_0.025_%", "Thapsigargin_10.000_uM_DMSO_0.025_%"],
+    ["LPS_1.000_ug_per_ml_DMSO_0.025_%", "Thapsigargin_1.000_uM_DMSO_0.025_%"],
+    ["LPS_1.000_ug_per_ml_DMSO_0.025_%", "Thapsigargin_10.000_uM_DMSO_0.025_%"],
+    ["LPS_0.100_ug_per_ml_DMSO_0.025_%", "Thapsigargin_1.000_uM_DMSO_0.025_%"],
+    ["LPS_0.100_ug_per_ml_DMSO_0.025_%", "Thapsigargin_10.000_uM_DMSO_0.025_%"],
+    ["LPS_0.010_ug_per_ml_DMSO_0.025_%", "Thapsigargin_1.000_uM_DMSO_0.025_%"],
+    ["LPS_0.010_ug_per_ml_DMSO_0.025_%", "Thapsigargin_10.000_uM_DMSO_0.025_%"],
 ]
 
-# %%
+
+# In[ ]:
+
+
 # create a dataframe to store the model stats
 model_stats_df = pd.DataFrame(
     columns=[
@@ -251,7 +283,10 @@ model_stats_df = pd.DataFrame(
 )
 model_stats_df
 
-# %% papermill={"duration": 1448.376356, "end_time": "2023-08-06T19:21:45.856103", "exception": false, "start_time": "2023-08-06T18:57:37.479747", "status": "completed"} tags=[]
+
+# In[ ]:
+
+
 for i in paired_treatment_list:
     # filter df to only include the two treatments to test
     test_df = df.query(
@@ -297,10 +332,16 @@ for i in paired_treatment_list:
     stats_df
     model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
-# %%
+
+# In[ ]:
+
+
 model_stats_df
 
-# %%
+
+# In[ ]:
+
+
 # set path for the model training metrics
 metrics_path = pathlib.Path(
     f"../../results/{mlp_params.MODEL_TYPE}/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}"
@@ -319,5 +360,3 @@ if metrics_file.exists():
         metrics_df.to_csv(metrics_file, index=False)
 else:
     model_stats_df.to_csv(metrics_file, index=False)
-
-# %%

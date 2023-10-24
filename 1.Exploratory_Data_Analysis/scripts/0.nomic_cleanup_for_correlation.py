@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# Cleanup the Nomic data prior to use
+
 # In[1]:
 
 
@@ -10,14 +12,14 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
-# In[7]:
+# In[2]:
 
 
 # Parameters
 cell_type = "SHSY5Y"
 
 
-# In[8]:
+# In[3]:
 
 
 # set import data paths
@@ -30,14 +32,14 @@ nomic_df_filtered_out_path = pathlib.Path(
 )
 
 
-# In[9]:
+# In[4]:
 
 
 # read in data
 nomic_df_raw = pd.read_csv(nomic_df_path)
 
 
-# In[10]:
+# In[5]:
 
 
 # get the dimensions of the df
@@ -46,21 +48,19 @@ print(f"{nomic_df_raw.shape}_before_filtering")
 nomic_df = nomic_df_raw.loc[
     :, ~nomic_df_raw.columns.str.contains("pgml", case=False, na=False)
 ]
-print(f"{nomic_df.shape}_after_filtering")
+print(f"{nomic_df.shape}_after_filtering")  # should be 187 less
 # if column does not contain [NSU] then prefix with Metadata_
-for col in nomic_df.columns:
-    if not any(x in col for x in ["NSU"]):
-        nomic_df = nomic_df.rename(columns={col: "Metadata_" + col})
+nomic_df = nomic_df.rename(
+    columns={col: "Metadata_" + col for col in nomic_df.columns if "NSU" not in col}
+)
 
 
-# In[11]:
+# In[6]:
 
 
-# show all columns
-pd.set_option("display.max_columns", None)
-nomic_df.head(3)
-
-
+# functions to be used with the apply method
+# add trailing zeros to the concentration values to match the metadata and morphology data
+# this is crucial for the merge later on for data harmonization
 def add_trailing_zeros_3(x):
     return "{:.3f}".format(x)
 
@@ -81,19 +81,19 @@ nomic_df["Metadata_inhibitor_concentration_value"] = nomic_df[
 ].apply(add_trailing_zeros_3)
 
 
-# In[12]:
+# In[7]:
 
 
 nomic_df["Metadata_inducer2_concentration_value"].unique()
 
 
-# In[13]:
+# In[8]:
 
 
 nomic_df.replace("nan", np.nan, inplace=True)
 
 
-# In[14]:
+# In[9]:
 
 
 ## Clean up df
@@ -156,7 +156,7 @@ nomic_df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
 ).astype(str)
 
 
-# In[15]:
+# In[10]:
 
 
 nomic_cleaned = nomic_df.copy()
@@ -172,28 +172,28 @@ nomic_df = nomic_df.drop(["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"], axis=1
 nomic_df = nomic_df.drop(["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"], axis=1)
 
 
-# In[16]:
+# In[11]:
 
 
 scaler = MinMaxScaler()
 nomic_df = pd.DataFrame(scaler.fit_transform(nomic_df), columns=nomic_df.columns)
 
 
-# In[17]:
+# In[12]:
 
 
 # summary statistics of df to check min-max normalization
 nomic_df.describe()
 
 
-# In[18]:
+# In[13]:
 
 
 # add position_x back to df
 nomic_df.loc[:, "Metadata_position_x"] = nomic_df_raw["position_x"]
 
 
-# In[19]:
+# In[14]:
 
 
 nomic_df = nomic_df.assign(
@@ -208,13 +208,13 @@ nomic_df = nomic_df.assign(
 )
 
 
-# In[20]:
+# In[15]:
 
 
 nomic_df["inducer_dose_unit"] = nomic_df_raw["inducer1_concentration_unit"]
 
 
-# In[21]:
+# In[16]:
 
 
 nomic_df.to_csv(nomic_df_filtered_out_path, index=False)

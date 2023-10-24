@@ -37,9 +37,6 @@ from MLP_utils.utils import (
 sys.path.append("../../..")
 from utils.utils import df_stats
 
-# In[ ]:
-
-
 # ## Papermill is used for executing notebooks in the CLI with multiple parameters
 # Here the `injected-parameters` cell is used to inject parameters into the notebook via papermill.
 # This enables multiple notebooks to be executed with different parameters, preventing to manually update parameters or have multiple copies of the notebook.
@@ -48,11 +45,11 @@ from utils.utils import df_stats
 
 
 # Parameters
-CELL_TYPE = "PBMC"
-CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
-TREATMENT_NAME = "Thapsigargin_1.000_DMSO_0.025"
-MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_1"
-SHUFFLE = False
+CELL_TYPE = "SHSY5Y"
+CONTROL_NAME = "DMSO_0.100_%_DMSO_0.025_%"
+TREATMENT_NAME = "LPS_100.000_ug_per_ml_DMSO_0.025_%"
+MODEL_NAME = "DMSO_0.025_vs_LPS_100"
+SHUFFLE = True
 
 
 # In[3]:
@@ -87,24 +84,12 @@ file_path = pathlib.Path(
 df = pq.read_table(file_path).to_pandas()
 
 
-# In[5]:
-
-
-# # change model name to match shuffle
-# if mlp_params.SHUFFLE:
-#     mlp_params.MODEL_NAME = f'{mlp_params.MODEL_NAME}_shuffle'
-# elif mlp_params.SHUFFLE != True:
-#     pass
-# else:
-#     raise ValueError('SHUFFLE must be True or False')
-
-
 # #### Set up Data to be compatible with model
 
 # ##### Classification Models:
 # Comment out code if using regression
 
-# In[6]:
+# In[5]:
 
 
 # filter the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column to only include the treatment and control via loc
@@ -127,7 +112,7 @@ else:
     print("Data Subset Is Off")
 
 
-# In[7]:
+# In[6]:
 
 
 np.random.seed(seed=0)
@@ -146,7 +131,7 @@ print(
 )
 
 
-# In[8]:
+# In[7]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -157,7 +142,7 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[9]:
+# In[8]:
 
 
 # Creating label encoder
@@ -181,7 +166,7 @@ df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
 # #### Split Data - All Models can proceed through this point
 
-# In[10]:
+# In[9]:
 
 
 X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
@@ -198,7 +183,7 @@ X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
 )
 
 
-# In[11]:
+# In[10]:
 
 
 # produce data objects for train, val and test datasets
@@ -213,7 +198,7 @@ test_data = Dataset_formatter(
 )
 
 
-# In[12]:
+# In[11]:
 
 
 mlp_params.IN_FEATURES = X_train.shape[1]
@@ -239,7 +224,7 @@ else:
 print(mlp_params.MODEL_TYPE)
 
 
-# In[13]:
+# In[12]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
@@ -254,7 +239,7 @@ test_loader = torch.utils.data.DataLoader(
 )
 
 
-# In[14]:
+# In[13]:
 
 
 # call the optimized training model
@@ -279,7 +264,7 @@ else:
     )
 
 
-# In[15]:
+# In[14]:
 
 
 # create a dataframe to store the model stats
@@ -297,7 +282,7 @@ model_stats_df = pd.DataFrame(
 model_stats_df
 
 
-# In[16]:
+# In[15]:
 
 
 if mlp_params.MODEL_TYPE == "Regression":
@@ -317,7 +302,7 @@ else:
     )
 
 
-# In[17]:
+# In[16]:
 
 
 plot_metric_vs_epoch(
@@ -334,7 +319,7 @@ plot_metric_vs_epoch(
 )
 
 
-# In[18]:
+# In[17]:
 
 
 # test the model on training data
@@ -368,7 +353,7 @@ else:
     pass
 
 
-# In[19]:
+# In[18]:
 
 
 stats, recall, precision, f1, precision_, recall_, threshold_ = output_stats(
@@ -383,7 +368,7 @@ stats, recall, precision, f1, precision_, recall_, threshold_ = output_stats(
 )
 
 
-# In[20]:
+# In[19]:
 
 
 threshold_ = np.append(threshold_, None)
@@ -405,7 +390,7 @@ stats_df["shuffled_data"] = mlp_params.SHUFFLE
 model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
 
-# In[21]:
+# In[20]:
 
 
 # test the model on training data
@@ -439,13 +424,13 @@ else:
     pass
 
 
-# In[22]:
+# In[21]:
 
 
 mlp_params.SHUFFLE
 
 
-# In[23]:
+# In[22]:
 
 
 stats, recall, precision, f1, precision_, recall_, threshold_ = output_stats(
@@ -460,7 +445,7 @@ stats, recall, precision, f1, precision_, recall_, threshold_ = output_stats(
 )
 
 
-# In[24]:
+# In[23]:
 
 
 threshold_ = np.append(threshold_, None)
@@ -482,13 +467,13 @@ stats_df["shuffled_data"] = mlp_params.SHUFFLE
 model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
 
-# In[25]:
+# In[24]:
 
 
 mlp_params.MODEL_NAME
 
 
-# In[26]:
+# In[25]:
 
 
 # calling the testing function and outputting list values of tested model
@@ -522,7 +507,7 @@ else:
     pass
 
 
-# In[27]:
+# In[26]:
 
 
 # Call visualization function
@@ -554,7 +539,7 @@ else:
     raise Exception("Model type must be specified for proper model testing")
 
 
-# In[28]:
+# In[27]:
 
 
 stats, recall, precision, f1, precision_, recall_, threshold_ = output_stats(
@@ -569,7 +554,7 @@ stats, recall, precision, f1, precision_, recall_, threshold_ = output_stats(
 )
 
 
-# In[29]:
+# In[28]:
 
 
 threshold_ = np.append(threshold_, None)
@@ -593,7 +578,7 @@ model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
 # ## Test the hold out wells
 
-# In[30]:
+# In[29]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -604,7 +589,7 @@ df_descriptive = df_holdout[df_metadata]
 df_values = df_holdout.drop(columns=df_metadata)
 
 
-# In[31]:
+# In[30]:
 
 
 # Creating label encoder
@@ -626,7 +611,7 @@ df_values_X = df_values.drop(
 df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
 
-# In[32]:
+# In[31]:
 
 
 test_data = Dataset_formatter(
@@ -696,7 +681,7 @@ else:
     raise Exception("Model type must be specified for proper model testing")
 
 
-# In[33]:
+# In[32]:
 
 
 stats, recall, precision, f1, precision_, recall_, threshold_ = output_stats(
@@ -711,7 +696,7 @@ stats, recall, precision, f1, precision_, recall_, threshold_ = output_stats(
 )
 
 
-# In[34]:
+# In[33]:
 
 
 threshold_ = np.append(threshold_, None)
@@ -733,13 +718,13 @@ stats_df["shuffled_data"] = mlp_params.SHUFFLE
 model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
 
-# In[35]:
+# In[34]:
 
 
 model_stats_df
 
 
-# In[36]:
+# In[35]:
 
 
 # set path for the model training metrics

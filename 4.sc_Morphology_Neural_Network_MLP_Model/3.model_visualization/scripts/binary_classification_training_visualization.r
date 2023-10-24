@@ -69,5 +69,5 @@ pr_curve_gg <- (
     )
     + ggtitle(paste0("Precision-Recall Curve for ", model_name))
 )
-
 ggsave(output_file, pr_curve_gg, height = 5.5, width = 8.5, dpi = 500)
+pr_curve_gg

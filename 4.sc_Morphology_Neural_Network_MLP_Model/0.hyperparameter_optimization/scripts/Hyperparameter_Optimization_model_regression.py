@@ -1,29 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
-# ---
-# jupyter:
-#   jupytext:
-#     cell_metadata_filter: -all
-#     formats: ipynb,py
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.14.0
-#   kernelspec:
-#     display_name: Python 3 (ipykernel)
-#     language: python
-#     name: python3
-# ---
 
-# %% [markdown]
 # ## Hyperparameter tuning via Optuna
 
-# %% [markdown]
 # ### Being a binary model this notebook will be limited to predicting one class 1 or 0, yes or no.
 # ### Here I will be predicting if a cell received a treatment or not
 
-# %%
+# In[1]:
+
+
 import pathlib
 import sys
 
@@ -54,21 +39,24 @@ from MLP_utils.utils import (
 sys.path.append("../../..")
 from utils.utils import df_stats
 
-# %% [markdown]
 # #### Set up Data to be compatible with model
 
-# %% [markdown]
 # ##### Regression Model Data Wrangling and Set Up
 # comment out if not using regression
 
-# %%
+# In[2]:
+
+
 # Parameters
 CELL_TYPE = "SHSY5Y"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
 TREATMENT_NAME = "LPS_100.000_DMSO_0.025"
 MODEL_NAME = "DMSO_0.025_vs_LPS_100"
 
-# %%
+
+# In[3]:
+
+
 ml_configs_file = pathlib.Path("../../MLP_utils/regression_config.toml").resolve(
     strict=True
 )
@@ -83,7 +71,10 @@ mlp_params.CONTROL_NAME = CONTROL_NAME
 mlp_params.TREATMENT_NAME = TREATMENT_NAME
 mlp_params.SHUFFLE = False
 
-# %%
+
+# In[5]:
+
+
 # Import Data
 # set data file path under pathlib path for multi-system use
 
@@ -101,7 +92,10 @@ nomic_df_path = pathlib.Path(
 df = pd.read_parquet(file_path)
 nomic_df = pd.read_csv(nomic_df_path)
 
-# %%
+
+# In[5]:
+
+
 # change the nomic df to standard scaler
 # select the columns that contain "NSU"
 nomic_df_scaled = nomic_df.filter(regex="NSU")
@@ -125,7 +119,10 @@ nomic_df_scaled[
 nomic_df = nomic_df_scaled.copy()
 del nomic_df_scaled
 
-# %%
+
+# In[6]:
+
+
 print(df.shape)
 df = pd.merge(
     df,
@@ -144,14 +141,20 @@ df = pd.merge(
 print(nomic_df.shape)
 print(df.shape)
 
-# %%
+
+# In[7]:
+
+
 # Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = df.columns[df.columns.str.contains("Metadata")].to_list()
 
 # define which columns are data and which are descriptive
 df_values = df.drop(columns=df_metadata)
 
-# %%
+
+# In[8]:
+
+
 df_values[
     ["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 ] = df_metadata[["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]]
@@ -161,7 +164,10 @@ df = (
     .reset_index()
 )
 
-# %%
+
+# In[9]:
+
+
 # filter the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column to only include the treatment and control via loc
 df = df.loc[
     df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
@@ -181,7 +187,10 @@ if mlp_params.DATA_SUBSET_OPTION == "True":
 else:
     print("Data Subset Is Off")
 
-# %%
+
+# In[10]:
+
+
 np.random.seed(seed=0)
 # get random wells from each treatment group to hold out
 wells_to_hold = (
@@ -198,14 +207,20 @@ print(
     "Wells to use for training, validation, and testing", df["Metadata_Well"].unique()
 )
 
-# %%
+
+# In[11]:
+
+
 # Code snippet for metadata extraction by Jenna Tomkinson
 df_metadata = df.columns[df.columns.str.contains("Metadata")].to_list()
 
 # define which columns are data and which are descriptive
 df_values = df.drop(columns=df_metadata)
 
-# %%
+
+# In[12]:
+
+
 # get all columns that contain NSU in the name
 df_values_Y = df_values[df_values.columns[df_values.columns.str.contains("NSU")]]
 df_values_X = df_values.drop(columns=df_values_Y.columns)
@@ -217,10 +232,12 @@ print(df_values.shape)
 print(df_values_X.shape)
 print(df_values_Y.shape)
 
-# %% [markdown]
+
 # #### Split Data - All Models can proceed through this point
 
-# %%
+# In[13]:
+
+
 X_train, X_test, X_val, Y_train_well, Y_test_well, Y_val_well = data_split(
     X_vals=df_values_X,
     y_vals=df_values_Y,
@@ -231,12 +248,18 @@ X_train, X_test, X_val, Y_train_well, Y_test_well, Y_val_well = data_split(
     params=mlp_params,
 )
 
-# %%
+
+# In[14]:
+
+
 Y_train = Y_train_well.drop(columns=["Metadata_Well"])
 Y_test = Y_test_well.drop(columns=["Metadata_Well"])
 Y_val = Y_val_well.drop(columns=["Metadata_Well"])
 
-# %%
+
+# In[15]:
+
+
 # produce data objects for train, val and test datasets
 train_data = Dataset_formatter(
     torch.FloatTensor(X_train.values), torch.FloatTensor(Y_train.values)
@@ -248,7 +271,10 @@ test_data = Dataset_formatter(
     torch.FloatTensor(X_test.values), torch.FloatTensor(Y_test.values)
 )
 
-# %%
+
+# In[16]:
+
+
 mlp_params.IN_FEATURES = X_train.shape[1]
 print("Number of in features: ", mlp_params.IN_FEATURES)
 if mlp_params.MODEL_TYPE == "Regression":
@@ -260,7 +286,10 @@ else:
 
 print("Number of out features: ", mlp_params.OUT_FEATURES)
 
-# %%
+
+# In[17]:
+
+
 # convert data class into a dataloader to be compatible with pytorch
 train_loader = torch.utils.data.DataLoader(
     dataset=train_data, batch_size=mlp_params.BATCH_SIZE
@@ -270,11 +299,17 @@ valid_loader = torch.utils.data.DataLoader(
 )
 test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
 
-# %%
+
+# In[18]:
+
+
 df_values_X.shape
 df_values_Y.shape
 
-# %%
+
+# In[19]:
+
+
 # no accuracy function must be loss for regression
 if mlp_params.MODEL_TYPE == "Regression":
     mlp_params.METRIC = "loss"
@@ -309,7 +344,10 @@ objective_model_optimizer(
     return_info=True,
 )
 
-# %%
+
+# In[20]:
+
+
 fig = optuna.visualization.plot_optimization_history(study)
 graph_path = pathlib.Path(f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/")
 # if path doesn't exist, make path with pathlib
@@ -319,7 +357,10 @@ graph_path = f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/plot_optimi
 fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
-# %%
+
+# In[21]:
+
+
 fig = optuna.visualization.plot_intermediate_values(study)
 graph_path = pathlib.Path(f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/")
 # if path doesn't exist, make path with pathlib
@@ -329,7 +370,10 @@ graph_path = f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/plot_interm
 fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
-# %%
+
+# In[22]:
+
+
 param_dict = extract_best_trial_params(
     study.best_params, params, model_name=params.MODEL_NAME
 )

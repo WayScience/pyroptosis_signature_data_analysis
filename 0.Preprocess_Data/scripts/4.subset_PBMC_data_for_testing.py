@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# Ther PBMC dataset is incredibly large and thus running code on this dataset on a local machine is not feasible. Therefore, we will subset the data to only include 2 treatments. This will allow us to run the code on a local machine and test the code before running it on the entire dataset on HPC.
+
 # In[1]:
 
 

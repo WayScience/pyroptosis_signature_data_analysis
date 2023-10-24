@@ -51,7 +51,9 @@ if flag == False:
 # In[4]:
 
 
-path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
+path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet").resolve(
+    strict=True
+)
 
 data_df = pd.read_parquet(path)
 
@@ -68,21 +70,21 @@ data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
 
 
 # set save path
-if aggregation == True:
-    if nomic == True:
+if aggregation:
+    if nomic:
         save_path = pathlib.Path(
             f"./indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}"
         )
-    elif nomic == False:
+    elif not nomic:
         save_path = pathlib.Path(
             f"./indexes/{cell_type}/{MODEL_TYPE}{control}_{treatment}"
         )
-elif aggregation == False:
-    if nomic == True:
+elif not aggregation:
+    if nomic:
         save_path = pathlib.Path(
             f"./indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}"
         )
-    elif nomic == False:
+    elif not nomic:
         save_path = pathlib.Path(
             f"./indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}"
         )
@@ -97,7 +99,7 @@ save_path.mkdir(parents=True, exist_ok=True)
 # In[ ]:
 
 
-if nomic == True:
+if nomic:
     nomic_df_path = pathlib.Path(
         f"../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}.csv"
     )
@@ -131,7 +133,7 @@ data = pd.merge(data, metadata_well, left_index=True, right_index=True)
 # In[ ]:
 
 
-if (aggregation == True) and (nomic == True):
+if (aggregation) and (nomic):
 
     # subset each column that contains metadata
     metadata = data_df.filter(regex="Metadata")
@@ -150,7 +152,7 @@ if (aggregation == True) and (nomic == True):
     )
     data_df = data_df.drop(columns=["position_x"])
 
-elif (aggregation == True) and (nomic == False):
+elif (aggregation) and (not nomic):
     # subset each column that contains metadata
     metadata = data_df.filter(regex="Metadata")
     data_df = data_df.drop(metadata.columns, axis=1)
@@ -163,12 +165,12 @@ elif (aggregation == True) and (nomic == False):
     data_df = pd.merge(
         data_df, metadata, left_on="Metadata_Well", right_on="Metadata_Well"
     )
-elif (aggregation == False) and (nomic == True):
+elif (not aggregation) and (nomic):
     data_df = pd.merge(
         data_df, df_nomic, left_on="Metadata_Well", right_on="position_x"
     )
     data_df = data_df.drop(columns=["position_x"])
-elif aggregation == False and nomic == False:
+elif not aggregation and not nomic:
     pass
 else:
     print("Error")
@@ -235,17 +237,17 @@ index_data = pd.DataFrame(index_data).sort_values(["labeled_data_index"])
 
 
 # save indexes as tsv file
-if aggregation == True:
-    if nomic == True:
+if aggregation:
+    if nomic:
         index_data.to_csv(
             f"{save_path}/aggregated_sc_and_nomic_data_split_indexes.tsv", sep="\t"
         )
-    elif nomic == False:
+    elif not nomic:
         index_data.to_csv(f"{save_path}/aggregated_sc_data_split_indexes.tsv", sep="\t")
-elif aggregation == False:
-    if nomic == True:
+elif not aggregation:
+    if nomic:
         index_data.to_csv(f"{save_path}/sc_and_nomic_data_split_indexes.tsv", sep="\t")
-    elif nomic == False:
+    elif not nomic:
         index_data.to_csv(f"{save_path}/sc_split_indexes.tsv", sep="\t")
 else:
     print("Error")

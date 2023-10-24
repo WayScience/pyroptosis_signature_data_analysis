@@ -52,7 +52,9 @@ if flag == False:
 
 # load training data from indexes and features dataframe
 # data_split_path = pathlib.Path(f"../0.split_data/indexes/data_split_indexes.tsv")
-data_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
+data_path = pathlib.Path(
+    f"../../data/{cell_type}_preprocessed_sc_norm.parquet"
+).resolve(strict=True)
 
 # dataframe with only the labeled data we want (exclude certain phenotypic classes)
 data_df = pq.read_table(data_path).to_pandas()
@@ -60,7 +62,7 @@ data_df = pq.read_table(data_path).to_pandas()
 # import nomic data
 nomic_df_path = pathlib.Path(
     f"../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}.csv"
-)
+).resolve(strict=True)
 df_nomic = pd.read_csv(nomic_df_path)
 
 # clean up nomic data
@@ -73,10 +75,10 @@ df_nomic = df_nomic.drop(columns=df_nomic.columns[0:2])
 # In[5]:
 
 
-if (aggregation == True) and (nomic == True):
+if aggregation and nomic:
     data_split_path = pathlib.Path(
         f"../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}/aggregated_sc_and_nomic_data_split_indexes.tsv"
-    )
+    ).resolve(strict=True)
     data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
     # subset each column that contains metadata
     metadata = data_df.filter(regex="Metadata")
@@ -94,10 +96,10 @@ if (aggregation == True) and (nomic == True):
         data_df, df_nomic, left_on="Metadata_Well", right_on="position_x"
     )
     data_df = data_df.drop(columns=["position_x"])
-elif (aggregation == True) and (nomic == False):
+elif aggregation and not nomic:
     data_split_path = pathlib.Path(
         f"../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}/aggregated_sc_data_split_indexes.tsv"
-    )
+    ).resolve(strict=True)
     data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
     # subset each column that contains metadata
     metadata = data_df.filter(regex="Metadata")
@@ -111,19 +113,19 @@ elif (aggregation == True) and (nomic == False):
     data_df = pd.merge(
         data_df, metadata, left_on="Metadata_Well", right_on="Metadata_Well"
     )
-elif (aggregation == False) and (nomic == True):
+elif not aggregation and nomic:
     data_split_path = pathlib.Path(
         f"../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}/sc_and_nomic_data_split_indexes.tsv"
-    )
+    ).resolve(strict=True)
     data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
     data_df = pd.merge(
         data_df, df_nomic, left_on="Metadata_Well", right_on="position_x"
     )
     data_df = data_df.drop(columns=["position_x"])
-elif aggregation == False and nomic == False:
+elif not aggregation and not nomic:
     data_split_path = pathlib.Path(
         f"../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}/sc_split_indexes.tsv"
-    )
+    ).resolve(strict=True)
     data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
 else:
     print("Error")
@@ -241,13 +243,13 @@ for model_type, feature_type, phenotypic_class in itertools.product(
     print(f"Best parameters: {grid_search_cv.best_params_}")
     print(f"Score of best estimator: {grid_search_cv.best_score_}\n")
 
-    if (aggregation == True) and (nomic == True):
+    if aggregation and nomic:
         results_dir = f"./models/single_class/{cell_type}/aggregated_with_nomic/{MODEL_TYPE}/{control}__{treatment}"
-    elif (aggregation == True) and (nomic == False):
+    elif aggregation and not nomic:
         results_dir = f"./models/single_class/{cell_type}/aggregated/{MODEL_TYPE}/{control}__{treatment}"
-    elif (aggregation == False) and (nomic == True):
+    elif not aggregation and nomic:
         results_dir = f"./models/single_class/{cell_type}/sc_with_nomic/{MODEL_TYPE}/{control}__{treatment}"
-    elif (aggregation == False) and (nomic == False):
+    elif not aggregation and not nomic:
         results_dir = (
             f"./models/single_class/{cell_type}/sc/{MODEL_TYPE}/{control}__{treatment}"
         )

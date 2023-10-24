@@ -55,29 +55,14 @@ if flag == False:
     print(aggregation, nomic, cell_type)
 
 
-# In[4]:
-
-
-if flag == False:
-    # read in toml file and get parameters
-    toml_path = pathlib.Path("../1.train_models/single_class_config.toml")
-    with open(toml_path, "r") as f:
-        config = toml.load(f)
-    f.close()
-    control = config["logistic_regression_params"]["control"]
-    treatment = config["logistic_regression_params"]["treatments"]
-    aggregation = ast.literal_eval(config["logistic_regression_params"]["aggregation"])
-    nomic = ast.literal_eval(config["logistic_regression_params"]["nomic"])
-    cell_type = config["logistic_regression_params"]["cell_type"]
-    print(aggregation, nomic, cell_type)
-
-
 # In[5]:
 
 
 # load training data from indexes and features dataframe
 # data_split_path = pathlib.Path(f"../0.split_data/indexes/data_split_indexes.tsv")
-data_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
+data_path = pathlib.Path(
+    f"../../data/{cell_type}_preprocessed_sc_norm.parquet"
+).resolve(strict=True)
 
 # dataframe with only the labeled data we want (exclude certain phenotypic classes)
 data_df = pq.read_table(data_path).to_pandas()
@@ -85,7 +70,7 @@ data_df = pq.read_table(data_path).to_pandas()
 # import nomic data
 nomic_df_path = pathlib.Path(
     f"../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}.csv"
-)
+).resolve(strict=True)
 df_nomic = pd.read_csv(nomic_df_path)
 
 # clean up nomic data
@@ -98,11 +83,11 @@ df_nomic = df_nomic.drop(columns=df_nomic.columns[0:2])
 # In[6]:
 
 
-if (aggregation == True) and (nomic == True):
+if aggregation and nomic:
 
     data_split_path = pathlib.Path(
         f"../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}/aggregated_sc_and_nomic_data_split_indexes.tsv"
-    )
+    ).resolve(strict=True)
     data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
     # subset each column that contains metadata
     metadata = data_df.filter(regex="Metadata")
@@ -121,10 +106,10 @@ if (aggregation == True) and (nomic == True):
     )
     data_df = data_df.drop(columns=["position_x"])
 
-elif (aggregation == True) and (nomic == False):
+elif aggregation and not nomic:
     data_split_path = pathlib.Path(
         f"../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}/aggregated_sc_data_split_indexes.tsv"
-    )
+    ).resolve(strict=True)
     data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
     # subset each column that contains metadata
     metadata = data_df.filter(regex="Metadata")
@@ -138,19 +123,19 @@ elif (aggregation == True) and (nomic == False):
     data_df = pd.merge(
         data_df, metadata, left_on="Metadata_Well", right_on="Metadata_Well"
     )
-elif (aggregation == False) and (nomic == True):
+elif not aggregation and nomic:
     data_split_path = pathlib.Path(
         f"../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}/sc_and_nomic_data_split_indexes.tsv"
-    )
+    ).resolve(strict=True)
     data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
     data_df = pd.merge(
         data_df, df_nomic, left_on="Metadata_Well", right_on="position_x"
     )
     data_df = data_df.drop(columns=["position_x"])
-elif aggregation == False and nomic == False:
+elif not aggregation and not nomic:
     data_split_path = pathlib.Path(
         f"../0.split_data/indexes/{cell_type}/{MODEL_TYPE}/{control}_{treatment}/sc_split_indexes.tsv"
-    )
+    ).resolve(strict=True)
     data_split_indexes = pd.read_csv(data_split_path, sep="\t", index_col=0)
 else:
     print("Error")
@@ -206,19 +191,19 @@ if dmso_wells > trt_wells:
 
 
 # set model path from parameters
-if (aggregation == True) and (nomic == True):
+if aggregation and nomic:
     model_path = pathlib.Path(
         f"models/single_class/{cell_type}/aggregated_with_nomic/{MODEL_TYPE}/{control}__{treatment}"
     )
-elif (aggregation == True) and (nomic == False):
+elif aggregation and not nomic:
     model_path = pathlib.Path(
         f"models/single_class/{cell_type}/aggregated/{MODEL_TYPE}/{control}__{treatment}"
     )
-elif (aggregation == False) and (nomic == True):
+elif not aggregation and nomic:
     model_path = pathlib.Path(
         f"models/single_class/{cell_type}/sc_with_nomic/{MODEL_TYPE}/{control}__{treatment}"
     )
-elif (aggregation == False) and (nomic == False):
+elif not aggregation and not nomic:
     model_path = pathlib.Path(
         f"models/single_class/{cell_type}/sc/{MODEL_TYPE}/{control}__{treatment}"
     )
@@ -258,28 +243,28 @@ test_labeled_data = data_all.loc[data_all["label"] == "test"][
 
 
 # set path for figures
-if (aggregation == True) and (nomic == True):
+if aggregation and nomic:
     figure_path = pathlib.Path(
         f"./figures/single_class/{cell_type}/aggregated_with_nomic/{control}__{treatment}"
     )
     results_path = pathlib.Path(
         f"./results/single_class/{cell_type}/aggregated_with_nomic/{control}__{treatment}"
     )
-elif (aggregation == True) and (nomic == False):
+elif aggregation and not nomic:
     figure_path = pathlib.Path(
         f"./figures/single_class/{cell_type}/aggregated/{control}__{treatment}"
     )
     results_path = pathlib.Path(
         f"./results/single_class/{cell_type}/aggregated/{control}__{treatment}"
     )
-elif (aggregation == False) and (nomic == True):
+elif not aggregation and nomic:
     figure_path = pathlib.Path(
         f"./figures/single_class/{cell_type}/sc_with_nomic/{control}__{treatment}"
     )
     results_path = pathlib.Path(
         f"./results/single_class/{cell_type}/sc_with_nomic/{control}__{treatment}"
     )
-elif (aggregation == False) and (nomic == False):
+elif not aggregation and not nomic:
     figure_path = pathlib.Path(
         f"./figures/single_class/{cell_type}/sc/{control}__{treatment}"
     )

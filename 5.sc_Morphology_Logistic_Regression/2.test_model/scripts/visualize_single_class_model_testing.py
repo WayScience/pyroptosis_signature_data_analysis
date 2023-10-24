@@ -30,12 +30,12 @@ from sklearn.utils import parallel_backend, shuffle
 
 
 # Parameters
-cell_type = "PBMC"
-aggregation = False
-nomic = False
+cell_type = "SHSY5Y"
+aggregation = True
+nomic = True
 flag = True
-control = "DMSO_0.100_DMSO_0.025"
-treatment = "Thapsigargin_1.000_DMSO_0.025"
+control = "DMSO_0.100_%_DMSO_0.025_%"
+treatment = "LPS_100.000_ug_per_ml_DMSO_0.025_%"
 
 
 # In[3]:
@@ -47,6 +47,7 @@ print(cell_type, aggregation, nomic, flag, control, treatment)
 # In[4]:
 
 
+MODEL_TYPE = "binary_classification"
 if flag == False:
     # read in toml file and get parameters
     toml_path = pathlib.Path("../1.train_models/single_class_config.toml")
@@ -126,7 +127,7 @@ df = pd.read_csv(f"{results_path}/compiled_predictions.csv")
 # set model path from parameters
 if (aggregation == True) and (nomic == True):
     model_path = pathlib.Path(
-        f"models/single_class/{cell_type}/aggregated_with_nomic/{control}__{treatment}"
+        f"models/single_class/{cell_type}/aggregated_with_nomic/{MODEL_TYPE}/{control}__{treatment}"
     )
 elif (aggregation == True) and (nomic == False):
     model_path = pathlib.Path(
@@ -293,3 +294,10 @@ for model_type, feature_type, phenotypic_class, evaluation_type in itertools.pro
             plt.show()
         else:
             print("Error")
+
+
+# In[12]:
+
+
+"../1.train_models/models/single_class/SHSY5Y/aggregated_with_nomic/DMSO_0.100_%_DMSO_0.025_%__LPS_100.000_ug_per_ml_DMSO_0.025_%/final__CP.joblib"
+"../1.train_models/models/single_class/SHSY5Y/aggregated_with_nomic/binary_classification/DMSO_0.100_%_DMSO_0.025_%__LPS_100.000_ug_per_ml_DMSO_0.025_%/final__CP.joblib"

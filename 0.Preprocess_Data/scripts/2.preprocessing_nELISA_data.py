@@ -28,11 +28,11 @@ cell_type = "SHSY5Y"
 # set path to data
 data_path = pathlib.Path(
     f"../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}.csv"
-)
+).resolve(strict=True)
 
 preprocessing_path = pathlib.Path(
     f"../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_clean.parquet"
-)
+).resolve(strict=True)
 
 # read in data
 nomic_df = pd.read_csv(data_path)
@@ -101,7 +101,21 @@ analysis_df["inhibitor_concentration"].replace(np.nan, 0, inplace=True)
 # In[10]:
 
 
-def perform_replacements(text):
+def perform_replacements(text: str) -> str:
+    """
+    Function to replace special characters in text.
+    Replaces `%`, `_µM`, `_nM`, `_µg_per_ml` with empty string.
+
+    Parameters
+    ----------
+    text : str
+        Text to be modified.
+
+    Returns
+    -------
+    str
+        Modified text.
+    """
     replacements = {
         "%": "",
         "_µM": "",

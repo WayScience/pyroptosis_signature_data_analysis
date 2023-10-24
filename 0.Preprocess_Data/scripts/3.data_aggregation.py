@@ -26,15 +26,15 @@ nomic = True
 if aggregation and nomic:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
-    )
+    ).resolve(strict=True)
 elif not aggregation and nomic:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_nomic.parquet"
-    )
+    ).resolve(strict=True)
 elif aggregation and not nomic:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
-    )
+    ).resolve(strict=True)
 elif not aggregation and not nomic:
     pass
 else:

@@ -46,7 +46,9 @@ print(list_of_treatments)
 
 
 # Set path to parquet file
-path = pathlib.Path(f"../data/{celltype}_preprocessed_sc_norm.parquet")
+path = pathlib.Path(f"../data/{celltype}_preprocessed_sc_norm.parquet").resolve(
+    strict=True
+)
 # Read in parquet file
 df = pq.read_table(path).to_pandas()
 

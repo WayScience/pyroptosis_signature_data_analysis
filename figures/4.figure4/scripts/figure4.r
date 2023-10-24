@@ -1,20 +1,20 @@
-suppressPackageStartupMessages(suppressWarnings(library(ggplot2)))
-suppressPackageStartupMessages(suppressWarnings(library(dplyr)))
-suppressPackageStartupMessages(suppressWarnings(library(patchwork)))
-suppressPackageStartupMessages(suppressWarnings(library(cowplot)))
-suppressPackageStartupMessages(suppressWarnings(library(RcppTOML)))
-suppressPackageStartupMessages(suppressWarnings(library(pheatmap)))
-suppressPackageStartupMessages(suppressWarnings(library(lattice)))
-suppressPackageStartupMessages(suppressWarnings(library(RColorBrewer)))
-suppressPackageStartupMessages(suppressWarnings(library(gplots)))
-suppressPackageStartupMessages(suppressWarnings(library(ComplexHeatmap)))
-suppressPackageStartupMessages(suppressWarnings(library(ggplotify)))
-suppressPackageStartupMessages(suppressWarnings(library(viridis)))
-suppressPackageStartupMessages(suppressWarnings(library(platetools)))
+suppressPackageStartupMessages(suppressWarnings(library(ggplot2))) # plotting
+suppressPackageStartupMessages(suppressWarnings(library(dplyr))) # data manipulation
+suppressPackageStartupMessages(suppressWarnings(library(patchwork))) # figure composition
+suppressPackageStartupMessages(suppressWarnings(library(cowplot))) # figure composition
+suppressPackageStartupMessages(suppressWarnings(library(RcppTOML))) # parsing config file
+suppressPackageStartupMessages(suppressWarnings(library(pheatmap))) # heatmap
+suppressPackageStartupMessages(suppressWarnings(library(lattice))) # heatmap
+suppressPackageStartupMessages(suppressWarnings(library(RColorBrewer))) # heatmap
+suppressPackageStartupMessages(suppressWarnings(library(gplots))) # heatmap
+suppressPackageStartupMessages(suppressWarnings(library(ComplexHeatmap))) # heatmap
+suppressPackageStartupMessages(suppressWarnings(library(ggplotify))) # grob
+suppressPackageStartupMessages(suppressWarnings(library(viridis))) # color
+suppressPackageStartupMessages(suppressWarnings(library(platetools))) # make plate plot
 suppressPackageStartupMessages(suppressWarnings(library(circlize)))
-suppressPackageStartupMessages(suppressWarnings(library(reshape2)))
-suppressPackageStartupMessages(suppressWarnings(library(stringr)))
-suppressPackageStartupMessages(suppressWarnings(library(purrr)))
+suppressPackageStartupMessages(suppressWarnings(library(reshape2))) # data manipulation
+suppressPackageStartupMessages(suppressWarnings(library(stringr))) # string manipulation
+suppressPackageStartupMessages(suppressWarnings(library(purrr))) # data manipulation
 source("../utils/figure_themes.r")
 
 # set the cell type
@@ -59,7 +59,7 @@ df_variance$data_split <- gsub("test_data", "Test Data", df_variance$data_split)
 df_variance$data_split <- gsub("train_data", "Train Data", df_variance$data_split)
 
 # set plot size
-options(repr.plot.width=5, repr.plot.height=5)
+options(repr.plot.width=7, repr.plot.height=5)
 # set output path
 global_variance_r2_path <- file.path(paste0(enet_cp_fig_path,"global_variance_r2.png"))
 # if path does not exist, create it
@@ -80,8 +80,9 @@ variance_r2_plot_global <- (
     + scale_shape_manual(values=c(16, 4))
 
 )
-ggsave(global_variance_r2_path, variance_r2_plot_global, width=5, height=5, dpi=500)
 variance_r2_plot_global
+ggsave(global_variance_r2_path, variance_r2_plot_global, width=5, height=5, dpi=500)
+
 
 
 local_variance_r2_path <- file.path(paste0(enet_cp_fig_path,"local_variance_r2.png"))
@@ -159,7 +160,7 @@ global_prediction_trend_line <- (
     + scale_fill_gradientn(colours = viridis(10))
     + labs(x="Actual", y="Predicted")
     + theme_bw()
-    + labs(title="Global Prediction Trends of Cytokine Concentrations")
+    + labs(title="Global Prediction Trends of \nCytokine Concentrations")
     # add y=x line
     + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
     + facet_wrap(data_split~shuffle_plus_data_split, ncol=2)
@@ -197,7 +198,7 @@ pred_v_actual_plot <- function(df, cytokine){
 
 enet_cp_fig <- file.path(paste0(enet_cp_fig_path,"Predicted_vs_Actual_all_cytokines.png"))
 # set plot size
-width <- 6
+width <- 7
 height <- 4
 options(repr.plot.width=width, repr.plot.height=height)
 # subset the data to only include the cytokine of interest
@@ -270,8 +271,8 @@ colnames(agg_df) <- c("shuffle_plus_data_split","mean_r2", "sd_r2")
 
 head(df_stats)
 
-# width = 8
-# height = 5
+width = 8
+height = 5
 # options(repr.plot.width=width, repr.plot.height=height)
 r2_boxplot <- (
     ggplot(df_stats, aes(x=r2, y=shuffle_plus_data_split, fill=shuffle_plus_data_split))
@@ -283,6 +284,8 @@ r2_boxplot <- (
         + labs(fill = "Model", hjust=0.5)
         # change legend title size
         + figure_theme
+        # remove legend
+        + theme(legend.position="none")
 )
 r2_boxplot
 
@@ -338,7 +341,7 @@ process_subset_data <- function(df){
 plot_coeffs <- function(df, cytokine, shuffle){
 
 # plot the data
-    coef_gg <- (
+coef_gg <- (
     ggplot(df, aes(x = channel_learned, y = feature_group))
     + geom_point(aes(fill = abs(coefficients)), pch = 22, size = 5.75)
     + facet_wrap("~compartment", ncol = 3)
@@ -400,8 +403,8 @@ il1beta_final_plot <- plot_coeffs(il1beta_final, cytokine, shuffle)
 # output
 coef_gg_file <- file.path(paste0(output_path,"/","top_abs_val_coefficients_enet.pdf"))
 # set plot size
-width <- 7
-height <- 3.5
+width <- 8.5
+height <- 4
 options(repr.plot.width=width, repr.plot.height=height)
 ggsave(coef_gg_file, il1beta_final_plot, width=width, height=height, dpi=500)
 il1beta_final_plot
@@ -776,8 +779,6 @@ row_ha_3 <- rowAnnotation(
         legend_height = unit(20, "cm"),
         legend_width = unit(1, "cm"),
         # make legend taller
-        # legend_key_width = unit(10, "cm"),
-        # legend_key_height = unit(10, "cm"),
         legend_height = unit(10, "cm"),
         legend_width = unit(1, "cm"),
         legend_key = gpar(fontsize = 16)
@@ -840,13 +841,10 @@ model_heatmap <- (
         )
 )
 
-# Heatmap(draw(model_heatmap, merge_legend = TRUE))
 # dont use above line cannot get back into grob object
 
 # ggplotify model_heatmap
 model_heatmap <- as.ggplot(model_heatmap)
-
-# model_heatmap <- model_heatmap +   theme(plot.margin = unit(c(1, 1, 1, 1), "cm"))
 
 # # save the figure
 ggsave(file = paste0(figure_path, "filtered_features.svg"), plot = model_heatmap, width = width, height = height, units = "in", dpi = 500)

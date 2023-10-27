@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# This noteboook pre-processes the nELISA data to be ready for exploratory analysis and machine learning.
+
+# In[1]:
 
 
 import pathlib
@@ -13,14 +15,14 @@ import seaborn as sns
 from matplotlib.backends.backend_pdf import PdfPages
 from sklearn import preprocessing
 
-# In[ ]:
+# In[2]:
 
 
 # Parameters
 cell_type = "SHSY5Y"
 
 
-# In[ ]:
+# In[3]:
 
 
 # set path to data
@@ -29,22 +31,21 @@ data_path = pathlib.Path(
 )
 
 preprocessing_path = pathlib.Path(
-    f"../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_clean.csv"
+    f"../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_clean.parquet"
 )
 
 # read in data
 nomic_df = pd.read_csv(data_path)
 
 
-# In[ ]:
+# In[4]:
 
 
 # select data only columns and make floats
-nELISA_data_values = nomic_df.filter(like="NSU", axis=1)
-nELISA_data_values = nELISA_data_values.astype("float")
+nELISA_data_values = nomic_df.filter(like="NSU", axis=1).astype("float")
 
 
-# In[ ]:
+# In[5]:
 
 
 # normalize data via max value in each column
@@ -63,22 +64,23 @@ nELISA_data_values_min_max_norm = pd.DataFrame(
 )
 
 
-# In[ ]:
+# In[6]:
 
 
 # drop columns that are named with NSU
-Metadata = nomic_df.drop(nomic_df.filter(like="NSU", axis=1), axis=1)
-Metadata = Metadata.drop(nomic_df.filter(like="pgML", axis=1), axis=1)
+Metadata = nomic_df.drop(nomic_df.filter(like="NSU", axis=1), axis=1).drop(
+    nomic_df.filter(like="pgML", axis=1), axis=1
+)
 
 
-# In[ ]:
+# In[7]:
 
 
 # merge metadata and normalized data values
 analysis_df = pd.concat([Metadata, nELISA_data_values_min_max_norm], axis=1)
 
 
-# In[ ]:
+# In[8]:
 
 
 # get rid of spaces
@@ -87,63 +89,59 @@ analysis_df.replace(" ", "_", regex=True, inplace=True)
 analysis_df.replace("/", "_per_", regex=True, inplace=True)
 
 
-# In[ ]:
+# In[9]:
 
 
+# replace nans with 0 in this case this is okay because the real nans were already removed on the basis of treatment name
 analysis_df["inducer1_concentration"].replace(np.nan, 0, inplace=True)
 analysis_df["inducer2_concentration"].replace(np.nan, 0, inplace=True)
 analysis_df["inhibitor_concentration"].replace(np.nan, 0, inplace=True)
 
 
-# In[ ]:
+# In[10]:
 
 
-# replace %, µg/ml, µM, nM, and nan with ""
-analysis_df["inducer1_concentration"].replace("%", "", regex=True, inplace=True)
-analysis_df["inducer1_concentration"].replace(
-    "_µg_per_ml", "", regex=True, inplace=True
-)
-analysis_df["inducer1_concentration"].replace("_µM", "", regex=True, inplace=True)
-analysis_df["inducer1_concentration"].replace("_nM", "", regex=True, inplace=True)
+def perform_replacements(text):
+    replacements = {
+        "%": "",
+        "_µM": "",
+        "_nM": "",
+        "_µg_per_ml": "",
+    }
+    for key, value in replacements.items():
+        text = str(text).replace(key, value)
+    return text
 
 
-# In[ ]:
+# Columns to which you want to apply the changes
+columns_to_apply = [
+    "inducer1_concentration",
+    "inducer2_concentration",
+    "inhibitor_concentration",
+]
 
-
-# replace %, µg/ml, µM, nM, and nan with ""
-analysis_df["inducer2_concentration"].replace("%", "", regex=True, inplace=True)
-analysis_df["inducer2_concentration"].replace(
-    "_µg_per_ml", "", regex=True, inplace=True
-)
-analysis_df["inducer2_concentration"].replace("_µM", "", regex=True, inplace=True)
-analysis_df["inducer2_concentration"].replace("_nM", "", regex=True, inplace=True)
-
-
-# In[ ]:
-
-
-# replace %, µg/ml, µM, nM, and nan with ""
-analysis_df["inhibitor_concentration"].replace("%", "", regex=True, inplace=True)
-analysis_df["inhibitor_concentration"].replace(
-    "_µg_per_ml", "", regex=True, inplace=True
-)
-analysis_df["inhibitor_concentration"].replace("_µM", "", regex=True, inplace=True)
-analysis_df["inhibitor_concentration"].replace("_nM", "", regex=True, inplace=True)
-
-
-# In[ ]:
-
-
-# analysis_df['inhibitor_concentration'] to numeric
-analysis_df["inhibitor_concentration"] = pd.to_numeric(
-    analysis_df["inhibitor_concentration"]
+# Applying the custom function to selected columns using apply
+analysis_df[columns_to_apply] = analysis_df[columns_to_apply].apply(
+    lambda x: x.apply(perform_replacements)
 )
 
-# make each 3 decimal places
-analysis_df["inhibitor_concentration"] = analysis_df["inhibitor_concentration"].round(3)
+
+# In[11]:
 
 
-# In[ ]:
+# using an f string make "inducer1_concentration" have 3 decimal places
+analysis_df["inducer1_concentration"] = analysis_df["inducer1_concentration"].apply(
+    lambda x: f"{float(x):.3f}" if float(x) != 0 else float(x)
+)
+analysis_df["inducer2_concentration"] = analysis_df["inducer2_concentration"].apply(
+    lambda x: f"{float(x):.3f}" if float(x) != 0 else float(x)
+)
+analysis_df["inhibitor_concentration"] = analysis_df["inhibitor_concentration"].apply(
+    lambda x: f"{float(x):.3f}" if float(x) != 0 else float(x)
+)
+
+
+# In[12]:
 
 
 # treatment column merge
@@ -179,7 +177,7 @@ results = [
 analysis_df["Dose"] = np.select(condlist=conditions, choicelist=results)
 
 
-# In[ ]:
+# In[13]:
 
 
 # one beta of inudcer1, inducer1 concentration, inhibitor, and inhibitor concentration all as 1 beta term
@@ -188,8 +186,6 @@ analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = (
     + "_"
     + analysis_df["Dose"].astype(str)
     + "_"
-    # + analysis_df['inducer1_concentration_unit'].astype(str)
-    # + "_"
     + analysis_df["inhibitor"].astype(str)
     + "_"
     + analysis_df["inhibitor_concentration"].astype(str)
@@ -204,8 +200,6 @@ analysis_df["twob_Treatment_Dose_Inhibitor_Dose"] = (
     + "_"
     + analysis_df["inhibitor"].astype(str)
     + "_"
-    # + analysis_df["inhibitor_concentration"].astype(str)
-    # + "__"
     + analysis_df["Dose"].astype(str)
 ).astype(str)
 
@@ -215,8 +209,6 @@ analysis_df["threeb_Treatment_Dose_Inhibitor_Dose"] = (
     + "__"
     + analysis_df["Dose"].astype(str)
     + "__"
-    # + analysis_df['inducer1_concentration_unit'].astype(str)
-    # + "_"
     + analysis_df["inhibitor"].astype(str)
     + "_"
     + analysis_df["inhibitor_concentration"].astype(str)
@@ -228,99 +220,52 @@ analysis_df["fourb_Treatment_Dose_Inhibitor_Dose"] = (
     + "__"
     + analysis_df["Dose"].astype(str)
     + "__"
-    # + analysis_df['inducer1_concentration_unit'].astype(str)
-    # + "_"
     + analysis_df["inhibitor"].astype(str)
     + "__"
     + analysis_df["inhibitor_concentration"].astype(str)
 ).astype(str)
 
 
-# In[ ]:
+# In[14]:
 
 
-# fix strings in Metadata_Treatment column
-# replaceall "None" with "0"
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("None", "0")
-# replace all mu with u
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("µ", "u")
-# replace all "nan" with "0"
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("nan", "0")
+replacement_dict = {
+    "None": "0",
+    "µ": "u",
+    "nan": "0",
+}
+for pattern, replacement in replacement_dict.items():
+    print(pattern, replacement)
+    analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
+        "oneb_Treatment_Dose_Inhibitor_Dose"
+    ].replace(to_replace=str(pattern), value=str(replacement), regex=True)
 
 
-# In[ ]:
+# In[15]:
 
 
-# _0.03 to _0.025
+# _0.03 to _0.025 for the DMSO concentration
 analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
     "oneb_Treatment_Dose_Inhibitor_Dose"
 ].str.replace("_0.03", "_0.025", regex=False)
-# _0.010_ to _0.100_
+
+# _0.0250 to _0.025 for the DMSO concentration
 analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
     "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_0.01_", "_0.010_", regex=False)
-# _0.10_ to _0.100_
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_0.10_", "_0.100_", regex=False)
-# _0.10_ to _0.100_
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_0.1_", "_0.100_", regex=False)
-# _1_ to _1.000_
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_1_", "_1.000_", regex=False)
-# _1.0_ to _1.000_
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_1.0_", "_1.000_", regex=False)
-# _10_ to _10.000_
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_10_", "_10.000_", regex=False)
-# _100_ to _100.000_
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_100_", "_100.000_", regex=False)
-# _100.0_ to _100.000_
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_100.0_", "_100.000_", regex=False)
-# _5_ to _5.000_
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_5_", "_5.000_", regex=False)
-# _20_ to _20.000_
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_20_", "_20.000_", regex=False)
-# _30_ to _30.000_
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_30_", "_30.000_", regex=False)
-# _2.5 to _2.500_
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_2.5_", "_2.500_", regex=False)
-# _3.0 to _3.000_
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_3.0_", "_3.000_", regex=False)
-# _3 to _3.000_
-analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
-    "oneb_Treatment_Dose_Inhibitor_Dose"
-].str.replace("_3_", "_3.000_", regex=False)
+].str.replace("_0.0250", "_0.025", regex=False)
 
 
-# In[ ]:
+# In[16]:
 
 
-# save nELISA_plate_430420_no_inhibitors dataframe to csv file
-analysis_df.to_csv(preprocessing_path, index=False)
+# need to convert to strings to save as parquet
+# if the column is an object then convert it to a string
+for column in analysis_df.columns:
+    if analysis_df[column].dtype == "object":
+        analysis_df[column] = analysis_df[column].astype(str)
+
+
+# In[17]:
+
+
+analysis_df.to_parquet(preprocessing_path)

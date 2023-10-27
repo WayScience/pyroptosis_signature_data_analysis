@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import argparse
@@ -52,7 +52,15 @@ cytokine = args.cytokine
 print(cell_type, shuffle, cytokine)
 
 
-# In[3]:
+# In[ ]:
+
+
+cell_type = "SHSY5Y"
+shuffle = False
+cytokine = "Activin A [NSU]"
+
+
+# In[ ]:
 
 
 # Parameters
@@ -60,7 +68,7 @@ aggregation = True
 nomic = True
 
 
-# In[5]:
+# In[ ]:
 
 
 # set shuffle value
@@ -70,13 +78,13 @@ else:
     shuffle = "final"
 
 
-# In[6]:
+# In[ ]:
 
 
 MODEL_TYPE = "regression"
 
 
-# In[7]:
+# In[ ]:
 
 
 # load training data from indexes and features dataframe
@@ -84,7 +92,7 @@ data_split_path = pathlib.Path(
     f"../../0.split_data/indexes/{cell_type}/regression/aggregated_sc_and_nomic_data_split_indexes.tsv"
 )
 data_path = pathlib.Path(
-    f"../../../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
+    f"../../../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
 )
 
 # dataframe with only the labeled data we want (exclude certain phenotypic classes)
@@ -93,7 +101,19 @@ data_df = pd.read_parquet(data_path)
 data_split_indexes = pd.read_csv(data_split_path, sep="\t")
 
 
-# In[8]:
+# In[ ]:
+
+
+# rename column that contain the treatment dose to be a metadata column
+data_df.rename(
+    columns={
+        "oneb_Treatment_Dose_Inhibitor_Dose": "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+    },
+    inplace=True,
+)
+
+
+# In[ ]:
 
 
 # select tht indexes for the training and test set
@@ -101,7 +121,7 @@ train_indexes = data_split_indexes.loc[data_split_indexes["label"] == "train"]
 test_indexes = data_split_indexes.loc[data_split_indexes["label"] == "test"]
 
 
-# In[9]:
+# In[ ]:
 
 
 # subset data_df by indexes in data_split_indexes
@@ -109,7 +129,7 @@ training_data = data_df.loc[train_indexes["labeled_data_index"]]
 testing_data = data_df.loc[test_indexes["labeled_data_index"]]
 
 
-# In[10]:
+# In[ ]:
 
 
 # define metadata columns
@@ -118,7 +138,7 @@ metadata_train = training_data.filter(regex="Metadata")
 # drop all metadata columns
 train_data_x = training_data.drop(metadata_train.columns, axis=1)
 train_treatments = training_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-# get all columns that contain "NSU" in the column name
+# get all columns that contain "NSU" in the column name where NSU = normalized signal units
 train_data_y_cols = train_data_x.filter(regex="NSU").columns
 train_data_y = training_data[train_data_y_cols]
 train_data_x = train_data_x.drop(train_data_y_cols, axis=1)
@@ -136,13 +156,13 @@ test_data_y = testing_data[test_data_y_cols]
 test_data_x = test_data_x.drop(test_data_y_cols, axis=1)
 
 
-# In[11]:
+# In[ ]:
 
 
 print(train_data_x.shape, train_data_y.shape, test_data_x.shape, test_data_y.shape)
 
 
-# In[12]:
+# In[ ]:
 
 
 # set model path from parameters
@@ -158,7 +178,7 @@ else:
     print("Error")
 
 
-# In[13]:
+# In[ ]:
 
 
 data_dict = {
@@ -177,7 +197,7 @@ data_dict = {
 }
 
 
-# In[14]:
+# In[ ]:
 
 
 # cross validation method
@@ -188,7 +208,7 @@ metrics = ["explained_variance", "neg_mean_absolute_error", "neg_mean_squared_er
 output_metric_scores = {}
 
 
-# In[15]:
+# In[ ]:
 
 
 # blank df for concatenated results
@@ -212,7 +232,7 @@ results_df = pd.DataFrame(
 )
 
 
-# In[16]:
+# In[ ]:
 
 
 for data_split in data_dict:
@@ -272,7 +292,7 @@ for data_split in data_dict:
     results_df = pd.concat([results_df, df], axis=0)
 
 
-# In[17]:
+# In[ ]:
 
 
 results_df

@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# This noteboook aggregates the data from the previous notebooks and creates the final dataset for the analysis barring the data are aggregated in the analysis.
+
+# In[ ]:
 
 
 import pathlib
@@ -9,7 +11,7 @@ import pathlib
 import numpy as np
 import pandas as pd
 
-# In[2]:
+# In[ ]:
 
 
 # Parameters
@@ -33,13 +35,13 @@ elif aggregation and not nomic:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
     )
-elif aggregation == False & nomic == False:
+elif not aggregation and not nomic:
     pass
 else:
     raise ValueError("Wrong parameters")
 
 
-# In[10]:
+# In[ ]:
 
 
 path = pathlib.Path(f"../data/{cell_type}_preprocessed_sc_norm.parquet")
@@ -48,31 +50,27 @@ data_df = pd.read_parquet(path)
 
 data_df.head()
 
-if nomic == True:
+if nomic:
     # import nomic data
     nomic_df_path = pathlib.Path(
-        f"../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_clean.csv"
+        f"../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_clean.parquet"
     )
-    df_nomic = pd.read_csv(nomic_df_path)
+    df_nomic = pd.read_parquet(nomic_df_path)
 
     # drop columns that contain [pgML]
     df_nomic = df_nomic.drop(
         columns=[col for col in df_nomic.columns if "[pgML]" in col]
     )
-    # drop first 25 columns
+    # drop first 25 columns (metadata that does not contain metadata in the title)
     df_nomic = df_nomic.drop(columns=df_nomic.columns[3:25])
     df_nomic = df_nomic.drop(columns=df_nomic.columns[0:2])
+elif not nomic:
+    pass
 else:
-    df_nomic = None
+    raise ValueError("Nomic data not imported")
 
 
-# In[11]:
-
-
-df_nomic
-
-
-# In[12]:
+# In[ ]:
 
 
 # subset each column that contains metadata
@@ -89,25 +87,26 @@ metadata_well = metadata[
 data_df = pd.merge(data, metadata_well, left_index=True, right_index=True)
 
 
-# In[21]:
+# In[ ]:
 
 
-df_nomic.drop(
-    columns=[
-        "Treatment",
-        "Dose",
-        "twob_Treatment_Dose_Inhibitor_Dose",
-        "threeb_Treatment_Dose_Inhibitor_Dose",
-        "fourb_Treatment_Dose_Inhibitor_Dose",
-    ],
-    inplace=True,
-)
+if nomic:
+    df_nomic.drop(
+        columns=[
+            "Treatment",
+            "Dose",
+            "twob_Treatment_Dose_Inhibitor_Dose",
+            "threeb_Treatment_Dose_Inhibitor_Dose",
+            "fourb_Treatment_Dose_Inhibitor_Dose",
+        ],
+        inplace=True,
+    )
 
 
-# In[24]:
+# In[ ]:
 
 
-if (aggregation == True) and (nomic == True):
+if aggregation and nomic:
 
     # subset each column that contains metadata
     metadata = data_df.filter(regex="Metadata")
@@ -137,27 +136,27 @@ if (aggregation == True) and (nomic == True):
     )
 
 
-elif (aggregation == True) and (nomic == False):
-    # subset each column that contains metadata
-    metadata = data.filter(regex="Metadata")
+elif aggregation and not nomic:
+    # get metadata columns
+    metadata = data_df.filter(regex="Metadata")
     data_df = data_df.drop(metadata.columns, axis=1)
-    data_df = pd.concat([data_df, metadata["Metadata_Well"]], axis=1)
+    metadata
+    data_df = pd.concat([data_df, metadata], axis=1)
     # groupby well and take mean of each well
-    data_df = data_df.groupby("Metadata_Well").mean()
-    # drop duplicate rows in the metadata_well column
+    data_df = data_df.groupby(
+        ["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
+    ).mean()
+    # # drop duplicate rows in the metadata_well column
     metadata = metadata.drop_duplicates(subset=["Metadata_Well"])
-    # get the metadata for each well
-    data_df = pd.merge(
-        data_df,
-        df_nomic,
-        left_on=["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-        right_on=["position_x", "oneb_Treatment_Dose_Inhibitor_Dose"],
-    )
-    # set path to save the data
+    # # get the metadata for each well
+    # # set path to save the data
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
     )
-elif (aggregation == False) and (nomic == True):
+    # reset the index
+    data_df = data_df.reset_index()
+
+elif not aggregation and nomic:
     data_df = pd.merge(
         data_df,
         df_nomic,
@@ -172,13 +171,11 @@ elif (aggregation == False) and (nomic == True):
 elif aggregation == False and nomic == False:
     pass
 else:
-    print("Error")
+    raise ValueError("Wrong parameters nomica and/or aggregation not defined")
 
 
 # In[ ]:
 
-
-# set path to save the data
 
 # save the data
 data_df.to_parquet(aggregated_data_path)

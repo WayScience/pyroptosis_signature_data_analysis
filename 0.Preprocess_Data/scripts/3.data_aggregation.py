@@ -3,7 +3,8 @@
 
 # This noteboook aggregates the data from the previous notebooks and creates the final dataset for the analysis barring the data are aggregated in the analysis.
 
-# In[1]:
+# In[ ]:
+
 
 
 import pathlib
@@ -11,7 +12,7 @@ import pathlib
 import numpy as np
 import pandas as pd
 
-# In[2]:
+# In[ ]:
 
 
 # Parameters
@@ -20,7 +21,7 @@ aggregation = True
 nomic = True
 
 
-# In[3]:
+# In[]:
 
 
 if aggregation and nomic:
@@ -35,13 +36,16 @@ elif aggregation and not nomic:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
     ).resolve(strict=True)
+
 elif not aggregation and not nomic:
     pass
 else:
     raise ValueError("Wrong parameters")
 
 
-# In[5]:
+
+# In[ ]:
+
 
 
 path = pathlib.Path(f"../data/{cell_type}_preprocessed_sc_norm.parquet")
@@ -61,12 +65,13 @@ if nomic:
     df_nomic = df_nomic.drop(
         columns=[col for col in df_nomic.columns if "[pgML]" in col]
     )
-    # drop first 25 columns
+    # drop first 25 columns (metadata that does not contain metadata in the title)
     df_nomic = df_nomic.drop(columns=df_nomic.columns[3:25])
     df_nomic = df_nomic.drop(columns=df_nomic.columns[0:2])
+elif not nomic:
+    pass
 else:
     raise ValueError("Nomic data not imported")
-
 
 # In[ ]:
 
@@ -135,25 +140,30 @@ if aggregation and nomic:
 
 
 elif aggregation and not nomic:
-    # subset each column that contains metadata
-    metadata = data.filter(regex="Metadata")
+
+    # get metadata columns
+    metadata = data_df.filter(regex="Metadata")
+
+
     data_df = data_df.drop(metadata.columns, axis=1)
-    data_df = pd.concat([data_df, metadata["Metadata_Well"]], axis=1)
+    metadata
+    data_df = pd.concat([data_df, metadata], axis=1)
     # groupby well and take mean of each well
-    data_df = data_df.groupby("Metadata_Well").mean()
-    # drop duplicate rows in the metadata_well column
+    data_df = data_df.groupby(
+        ["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
+    ).mean()
+    # # drop duplicate rows in the metadata_well column
     metadata = metadata.drop_duplicates(subset=["Metadata_Well"])
-    # get the metadata for each well
-    data_df = pd.merge(
-        data_df,
-        df_nomic,
-        left_on=["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-        right_on=["position_x", "oneb_Treatment_Dose_Inhibitor_Dose"],
-    )
-    # set path to save the data
+    # # get the metadata for each well
+    # # set path to save the data
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
     )
+
+    # reset the index
+    data_df = data_df.reset_index()
+
+
 elif not aggregation and nomic:
     data_df = pd.merge(
         data_df,

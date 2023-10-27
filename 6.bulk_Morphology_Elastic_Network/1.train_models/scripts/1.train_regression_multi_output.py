@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import argparse
@@ -20,6 +20,7 @@ from sklearn.linear_model import ElasticNetCV, LogisticRegression, MultiTaskElas
 # import RepeatedKFold
 from sklearn.model_selection import (
     GridSearchCV,
+    LeaveOneOut,
     RepeatedKFold,
     StratifiedKFold,
     cross_val_score,
@@ -27,7 +28,7 @@ from sklearn.model_selection import (
 )
 from sklearn.utils import parallel_backend
 
-# In[ ]:
+# In[2]:
 
 
 argparser = argparse.ArgumentParser()
@@ -51,14 +52,22 @@ else:
 print(f"shuffle: {shuffle}")
 
 
-# In[ ]:
+# In[3]:
+
+
+shuffle = "True"
+cell_type = "SHSY5Y"
+cytokine = "IL-1 beta [NSU]"
+
+
+# In[4]:
 
 
 aggregation = True
 nomic = True
 
 
-# In[ ]:
+# In[5]:
 
 
 # set shuffle value
@@ -68,13 +77,13 @@ else:
     shuffle = "final"
 
 
-# In[ ]:
+# In[6]:
 
 
 MODEL_TYPE = "regression"
 
 
-# In[ ]:
+# In[7]:
 
 
 # load training data from indexes and features dataframe
@@ -82,7 +91,7 @@ data_split_path = pathlib.Path(
     f"../../0.split_data/indexes/{cell_type}/regression/aggregated_sc_and_nomic_data_split_indexes.tsv"
 )
 data_path = pathlib.Path(
-    f"../../../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
+    f"../../../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
 )
 
 # dataframe with only the labeled data we want (exclude certain phenotypic classes)
@@ -91,21 +100,27 @@ data_df = pd.read_parquet(data_path)
 data_split_indexes = pd.read_csv(data_split_path, sep="\t")
 
 
-# In[ ]:
+# In[8]:
+
+
+data_df
+
+
+# In[9]:
 
 
 # select tht indexes for the training and test set
 train_indexes = data_split_indexes.loc[data_split_indexes["label"] == "train"]
 
 
-# In[ ]:
+# In[10]:
 
 
 # subset data_df by indexes in data_split_indexes
 training_data = data_df.loc[train_indexes["labeled_data_index"]]
 
 
-# In[ ]:
+# In[11]:
 
 
 # define metadata columns
@@ -118,19 +133,18 @@ labeled_data = training_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 data_y_cols = data_x.filter(regex="NSU").columns
 train_y = training_data[data_y_cols]
 train_x = data_x.drop(data_y_cols, axis=1)
+train_x = train_x.drop(columns="oneb_Treatment_Dose_Inhibitor_Dose")
 
 
-# In[ ]:
+# In[12]:
 
-
-from sklearn.model_selection import LeaveOneOut
 
 loo = LeaveOneOut()
 loo.get_n_splits(train_x)
 loo.get_n_splits(train_y)
 
 
-# In[ ]:
+# In[13]:
 
 
 train_data_y = train_y[cytokine]

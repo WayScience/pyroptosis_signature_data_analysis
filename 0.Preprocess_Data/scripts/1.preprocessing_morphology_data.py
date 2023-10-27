@@ -26,7 +26,7 @@ cell_type = "SHSY5Y"
 
 # Define inputs
 feature_file = pathlib.Path(f"../data/{cell_type}_sc_norm_fs.parquet")
-feature_df = pq.read_table(feature_file).to_pandas()
+feature_df = pd.read_parquet(feature_file)
 
 
 # In[4]:
@@ -104,16 +104,19 @@ feature_df["Metadata_inducer1_concentration"].fillna(0, inplace=True)
 # In[13]:
 
 
-# using an f string make "inducer1_concentration" have 3 decimal places
-feature_df["Metadata_inducer1_concentration"] = feature_df[
-    "Metadata_inducer1_concentration"
-].apply(lambda x: f"{float(x):.3f}" if float(x) != 0 else float(x))
-feature_df["Metadata_inducer2_concentration"] = feature_df[
-    "Metadata_inducer2_concentration"
-].apply(lambda x: f"{float(x):.3f}" if float(x) != 0 else float(x))
-feature_df["Metadata_inhibitor_concentration"] = feature_df[
-    "Metadata_inhibitor_concentration"
-].apply(lambda x: f"{float(x):.3f}" if float(x) != 0 else float(x))
+
+# create a list of columns to be converted to float
+col_list = [
+    "Metadata_inducer1_concentration",
+    "Metadata_inducer2_concentration",
+    "Metadata_inhibitor_concentration",
+]
+# loop through the list and convert each column to float
+for i in col_list:
+    feature_df[i] = feature_df[i].apply(
+        lambda x: f"{float(x):.3f}" if float(x) != 0 else float(x)
+    )
+
 
 
 # #### Combine Inducer1 and Inducer2 into one column

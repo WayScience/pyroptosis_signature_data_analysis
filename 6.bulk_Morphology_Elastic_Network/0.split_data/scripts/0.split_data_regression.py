@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[18]:
+# In[1]:
 
 
 import argparse
@@ -28,7 +28,7 @@ args = argparser.parse_args()
 cell_type = args.cell_type
 
 
-# In[20]:
+# In[3]:
 
 
 # Parameters
@@ -36,13 +36,13 @@ aggregation = True
 nomic = True
 
 
-# In[21]:
+# In[4]:
 
 
 MODEL_TYPE = "regression"
 
 
-# In[22]:
+# In[5]:
 
 
 # toml file path
@@ -55,11 +55,11 @@ test_100_percent = data_splits_by_treatments["splits"]["data_splits_100"]
 test_75_percent = data_splits_by_treatments["splits"]["data_splits_75"]
 
 
-# In[23]:
+# In[6]:
 
 
 path = pathlib.Path(
-    f"../../../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
+    f"../../../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
 )
 
 data_df = pq.read_table(path).to_pandas()
@@ -67,7 +67,7 @@ data_df = pq.read_table(path).to_pandas()
 data_df.head()
 
 
-# In[24]:
+# In[7]:
 
 
 # subset each column that contains metadata
@@ -87,13 +87,7 @@ data_df = pd.merge(data, metadata_well, left_index=True, right_index=True)
 # This model and code is both inspired and reused from: https://github.com/WayScience/phenotypic_profiling_model/blob/main/1.split_data/split_data.ipynb
 # The bulk of this work was done by **Roshan Kern** I have only made minor changes to the code to make it more modular and easier to use for my purposes.
 
-# In[25]:
-
-
-data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
-
-
-# In[26]:
+# In[8]:
 
 
 # variable test and train set splits
@@ -107,23 +101,18 @@ test_set_75 = data_df[
     data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(test_75_percent)
 ]
 
+test_100_and_75 = test_100_percent + test_75_percent
+
 # 50% test set and 50% train set
 # get all treatments that are not in the_test_set_all and the test_set_75
 test_set_50 = data_df[
-    ~data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
-        test_set_all["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    )
-]
-test_set_50 = test_set_50[
-    ~test_set_50["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
-        test_set_75["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    )
+    ~data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(test_100_and_75)
 ]
 
 print(test_set_all.shape, test_set_75.shape, test_set_50.shape)
 
 
-# In[27]:
+# In[9]:
 
 
 # get the train test splits from each group
@@ -163,7 +152,7 @@ print(
 )
 
 
-# In[28]:
+# In[10]:
 
 
 # combine all testing sets together while preserving the index
@@ -187,7 +176,7 @@ testing_data_set_index = testing_data_set.index
 training_data_set_index = training_data_set.index
 
 
-# In[29]:
+# In[11]:
 
 
 # create pandas dataframe with all indexes and their respective labels, stratified by phenotypic class
@@ -201,7 +190,7 @@ for index in testing_data_set_index:
 index_data = pd.DataFrame(index_data).sort_values(["labeled_data_index"])
 
 
-# In[30]:
+# In[12]:
 
 
 # set save path
@@ -223,7 +212,7 @@ print(save_path)
 save_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[31]:
+# In[13]:
 
 
 # save indexes as tsv file
@@ -241,6 +230,3 @@ elif aggregation == False:
         index_data.to_csv(f"{save_path}/sc_split_indexes.tsv", sep="\t")
 else:
     print("Error")
-
-
-# In[ ]:

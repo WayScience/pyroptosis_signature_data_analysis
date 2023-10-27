@@ -34,6 +34,7 @@ preprocessing_path = pathlib.Path(
     f"../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_clean.parquet"
 ).resolve(strict=True)
 
+
 # read in data
 nomic_df = pd.read_csv(data_path)
 
@@ -101,6 +102,7 @@ analysis_df["inhibitor_concentration"].replace(np.nan, 0, inplace=True)
 # In[10]:
 
 
+
 def perform_replacements(text: str) -> str:
     """
     Function to replace special characters in text.
@@ -140,6 +142,32 @@ analysis_df[columns_to_apply] = analysis_df[columns_to_apply].apply(
 )
 
 
+def perform_replacements(text):
+    replacements = {
+        "%": "",
+        "_µM": "",
+        "_nM": "",
+        "_µg_per_ml": "",
+    }
+    for key, value in replacements.items():
+        text = str(text).replace(key, value)
+    return text
+
+
+# Columns to which you want to apply the changes
+columns_to_apply = [
+    "inducer1_concentration",
+    "inducer2_concentration",
+    "inhibitor_concentration",
+]
+
+
+# Applying the custom function to selected columns using apply
+analysis_df[columns_to_apply] = analysis_df[columns_to_apply].apply(
+    lambda x: x.apply(perform_replacements)
+)
+
+
 # In[11]:
 
 
@@ -150,6 +178,7 @@ analysis_df["inducer1_concentration"] = analysis_df["inducer1_concentration"].ap
 analysis_df["inducer2_concentration"] = analysis_df["inducer2_concentration"].apply(
     lambda x: f"{float(x):.3f}" if float(x) != 0 else float(x)
 )
+
 analysis_df["inhibitor_concentration"] = analysis_df["inhibitor_concentration"].apply(
     lambda x: f"{float(x):.3f}" if float(x) != 0 else float(x)
 )

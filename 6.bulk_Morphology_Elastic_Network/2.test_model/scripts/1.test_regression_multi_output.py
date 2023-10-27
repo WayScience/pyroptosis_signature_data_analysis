@@ -84,13 +84,25 @@ data_split_path = pathlib.Path(
     f"../../0.split_data/indexes/{cell_type}/regression/aggregated_sc_and_nomic_data_split_indexes.tsv"
 )
 data_path = pathlib.Path(
-    f"../../../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
+    f"../../../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
 )
 
 # dataframe with only the labeled data we want (exclude certain phenotypic classes)
 data_df = pd.read_parquet(data_path)
 
 data_split_indexes = pd.read_csv(data_split_path, sep="\t")
+
+
+# In[ ]:
+
+
+# rename column that contain the treatment dose to be a metadata column
+data_df.rename(
+    columns={
+        "oneb_Treatment_Dose_Inhibitor_Dose": "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+    },
+    inplace=True,
+)
 
 
 # In[ ]:
@@ -118,7 +130,7 @@ metadata_train = training_data.filter(regex="Metadata")
 # drop all metadata columns
 train_data_x = training_data.drop(metadata_train.columns, axis=1)
 train_treatments = training_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-# get all columns that contain "NSU" in the column name
+# get all columns that contain "NSU" in the column name where NSU = normalized signal units
 train_data_y_cols = train_data_x.filter(regex="NSU").columns
 train_data_y = training_data[train_data_y_cols]
 train_data_x = train_data_x.drop(train_data_y_cols, axis=1)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import pathlib
@@ -13,38 +13,19 @@ import seaborn as sns
 import toml
 from plotnine import (
     aes,
-    element_blank,
-    element_line,
-    element_rect,
     element_text,
     facet_grid,
-    facet_wrap,
     geom_bar,
-    geom_boxplot,
-    geom_col,
     geom_point,
-    geom_text,
-    geom_tile,
-    geom_violin,
     ggplot,
     ggsave,
-    ggtitle,
-    labs,
-    scale_color_manual,
-    scale_fill_gradient,
-    scale_fill_manual,
-    scale_x_continuous,
-    scale_x_discrete,
-    scale_y_continuous,
-    scale_y_discrete,
     theme,
     theme_bw,
-    theme_classic,
     xlim,
     ylim,
 )
 
-# In[ ]:
+# In[2]:
 
 
 # set paths and load data
@@ -58,13 +39,13 @@ params = toml.load(toml_path)
 list_of_treatments = params["list_of_treatments"]["treatments"]
 
 
-# In[ ]:
+# In[3]:
 
 
 print(df.columns.to_list())
 
 
-# In[ ]:
+# In[4]:
 
 
 # output path for the treatment df
@@ -74,11 +55,10 @@ output_path = pathlib.Path(
 df.to_csv(output_path, index=False)
 
 
-# In[ ]:
+# In[12]:
 
 
 # plot scatter plot of all the treatment groups for IL-1 beta
-# plot scatter plot of all the treatment groups for IL-6
 
 p = (
     ggplot(
@@ -103,10 +83,11 @@ ggplot.save(
     units="in",
     dpi=300,
 )
+p = p + theme(figure_size=(16, 8))
 p
 
 
-# In[ ]:
+# In[6]:
 
 
 df_treatment = df.drop(
@@ -120,7 +101,7 @@ df_treatment = df_treatment.melt(
 )
 
 
-# In[ ]:
+# In[7]:
 
 
 # outpath for the melted df
@@ -130,7 +111,7 @@ output_path = pathlib.Path(
 df_treatment.to_csv(output_path, index=False)
 
 
-# In[ ]:
+# In[8]:
 
 
 # facet grid of treatment and dose with TNF alpha
@@ -150,5 +131,4 @@ p = (
 )
 
 p = p + theme(figure_size=(16, 8))
-
-# ggplot.save(p, filename="SHSY5Y_Treatment_Dose_TNF_alpha.png", path="figures/")
+p

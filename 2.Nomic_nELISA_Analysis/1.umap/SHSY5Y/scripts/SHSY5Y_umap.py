@@ -37,14 +37,14 @@ manual_clusters_1 = pd.read_csv(manual_cluster_1_path)
 manual_clusters_2 = pd.read_csv(manual_cluster_2_path)
 treatments = toml.load(treatment_clusters_path)["list_of_treatments"]["treatments"]
 
-nELISA_orgingal_plate = nELISA_plate_430420_SHSY5Y.copy()
+nELISA_original_plate = nELISA_plate_430420_SHSY5Y.copy()
 
 
 # In[3]:
 
 
 # select data only columns and make floats
-nELISA_data_values = nELISA_orgingal_plate.filter(like="NSU", axis=1).astype("float")
+nELISA_data_values = nELISA_original_plate.filter(like="NSU", axis=1).astype("float")
 nELISA_data_values.head()
 
 
@@ -65,8 +65,8 @@ NSU nELISA max of Activin A: {nELISA_data_values['Activin A [NSU]'].max()}
 
 
 # rename columns to remove special character "/"
-# with "/" in the column names file nameing is not possible
-nELISA_orgingal_plate.columns = nELISA_orgingal_plate.columns.str.replace("/", "_")
+# replace with "/" in the column names file nameing is not possible
+nELISA_original_plate.columns = nELISA_original_plate.columns.str.replace("/", "_")
 
 # set umap parameters
 umap_params = umap.UMAP(
@@ -87,8 +87,8 @@ umap_params = umap.UMAP(
 proj_2d = umap_params.fit_transform(nELISA_data_values)
 
 # add umap coordinates to dataframe of metadata and raw data
-nELISA_orgingal_plate["umap_1"] = proj_2d[:, 0]
-nELISA_orgingal_plate["umap_2"] = proj_2d[:, 1]
+nELISA_original_plate["umap_1"] = proj_2d[:, 0]
+nELISA_original_plate["umap_2"] = proj_2d[:, 1]
 
 
 # In[7]:
@@ -99,12 +99,12 @@ nELISA_plate_430420_out_path = pathlib.Path(
     "./results/nELISA_plate_430420_umap_SHSY5Y.csv"
 )
 # write to csv
-nELISA_orgingal_plate.to_csv(nELISA_plate_430420_out_path, index=False)
+nELISA_original_plate.to_csv(nELISA_plate_430420_out_path, index=False)
 
 
 # ### Selected Treatments
 
-# In[8]:
+# In[10]:
 
 
 # select treatments from the list of treatments from the df

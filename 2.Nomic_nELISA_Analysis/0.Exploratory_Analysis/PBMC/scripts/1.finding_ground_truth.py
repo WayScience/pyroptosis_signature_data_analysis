@@ -6,7 +6,7 @@
 
 # ### Imports
 
-# In[1]:
+# In[ ]:
 
 
 import pathlib
@@ -35,13 +35,10 @@ warnings.simplefilter("ignore", category=NumbaDeprecationWarning)
 warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
 import umap
 
-# In[2]:
+# In[ ]:
 
 
 # set path
-# df_path = pathlib.Path(
-#     f"../../Data/clean/Plate2/nELISA_plate_430420_PBMC_cleanup4correlation.csv"
-# )
 
 df_path = pathlib.Path(
     f"../../Data/clean/Plate2/nELISA_plate_430420_PBMC_clean.parquet"
@@ -52,7 +49,7 @@ df_path = pathlib.Path(
 df = pd.read_parquet(df_path)
 
 
-# In[3]:
+# In[ ]:
 
 
 # import selected treatmenets
@@ -64,14 +61,12 @@ params = toml.load(toml_path)
 list_of_treatments = params["list_of_treatments"]["treatments"]
 
 
-# In[4]:
+# In[ ]:
 
 
 # get the treatments in fourb_Metadata_Treatment_Dose_Inhibitor coulumn for each treatment in the list of treatments
-# df = df[df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(list_of_treatments)]
 df = df.drop(
     columns=[
-        "position_x",
         "Dose",
         "Treatment",
         "twob_Treatment_Dose_Inhibitor_Dose",
@@ -116,7 +111,7 @@ df_melted.to_parquet(all_cytokines_path_melted)
 # Anova of all treatments and post-hoc analysis of all treatments for each cytokine and chemokine.
 # This will determine the cytokines and chemokines that are found at high levels in pyroptotic inducing agents.
 
-# In[5]:
+# In[ ]:
 
 
 # define blank df
@@ -134,7 +129,7 @@ final_df_tukey = pd.DataFrame(
 )
 
 
-# In[6]:
+# In[ ]:
 
 
 # perform anova on each column of the data frame with oneb_meta as the groupby
@@ -170,14 +165,14 @@ print(
 )
 
 
-# In[7]:
+# In[ ]:
 
 
 # check for blank first row...
 final_df_tukey.head(3)
 
 
-# In[8]:
+# In[ ]:
 
 
 # remove first row as it is blank fro some reason
@@ -187,14 +182,14 @@ final_df_tukey.head(3)
 
 # Clean up the data and filter out tests that are not significant.
 
-# In[9]:
+# In[ ]:
 
 
 # drop rows in pvalue column that are over 0.05
 final_df_tukey = final_df_tukey[final_df_tukey["p-adj"] < 0.05]
 
 
-# In[10]:
+# In[ ]:
 
 
 # sort the df by p-adj
@@ -206,7 +201,7 @@ final_df_tukey = final_df_tukey.sort_values(by=["p-adj"], ascending=[True])
 # This implies a variable treatment.
 # We are primarily interested in which cytokines best differentiate between control, apoptosis, and pyroptosis
 
-# In[11]:
+# In[ ]:
 
 
 final_df_tukey["cytokine"].unique()
@@ -216,7 +211,7 @@ output_path = pathlib.Path(f"./results/tukey_filtered_nomic_results.csv")
 final_df_tukey.to_csv(output_path)
 
 
-# In[12]:
+# In[ ]:
 
 
 # graph each cytokine
@@ -255,12 +250,11 @@ cytokines = [
 ]
 
 
-# In[13]:
+# In[ ]:
 
 
 # drop all columns that are not in cytokines list
 selected_cytokines = df[cytokines]
-
 
 # plot the results of the tukey test for each cytokine
 a = len(selected_cytokines.columns)
@@ -268,12 +262,7 @@ b = 6
 plt.figure(figsize=(50, 100))
 plt.suptitle("Cytokine Levels Across Treatments", fontsize=18)
 plt.subplots_adjust(top=0.975, bottom=0.01, hspace=1, wspace=0.3)
-# plt.tight_layout()
-# plt.tight_layout()
 for col in enumerate(selected_cytokines.columns):
-    # print(col)
-    # barplot with confidence intervals for col in final_df_tukey['cytokine'].unique():
-    # plt.figure(figsize=(6, 4))
     plt.subplot(a, b, col[0] + 1)
     sns.barplot(
         x="oneb_Treatment_Dose_Inhibitor_Dose",
@@ -292,11 +281,9 @@ pathlib.Path(f"./figures/").mkdir(parents=True, exist_ok=True)
 plt.savefig(f"./figures/selected_cytokines.png", bbox_inches="tight")
 # # show plot
 plt.show()
-# # close plot
-# # plt.close()
 
 
-# In[14]:
+# In[ ]:
 
 
 # save the final_df_tukey df to a csv file
@@ -313,7 +300,7 @@ with open("results/cytokines.csv", "w") as f:
 
 # ## Heatmaps of cytokine levels in each treatment
 
-# In[15]:
+# In[ ]:
 
 
 df_cytokines = df[cytokines]
@@ -323,16 +310,15 @@ df_cytokines = pd.concat(
 df_cytokines = df_cytokines.set_index("oneb_Treatment_Dose_Inhibitor_Dose")
 
 
-# In[16]:
+# In[ ]:
 
 
 cytokines
 
 
-# In[17]:
+# In[ ]:
 
 
-# data_new['Inducer1_and_dose'] = df['Inducer1_and_dose']
 # aggregate the data by treatment group via mean
 data_agg = df_cytokines.groupby("oneb_Treatment_Dose_Inhibitor_Dose").mean()
 # heatmap of umap_clusters_with_cytokine_data_agg
@@ -344,20 +330,20 @@ row_list = data_agg.index
 data = data_agg[column_list]
 
 
-# In[18]:
+# In[ ]:
 
 
 # order the rows by treatment group
 data_agg = data_agg.reindex(list_of_treatments, axis=0)
 
 
-# In[19]:
+# In[ ]:
 
 
 data_agg
 
 
-# In[20]:
+# In[ ]:
 
 
 # create the heatmap with dendrogram and cluster the rows and columns with the euclidean distance metric
@@ -380,17 +366,7 @@ g = sns.clustermap(
     yticklabels=True,
     vmin=0,
     vmax=1,
-    # cbar_kws={"label": "Cytokine Levels"},
-    # dendrogram_ratio=0.25,
-    # set colorbar position to the right
-    # cbar_pos=(1.02, 0.25, 0.03, 0.5),
-    # set plot size
-    # figsize=(25, 25),
 )
-# change the font size of the x and y ticks
-# g.ax_heatmap.tick_params(labelsize=20)
-# g.ax_heatmap.set_xlabel("Cytokines", fontsize=30)
-
 # save the heatmap
 plt.savefig("./figures/heatmap_PBMC.png", bbox_inches="tight")
 # show the heatmap

@@ -104,6 +104,7 @@ feature_df["Metadata_inducer1_concentration"].fillna(0, inplace=True)
 # In[13]:
 
 
+
 # create a list of columns to be converted to float
 col_list = [
     "Metadata_inducer1_concentration",
@@ -115,6 +116,7 @@ for i in col_list:
     feature_df[i] = feature_df[i].apply(
         lambda x: f"{float(x):.3f}" if float(x) != 0 else float(x)
     )
+
 
 
 # #### Combine Inducer1 and Inducer2 into one column

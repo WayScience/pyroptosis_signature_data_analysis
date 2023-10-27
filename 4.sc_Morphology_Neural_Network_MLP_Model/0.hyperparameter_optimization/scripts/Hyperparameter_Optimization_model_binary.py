@@ -48,8 +48,8 @@ from utils.utils import df_stats
 
 # Parameters
 CELL_TYPE = "SHSY5Y"
-CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
-TREATMENT_NAME = "LPS_100.000_DMSO_0.025"
+CONTROL_NAME = "DMSO_0.100_%_DMSO_0.025_%"
+TREATMENT_NAME = "LPS_100.000_ug_per_ml_DMSO_0.025_%"
 MODEL_NAME = "DMSO_0.025_vs_LPS_100"
 
 
@@ -84,12 +84,18 @@ file_path = pathlib.Path(
 df = pq.read_table(file_path).to_pandas()
 
 
+# In[5]:
+
+
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
+
+
 # #### Set up Data to be compatible with model
 
 # ##### Classification Models:
 # Comment out code if using regression
 
-# In[5]:
+# In[6]:
 
 
 # filter the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column to only include the treatment and control via loc
@@ -112,7 +118,7 @@ else:
     print("Data Subset Is Off")
 
 
-# In[6]:
+# In[7]:
 
 
 np.random.seed(seed=0)
@@ -131,7 +137,7 @@ print(
 )
 
 
-# In[7]:
+# In[8]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -142,7 +148,7 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[8]:
+# In[9]:
 
 
 # Creating label encoder
@@ -166,7 +172,7 @@ df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
 # #### Split Data - All Models can proceed through this point
 
-# In[9]:
+# In[10]:
 
 
 X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
@@ -180,7 +186,7 @@ X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
 )
 
 
-# In[10]:
+# In[11]:
 
 
 # produce data objects for train, val and test datasets
@@ -195,7 +201,7 @@ test_data = Dataset_formatter(
 )
 
 
-# In[11]:
+# In[12]:
 
 
 mlp_params.IN_FEATURES = X_train.shape[1]
@@ -221,7 +227,7 @@ else:
 print(mlp_params.MODEL_TYPE)
 
 
-# In[12]:
+# In[13]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
@@ -237,13 +243,13 @@ test_loader = torch.utils.data.DataLoader(
 )
 
 
-# In[13]:
+# In[14]:
 
 
 print(mlp_params.DEVICE)
 
 
-# In[14]:
+# In[15]:
 
 
 # no accuracy function must be loss for regression
@@ -279,7 +285,7 @@ objective_model_optimizer(
 )
 
 
-# In[15]:
+# In[16]:
 
 
 # create graph directory for this model
@@ -297,7 +303,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[16]:
+# In[17]:
 
 
 # create graph directory for this model
@@ -314,12 +320,9 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[17]:
+# In[18]:
 
 
 param_dict = extract_best_trial_params(
     study.best_params, params, model_name=mlp_params.MODEL_NAME
 )
-
-
-# In[ ]:

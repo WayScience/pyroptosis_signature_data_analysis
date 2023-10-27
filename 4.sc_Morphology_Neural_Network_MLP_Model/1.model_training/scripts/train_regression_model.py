@@ -43,10 +43,11 @@ from utils.utils import df_stats
 
 
 # Parameters
-CELL_TYPE = "SHSY5Y"
+CELL_TYPE = "PBMC"
 CONTROL_NAME = "DMSO_0.100_DMSO_0.025"
-TREATMENT_NAME = "Thapsigargin_1.000_DMSO_0.025"
-MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_1"
+# TREATMENT_NAME = "LPS_100.000_DMSO_0.025"
+TREATMENT_NAME = "DMSO_0.100_DMSO_0.025"
+MODEL_NAME = "DMSO_0.025_vs_LPS_100"
 SHUFFLE = False
 
 
@@ -74,9 +75,13 @@ mlp_params.SHUFFLE = SHUFFLE
 # Import Data
 # set data file path under pathlib path for multi-system use
 
+# file_path = pathlib.Path(
+#     f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm.parquet"
+# ).resolve(strict=True)
+
 file_path = pathlib.Path(
-    f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm.parquet"
-).resolve(strict=True)
+    "../../../data/PBMC_subset_sc_norm_DMSO_0.100_DMSO_0.025_LPS_100.000_DMSO_0.025.parquet"
+)
 
 # set path for nomic data
 nomic_df_path = pathlib.Path(
@@ -88,6 +93,33 @@ nomic_df = pd.read_csv(nomic_df_path)
 
 
 # In[5]:
+
+
+# change the nomic df to standard scaler
+# select the columns that contain "NSU"
+nomic_df_scaled = nomic_df.filter(regex="NSU")
+# standardize the nomic data
+# scaler = preprocessing.StandardScaler()
+# nomic_df_scaled = pd.DataFrame(scaler.fit_transform(nomic_df_scaled), columns=nomic_df_scaled.columns)
+# add the nomic data metadata back
+nomic_df_scaled[
+    [
+        "Metadata_position_x",
+        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
+        "fourb_Metadata_Treatment_Dose_Inhibitor_Dose",
+    ]
+] = nomic_df[
+    [
+        "Metadata_position_x",
+        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
+        "fourb_Metadata_Treatment_Dose_Inhibitor_Dose",
+    ]
+]
+nomic_df = nomic_df_scaled.copy()
+del nomic_df_scaled
+
+
+# In[6]:
 
 
 print(df.shape)
@@ -109,7 +141,37 @@ print(nomic_df.shape)
 print(df.shape)
 
 
-# In[6]:
+# In[7]:
+
+
+df_merge_non_aggregated = df.copy()
+
+
+# In[8]:
+
+
+# Code snippet for metadata extraction by Jenna Tomkinson
+df_metadata = list(df.columns[df.columns.str.contains("Metadata")])
+
+# define which columns are data and which are descriptive
+df_descriptive = df[df_metadata]
+df_values = df.drop(columns=df_metadata)
+
+
+# In[9]:
+
+
+df_values[
+    ["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
+] = df_descriptive[["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]]
+df = (
+    df_values.groupby(["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"])
+    .median()
+    .reset_index()
+)
+
+
+# In[10]:
 
 
 # filter the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column to only include the treatment and control via loc
@@ -132,7 +194,7 @@ else:
     print("Data Subset Is Off")
 
 
-# In[7]:
+# In[11]:
 
 
 np.random.seed(seed=0)
@@ -151,7 +213,7 @@ print(
 )
 
 
-# In[8]:
+# In[12]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -162,12 +224,15 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[9]:
+# In[13]:
 
 
 # get all columns that contain NSU in the name
 df_values_Y = df_values[df_values.columns[df_values.columns.str.contains("NSU")]]
 df_values_X = df_values.drop(columns=df_values_Y.columns)
+# drop all columns except for IL1B and TNFa
+col = ["IL-1 beta [NSU]"]
+df_values_Y = df_values_Y[col]
 df_values_Y["Metadata_Well"] = df_descriptive["Metadata_Well"]
 print(df_values.shape)
 print(df_values_X.shape)
@@ -176,7 +241,7 @@ print(df_values_Y.shape)
 
 # #### Split Data - All Models can proceed through this point
 
-# In[10]:
+# In[14]:
 
 
 X_train, X_test, X_val, Y_train_well, Y_test_well, Y_val_well = data_split(
@@ -190,7 +255,7 @@ X_train, X_test, X_val, Y_train_well, Y_test_well, Y_val_well = data_split(
 )
 
 
-# In[11]:
+# In[15]:
 
 
 Y_train = Y_train_well.drop(columns=["Metadata_Well"])
@@ -198,7 +263,7 @@ Y_test = Y_test_well.drop(columns=["Metadata_Well"])
 Y_val = Y_val_well.drop(columns=["Metadata_Well"])
 
 
-# In[12]:
+# In[16]:
 
 
 # produce data objects for train, val and test datasets
@@ -213,7 +278,7 @@ test_data = Dataset_formatter(
 )
 
 
-# In[13]:
+# In[17]:
 
 
 mlp_params.IN_FEATURES = X_train.shape[1]
@@ -228,7 +293,7 @@ else:
 print("Number of out features: ", mlp_params.OUT_FEATURES)
 
 
-# In[14]:
+# In[18]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
@@ -243,7 +308,7 @@ test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
 
 # ### Train the Model
 
-# In[15]:
+# In[19]:
 
 
 # call the optimized training model
@@ -267,7 +332,13 @@ else:
     )
 
 
-# In[16]:
+# In[20]:
+
+
+model
+
+
+# In[21]:
 
 
 if params.MODEL_TYPE == "Regression":
@@ -286,7 +357,7 @@ else:
     )
 
 
-# In[17]:
+# In[22]:
 
 
 plot_metric_vs_epoch(
@@ -304,7 +375,7 @@ plot_metric_vs_epoch(
 
 # ### Test the trained model with train data
 
-# In[18]:
+# In[23]:
 
 
 # calling the testing function and outputting list values of tested model
@@ -331,7 +402,7 @@ else:
     pass
 
 
-# In[19]:
+# In[24]:
 
 
 # make the prediction list into a dataframe using column names from the test data
@@ -341,13 +412,25 @@ prediction_df["Metadata_Well"].unique()
 prediction_df.head()
 
 
-# In[20]:
+# In[25]:
+
+
+y_pred_list
+
+
+# In[26]:
+
+
+Y_train
+
+
+# In[27]:
 
 
 testing_values = pd.DataFrame(columns=["Actual", "Average Predicted", "cytokine"])
 
 
-# In[21]:
+# In[28]:
 
 
 from sklearn.metrics import mean_squared_error, r2_score
@@ -363,9 +446,9 @@ for col in Y_train:
     # list of treatment names
     treatment_col = prediction_df["Metadata_Well"]
     # get the mse and r2 for the columns
-    mse = mean_squared_error(test_col, pred_col)
-    r_square = r2_score(test_col, pred_col)
-    a, b = np.polyfit(test_col, pred_col, 1)
+    # mse = mean_squared_error(test_col, pred_col)
+    # r_square = r2_score(test_col, pred_col)
+    # a, b = np.polyfit(test_col, pred_col, 1)
     index_dict = {}
     for i in test_col.unique():
         index_list = []
@@ -387,138 +470,6 @@ for col in Y_train:
     )
     df["cytokine"] = col
     df["model_type"] = "train"
-    df["shuffled_data"] = mlp_params.SHUFFLE
-
-    testing_values = pd.concat([testing_values, df], axis=0)
-    # plt.scatter(df['Actual'], df['Average Predicted'])
-    # # plt.plot([min(test_col), max(test_col)], [min(test_col), max(test_col)], color='red', linestyle='--')
-    # plt.plot(
-    #     test_col,
-    #     a * test_col + b,
-    #     color="red",
-    #     label="R2={0:0.2f}".format(r_square),
-    # )
-    # plt.title(
-    #     f"Regression Nerual Network Prediction vs. True \n {col}", fontsize=25
-    # )
-    # plt.ylabel("Predicted", fontsize=18)
-    # plt.xlabel("Target", fontsize=18)
-    # # make data continuous
-    # plt.show()
-    # plt.close()
-
-
-# In[22]:
-
-
-# get the unique rows in a dataframe
-key_df = df_descriptive[
-    ["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-].drop_duplicates()
-key_df
-
-
-# In[23]:
-
-
-# add treatment column based on well
-testing_values = pd.merge(testing_values, key_df, on="Metadata_Well", how="left")
-
-
-# In[24]:
-
-
-testing_values
-
-
-# In[ ]:
-
-
-# ### Test the trained model with validation data
-
-# In[25]:
-
-
-# calling the testing function and outputting list values of tested model
-if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
-    y_pred_list = test_optimized_model(
-        model, valid_loader, params, model_name=params.MODEL_NAME
-    )
-elif params.MODEL_TYPE == "Binary_Classification":
-    y_pred_list, y_pred_prob_list = test_optimized_model(
-        model, valid_loader, params, model_name=params.MODEL_NAME
-    )
-else:
-    raise Exception("Model type must be specified for proper model testing")
-
-
-# un-nest list if nested i.e. length of input data does not match length of output data
-if len(y_pred_list) != len(Y_val):
-    print("yes")
-    if mlp_params.MODEL_TYPE != "Regression":
-        y_pred_prob_list = un_nest(y_pred_prob_list)
-    else:
-        y_pred_list = un_nest(y_pred_list)
-else:
-    pass
-
-
-# In[26]:
-
-
-# make the prediction list into a dataframe using column names from the test data
-prediction_df = pd.DataFrame(y_pred_list, columns=Y_val.columns, index=Y_val.index)
-prediction_df["Metadata_Well"] = Y_val_well["Metadata_Well"]
-prediction_df["Metadata_Well"].unique()
-prediction_df.head()
-
-
-# In[27]:
-
-
-testing_values = pd.DataFrame(columns=["Actual", "Average Predicted", "cytokine"])
-
-
-# In[28]:
-
-
-from sklearn.metrics import mean_squared_error, r2_score
-
-# get the list of columns in the test data
-test_data_columns = Y_val.columns.to_list()
-# loop through the columns
-for col in Y_val:
-    # get the column from test data
-    test_col = Y_val[col]
-    # get the column from prediction data
-    pred_col = prediction_df[col]
-    # list of treatment names
-    treatment_col = prediction_df["Metadata_Well"]
-    # get the mse and r2 for the columns
-    mse = mean_squared_error(test_col, pred_col)
-    r_square = r2_score(test_col, pred_col)
-    a, b = np.polyfit(test_col, pred_col, 1)
-    index_dict = {}
-    for i in test_col.unique():
-        index_list = []
-        for j in enumerate(test_col):
-            if i == j[1]:
-                index_list.append(j[0])
-        index_dict[i] = index_list
-    new_value_dict = {}
-    for i in index_dict:
-        new_value_dict[i] = [
-            pred_col[index_dict[i]].median(),
-            treatment_col[index_dict[i]].unique().tolist()[0],
-        ]
-
-    df = (
-        pd.DataFrame.from_dict(new_value_dict, orient="index")
-        .reset_index()
-        .rename(columns={"index": "Actual", 0: "Average Predicted", 1: "Metadata_Well"})
-    )
-    df["cytokine"] = col
-    df["model_type"] = "validation"
     df["shuffled_data"] = mlp_params.SHUFFLE
 
     testing_values = pd.concat([testing_values, df], axis=0)
@@ -563,9 +514,132 @@ testing_values = pd.merge(testing_values, key_df, on="Metadata_Well", how="left"
 testing_values
 
 
-# ### Testing model
+# ### Test the trained model with validation data
 
 # In[32]:
+
+
+# calling the testing function and outputting list values of tested model
+if params.MODEL_TYPE == "Multi_Class" or params.MODEL_TYPE == "Regression":
+    y_pred_list = test_optimized_model(
+        model, valid_loader, params, model_name=params.MODEL_NAME
+    )
+elif params.MODEL_TYPE == "Binary_Classification":
+    y_pred_list, y_pred_prob_list = test_optimized_model(
+        model, valid_loader, params, model_name=params.MODEL_NAME
+    )
+else:
+    raise Exception("Model type must be specified for proper model testing")
+
+
+# un-nest list if nested i.e. length of input data does not match length of output data
+if len(y_pred_list) != len(Y_val):
+    print("yes")
+    if mlp_params.MODEL_TYPE != "Regression":
+        y_pred_prob_list = un_nest(y_pred_prob_list)
+    else:
+        y_pred_list = un_nest(y_pred_list)
+else:
+    pass
+
+
+# In[33]:
+
+
+# make the prediction list into a dataframe using column names from the test data
+prediction_df = pd.DataFrame(y_pred_list, columns=Y_val.columns, index=Y_val.index)
+prediction_df["Metadata_Well"] = Y_val_well["Metadata_Well"]
+prediction_df["Metadata_Well"].unique()
+prediction_df.head()
+
+
+# In[34]:
+
+
+from sklearn.metrics import mean_squared_error, r2_score
+
+# get the list of columns in the test data
+test_data_columns = Y_val.columns.to_list()
+# loop through the columns
+for col in Y_val:
+    # get the column from test data
+    test_col = Y_val[col]
+    # get the column from prediction data
+    pred_col = prediction_df[col]
+    # list of treatment names
+    treatment_col = prediction_df["Metadata_Well"]
+    # get the mse and r2 for the columns
+    # mse = mean_squared_error(test_col, pred_col)
+    # r_square = r2_score(test_col, pred_col)
+    # a, b = np.polyfit(test_col, pred_col, 1)
+    index_dict = {}
+    for i in test_col.unique():
+        index_list = []
+        for j in enumerate(test_col):
+            if i == j[1]:
+                index_list.append(j[0])
+        index_dict[i] = index_list
+    new_value_dict = {}
+    for i in index_dict:
+        new_value_dict[i] = [
+            pred_col[index_dict[i]].median(),
+            treatment_col[index_dict[i]].unique().tolist()[0],
+        ]
+
+    df = (
+        pd.DataFrame.from_dict(new_value_dict, orient="index")
+        .reset_index()
+        .rename(columns={"index": "Actual", 0: "Average Predicted", 1: "Metadata_Well"})
+    )
+    df["cytokine"] = col
+    df["model_type"] = "validation"
+    df["shuffled_data"] = mlp_params.SHUFFLE
+
+    testing_values = pd.concat([testing_values, df], axis=0)
+
+
+# In[35]:
+
+
+# get the unique rows in a dataframe
+key_df = df_descriptive[
+    ["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
+].drop_duplicates()
+key_df
+
+
+# In[36]:
+
+
+# add treatment column based on well
+testing_values = pd.merge(testing_values, key_df, on="Metadata_Well", how="left")
+
+
+# In[37]:
+
+
+testing_values
+
+
+# In[38]:
+
+
+testing_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = testing_values[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose_y"
+]
+testing_values.drop(
+    columns=[
+        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose_x",
+        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose_y",
+    ],
+    inplace=True,
+)
+testing_values
+
+
+# ### Testing model
+
+# In[39]:
 
 
 # calling the testing function and outputting list values of tested model
@@ -593,7 +667,7 @@ else:
     pass
 
 
-# In[33]:
+# In[40]:
 
 
 # make the prediction list into a dataframe using column names from the test data
@@ -603,7 +677,7 @@ prediction_df["Metadata_Well"].unique()
 prediction_df
 
 
-# In[34]:
+# In[41]:
 
 
 from sklearn.metrics import mean_squared_error, r2_score
@@ -665,7 +739,7 @@ for col in Y_test:
     # plt.close()
 
 
-# In[35]:
+# In[42]:
 
 
 # get the unique rows in a dataframe
@@ -675,14 +749,20 @@ key_df = df_descriptive[
 key_df
 
 
-# In[36]:
+# In[43]:
 
 
 # add treatment column based on well
 testing_values = pd.merge(testing_values, key_df, on="Metadata_Well", how="left")
 
 
-# In[37]:
+# In[44]:
+
+
+testing_values
+
+
+# In[45]:
 
 
 testing_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = testing_values[
@@ -700,7 +780,7 @@ testing_values
 
 # # Hold out
 
-# In[38]:
+# In[46]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -711,27 +791,29 @@ df_descriptive = df_holdout[df_metadata]
 df_values = df_holdout.drop(columns=df_metadata)
 
 
-# In[39]:
+# In[47]:
 
 
 # get all columns that contain NSU in the name
 df_values_Y = df_values[df_values.columns[df_values.columns.str.contains("NSU")]]
 df_values_X = df_values.drop(columns=df_values_Y.columns)
+# drop all columns except for IL1B and TNFa
+col = ["IL-1 beta [NSU]"]
+df_values_Y = df_values_Y[col]
 df_values_Y["Metadata_Well"] = df_descriptive["Metadata_Well"]
-
 print(df_values.shape)
 print(df_values_X.shape)
 print(df_values_Y.shape)
 
 
-# In[40]:
+# In[48]:
 
 
 df_values_Y_well = df_values_Y
 df_values_Y = df_values_Y.drop(columns=["Metadata_Well"])
 
 
-# In[41]:
+# In[49]:
 
 
 test_data = Dataset_formatter(
@@ -742,7 +824,7 @@ test_data = Dataset_formatter(
 test_loader = torch.utils.data.DataLoader(dataset=test_data, batch_size=1)
 
 
-# In[42]:
+# In[50]:
 
 
 # calling the testing function and outputting list values of tested model
@@ -766,7 +848,13 @@ else:
     pass
 
 
-# In[43]:
+# In[51]:
+
+
+y_pred_list
+
+
+# In[53]:
 
 
 # make the prediction list into a dataframe using column names from the test data
@@ -776,7 +864,7 @@ prediction_df = pd.DataFrame(
 prediction_df.head(2)
 
 
-# In[44]:
+# In[54]:
 
 
 print(df_values_Y.shape, prediction_df.shape)
@@ -784,7 +872,7 @@ df_values_Y.head(2)
 prediction_df.head(2)
 
 
-# In[45]:
+# In[55]:
 
 
 # make the prediction list into a dataframe using column names from the test data
@@ -795,14 +883,14 @@ prediction_df["Metadata_Well"] = df_values_Y_well["Metadata_Well"]
 prediction_df["Metadata_Well"].unique()
 
 
-# In[46]:
+# In[56]:
 
 
 df_values_Y.reset_index(drop=True, inplace=True)
 prediction_df.reset_index(drop=True, inplace=True)
 
 
-# In[47]:
+# In[57]:
 
 
 from sklearn.metrics import mean_squared_error, r2_score
@@ -845,25 +933,9 @@ for col in test_data_columns:
     df["shuffled_data"] = mlp_params.SHUFFLE
 
     testing_values = pd.concat([testing_values, df], axis=0)
-    # plt.scatter(df['Actual'], df['Average Predicted'])
-    # # plt.plot([min(test_col), max(test_col)], [min(test_col), max(test_col)], color='red', linestyle='--')
-    # plt.plot(
-    #     test_col,
-    #     a * test_col + b,
-    #     color="red",
-    #     label="R2={0:0.2f}".format(r_square),
-    # )
-    # plt.title(
-    #     f"Regression Nerual Network Prediction vs. True \n {col}", fontsize=25
-    # )
-    # plt.ylabel("Predicted", fontsize=18)
-    # plt.xlabel("Target", fontsize=18)
-    # # make data continuous
-    # plt.show()
-    # plt.close()
 
 
-# In[48]:
+# In[58]:
 
 
 # get the unique rows in a dataframe
@@ -873,14 +945,20 @@ key_df = df_descriptive[
 key_df
 
 
-# In[49]:
+# In[59]:
 
 
 # add treatment column based on well
 testing_values = pd.merge(testing_values, key_df, on="Metadata_Well", how="left")
 
 
-# In[50]:
+# In[60]:
+
+
+testing_values
+
+
+# In[61]:
 
 
 # merge the x and y columns together and drop the nan values
@@ -897,7 +975,13 @@ testing_values.drop(
 testing_values
 
 
-# In[51]:
+# In[62]:
+
+
+model
+
+
+# In[63]:
 
 
 # set path for the model training metrics
@@ -921,3 +1005,14 @@ else:
 
 
 # #
+
+# In[64]:
+
+
+testing_values
+
+
+# In[65]:
+
+
+testing_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()

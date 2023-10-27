@@ -17,8 +17,16 @@ cell_types=(SHSY5Y PBMC)
 aggregations=(True False)
 nomics=(True False)
 flag=(True)
-controls=(DMSO_0.100_DMSO_0.025)
-treatments=(LPS_100.000_DMSO_0.025 LPS_10.000_DMSO_0.025 LPS_1.000_DMSO_0.025 Thapsigargin_10.000_DMSO_0.025 Thapsigargin_1.000_DMSO_0.025)
+controls=("DMSO_0.100_%_DMSO_0.025_%")
+treatments=(
+    "LPS_100.000_ug_per_ml_DMSO_0.025_%"
+    "LPS_10.000_ug_per_ml_DMSO_0.025_%"
+    "LPS_1.000_ug_per_ml_DMSO_0.025_%"
+    "LPS_0.100_ug_per_ml_DMSO_0.025_%"
+    "LPS_0.010_ug_per_ml_DMSO_0.025_%"
+    "Thapsigargin_10.000_uM_DMSO_0.025_%"
+    "Thapsigargin_1.000_uM_DMSO_0.025_%"
+    )
 
 for cell_type in ${cell_types[@]}; do
     for aggregation in ${aggregations[@]}; do

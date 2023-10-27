@@ -6,6 +6,7 @@
 # In[ ]:
 
 
+
 import pathlib
 
 import numpy as np
@@ -20,28 +21,31 @@ aggregation = True
 nomic = True
 
 
-# In[ ]:
+# In[]:
 
 
 if aggregation and nomic:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
-    )
+    ).resolve(strict=True)
 elif not aggregation and nomic:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_nomic.parquet"
-    )
+    ).resolve(strict=True)
 elif aggregation and not nomic:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
-    )
+    ).resolve(strict=True)
+
 elif not aggregation and not nomic:
     pass
 else:
     raise ValueError("Wrong parameters")
 
 
+
 # In[ ]:
+
 
 
 path = pathlib.Path(f"../data/{cell_type}_preprocessed_sc_norm.parquet")
@@ -68,7 +72,6 @@ elif not nomic:
     pass
 else:
     raise ValueError("Nomic data not imported")
-
 
 # In[ ]:
 
@@ -137,8 +140,11 @@ if aggregation and nomic:
 
 
 elif aggregation and not nomic:
+
     # get metadata columns
     metadata = data_df.filter(regex="Metadata")
+
+
     data_df = data_df.drop(metadata.columns, axis=1)
     metadata
     data_df = pd.concat([data_df, metadata], axis=1)
@@ -153,8 +159,10 @@ elif aggregation and not nomic:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
     )
+
     # reset the index
     data_df = data_df.reset_index()
+
 
 elif not aggregation and nomic:
     data_df = pd.merge(

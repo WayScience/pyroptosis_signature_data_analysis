@@ -16,8 +16,8 @@ import umap
 # In[2]:
 
 
-nELISA_plate_430420_PBMC_path = pathlib.Path(
-    "../../Data/clean/Plate2/nELISA_plate_430420_PBMC_clean.parquet"
+nELISA_plate_430420_SHSY5Y_path = pathlib.Path(
+    "../../Data/clean/Plate2/nELISA_plate_430420_SHSY5Y_clean.parquet"
 )
 manual_cluster_1_path = pathlib.Path(
     "../../Data/clean/Plate2/Manual_Treatment_Clusters_1.csv"
@@ -32,12 +32,12 @@ treatment_clusters_path = pathlib.Path(
 )
 
 
-nELISA_plate_430420_PBMC = pd.read_parquet(nELISA_plate_430420_PBMC_path)
+nELISA_plate_430420_SHSY5Y = pd.read_parquet(nELISA_plate_430420_SHSY5Y_path)
 manual_clusters_1 = pd.read_csv(manual_cluster_1_path)
 manual_clusters_2 = pd.read_csv(manual_cluster_2_path)
 treatments = toml.load(treatment_clusters_path)["list_of_treatments"]["treatments"]
 
-nELISA_original_plate = nELISA_plate_430420_PBMC.copy()
+nELISA_original_plate = nELISA_plate_430420_SHSY5Y.copy()
 
 
 # In[3]:
@@ -96,7 +96,7 @@ nELISA_original_plate["umap_2"] = proj_2d[:, 1]
 
 # define output paths
 nELISA_plate_430420_out_path = pathlib.Path(
-    "./results/nELISA_plate_430420_umap_PBMC.csv"
+    "./results/nELISA_plate_430420_umap_SHSY5Y.csv"
 )
 # write to csv
 nELISA_original_plate.to_csv(nELISA_plate_430420_out_path, index=False)
@@ -108,26 +108,26 @@ nELISA_original_plate.to_csv(nELISA_plate_430420_out_path, index=False)
 
 
 # select treatments from the list of treatments from the df
-nELISA_plate_430420_PBMC_treatments = nELISA_plate_430420_PBMC[
-    nELISA_plate_430420_PBMC["oneb_Treatment_Dose_Inhibitor_Dose"].isin(treatments)
+nELISA_plate_430420_SHSY5Y_treatments = nELISA_plate_430420_SHSY5Y[
+    nELISA_plate_430420_SHSY5Y["oneb_Treatment_Dose_Inhibitor_Dose"].isin(treatments)
 ]
 # select data only columns and make floats
-nELISA_plate_430420_PBMC_treatments_values = nELISA_plate_430420_PBMC_treatments.filter(
-    like="NSU", axis=1
-).astype("float")
+nELISA_plate_430420_SHSY5Y_treatments_values = (
+    nELISA_plate_430420_SHSY5Y_treatments.filter(like="NSU", axis=1).astype("float")
+)
 
 # fit and transform data for umap
-proj_2d = umap_params.fit_transform(nELISA_plate_430420_PBMC_treatments_values)
+proj_2d = umap_params.fit_transform(nELISA_plate_430420_SHSY5Y_treatments_values)
 
 # add umap coordinates to dataframe of metadata and raw data
-nELISA_plate_430420_PBMC_treatments["umap_1"] = proj_2d[:, 0]
-nELISA_plate_430420_PBMC_treatments["umap_2"] = proj_2d[:, 1]
+nELISA_plate_430420_SHSY5Y_treatments["umap_1"] = proj_2d[:, 0]
+nELISA_plate_430420_SHSY5Y_treatments["umap_2"] = proj_2d[:, 1]
 
 # define output paths
 nELISA_plate_430420_selected_treatments_out_path = pathlib.Path(
-    "./results/nELISA_plate_430420_umap_PBMC_selected_treatments.csv"
+    "./results/nELISA_plate_430420_umap_SHSY5Y_selected_treatments.csv"
 )
 # write to csv
-nELISA_plate_430420_PBMC_treatments.to_csv(
+nELISA_plate_430420_SHSY5Y_treatments.to_csv(
     nELISA_plate_430420_selected_treatments_out_path, index=False
 )

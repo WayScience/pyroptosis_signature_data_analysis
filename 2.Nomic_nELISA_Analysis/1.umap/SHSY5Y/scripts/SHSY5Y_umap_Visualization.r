@@ -3,12 +3,12 @@ library(gridExtra)
 library(cowplot)
 library(styler)
 
-cell_type <- "PBMC"
+cell_type <- "SHSY5Y"
 
 # import paths
 
-nomic_data_path <- file.path("./results/nELISA_plate_430420_umap_PBMC.csv")
-nomic_data_selected_treatments_path <- file.path("./results/nELISA_plate_430420_umap_PBMC_selected_treatments.csv")
+nomic_data_path <- file.path("./results/nELISA_plate_430420_umap_SHSY5Y.csv")
+nomic_data_selected_treatments_path <- file.path("./results/nELISA_plate_430420_umap_SHSY5Y_selected_treatments.csv")
 
 figure_output_path <- file.path("./figures/")
 
@@ -40,7 +40,7 @@ nomic_data_plot <- (
             )
             )
     + guides(color = guide_legend(ncol = 2,title.position = 'top'))
-    + labs(title = "PBMC UMAP by treatment",color="Treatment", x = "UMAP1", y = "UMAP2")
+    + labs(title = "SHSY5Y UMAP by treatment",color="Treatment", x = "UMAP1", y = "UMAP2")
     # plot the legend separately
 
 
@@ -86,7 +86,7 @@ nomic_data_selected_treatments_plot <- (
             )
             )
     + guides(color = guide_legend(ncol = 2,title.position = 'top'))
-    + labs(title = "PBMC UMAP by selected treatments",color="Treatment", x = "UMAP1", y = "UMAP2")
+    + labs(title = "SHSY5Y UMAP by selected treatments",color="Treatment", x = "UMAP1", y = "UMAP2")
     # plot the legend separately
 
 

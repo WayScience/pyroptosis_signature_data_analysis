@@ -41,7 +41,7 @@ import umap
 # set path
 
 df_path = pathlib.Path(
-    f"../../Data/clean/Plate2/nELISA_plate_430420_PBMC_clean.parquet"
+    f"../../Data/clean/Plate2/nELISA_plate_430420_SHSY5Y_clean.parquet"
 )
 
 
@@ -91,10 +91,10 @@ df["Metadata_position_x"] = df_metadata["Metadata_position_x"]
 
 # set output path
 all_cytokines_path = pathlib.Path(
-    f"./results/PBMC_all_cytokine_values_per_treatment_per_well.parquet"
+    f"./results/SHSY5Y_all_cytokine_values_per_treatment_per_well.parquet"
 )
 all_cytokines_path_melted = pathlib.Path(
-    f"./results/PBMC_all_cytokine_values_per_treatment_per_well_melted.parquet"
+    f"./results/SHSY5Y_all_cytokine_values_per_treatment_per_well_melted.parquet"
 )
 df.to_parquet(all_cytokines_path)
 
@@ -368,6 +368,6 @@ g = sns.clustermap(
     vmax=1,
 )
 # save the heatmap
-plt.savefig("./figures/heatmap_PBMC.png", bbox_inches="tight")
+plt.savefig("./figures/heatmap_SHSY5Y.png", bbox_inches="tight")
 # show the heatmap
 plt.show()

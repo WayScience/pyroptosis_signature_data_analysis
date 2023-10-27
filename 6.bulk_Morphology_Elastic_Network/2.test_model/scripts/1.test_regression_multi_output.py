@@ -55,14 +55,6 @@ print(cell_type, shuffle, cytokine)
 # In[ ]:
 
 
-cell_type = "SHSY5Y"
-shuffle = False
-cytokine = "Activin A [NSU]"
-
-
-# In[ ]:
-
-
 # Parameters
 aggregation = True
 nomic = True

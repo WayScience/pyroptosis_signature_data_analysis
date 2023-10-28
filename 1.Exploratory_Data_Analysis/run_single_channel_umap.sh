@@ -11,20 +11,13 @@ module load anaconda
 
 conda activate Interstellar
 
-cell_types=(SHSY5Y PBMC)
-controls=(DMSO_0.100_DMSO_0.025 LPS_100.000_DMSO_0.025 LPS_10.000_DMSO_0.025 LPS_1.000_DMSO_0.025 Thapsigargin_10.000_DMSO_0.025 Thapsigargin_1.000_DMSO_0.025)
-treatments=(DMSO_0.100_DMSO_0.025 LPS_100.000_DMSO_0.025 LPS_10.000_DMSO_0.025 LPS_1.000_DMSO_0.025 Thapsigargin_10.000_DMSO_0.025 Thapsigargin_1.000_DMSO_0.025)
+cell_types=( SHSY5Y PBMC )
 
 for cell_type in ${cell_types[@]}; do
-    for control in ${controls[@]}; do
-        for treatment in ${treatments[@]}; do
-            if [ "$control" == "$treatment" ]; then
-                continue
-            fi
-            echo "cell_type: $cell_type, control: $control, treatment: $treatment"
-            papermill 2.single_channel_umap_analysis.ipynb 2.single_channel_umap_analysis.ipynb -p cell_type "$cell_type" -p control "$control" -p treatment "$treatment"
-        done
-    done
+
+    echo "cell_type: $cell_type"
+    papermill 2.single_channel_umap_analysis.ipynb 2.single_channel_umap_analysis.ipynb -p cell_type "$cell_type"
+
 done
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=scripts *.ipynb

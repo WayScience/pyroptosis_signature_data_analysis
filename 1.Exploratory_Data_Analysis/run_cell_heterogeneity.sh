@@ -11,8 +11,8 @@ module load anaconda
 
 conda activate Interstellar
 
-papermill 6.heterogeneity_analnysis.ipynb 6.heterogeneity_analnysis.ipynb -p cell_type "SHSY5Y"
-papermill 6.heterogeneity_analnysis.ipynb 6.heterogeneity_analnysis.ipynb -p cell_type "PBMC"
+papermill 6.heterogeneity_analysis.ipynb 6.heterogeneity_analysis.ipynb -p cell_type "SHSY5Y"
+papermill 6.heterogeneity_analysis.ipynb 6.heterogeneity_analysis.ipynb -p cell_type "PBMC"
 
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=scripts *.ipynb

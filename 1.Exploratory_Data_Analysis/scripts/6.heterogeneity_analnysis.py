@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# <span style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">An Exception was encountered at '<a href="#papermill-error-cell">In [8]</a>'.</span>
+
 # # This notebook looks into the cell heterogeneity in the control treatments
 
 # In[1]:
@@ -83,6 +85,8 @@ umap_params = umap.UMAP(
 )
 
 
+# <span id="papermill-error-cell" style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">Execution using papermill encountered an exception here and stopped:</span>
+
 # In[8]:
 
 
@@ -94,7 +98,7 @@ df_values["umap_1"] = proj_2d[:, 0]
 df_values["umap_2"] = proj_2d[:, 1]
 
 
-# In[9]:
+# In[ ]:
 
 
 df_values["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
@@ -103,7 +107,7 @@ df_values["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
 df_values["Metadata_Well"] = df_descriptive["Metadata_Well"]
 
 
-# In[10]:
+# In[ ]:
 
 
 # Figure Showing UMAP of Clusters vs Treatment

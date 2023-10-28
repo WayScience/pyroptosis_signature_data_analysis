@@ -22,7 +22,7 @@ for cell_type in ${cell_types[@]}; do
                 continue
             fi
             echo "cell_type: $cell_type, control: $control, treatment: $treatment"
-            papermill 2.extended_umap_analysis.ipynb 2.extended_umap_analysis.ipynb -p cell_type "$cell_type" -p control "$control" -p treatment "$treatment"
+            papermill 2.single_channel_umap_analysis.ipynb 2.single_channel_umap_analysis.ipynb -p cell_type "$cell_type" -p control "$control" -p treatment "$treatment"
         done
     done
 done

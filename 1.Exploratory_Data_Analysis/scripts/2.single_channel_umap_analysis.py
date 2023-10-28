@@ -30,6 +30,8 @@ warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
 
 # Parameters
 cell_type = "SHSY5Y"
+control = "DMSO_0.100_DMSO_0.025"
+treatment = "LPS_100.000_DMSO_0.025"
 
 
 # In[3]:
@@ -218,7 +220,7 @@ for channel in dictionary_of_channels:
     plt.show()
 
 
-# In[14]:
+# In[ ]:
 
 
 # write the final_df to a parquet file

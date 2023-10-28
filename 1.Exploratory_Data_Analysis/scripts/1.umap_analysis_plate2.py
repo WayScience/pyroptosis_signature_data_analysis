@@ -25,7 +25,7 @@ from sklearn.manifold import TSNE
 
 
 # Parameters
-celltype = "SHSY5Y"
+celltype = "PBMC"
 
 
 # In[3]:
@@ -88,7 +88,7 @@ df_values["umap_1"] = proj_2d[:, 0]
 df_values["umap_2"] = proj_2d[:, 1]
 
 
-# In[8]:
+# In[ ]:
 
 
 df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
@@ -96,7 +96,7 @@ df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
 ]
 
 
-# In[9]:
+# In[ ]:
 
 
 # randomize the rows of the dataframe to plot the order of the data evenly
@@ -111,7 +111,7 @@ df_values_path.parent.mkdir(parents=True, exist_ok=True)
 df_values.to_parquet(df_values_path)
 
 
-# In[10]:
+# In[ ]:
 
 
 # Figure Showing UMAP of Clusters vs Treatment

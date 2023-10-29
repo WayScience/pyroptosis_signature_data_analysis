@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks=32
-#SBATCH --mem=300G
+#SBATCH --ntasks=1
+#SBATCH --mem=500G
 #SBATCH --partition=amem
 #SBATCH --qos=mem
 #SBATCH --time=24:00:00

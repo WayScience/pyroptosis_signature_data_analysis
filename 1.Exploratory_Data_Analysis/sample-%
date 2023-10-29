@@ -1,0 +1,3161 @@
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_100.000_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_10.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:49,  2.26s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:50,  2.41s/cell]
+Executing:  17%|█▋        | 4/23 [00:11<00:57,  3.04s/cell]
+Executing:  22%|██▏       | 5/23 [00:12<00:40,  2.23s/cell]
+Executing:  39%|███▉      | 9/23 [00:12<00:12,  1.10cell/s]
+Executing:  39%|███▉      | 9/23 [00:13<00:20,  1.46s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_100.000_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_10.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:42,  1.93s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:42,  2.04s/cell]
+Executing:  17%|█▋        | 4/23 [01:27<08:29, 26.83s/cell]
+Executing:  22%|██▏       | 5/23 [01:32<06:03, 20.22s/cell]
+Executing:  30%|███       | 7/23 [01:33<02:54, 10.91s/cell]
+Executing:  39%|███▉      | 9/23 [1:02:03<2:51:28, 734.86s/cell]
+Executing:  43%|████▎     | 10/23 [1:02:04<2:03:47, 571.36s/cell]
+Executing:  70%|██████▉   | 16/23 [1:02:05<22:55, 196.48s/cell]
+Executing:  74%|███████▍  | 17/23 [1:02:06<17:00, 170.03s/cell]
+Executing: 100%|██████████| 23/23 [1:02:06<00:00, 78.84s/cell]
+Executing: 100%|██████████| 23/23 [1:02:08<00:00, 162.10s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_100.000_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_1.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:45,  2.07s/cell]
+Executing:   9%|▊         | 2/23 [00:05<01:02,  2.96s/cell]
+Executing:  17%|█▋        | 4/23 [00:15<01:21,  4.30s/cell]
+Executing:  22%|██▏       | 5/23 [00:16<00:55,  3.11s/cell]
+Executing:  39%|███▉      | 9/23 [00:16<00:17,  1.22s/cell]
+Executing:  39%|███▉      | 9/23 [00:17<00:27,  1.96s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_100.000_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_1.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:42,  1.92s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:39,  1.88s/cell]
+Executing:  17%|█▋        | 4/23 [01:23<08:06, 25.60s/cell]
+Executing:  22%|██▏       | 5/23 [01:28<05:47, 19.33s/cell]
+Executing:  30%|███       | 7/23 [01:29<02:47, 10.44s/cell]
+Executing:  39%|███▉      | 9/23 [58:52<2:42:38, 697.02s/cell]
+Executing:  43%|████▎     | 10/23 [58:53<1:57:25, 541.94s/cell]
+Executing:  70%|██████▉   | 16/23 [58:53<21:44, 186.33s/cell]
+Executing:  74%|███████▍  | 17/23 [58:54<16:07, 161.25s/cell]
+Executing: 100%|██████████| 23/23 [58:55<00:00, 74.77s/cell]
+Executing: 100%|██████████| 23/23 [58:56<00:00, 153.76s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_100.000_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:48,  2.21s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:49,  2.37s/cell]
+Executing:  17%|█▋        | 4/23 [00:10<00:50,  2.64s/cell]
+Executing:  22%|██▏       | 5/23 [00:10<00:35,  1.97s/cell]
+Executing:  39%|███▉      | 9/23 [00:11<00:11,  1.23cell/s]
+Executing:  39%|███▉      | 9/23 [00:11<00:18,  1.32s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_100.000_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:42,  1.95s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:39,  1.90s/cell]
+Executing:  17%|█▋        | 4/23 [03:12<18:55, 59.77s/cell]
+Executing:  22%|██▏       | 5/23 [03:17<12:52, 42.91s/cell]
+Executing:  30%|███       | 7/23 [03:18<06:07, 22.94s/cell]
+Executing:  39%|███▉      | 9/23 [58:49<2:39:10, 682.18s/cell]
+Executing:  43%|████▎     | 10/23 [58:50<1:54:55, 530.42s/cell]
+Executing:  70%|██████▉   | 16/23 [58:51<21:16, 182.37s/cell]
+Executing:  74%|███████▍  | 17/23 [58:52<15:46, 157.82s/cell]
+Executing: 100%|██████████| 23/23 [58:52<00:00, 73.18s/cell]
+Executing: 100%|██████████| 23/23 [58:54<00:00, 153.66s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_100.000_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_nM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<01:00,  2.73s/cell]
+Executing:   9%|▊         | 2/23 [00:06<01:04,  3.06s/cell]
+Executing:  17%|█▋        | 4/23 [00:13<01:04,  3.39s/cell]
+Executing:  22%|██▏       | 5/23 [00:13<00:44,  2.48s/cell]
+Executing:  39%|███▉      | 9/23 [00:14<00:13,  1.00cell/s]
+Executing:  39%|███▉      | 9/23 [00:14<00:23,  1.65s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_100.000_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_nM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:42,  1.91s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:40,  1.91s/cell]
+Executing:  17%|█▋        | 4/23 [01:18<07:37, 24.09s/cell]
+Executing:  22%|██▏       | 5/23 [01:23<05:29, 18.28s/cell]
+Executing:  30%|███       | 7/23 [01:24<02:37,  9.87s/cell]
+Executing:  39%|███▉      | 9/23 [57:19<2:38:27, 679.14s/cell]
+Executing:  43%|████▎     | 10/23 [57:20<1:54:24, 528.05s/cell]
+Executing:  70%|██████▉   | 16/23 [57:21<21:10, 181.56s/cell]
+Executing:  74%|███████▍  | 17/23 [57:22<15:42, 157.12s/cell]
+Executing: 100%|██████████| 23/23 [57:22<00:00, 72.86s/cell]
+Executing: 100%|██████████| 23/23 [57:25<00:00, 149.80s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_10.000_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_10.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:54,  2.46s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:52,  2.50s/cell]
+Executing:  17%|█▋        | 4/23 [00:10<00:48,  2.57s/cell]
+Executing:  22%|██▏       | 5/23 [00:10<00:34,  1.91s/cell]
+Executing:  39%|███▉      | 9/23 [00:11<00:11,  1.27cell/s]
+Executing:  39%|███▉      | 9/23 [00:11<00:18,  1.31s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_10.000_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_10.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:43,  1.98s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:40,  1.93s/cell]
+Executing:  17%|█▋        | 4/23 [01:36<09:24, 29.73s/cell]
+Executing:  22%|██▏       | 5/23 [01:41<06:39, 22.18s/cell]
+Executing:  30%|███       | 7/23 [01:42<03:11, 11.95s/cell]
+Executing:  39%|███▉      | 9/23 [1:00:54<2:47:56, 719.72s/cell]
+Executing:  43%|████▎     | 10/23 [1:00:54<2:01:14, 559.59s/cell]
+Executing:  70%|██████▉   | 16/23 [1:00:55<22:26, 192.40s/cell]
+Executing:  74%|███████▍  | 17/23 [1:00:56<16:38, 166.49s/cell]
+Executing: 100%|██████████| 23/23 [1:00:56<00:00, 77.20s/cell]
+Executing: 100%|██████████| 23/23 [1:00:59<00:00, 159.11s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_10.000_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_1.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:48,  2.20s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:49,  2.38s/cell]
+Executing:  17%|█▋        | 4/23 [00:10<00:51,  2.70s/cell]
+Executing:  22%|██▏       | 5/23 [00:10<00:35,  2.00s/cell]
+Executing:  39%|███▉      | 9/23 [00:11<00:11,  1.22cell/s]
+Executing:  39%|███▉      | 9/23 [00:12<00:18,  1.34s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_10.000_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_1.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:42,  1.93s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:39,  1.89s/cell]
+Executing:  17%|█▋        | 4/23 [01:21<07:54, 24.98s/cell]
+Executing:  22%|██▏       | 5/23 [01:26<05:40, 18.94s/cell]
+Executing:  30%|███       | 7/23 [01:27<02:43, 10.22s/cell]
+Executing:  39%|███▉      | 9/23 [58:16<2:41:02, 690.18s/cell]
+Executing:  43%|████▎     | 10/23 [58:17<1:56:16, 536.64s/cell]
+Executing:  70%|██████▉   | 16/23 [58:18<21:31, 184.51s/cell]
+Executing:  74%|███████▍  | 17/23 [58:19<15:58, 159.67s/cell]
+Executing: 100%|██████████| 23/23 [58:19<00:00, 74.04s/cell]
+Executing: 100%|██████████| 23/23 [58:22<00:00, 152.27s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_10.000_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:47,  2.16s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:48,  2.32s/cell]
+Executing:  17%|█▋        | 4/23 [00:09<00:47,  2.52s/cell]
+Executing:  22%|██▏       | 5/23 [00:10<00:33,  1.88s/cell]
+Executing:  39%|███▉      | 9/23 [00:10<00:10,  1.29cell/s]
+Executing:  39%|███▉      | 9/23 [00:11<00:17,  1.27s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_10.000_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:42,  1.94s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:42,  2.02s/cell]
+Executing:  17%|█▋        | 4/23 [01:12<07:01, 22.20s/cell]
+Executing:  22%|██▏       | 5/23 [01:17<05:06, 17.01s/cell]
+Executing:  30%|███       | 7/23 [01:18<02:27,  9.19s/cell]
+Executing:  39%|███▉      | 9/23 [54:40<2:31:10, 647.92s/cell]
+Executing:  43%|████▎     | 10/23 [54:41<1:49:09, 503.79s/cell]
+Executing:  70%|██████▉   | 16/23 [54:42<20:12, 173.23s/cell]
+Executing:  74%|███████▍  | 17/23 [54:42<14:59, 149.91s/cell]
+Executing: 100%|██████████| 23/23 [54:43<00:00, 69.52s/cell]
+Executing: 100%|██████████| 23/23 [54:45<00:00, 142.83s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_10.000_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_nM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:47,  2.14s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:49,  2.34s/cell]
+Executing:  17%|█▋        | 4/23 [00:09<00:45,  2.40s/cell]
+Executing:  22%|██▏       | 5/23 [00:09<00:32,  1.79s/cell]
+Executing:  39%|███▉      | 9/23 [00:10<00:10,  1.34cell/s]
+Executing:  39%|███▉      | 9/23 [00:11<00:17,  1.23s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_10.000_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_nM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:44,  2.00s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:41,  1.98s/cell]
+Executing:  17%|█▋        | 4/23 [01:26<08:24, 26.56s/cell]
+Executing:  22%|██▏       | 5/23 [01:31<06:00, 20.01s/cell]
+Executing:  30%|███       | 7/23 [01:32<02:52, 10.78s/cell]
+Executing:  39%|███▉      | 9/23 [56:15<2:35:11, 665.08s/cell]
+Executing:  43%|████▎     | 10/23 [56:16<1:52:02, 517.13s/cell]
+Executing:  70%|██████▉   | 16/23 [56:16<20:44, 177.80s/cell]
+Executing:  74%|███████▍  | 17/23 [56:17<15:23, 153.87s/cell]
+Executing: 100%|██████████| 23/23 [56:18<00:00, 71.35s/cell]
+Executing: 100%|██████████| 23/23 [56:19<00:00, 146.94s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_1.000_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_10.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:47,  2.15s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:49,  2.36s/cell]
+Executing:  17%|█▋        | 4/23 [00:10<00:50,  2.68s/cell]
+Executing:  22%|██▏       | 5/23 [00:10<00:35,  1.99s/cell]
+Executing:  39%|███▉      | 9/23 [00:11<00:11,  1.22cell/s]
+Executing:  39%|███▉      | 9/23 [00:11<00:18,  1.33s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_1.000_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_10.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:41,  1.90s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:39,  1.89s/cell]
+Executing:  17%|█▋        | 4/23 [01:11<06:58, 22.05s/cell]
+Executing:  22%|██▏       | 5/23 [01:17<05:04, 16.89s/cell]
+Executing:  30%|███       | 7/23 [01:17<02:26,  9.14s/cell]
+Executing:  39%|███▉      | 9/23 [58:39<2:42:22, 695.92s/cell]
+Executing:  43%|████▎     | 10/23 [58:40<1:57:14, 541.10s/cell]
+Executing:  70%|██████▉   | 16/23 [58:40<21:42, 186.04s/cell]
+Executing:  74%|███████▍  | 17/23 [58:41<16:05, 160.99s/cell]
+Executing: 100%|██████████| 23/23 [58:42<00:00, 74.65s/cell]
+Executing: 100%|██████████| 23/23 [58:43<00:00, 153.21s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_1.000_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_1.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:54,  2.46s/cell]
+Executing:   9%|▊         | 2/23 [00:05<00:54,  2.60s/cell]
+Executing:  17%|█▋        | 4/23 [00:10<00:49,  2.58s/cell]
+Executing:  22%|██▏       | 5/23 [00:10<00:34,  1.92s/cell]
+Executing:  39%|███▉      | 9/23 [00:11<00:11,  1.26cell/s]
+Executing:  39%|███▉      | 9/23 [00:11<00:18,  1.32s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_1.000_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_1.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:43,  1.97s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:41,  1.98s/cell]
+Executing:  17%|█▋        | 4/23 [01:09<06:42, 21.20s/cell]
+Executing:  22%|██▏       | 5/23 [01:14<04:52, 16.27s/cell]
+Executing:  30%|███       | 7/23 [01:15<02:20,  8.80s/cell]
+Executing:  39%|███▉      | 9/23 [55:42<2:34:12, 660.88s/cell]
+Executing:  43%|████▎     | 10/23 [55:43<1:51:20, 513.86s/cell]
+Executing:  70%|██████▉   | 16/23 [55:44<20:36, 176.68s/cell]
+Executing:  74%|███████▍  | 17/23 [55:45<15:17, 152.90s/cell]
+Executing: 100%|██████████| 23/23 [55:45<00:00, 70.90s/cell]
+Executing: 100%|██████████| 23/23 [55:48<00:00, 145.58s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_1.000_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:56,  2.57s/cell]
+Executing:   9%|▊         | 2/23 [00:05<01:01,  2.91s/cell]
+Executing:  17%|█▋        | 4/23 [00:10<00:50,  2.67s/cell]
+Executing:  22%|██▏       | 5/23 [00:11<00:35,  1.98s/cell]
+Executing:  39%|███▉      | 9/23 [00:11<00:11,  1.23cell/s]
+Executing:  39%|███▉      | 9/23 [00:12<00:19,  1.37s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_1.000_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:44,  2.01s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:40,  1.94s/cell]
+Executing:  17%|█▋        | 4/23 [01:18<07:37, 24.07s/cell]
+Executing:  22%|██▏       | 5/23 [01:23<05:29, 18.28s/cell]
+Executing:  30%|███       | 7/23 [01:24<02:37,  9.86s/cell]
+Executing:  39%|███▉      | 9/23 [53:37<2:28:02, 634.47s/cell]
+Executing:  43%|████▎     | 10/23 [53:38<1:46:53, 493.33s/cell]
+Executing:  70%|██████▉   | 16/23 [53:39<19:47, 169.66s/cell]
+Executing:  74%|███████▍  | 17/23 [53:39<14:40, 146.83s/cell]
+Executing: 100%|██████████| 23/23 [53:40<00:00, 68.09s/cell]
+Executing: 100%|██████████| 23/23 [53:42<00:00, 140.09s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_1.000_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_nM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:47,  2.14s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:49,  2.35s/cell]
+Executing:  17%|█▋        | 4/23 [00:10<00:49,  2.58s/cell]
+Executing:  22%|██▏       | 5/23 [00:10<00:34,  1.92s/cell]
+Executing:  39%|███▉      | 9/23 [00:11<00:11,  1.26cell/s]
+Executing:  39%|███▉      | 9/23 [00:11<00:18,  1.30s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_1.000_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_nM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:42,  1.92s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:40,  1.91s/cell]
+Executing:  17%|█▋        | 4/23 [01:24<08:16, 26.12s/cell]
+Executing:  22%|██▏       | 5/23 [01:30<05:54, 19.69s/cell]
+Executing:  30%|███       | 7/23 [01:30<02:49, 10.60s/cell]
+Executing:  39%|███▉      | 9/23 [53:46<2:28:17, 635.56s/cell]
+Executing:  43%|████▎     | 10/23 [53:47<1:47:04, 494.19s/cell]
+Executing:  70%|██████▉   | 16/23 [53:48<19:49, 169.92s/cell]
+Executing:  74%|███████▍  | 17/23 [53:49<14:42, 147.05s/cell]
+Executing: 100%|██████████| 23/23 [53:49<00:00, 68.19s/cell]
+Executing: 100%|██████████| 23/23 [53:51<00:00, 140.50s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.100_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_10.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:46,  2.13s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:48,  2.33s/cell]
+Executing:  17%|█▋        | 4/23 [00:08<00:42,  2.25s/cell]
+Executing:  22%|██▏       | 5/23 [00:09<00:30,  1.69s/cell]
+Executing:  39%|███▉      | 9/23 [00:10<00:09,  1.41cell/s]
+Executing:  39%|███▉      | 9/23 [00:10<00:16,  1.17s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.100_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_10.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:44,  2.01s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:40,  1.92s/cell]
+Executing:  17%|█▋        | 4/23 [02:09<12:44, 40.23s/cell]
+Executing:  22%|██▏       | 5/23 [02:15<08:50, 29.45s/cell]
+Executing:  30%|███       | 7/23 [02:16<04:12, 15.80s/cell]
+Executing:  39%|███▉      | 9/23 [59:33<2:43:08, 699.15s/cell]
+Executing:  43%|████▎     | 10/23 [59:34<1:57:46, 543.60s/cell]
+Executing:  70%|██████▉   | 16/23 [59:35<21:48, 186.90s/cell]
+Executing:  74%|███████▍  | 17/23 [59:35<16:10, 161.74s/cell]
+Executing: 100%|██████████| 23/23 [59:36<00:00, 75.00s/cell]
+Executing: 100%|██████████| 23/23 [59:38<00:00, 155.57s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.100_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_1.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:47,  2.14s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:49,  2.35s/cell]
+Executing:  17%|█▋        | 4/23 [00:10<00:48,  2.56s/cell]
+Executing:  22%|██▏       | 5/23 [00:10<00:34,  1.90s/cell]
+Executing:  39%|███▉      | 9/23 [00:11<00:11,  1.27cell/s]
+Executing:  39%|███▉      | 9/23 [00:11<00:18,  1.29s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.100_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_1.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:42,  1.93s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:39,  1.90s/cell]
+Executing:  17%|█▋        | 4/23 [01:20<07:47, 24.63s/cell]
+Executing:  22%|██▏       | 5/23 [01:25<05:35, 18.66s/cell]
+Executing:  30%|███       | 7/23 [01:26<02:41, 10.07s/cell]
+Executing:  39%|███▉      | 9/23 [57:53<2:39:57, 685.57s/cell]
+Executing:  43%|████▎     | 10/23 [57:54<1:55:29, 533.05s/cell]
+Executing:  70%|██████▉   | 16/23 [57:54<21:22, 183.27s/cell]
+Executing:  74%|███████▍  | 17/23 [57:55<15:51, 158.60s/cell]
+Executing: 100%|██████████| 23/23 [57:55<00:00, 73.54s/cell]
+Executing: 100%|██████████| 23/23 [57:58<00:00, 151.23s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.100_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:47,  2.14s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:49,  2.35s/cell]
+Executing:  17%|█▋        | 4/23 [00:09<00:48,  2.54s/cell]
+Executing:  22%|██▏       | 5/23 [00:10<00:34,  1.89s/cell]
+Executing:  39%|███▉      | 9/23 [00:11<00:10,  1.28cell/s]
+Executing:  39%|███▉      | 9/23 [00:11<00:17,  1.28s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.100_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:42,  1.93s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:41,  1.96s/cell]
+Executing:  17%|█▋        | 4/23 [01:20<07:47, 24.60s/cell]
+Executing:  22%|██▏       | 5/23 [01:25<05:35, 18.62s/cell]
+Executing:  30%|███       | 7/23 [01:25<02:40, 10.04s/cell]
+Executing:  39%|███▉      | 9/23 [53:44<2:28:19, 635.66s/cell]
+Executing:  43%|████▎     | 10/23 [53:45<1:47:05, 494.26s/cell]
+Executing:  70%|██████▉   | 16/23 [53:45<19:49, 169.94s/cell]
+Executing:  74%|███████▍  | 17/23 [53:46<14:42, 147.07s/cell]
+Executing: 100%|██████████| 23/23 [53:47<00:00, 68.20s/cell]
+Executing: 100%|██████████| 23/23 [53:48<00:00, 140.38s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.100_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_nM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:46,  2.13s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:49,  2.35s/cell]
+Executing:  17%|█▋        | 4/23 [00:11<00:56,  2.98s/cell]
+Executing:  22%|██▏       | 5/23 [00:11<00:39,  2.20s/cell]
+Executing:  39%|███▉      | 9/23 [00:12<00:12,  1.12cell/s]
+Executing:  39%|███▉      | 9/23 [00:12<00:20,  1.44s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.100_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_nM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:43,  1.97s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:41,  1.98s/cell]
+Executing:  17%|█▋        | 4/23 [01:06<06:27, 20.41s/cell]
+Executing:  22%|██▏       | 5/23 [01:11<04:42, 15.69s/cell]
+Executing:  30%|███       | 7/23 [01:12<02:15,  8.48s/cell]
+Executing:  39%|███▉      | 9/23 [53:00<2:26:39, 628.56s/cell]
+Executing:  43%|████▎     | 10/23 [53:00<1:45:53, 488.73s/cell]
+Executing:  70%|██████▉   | 16/23 [53:01<19:36, 168.05s/cell]
+Executing:  74%|███████▍  | 17/23 [53:02<14:32, 145.43s/cell]
+Executing: 100%|██████████| 23/23 [53:02<00:00, 67.44s/cell]
+Executing: 100%|██████████| 23/23 [53:04<00:00, 138.46s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.010_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_10.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:48,  2.21s/cell]
+Executing:   9%|▊         | 2/23 [00:05<01:03,  3.02s/cell]
+Executing:  17%|█▋        | 4/23 [00:12<00:58,  3.10s/cell]
+Executing:  22%|██▏       | 5/23 [00:12<00:40,  2.27s/cell]
+Executing:  39%|███▉      | 9/23 [00:13<00:12,  1.08cell/s]
+Executing:  39%|███▉      | 9/23 [00:13<00:21,  1.52s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.010_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_10.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:42,  1.94s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:40,  1.95s/cell]
+Executing:  17%|█▋        | 4/23 [01:24<08:14, 26.01s/cell]
+Executing:  22%|██▏       | 5/23 [01:29<05:53, 19.61s/cell]
+Executing:  30%|███       | 7/23 [01:30<02:49, 10.58s/cell]
+Executing:  39%|███▉      | 9/23 [59:02<2:43:04, 698.86s/cell]
+Executing:  43%|████▎     | 10/23 [59:03<1:57:43, 543.38s/cell]
+Executing:  70%|██████▉   | 16/23 [59:03<21:47, 186.83s/cell]
+Executing:  74%|███████▍  | 17/23 [59:04<16:10, 161.68s/cell]
+Executing: 100%|██████████| 23/23 [59:05<00:00, 74.97s/cell]
+Executing: 100%|██████████| 23/23 [59:06<00:00, 154.21s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.010_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_1.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:48,  2.20s/cell]
+Executing:   9%|▊         | 2/23 [00:05<01:00,  2.88s/cell]
+Executing:  17%|█▋        | 4/23 [00:11<00:54,  2.84s/cell]
+Executing:  22%|██▏       | 5/23 [00:11<00:37,  2.10s/cell]
+Executing:  39%|███▉      | 9/23 [00:12<00:12,  1.17cell/s]
+Executing:  39%|███▉      | 9/23 [00:12<00:19,  1.42s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.010_ug_per_ml_DMSO_0.025_% treatment3: Thapsigargin_1.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:42,  1.94s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:40,  1.93s/cell]
+Executing:  17%|█▋        | 4/23 [01:19<07:42, 24.36s/cell]
+Executing:  22%|██▏       | 5/23 [01:24<05:31, 18.42s/cell]
+Executing:  30%|███       | 7/23 [01:25<02:39,  9.94s/cell]
+Executing:  39%|███▉      | 9/23 [58:38<2:42:06, 694.73s/cell]
+Executing:  43%|████▎     | 10/23 [58:39<1:57:02, 540.17s/cell]
+Executing:  70%|██████▉   | 16/23 [58:39<21:40, 185.73s/cell]
+Executing:  74%|███████▍  | 17/23 [58:40<16:04, 160.72s/cell]
+Executing: 100%|██████████| 23/23 [58:41<00:00, 74.52s/cell]
+Executing: 100%|██████████| 23/23 [58:43<00:00, 153.19s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.010_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_uM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:47,  2.17s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:49,  2.34s/cell]
+Executing:  17%|█▋        | 4/23 [00:11<00:58,  3.05s/cell]
+Executing:  22%|██▏       | 5/23 [00:12<00:40,  2.25s/cell]
+Executing:  39%|███▉      | 9/23 [00:12<00:12,  1.10cell/s]
+Executing:  39%|███▉      | 9/23 [00:13<00:20,  1.46s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.010_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_uM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:42,  1.95s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:40,  1.91s/cell]
+Executing:  17%|█▋        | 4/23 [01:21<07:56, 25.09s/cell]
+Executing:  22%|██▏       | 5/23 [01:26<05:41, 18.98s/cell]
+Executing:  30%|███       | 7/23 [01:27<02:43, 10.23s/cell]
+Executing:  39%|███▉      | 9/23 [53:38<2:28:01, 634.39s/cell]
+Executing:  43%|████▎     | 10/23 [53:39<1:46:52, 493.27s/cell]
+Executing:  70%|██████▉   | 16/23 [53:40<19:47, 169.60s/cell]
+Executing:  74%|███████▍  | 17/23 [53:41<14:40, 146.78s/cell]
+Executing: 100%|██████████| 23/23 [53:41<00:00, 68.06s/cell]
+Executing: 100%|██████████| 23/23 [53:44<00:00, 140.19s/cell]
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.010_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_nM_DMSO_0.025_% cell_type: SHSY5Y
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:02<00:48,  2.19s/cell]
+Executing:   9%|▊         | 2/23 [00:04<00:48,  2.33s/cell]
+Executing:  17%|█▋        | 4/23 [00:14<01:12,  3.82s/cell]
+Executing:  22%|██▏       | 5/23 [00:14<00:49,  2.78s/cell]
+Executing:  39%|███▉      | 9/23 [00:15<00:15,  1.10s/cell]
+Executing:  39%|███▉      | 9/23 [00:15<00:24,  1.73s/cell]
+Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/cli.py", line 250, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 128, in execute_notebook
+    raise_for_execution_errors(nb, output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/papermill/execute.py", line 232, in raise_for_execution_errors
+    raise error
+papermill.exceptions.PapermillExecutionError:
+---------------------------------------------------------------------------
+Exception encountered at "In [6]":
+---------------------------------------------------------------------------
+ValueError                                Traceback (most recent call last)
+Cell In[6], line 5
+      3 for i in cp_features:
+      4     formula = f"{i} ~ C(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) + C(Metadata_number_of_singlecells)"
+----> 5     model = ols(formula, combined_df).fit()
+      6     aov_table = sm.stats.anova_lm(model, typ=2)
+      7     posthoc = pairwise_tukeyhsd(
+      8         combined_df[i],
+      9         combined_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+     10         alpha=0.001,
+     11     )
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/base/model.py:203, in Model.from_formula(cls, formula, data, subset, drop_cols, *args, **kwargs)
+    200 if missing == 'none':  # with patsy it's drop or raise. let's raise.
+    201     missing = 'raise'
+--> 203 tmp = handle_formula_data(data, None, formula, depth=eval_env,
+    204                           missing=missing)
+    205 ((endog, exog), missing_idx, design_info) = tmp
+    206 max_endog = cls._formula_max_endog
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/statsmodels/formula/formulatools.py:63, in handle_formula_data(Y, X, formula, depth, missing)
+     61 else:
+     62     if data_util._is_using_pandas(Y, None):
+---> 63         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     64                            NA_action=na_action)
+     65     else:
+     66         result = dmatrices(formula, Y, depth, return_type='dataframe',
+     67                            NA_action=na_action)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:309, in dmatrices(formula_like, data, eval_env, NA_action, return_type)
+    299 """Construct two design matrices given a formula_like and data.
+    300
+    301 This function is identical to :func:`dmatrix`, except that it requires
+   (...)
+    306 See :func:`dmatrix` for details.
+    307 """
+    308 eval_env = EvalEnvironment.capture(eval_env, reference=1)
+--> 309 (lhs, rhs) = _do_highlevel_design(formula_like, data, eval_env,
+    310                                   NA_action, return_type)
+    311 if lhs.shape[1] == 0:
+    312     raise PatsyError("model is missing required outcome variables")
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:164, in _do_highlevel_design(formula_like, data, eval_env, NA_action, return_type)
+    162 def data_iter_maker():
+    163     return iter([data])
+--> 164 design_infos = _try_incr_builders(formula_like, data_iter_maker, eval_env,
+    165                                   NA_action)
+    166 if design_infos is not None:
+    167     return build_design_matrices(design_infos, data,
+    168                                  NA_action=NA_action,
+    169                                  return_type=return_type)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/highlevel.py:66, in _try_incr_builders(formula_like, data_iter_maker, eval_env, NA_action)
+     64 if isinstance(formula_like, ModelDesc):
+     65     assert isinstance(eval_env, EvalEnvironment)
+---> 66     return design_matrix_builders([formula_like.lhs_termlist,
+     67                                    formula_like.rhs_termlist],
+     68                                   data_iter_maker,
+     69                                   eval_env,
+     70                                   NA_action)
+     71 else:
+     72     return None
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:719, in design_matrix_builders(termlists, data_iter_maker, eval_env, NA_action)
+    717 design_infos = []
+    718 for termlist in termlists:
+--> 719     term_to_subterm_infos = _make_subterm_infos(termlist,
+    720                                                 num_column_counts,
+    721                                                 cat_levels_contrasts)
+    722     assert isinstance(term_to_subterm_infos, OrderedDict)
+    723     assert frozenset(term_to_subterm_infos) == frozenset(termlist)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/build.py:626, in _make_subterm_infos(terms, num_column_counts, cat_levels_contrasts)
+    623 levels, contrast = cat_levels_contrasts[factor]
+    624 # This is where the default coding is set to
+    625 # Treatment:
+--> 626 coded = code_contrast_matrix(factor_coding[factor],
+    627                              levels, contrast,
+    628                              default=Treatment)
+    629 contrast_matrices[factor] = coded
+    630 subterm_columns *= coded.matrix.shape[1]
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:602, in code_contrast_matrix(intercept, levels, contrast, default)
+    600     return contrast.code_with_intercept(levels)
+    601 else:
+--> 602     return contrast.code_without_intercept(levels)
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/patsy/contrasts.py:183, in Treatment.code_without_intercept(self, levels)
+    181 else:
+    182     reference = _get_level(levels, self.reference)
+--> 183 eye = np.eye(len(levels) - 1)
+    184 contrasts = np.vstack((eye[:reference, :],
+    185                         np.zeros((1, len(levels) - 1)),
+    186                         eye[reference:, :]))
+    187 names = _name_levels("T.", levels[:reference] + levels[reference + 1:])
+
+File /projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/numpy/lib/twodim_base.py:215, in eye(N, M, k, dtype, order, like)
+    213 if M is None:
+    214     M = N
+--> 215 m = zeros((N, M), dtype=dtype, order=order)
+    216 if k >= M:
+    217     return m
+
+ValueError: negative dimensions are not allowed
+
+treatment1: DMSO_0.100_%_DMSO_0.025_% treatment2: LPS_0.010_ug_per_ml_DMSO_0.025_% treatment3: H2O2_100.000_nM_DMSO_0.025_% cell_type: PBMC
+Input Notebook:  5.anova.ipynb
+Output Notebook: 5.anova.ipynb
+
+Executing:   0%|          | 0/23 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   4%|▍         | 1/23 [00:01<00:42,  1.95s/cell]
+Executing:   9%|▊         | 2/23 [00:03<00:41,  1.98s/cell]
+Executing:  17%|█▋        | 4/23 [01:31<08:55, 28.19s/cell]
+Executing:  22%|██▏       | 5/23 [01:36<06:19, 21.08s/cell]
+Executing:  30%|███       | 7/23 [01:37<03:01, 11.35s/cell]
+Executing:  39%|███▉      | 9/23 [53:44<2:27:59, 634.27s/cell]
+Executing:  43%|████▎     | 10/23 [53:45<1:46:51, 493.18s/cell]
+Executing:  70%|██████▉   | 16/23 [53:46<19:47, 169.57s/cell]
+Executing:  74%|███████▍  | 17/23 [53:47<14:40, 146.75s/cell]
+Executing: 100%|██████████| 23/23 [53:47<00:00, 68.05s/cell]
+Executing: 100%|██████████| 23/23 [53:50<00:00, 140.44s/cell]
+[NbConvertApp] WARNING | Config option `kernel_spec_manager_class` not recognized by `NbConvertApp`.
+[NbConvertApp] Converting notebook 0.nomic_cleanup_for_correlation.ipynb to script
+[NbConvertApp] Writing 5530 bytes to scripts/0.nomic_cleanup_for_correlation.py
+[NbConvertApp] Converting notebook 1.umap_analysis_plate2.ipynb to script
+[NbConvertApp] Writing 2620 bytes to scripts/1.umap_analysis_plate2.py
+[NbConvertApp] Converting notebook 2a.correlation_nomic_features.ipynb to script
+[NbConvertApp] Writing 2316 bytes to scripts/2a.correlation_nomic_features.py
+[NbConvertApp] Converting notebook 2b.correlation_agg_morphology_features.ipynb to script
+[NbConvertApp] Writing 4479 bytes to scripts/2b.correlation_agg_morphology_features.py
+[NbConvertApp] Converting notebook 2c.correlation_nomic_and_agg_morphology.ipynb to script
+[NbConvertApp] Writing 5212 bytes to scripts/2c.correlation_nomic_and_agg_morphology.py
+[NbConvertApp] Converting notebook 2.single_channel_umap_analysis.ipynb to script
+[NbConvertApp] Writing 5828 bytes to scripts/2.single_channel_umap_analysis.py
+[NbConvertApp] Converting notebook 3.correlation_visualization.ipynb to script
+[NbConvertApp] Writing 2905 bytes to scripts/3.correlation_visualization.r
+[NbConvertApp] Converting notebook 4.cell_count_analysis.ipynb to script
+[NbConvertApp] Writing 2305 bytes to scripts/4.cell_count_analysis.py
+[NbConvertApp] Converting notebook 5.anova.ipynb to script
+[NbConvertApp] Writing 8757 bytes to scripts/5.anova.py
+[NbConvertApp] Converting notebook 6.heterogeneity_analysis.ipynb to script
+[NbConvertApp] Writing 2441 bytes to scripts/6.heterogeneity_analysis.py

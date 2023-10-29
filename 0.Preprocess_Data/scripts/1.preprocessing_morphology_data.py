@@ -18,7 +18,7 @@ import pyarrow.parquet as pq
 
 
 # Parameters
-cell_type = "PBMC"
+cell_type = "SHSY5Y"
 
 
 # In[3]:

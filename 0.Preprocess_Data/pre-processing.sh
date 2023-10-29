@@ -20,7 +20,10 @@ for cell_type in "${cell_types[@]}"; do
     papermill 2.preprocessing_nELISA_data.ipynb 2.preprocessing_nELISA_data.ipynb -p cell_type $cell_type
     for aggragate in "${aggragates[@]}"; do
         for nomic in "${nomics[@]}"; do
-            echo $cell_type $aggragate $nomic
+            if [ $aggragate == "False" ] && [ $nomic == "False" ]; then
+                continue
+            fi
+            echo $cell_type $aggraggitate $nomic
             papermill 3.data_aggregation.ipynb 3.data_aggregation.ipynb -p cell_type $cell_type -p aggregation $aggragate -p nomic $nomic
         done
     done

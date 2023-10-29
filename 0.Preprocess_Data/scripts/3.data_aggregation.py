@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# <span style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">An Exception was encountered at '<a href="#papermill-error-cell">In [8]</a>'.</span>
-
 # This noteboook aggregates the data from the previous notebooks and creates the final dataset for the analysis barring the data are aggregated in the analysis.
 
 # In[1]:
@@ -19,7 +17,7 @@ import pandas as pd
 # Parameters
 cell_type = "SHSY5Y"
 aggregation = False
-nomic = False
+nomic = True
 
 
 # In[3]:
@@ -175,8 +173,6 @@ elif aggregation == False and nomic == False:
 else:
     raise ValueError("Wrong parameters nomica and/or aggregation not defined")
 
-
-# <span id="papermill-error-cell" style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">Execution using papermill encountered an exception here and stopped:</span>
 
 # In[8]:
 

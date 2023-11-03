@@ -154,6 +154,7 @@ plt.ylabel("v_k")
 plt.title("Canonical Variates")
 # add r2 of regression line to plot
 plt.show()
+plt.close()
 
 # calculate r2 of k
 from sklearn.metrics import r2_score
@@ -187,6 +188,7 @@ plt.xlabel("u_k_RI")
 plt.ylabel("v_k_RI")
 plt.title("Redundancy Index")
 plt.show()
+plt.close()
 
 
 # In[13]:
@@ -269,6 +271,7 @@ plt.xlabel("K")
 plt.ylabel("r2")
 plt.title("Skree Plot of r2 against K")
 plt.show()
+plt.close()
 
 # plot the redundancy index
 plt.plot(out_df["K"], out_df["X_RI"], label="X")
@@ -278,6 +281,7 @@ plt.ylabel("Redundancy Index")
 plt.title("Redundancy Index against K")
 plt.legend()
 plt.show()
+plt.close()
 
 
 # In[16]:
@@ -294,10 +298,7 @@ elif results_file_path.exists():
     if len(old_df["Shuffle"] > 1):
         # overwrite the file
         out_df.to_csv(results_file_path, index=False)
-elif results_file_path.exists():
-    # read in the file
-    old_df = pd.read_csv(results_file_path)
-    if old_df["Shuffle"].unique() == Shuffle:
+    elif old_df["Shuffle"].unique() == Shuffle:
         pass
     else:
         # concat the dfs and write to file

@@ -35,7 +35,7 @@ for cell_type in "${cell_types[@]}"; do
             binary_classification_training_visualization.r \
             --celltype $cell_type \
             --model_name $model_name \
-            --selected_treatment_comparison $selected_treatment_comparison
+            --selected_treatment_comparisons "${selected_treatment_comparison}"
         done
     done
 done

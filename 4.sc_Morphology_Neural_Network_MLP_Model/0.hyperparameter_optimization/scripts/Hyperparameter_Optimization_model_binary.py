@@ -47,10 +47,10 @@ from utils.utils import df_stats
 
 
 # Parameters
-CELL_TYPE = "SHSY5Y"
+CELL_TYPE = "PBMC"
 CONTROL_NAME = "DMSO_0.100_%_DMSO_0.025_%"
-TREATMENT_NAME = "LPS_100.000_ug_per_ml_DMSO_0.025_%"
-MODEL_NAME = "DMSO_0.025_vs_LPS_100"
+TREATMENT_NAME = "Thapsigargin_1.000_uM_DMSO_0.025_%"
+MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_1"
 
 
 # In[3]:

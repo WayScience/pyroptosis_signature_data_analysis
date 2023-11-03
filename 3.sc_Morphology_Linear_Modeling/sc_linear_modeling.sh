@@ -1,11 +1,11 @@
 #!/bin/bash
-#!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks=16
-#SBATCH --mem=300G
+#SBATCH --ntasks=2
+#SBATCH --mem=400G
 #SBATCH --partition=amem
 #SBATCH --qos=mem
-#SBATCH --time=48:00:00
+#SBATCH --account=amc-general
+#SBATCH --time=40:00:00
 #SBATCH --output=sample-%j.out
 
 module load anaconda

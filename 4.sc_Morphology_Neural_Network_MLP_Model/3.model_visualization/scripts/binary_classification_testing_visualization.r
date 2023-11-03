@@ -1,6 +1,6 @@
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(ggplot2))
-
+suppressPackageStartupMessages(library(argparse))
 figure_theme_path <- file.path(
     "..","visulaization_utils", "figure_themes.R")
 source(figure_theme_path)
@@ -21,9 +21,7 @@ model_name <- args$model_name
 selected_treatment_comparisons <- args$selected_treatment_comparisons
 
 
-celltype  <- "SHSY5Y"
-model_name <- "DMSO_0.025_vs_LPS_100"
-selected_treatment_comparisons <- "DMSO_0.100_%_DMSO_0.025_% vs LPS_100.000_ug_per_ml_DMSO_0.025_%,DMSO_0.100_%_DMSO_0.025_% vs Thapsigargin_1.000_uM_DMSO_0.025_%,DMSO_0.100_%_DMSO_0.025_% vs Thapsigargin_10.000_uM_DMSO_0.025_%"
+print(selected_treatment_comparisons)
 
 output_file <- file.path(
     "..","..","figures","Binary_Classification",model_name,celltype,"pr_curves_testing.png"
@@ -89,4 +87,3 @@ pr_curve_gg <- (
 )
 
 ggsave(output_file, pr_curve_gg, height = 5.5, width = 8.5, dpi = 500)
-pr_curve_gg

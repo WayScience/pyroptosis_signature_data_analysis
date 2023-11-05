@@ -2,7 +2,9 @@ suppressPackageStartupMessages(suppressWarnings(library(ggplot2)))
 suppressPackageStartupMessages(suppressWarnings(library(dplyr)))
 suppressPackageStartupMessages(suppressWarnings(library(tidyr)))
 
+
 cell_type = "PBMC"
+
 
 # path set
 input_file_path <- file.path(paste0("../results/","regression/",cell_type))
@@ -10,6 +12,7 @@ input_file_path <- file.path(paste0("../results/","regression/",cell_type))
 output_path <- file.path(paste0("../figures/","regression/",cell_type,"/"))
 # create output directory if it doesn't exist
 dir.create(output_path, recursive = TRUE, showWarnings = FALSE)
+
 
 ## function to process the data for visualization
 process_subset_data <- function(data_path){
@@ -51,6 +54,7 @@ process_subset_data <- function(data_path){
     return(data)
 }
 
+
 # get all files in a directory
 files <- list.files(path = input_file_path, pattern = "*.csv", full.names = TRUE)
 coef_gg_file <- file.path(paste0(output_path,"/","top_abs_val_coefficients_enet.pdf"))
@@ -91,3 +95,4 @@ for (i in files){
     plot(coef_gg)
 }
 dev.off()
+

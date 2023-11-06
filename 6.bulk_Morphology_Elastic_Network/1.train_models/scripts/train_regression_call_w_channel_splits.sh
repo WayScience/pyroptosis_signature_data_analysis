@@ -9,9 +9,9 @@
 #SBATCH --output=sample-%j.out
 #SBATCH --array=1-750%20
 
-module load anaconda
+# module load anaconda
 
-conda activate Interstellar
+# conda activate Interstellar
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
 
@@ -19,6 +19,8 @@ jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipy
 filename="../../0.split_data/cytokine_list/cytokine_list.txt"
 # read all lines of the file to an array
 readarray -t cytokine_array < $filename
+channel_filename="../../0.split_data/cytokine_list/channel_splits.txt"
+readarray -t channel_array < $channel_filename
 
 
 shuffles=( True False )
@@ -29,11 +31,14 @@ job_id=$((SLURM_ARRAY_TASK_ID - 1))
 shuffle_idx=$((job_id % ${#shuffles[@]}))
 cell_type_idx=$(((job_id / ${#shuffles[@]}) % ${#cell_types[@]}))
 cytokine_idx=$(((job_id / ${#shuffles[@]} / ${#cell_types[@]}) % ${#cytokine_array[@]}))
+channel_idx=$(((job_id / ${#shuffles[@]} / ${#cell_types[@]} / ${#cytokine_array[@]}) % ${#channel_array[@]}))
 
 shuffle=${shuffles[$shuffle_idx]}
 cell_type=${cell_types[$cell_type_idx]}
 cytokine=${cytokine_array[$cytokine_idx]}
+channel=${channel_array[$channel_idx]}
 
-command="python 1.train_regression_multi_output.py"
+# command="python 1.train_regression_multi_output.py"
+command="echo $cell_type $cytokine $shuffle $channel"
 
-$command --cell_type "$cell_type" --cytokine "$cytokine" --shuffle "$shuffle"
+$command --cell_type "$cell_type" --cytokine "$cytokine" --shuffle "$shuffle" --data "$channel"

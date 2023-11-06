@@ -26,7 +26,7 @@ cell_type_idx=$((job_id % ${#cell_types[@]}))
 cell_type=${cell_types[$cell_type_idx]}
 
 # use papermill to run the notebooks with injected parameters
-command="python 0.split_data_regression.py"
+command="python 2.get_channel_splits.py"
 
 echo $cell_type
 

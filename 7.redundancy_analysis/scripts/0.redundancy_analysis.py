@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn.cross_decomposition import CCA
+from sklearn.metrics import r2_score
 from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
@@ -22,7 +23,7 @@ from tqdm import tqdm
 
 
 # Parameters
-cell_type = "PBMC"
+cell_type = "SHSY5Y"
 Shuffle = False
 
 
@@ -76,12 +77,19 @@ nomic_data_values = pd.DataFrame(
 # In[6]:
 
 
+# check the scale of the data
+nomic_data_values.describe()
+
+
+# In[7]:
+
+
 # shuffle the data both rows and columns
 if Shuffle:
-    morphology_data = morphology_data.sample(frac=1).reset_index(drop=True)
-    morphology_data = morphology_data.sample(frac=1, axis=1).reset_index(drop=True)
-    nomic_data_values = nomic_data_values.sample(frac=1).reset_index(drop=True)
-    nomic_data_values = nomic_data_values.sample(frac=1, axis=1).reset_index(drop=True)
+    for column in nomic_data_values:
+        np.random.shuffle(nomic_data_values[column].values)
+    for column in morphology_data:
+        np.random.shuffle(morphology_data[column].values)
 
 
 # ### Variables
@@ -93,7 +101,7 @@ if Shuffle:
 # $N = Rows of NomicData$
 # $Q = Columns of NomicData$
 
-# In[7]:
+# In[8]:
 
 
 # define the variables
@@ -107,25 +115,21 @@ K = min(N, P, Q)
 print("K:", K)
 
 
-# In[8]:
+# In[9]:
 
 
 cca = CCA(n_components=K)
 cca.fit(morphology_data, nomic_data_values)
 X_c, Y_c = cca.transform(morphology_data, nomic_data_values)
-ccascore = [cca.score(morphology_data, nomic_data_values), X_c, Y_c]
+r2 = [cca.score(morphology_data, nomic_data_values), X_c, Y_c][0]
+print("The R2 score for the Canonical Correlation is:", r2)
 
 
-# In[9]:
+# In[10]:
 
 
-# make a dataframe of the coefficients
-coef_df = pd.DataFrame(
-    cca.coef_, columns=morphology_data.columns, index=nomic_data_values.columns
-)
-# get the X and Y coefficients as np arrays
-X_coef = cca.x_weights_
-Y_coef = cca.y_weights_
+A_tilde = cca.x_loadings_.T
+B_tilde = cca.y_loadings_.T
 
 
 # From the canonical coefficients we can calculate the variance extracted by each canonical variable.
@@ -133,174 +137,102 @@ Y_coef = cca.y_weights_
 #
 # $v_k = \frac{1}{Q} \sum^Q_{q=1} \tilde a^2_{qk}$
 
-# In[10]:
-
-
-# get the variance explained by each canonical variate
-u_k = sum(cca.x_loadings_**2) / P
-v_k = sum(cca.y_loadings_**2) / Q
-
-
 # In[11]:
 
 
-# scatter plot of the canonical variates
-plt.scatter(u_k, v_k)
-# fit a line to the scatter plot
-m, b = np.polyfit(u_k, v_k, 1)
-plt.plot(u_k, m * u_k + b)
-plt.xlabel("u_k")
-plt.ylabel("v_k")
-plt.title("Canonical Variates")
-# add r2 of regression line to plot
-plt.show()
-plt.close()
-
-# calculate r2 of k
-from sklearn.metrics import r2_score
-
-k_r2 = r2_score(v_k, m * u_k + b)
-print(k_r2)
+u_k = []
+v_k = []
+for i in A_tilde:
+    u_k.append(np.mean(i**2))
+for i in B_tilde:
+    v_k.append(np.mean(i**2))
 
 
 # In[12]:
 
 
-# calculate the redundancy index of each variable
-u_k_RI = []
-v_k_RI = []
-for i in enumerate(u_k):
-    # add to list
-    u_k_RI.append(i[1] / k_r2)
-for i in enumerate(v_k):
-    # add to list
-    v_k_RI.append(i[1] / k_r2)
-
-sum_u_k_RI = sum(u_k_RI)
-sum_v_k_RI = sum(v_k_RI)
-print(
-    f"The variance of the canonical variates explained by the variables is {sum_u_k_RI} for X and {sum_v_k_RI} for Y"
-)
-
-# plot the redundancy index
-plt.scatter(u_k_RI, v_k_RI)
-plt.xlabel("u_k_RI")
-plt.ylabel("v_k_RI")
-plt.title("Redundancy Index")
-plt.show()
-plt.close()
+# coefficients of determination for each canonical variable
+r2 = r2_score(u_k, v_k)
 
 
 # In[13]:
 
 
-# df from the canonical variates
-RI_df = pd.DataFrame([u_k_RI, v_k_RI], index=["u_k_RI", "v_k_RI"]).T
-RI_df["Shuffle"] = Shuffle
-# set output path
-results_file_path_RI = pathlib.Path(f"../results/{cell_type}_redundancy_index.csv")
-results_file_path_RI.parent.mkdir(parents=True, exist_ok=True)
+# calculate the redundancy index for each canonical variable
+RI_u = []
+RI_v = []
 
-if not results_file_path_RI.exists():
-    RI_df.to_csv(results_file_path_RI, index=False)
-elif results_file_path_RI.exists():
-    # read in the existing file
-    existing_df = pd.read_csv(results_file_path_RI)
-    if len(existing_df["Shuffle"].unique()) > 1:
-        # overwrite the file
-        RI_df.to_csv(results_file_path_RI, index=False)
-    elif existing_df["Shuffle"].unique() != Shuffle:
-        # append to the file
-        RI_df.to_csv(results_file_path_RI, mode="a", header=False, index=False)
-    else:
-        print("The file already exists and the shuffle value is the same")
-        print("No write occured")
-else:
-    print("Something went wrong: check path for the redundancy index file")
+for i in u_k:
+    RI_u.append(i * r2)
+for i in v_k:
+    RI_v.append(i * r2)
 
 
 # In[14]:
 
 
-out_dict = {}
-for i in tqdm(range(2, K)):
-    cca = CCA(n_components=i)
-    cca.fit(morphology_data, nomic_data_values)
-    X_c, Y_c = cca.transform(morphology_data, nomic_data_values)
-    cca.score(morphology_data, nomic_data_values), X_c, Y_c
-    coef_df = pd.DataFrame(
-        cca.coef_, columns=morphology_data.columns, index=nomic_data_values.columns
-    )
-    # get the X and Y coefficients as np arrays
-    X_coef = cca.x_weights_
-    Y_coef = cca.y_weights_
-    # get the variance explained by each canonical variate
-    u_k = sum(cca.x_loadings_**2) / P
-    v_k = sum(cca.y_loadings_**2) / Q
-    k_r2 = r2_score(v_k, m * u_k + b)
-    # calculate the redundancy index of each variable
-    u_k_RI = []
-    v_k_RI = []
-    for i in enumerate(u_k):
-        # add to list
-        u_k_RI.append(i[1] / k_r2)
-    for i in enumerate(v_k):
-        # add to list
-        v_k_RI.append(i[1] / k_r2)
+RI_u_min = np.min(RI_u)
+RI_v_min = np.min(RI_v)
+RI_u_max = np.max(RI_u)
+RI_v_max = np.max(RI_v)
+global_min = np.min([RI_u_min, RI_v_min])
+global_max = np.max([RI_u_max, RI_v_max])
 
-    sum_u_k_RI = sum(u_k_RI)
-    sum_v_k_RI = sum(v_k_RI)
-    out_dict[i[0]] = [sum_u_k_RI, sum_v_k_RI, k_r2]
+# Calulate the global redundancy index
+global_RI_u_v = np.sum(RI_u) + np.sum(RI_v)
+global_RI_u = np.sum(RI_u) / global_RI_u_v * 100
+global_RI_v = np.sum(RI_v) / global_RI_u_v * 100
+
+# plot RI_u and RI_v
+sns.set_theme(style="whitegrid")
+plt.figure(figsize=(10, 10))
+plt.scatter(RI_u, RI_v)
+plt.xlabel(f"RI of u ( {round(global_RI_u,2)}%)")
+plt.ylabel(f"RI of v ( {round(global_RI_v,2)}%)")
+plt.xlim(global_min, global_max)
+plt.ylim(global_min, global_max)
+# add a line of y=x to the plot
+plt.plot(
+    [global_min, global_max],
+    [global_min, global_max],
+    color="red",
+    linestyle="-",
+    linewidth=2,
+)
 
 
 # In[15]:
 
 
-# dict to df
-out_df = pd.DataFrame.from_dict(
-    out_dict, orient="index", columns=["X_RI", "Y_RI", "r2"]
+# make a dataframe of the results
+results_df = pd.DataFrame(
+    {
+        "RI_u": RI_u,
+        "RI_v": RI_v,
+        "u_k": u_k,
+        "v_k": v_k,
+        "r2": r2,
+        "Shuffle": Shuffle,
+    }
 )
-# reset index
-out_df = out_df.reset_index()
-# rename index column
-out_df = out_df.rename(columns={"index": "K"})
-out_df["Shuffle"] = Shuffle
-# plot the redundancy index
-plt.plot(out_df["K"], out_df["r2"], label="X")
-plt.xlabel("K")
-plt.ylabel("r2")
-plt.title("Skree Plot of r2 against K")
-plt.show()
-plt.close()
 
-# plot the redundancy index
-plt.plot(out_df["K"], out_df["X_RI"], label="X")
-plt.plot(out_df["K"], out_df["Y_RI"], label="Y")
-plt.xlabel("K")
-plt.ylabel("Redundancy Index")
-plt.title("Redundancy Index against K")
-plt.legend()
-plt.show()
-plt.close()
+results_df.head(5)
 
 
 # In[16]:
 
 
-# check if file exists
-if not results_file_path.exists():
-    # write to file
-    out_df.to_csv(results_file_path, index=False)
-    pass
-elif results_file_path.exists():
-    # read in the file
-    old_df = pd.read_csv(results_file_path)
-    if len(old_df["Shuffle"] > 1):
-        # overwrite the file
-        out_df.to_csv(results_file_path, index=False)
-    elif old_df["Shuffle"].unique() == Shuffle:
-        pass
-    else:
-        # concat the dfs and write to file
-        out_df = pd.concat([old_df, out_df])
-        out_df.to_csv(results_file_path, index=False)
+# check for file existence
+if results_file_path.is_file():
+    print("The results file exists.")
+    #  read the results file
+    existing_file_df = pd.read_csv(results_file_path)
+    # check for if it is full for shuffle type
+    if len(existing_file_df["Shuffle"].unique()) > 1:
+        # delete the existing file
+        results_file_path.unlink()
+    elif not existing_file_df["Shuffle"].unique() == Shuffle:
+        pd.concat([existing_file_df, results_df]).to_csv(results_file_path, index=False)
+else:
+    results_df.to_csv(results_file_path, index=False)
+    print("The results file is created.")

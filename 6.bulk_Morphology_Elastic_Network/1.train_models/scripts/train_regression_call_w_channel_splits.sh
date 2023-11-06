@@ -7,6 +7,7 @@
 #SBATCH --qos=mem
 #SBATCH --time=72:00:00
 #SBATCH --output=sample-%j.out
+#SBATCH --array=1-750%20
 
 module load anaconda
 

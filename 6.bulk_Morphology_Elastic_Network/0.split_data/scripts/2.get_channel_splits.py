@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import argparse
@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import toml
 
-# In[2]:
+# In[ ]:
 
 
 argparser = argparse.ArgumentParser()
@@ -23,7 +23,7 @@ args = argparser.parse_args()
 cell_type = args.cell_type
 
 
-# In[4]:
+# In[ ]:
 
 
 # Parameters
@@ -31,13 +31,13 @@ aggregation = True
 nomic = True
 
 
-# In[5]:
+# In[ ]:
 
 
 MODEL_TYPE = "regression"
 
 
-# In[15]:
+# In[ ]:
 
 
 # toml file path
@@ -50,7 +50,7 @@ test_100_percent = data_splits_by_treatments["splits"]["data_splits_100"]
 test_75_percent = data_splits_by_treatments["splits"]["data_splits_75"]
 
 
-# In[60]:
+# In[ ]:
 
 
 aggregate_and_nomic_path = pathlib.Path(
@@ -66,7 +66,7 @@ data_df.head()
 morphology_df = pd.read_parquet(aggregate_path)
 
 
-# In[67]:
+# In[ ]:
 
 
 # get the NSU columns
@@ -78,7 +78,7 @@ nomic_df.loc["oneb_Treatment_Dose_Inhibitor_Dose"] = data_df[
 ]
 
 
-# In[43]:
+# In[ ]:
 
 
 # subset each column that contains metadata
@@ -95,7 +95,7 @@ metadata_well = metadata[
 data_df = pd.merge(data, metadata_well, left_index=True, right_index=True)
 
 
-# In[44]:
+# In[ ]:
 
 
 # drop morphology metadata
@@ -105,14 +105,14 @@ morphology_df = morphology_df.drop(
 morphology_df.head()
 
 
-# In[45]:
+# In[ ]:
 
 
 # define the list of the channels
 channel_list = ["DNA", "Gasdermin", "ER", "Mito", "PM"]
 
 
-# In[46]:
+# In[ ]:
 
 
 # combiantions of channels
@@ -122,23 +122,25 @@ for i in range(1, len(channel_list) + 1):
     channel_combinations += tmp_list
 
 
-# In[47]:
+# In[ ]:
 
 
 # set up the LOO channel with recursion for dropping multiple channels
+
+
 def channel_drop(df, channel):
     df = df.drop(df.filter(regex=channel).columns, axis=1)
     return df
 
 
-# In[48]:
+# In[ ]:
 
 
 # dictionary for each df to go into
 results_dict = {}
 
 
-# In[49]:
+# In[ ]:
 
 
 # get all of the the channel combinations
@@ -202,7 +204,7 @@ for i in channel_combinations:
         print("channel length error")
 
 
-# In[71]:
+# In[ ]:
 
 
 # set path to save
@@ -225,7 +227,7 @@ for i in results_dict:
     new_df.to_parquet(file_path)
 
 
-# In[73]:
+# In[ ]:
 
 
 # get the list of the dictionary keys

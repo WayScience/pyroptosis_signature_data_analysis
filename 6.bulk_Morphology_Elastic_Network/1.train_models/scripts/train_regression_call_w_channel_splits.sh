@@ -7,11 +7,10 @@
 #SBATCH --qos=mem
 #SBATCH --time=72:00:00
 #SBATCH --output=sample-%j.out
-#SBATCH --array=1-750%20
 
-# module load anaconda
+module load anaconda
 
-# conda activate Interstellar
+conda activate Interstellar
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
 
@@ -38,7 +37,6 @@ cell_type=${cell_types[$cell_type_idx]}
 cytokine=${cytokine_array[$cytokine_idx]}
 channel=${channel_array[$channel_idx]}
 
-# command="python 1.train_regression_multi_output.py"
-command="echo $cell_type $cytokine $shuffle $channel"
+command="python 1.train_regression_multi_output.py"
 
 $command --cell_type "$cell_type" --cytokine "$cytokine" --shuffle "$shuffle" --data "$channel"

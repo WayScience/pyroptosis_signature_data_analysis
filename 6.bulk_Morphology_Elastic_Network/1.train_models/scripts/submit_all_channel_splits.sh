@@ -29,10 +29,12 @@ for data_set in "${channels[@]}"; do
 
     while true; do
         # check the number of pending jobs in the queue
-        num_pending_jobs=$(squeue -t PENDING | wc -l)
+        num_pending_jobs=$(squeue -u $USER -t PENDING | wc -l)
+        num_running_jobs=$(squeue -u $USER -t RUNNING | wc -l)
+        num_active_jobs=$((num_pending_jobs + num_running_jobs))
 
         # submit a new job only if the number of pending jobs is less than the maximum allowed
-        if [ $num_pending_jobs -lt $max_pending_jobs ]; then
+        if [ $num_active_jobs -lt $max_pending_jobs ]; then
             sbatch train_regression_call_w_channel_splits.sh "$data_set"
             echo "Submitted new job to SLURM"
         else

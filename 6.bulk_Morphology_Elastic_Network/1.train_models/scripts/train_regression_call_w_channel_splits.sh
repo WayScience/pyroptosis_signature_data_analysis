@@ -2,18 +2,19 @@
 # This script is used to train the regression models for the elastic network
 
 #SBATCH --nodes=1
-#SBATCH --ntasks=20
+#SBATCH --ntasks=10
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=150G
-#SBATCH --partition=amilan
-#SBATCH --qos=normal
-#SBATCH --time=10:00:00
+#SBATCH --partition=amem
+#SBATCH --qos=mem
+#SBATCH --time=24:00:00
 #SBATCH --output=sample-%j.out
 #SBATCH --array=1-750%20
 
-# module load anaconda
+module load anaconda
 
-# conda activate Interstellar
+conda activate Interstellar
+
+module load gnu_parallel
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
 

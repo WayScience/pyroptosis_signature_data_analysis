@@ -5,7 +5,7 @@
 #SBATCH --ntasks=20
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=150G
-#SBATCH --partition=normal
+#SBATCH --partition=amilan
 #SBATCH --qos=normal
 #SBATCH --time=10:00:00
 #SBATCH --output=sample-%j.out
@@ -17,12 +17,14 @@ conda activate Interstellar
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
 
-# get the array of cytokiens
+# get the array of cytokines
 filename="../../0.split_data/cytokine_list/cytokine_list.txt"
 # read all lines of the file to an array
 readarray -t cytokine_array < $filename
 channel_filename="../../0.split_data/cytokine_list/channel_splits.txt"
 readarray -t channel_array < $channel_filename
+shuffles=( True False )
+cell_types=( SHSY5Y PBMC )
 
 run_parallel() {
     local job_id="$1"

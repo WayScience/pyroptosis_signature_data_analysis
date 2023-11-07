@@ -14,8 +14,6 @@ module load anaconda
 
 conda activate Interstellar
 
-module load gnu_parallel
-
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
 
 # pass through the data set from the call script

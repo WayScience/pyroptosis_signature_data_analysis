@@ -27,15 +27,15 @@ shuffles=( True False )
 cell_types=( SHSY5Y PBMC )
 
 run_parallel() {
-    local job_id="$1"
+    local job_id=$((SLURM_ARRAY_TASK_ID - 1))
     local shuffle_idx=$((job_id % ${#shuffles[@]}))
     local cell_type_idx=$(((job_id / ${#shuffles[@]}) % ${#cell_types[@]}))
     local cytokine_idx=$(((job_id / ${#shuffles[@]} / ${#cell_types[@]}) % ${#cytokine_array[@]}))
     local channel_idx=$(((job_id / ${#shuffles[@]} / ${#cell_types[@]} / ${#cytokine_array[@]}) % ${#channel_array[@]}))
 
-    local shuffle=${shuffles[$shuffle_idx]}
-    local cell_type=${cell_types[$cell_type_idx]}
-    local cytokine=${cytokine_array[$cytokine_idx]}
+    local shuffle="${shuffles[$shuffle_idx]}"
+    local cell_type="${cell_types[$cell_type_idx]}"
+    local cytokine="${cytokine_array[$cytokine_idx]}"
 
     local command="python 1.train_regression_multi_output.py"
 

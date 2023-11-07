@@ -11,9 +11,9 @@
 #SBATCH --output=sample-%j.out
 #SBATCH --array=1-750%20
 
-module load anaconda
+# module load anaconda
 
-conda activate Interstellar
+# conda activate Interstellar
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
 
@@ -26,31 +26,32 @@ readarray -t channel_array < $channel_filename
 shuffles=( True False )
 cell_types=( SHSY5Y PBMC )
 
+# define a function to run the parallel commands
 run_parallel() {
-    local job_id=$((SLURM_ARRAY_TASK_ID - 1))
+    local job_id="$1"
     local shuffle_idx=$((job_id % ${#shuffles[@]}))
     local cell_type_idx=$(((job_id / ${#shuffles[@]}) % ${#cell_types[@]}))
     local cytokine_idx=$(((job_id / ${#shuffles[@]} / ${#cell_types[@]}) % ${#cytokine_array[@]}))
     local channel_idx=$(((job_id / ${#shuffles[@]} / ${#cell_types[@]} / ${#cytokine_array[@]}) % ${#channel_array[@]}))
 
-    local shuffle="${shuffles[$shuffle_idx]}"
-    local cell_type="${cell_types[$cell_type_idx]}"
-    local cytokine="${cytokine_array[$cytokine_idx]}"
+    local shuffle=${shuffles[$shuffle_idx]}
+    local cell_type=${cell_types[$cell_type_idx]}
+    local cytokine=${cytokine_array[$cytokine_idx]}
+    local channel=${channel_array[$channel_idx]}
 
-    local command="python 1.train_regression_multi_output.py"
+    local command="python 2.train_regression_multi_output_channel_selection.py --cell_type \"$cell_type\" --cytokine \"$cytokine\" --shuffle \"$shuffle\" --data {}"
 
     # use parallel to run the command for each channel
-    parallel -j 4 $command --cell_type "$cell_type" --cytokine "$cytokine" --shuffle "$shuffle" --data {} ::: "${channel_array[@]}"
+    parallel -j 4 $command ::: "${channel_array[@]}"
 }
+
 # export the function so it can be used by parallel
 export -f run_parallel
 
 # run the parallel function for the current array index
 run_parallel "$SLURM_ARRAY_TASK_ID"
 
-# shuffles=( True False )
-# cell_types=( SHSY5Y PBMC )
-# # calculate the number of jobs
+
 # # calculate the number of jobs
 # job_id=$((SLURM_ARRAY_TASK_ID - 1))
 # shuffle_idx=$((job_id % ${#shuffles[@]}))
@@ -64,8 +65,8 @@ run_parallel "$SLURM_ARRAY_TASK_ID"
 # channel=${channel_array[$channel_idx]}
 
 # command="python 1.train_regression_multi_output.py"
-
 # $command --cell_type "$cell_type" --cytokine "$cytokine" --shuffle "$shuffle" --data "$channel"
+
 
 
 

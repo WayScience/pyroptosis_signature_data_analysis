@@ -5,9 +5,14 @@
 # Here I calculate the Canonical Correlation Coefficients and the canonical variables for the two datasets.
 # I also plot the correlation coefficients and the canonical variables.
 
+# This analysis is based on the following article:
+# https://brainder.org/2019/12/27/redundancy-in-canonical-correlation-analysis/
+#
+
 # In[1]:
 
 
+# import libraries
 import pathlib
 
 import matplotlib.pyplot as plt
@@ -23,8 +28,8 @@ from tqdm import tqdm
 
 
 # Parameters
-cell_type = "SHSY5Y"
-Shuffle = False
+cell_type = "PBMC"
+Shuffle = True
 
 
 # In[3]:
@@ -62,6 +67,8 @@ nomic_data_values = nomic_data[
 nomic_metadata = nomic_data.drop(nomic_data_values.columns, axis=1)
 
 
+# #### Data Needs to be in standard scalar format for CCA
+
 # In[5]:
 
 
@@ -93,13 +100,18 @@ if Shuffle:
 
 
 # ### Variables
-# $Y_{M \times P} = MorphologyData$
+# $Y_{N \times P} = MorphologyData$
 # $X_{N \times Q} = NomicData$
 # Where
-# $M = Rows of MorphologyData$
+# $N = Rows of each data set$
+# note that each data set is paired so N is the same for both
 # $P = Columns of MorphologyData$
-# $N = Rows of NomicData$
 # $Q = Columns of NomicData$
+# $K = Number of Canonical Variables$
+# Where
+# $K = min(P,Q)$
+# unless $N < min(P,Q)$
+# then $K = min(N, P, Q)$
 
 # In[8]:
 
@@ -115,15 +127,32 @@ K = min(N, P, Q)
 print("K:", K)
 
 
+# #### Calculate the Canonical Correlation Coefficients
+# X = Morphology Data
+# Y = Nomic Data
+
 # In[9]:
 
 
+# define the cca model
 cca = CCA(n_components=K)
+# fit the model to the paired data sets
 cca.fit(morphology_data, nomic_data_values)
+# transform the data to the canonical space
+# get the canonical coefficients for both data sets
 X_c, Y_c = cca.transform(morphology_data, nomic_data_values)
-r2 = [cca.score(morphology_data, nomic_data_values), X_c, Y_c][0]
-print("The R2 score for the Canonical Correlation is:", r2)
+# r2 score of the model fit
+r2_model = [cca.score(morphology_data, nomic_data_values), X_c, Y_c][0]
+print("The R2 score for the Canonical Correlation is:", r2_model)
 
+
+# #### Extract the canonical loadings from the CCA
+# In the absence of scikit-learn canonical loadings.
+# We would calculate the loads as follows:
+# $\tilde{A} = corr(Y,U)$
+# $\tilde{B} = corr(X,V)$
+# Where $X$ and $Y$ are the original data matrices
+# and $U$ and $V$ are the canonical variates
 
 # In[10]:
 
@@ -135,7 +164,9 @@ B_tilde = cca.y_loadings_.T
 # From the canonical coefficients we can calculate the variance extracted by each canonical variable.
 # $u_k = \frac{1}{P} \sum^P_{p=1} \tilde a^2_{pk}$
 #
-# $v_k = \frac{1}{Q} \sum^Q_{q=1} \tilde a^2_{qk}$
+# $v_k = \frac{1}{Q} \sum^Q_{q=1} \tilde b^2_{qk}$
+# Where $k$ is the canonical variable number and $p$ and $q$ are the variables in the original data sets.
+#
 
 # In[11]:
 
@@ -148,12 +179,19 @@ for i in B_tilde:
     v_k.append(np.mean(i**2))
 
 
+# We can caluculate the r2 score for each canonical variable as follows:
+
 # In[12]:
 
 
 # coefficients of determination for each canonical variable
 r2 = r2_score(u_k, v_k)
+r2
 
+
+# We then caluclate the Redundancy Index (RI) for each canonical variable as follows:
+# $RI_u = u_k * r^2_k$
+# $RI_v = v_k * r^2_k$
 
 # In[13]:
 
@@ -167,6 +205,12 @@ for i in u_k:
 for i in v_k:
     RI_v.append(i * r2)
 
+
+# We then caculate the total redundancy of both data sets as follows:
+# #### $RI_{total} = \sum^K_{k=1} RI_u + \sum^K_{k=1} RI_v$
+# From the total redundancy we can calculate the percentage contribution of each data set to the total redundancy as follows:
+# #### $RI_{u\%} = \frac{\sum^K_{k=1} RI_u}{RI_{total}}$
+# #### $RI_{v\%} = \frac{\sum^K_{k=1} RI_v}{RI_{total}}$
 
 # In[14]:
 
@@ -183,23 +227,6 @@ global_RI_u_v = np.sum(RI_u) + np.sum(RI_v)
 global_RI_u = np.sum(RI_u) / global_RI_u_v * 100
 global_RI_v = np.sum(RI_v) / global_RI_u_v * 100
 
-# plot RI_u and RI_v
-sns.set_theme(style="whitegrid")
-plt.figure(figsize=(10, 10))
-plt.scatter(RI_u, RI_v)
-plt.xlabel(f"RI of u ( {round(global_RI_u,2)}%)")
-plt.ylabel(f"RI of v ( {round(global_RI_v,2)}%)")
-plt.xlim(global_min, global_max)
-plt.ylim(global_min, global_max)
-# add a line of y=x to the plot
-plt.plot(
-    [global_min, global_max],
-    [global_min, global_max],
-    color="red",
-    linestyle="-",
-    linewidth=2,
-)
-
 
 # In[15]:
 
@@ -213,9 +240,13 @@ results_df = pd.DataFrame(
         "v_k": v_k,
         "r2": r2,
         "Shuffle": Shuffle,
+        "global_RI_u": global_RI_u,
+        "global_RI_v": global_RI_v,
+        "global_RI_u_v": global_RI_u_v,
+        "global_min": global_min,
+        "global_max": global_max,
     }
 )
-
 results_df.head(5)
 
 

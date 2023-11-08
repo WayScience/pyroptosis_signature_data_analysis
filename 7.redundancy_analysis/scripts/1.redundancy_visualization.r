@@ -3,7 +3,7 @@ library(argparse)
 library(dplyr)
 library(cowplot)
 
-cell_type <- "SHSY5Y"
+cell_type <- "PBMC"
 
 redundancy_index_plot_not_shuffled_path <- file.path(paste0(
     "../",

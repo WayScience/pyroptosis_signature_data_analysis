@@ -15,7 +15,7 @@ figure_theme <- (
         axis.text = element_text(size = 20),
         axis.title = element_text(size = 20),
         legend.text = element_text(size = 20),
-        legend.title = element_text(size = 15),
+        legend.title = element_text(size = 16),
         strip.text = element_text(size = 16),
     )
 )

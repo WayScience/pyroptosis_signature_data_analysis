@@ -115,7 +115,6 @@ if mlp_params.DATA_SUBSET_OPTION == "True":
     df1 = df1.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose").apply(
         lambda x: x.sample(n=mlp_params.DATA_SUBSET_NUMBER, random_state=0)
     )
-    # df1 = df1.sample(n=mlp_params.DATA_SUBSET_NUMBER, random_state=0,
     print("Data Subset Is On")
     print(f"Data is subset to {mlp_params.DATA_SUBSET_NUMBER} per treatment group")
     print(df1.shape)
@@ -127,7 +126,7 @@ else:
 # In[8]:
 
 
-# add apoptosis labels to one column
+# add apoptosis, pyroptosis and healthy columns to dataframe
 df1["apoptosis"] = df1.apply(
     lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
     in apoptosis_groups_list,
@@ -162,6 +161,8 @@ df1.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 # In[9]:
 
 
+# randomly select wells to hold out for testing one per treatment group
+# stratified by treatment group
 np.random.seed(seed=0)
 wells_to_hold = (
     df1.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose")

@@ -9,6 +9,27 @@
 # https://brainder.org/2019/12/27/redundancy-in-canonical-correlation-analysis/
 #
 
+# This is an involved analysis, so I will try to explain it as best as I can. There is a lot going on in the background that scikit learn does for us, so I will try to explain that as well.
+#
+# Extra resources and references:
+# [CCA explaination](https://medium.com/@pozdrawiamzuzanna/canonical-correlation-analysis-simple-explanation-and-python-example-a5b8e97648d2)
+# [CCA Sklear](https://scikit-learn.org/stable/modules/generated/sklearn.cross_decomposition.CCA.html#sklearn.cross_decomposition.CCA.fit_transform)
+# [Eigen value decomposition](https://gregorygundersen.com/blog/2018/07/17/cca/)
+# [High level explaination of CCA](https://medium.com/analytics-vidhya/what-is-canonical-correlation-analysis-58ef4349c0b0)
+# [CCA Tutorial](https://www.cs.cmu.edu/~tom/10701_sp11/slides/CCA_tutorial.pdf)
+# [Redundancy Analysis](https://brainder.org/2019/12/27/redundancy-in-canonical-correlation-analysis/)
+
+# #### A great visualization of CCA from user `ttnphns` on [stats.stackexchange.com](https://stats.stackexchange.com/questions/65692/how-to-visualize-what-canonical-correlation-analysis-does-in-comparison-to-what)
+#
+# ##### Principal Component Analysis (PCA)
+# ![PCA](../images_for_notebook/PCA.jpg)
+#
+# ##### Multiple Linear Regression (MLR)
+# ![MLR](../images_for_notebook/MLR.jpg)
+#
+# ##### Canonical Correlation Analysis (CCA)
+# ![CCA](../images_for_notebook/CCA.jpg)
+
 # In[1]:
 
 

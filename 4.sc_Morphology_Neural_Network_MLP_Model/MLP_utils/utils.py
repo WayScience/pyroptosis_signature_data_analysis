@@ -28,7 +28,9 @@ from sklearn.metrics import (
     auc,
     classification_report,
     confusion_matrix,
+    f1_score,
     mean_squared_error,
+    precision_recall_curve,
     precision_score,
     r2_score,
     recall_score,
@@ -490,6 +492,7 @@ def objective_model_optimizer(
     params: Parameters = False,
     metric: str = "loss",
     return_info: bool = False,
+    class_weights: list = None,
 ) -> str | int:
     """Optimizes the hyperparameter based on search space defined
     returns metrics of how well a given model is doing this is a helper
@@ -512,6 +515,9 @@ def objective_model_optimizer(
         the option to return more than one metric
         this is best to be False inside of the 'study.optimize' function
         as this function requires only one output metric, by default False
+    class_weights : list, optional
+        list of class weights for the loss function
+        this is used for imbalanced datasets, by default None
 
 
     Returns
@@ -549,7 +555,9 @@ def objective_model_optimizer(
 
     # for binary model use different for multi-class
     if params.MODEL_TYPE == "Multi_Class":
-        criterion = nn.CrossEntropyLoss()
+        # make class_weights a tensor
+        class_weights = torch.tensor(class_weights).float().to(params.DEVICE)
+        criterion = nn.CrossEntropyLoss(weight=class_weights)
     elif params.MODEL_TYPE == "Binary_Classification":
         criterion = nn.BCEWithLogitsLoss()
     elif params.MODEL_TYPE == "Regression":
@@ -805,6 +813,7 @@ def train_optimized_model(
     params: Parameters,
     model_name: str,
     shuffle: bool = False,
+    class_weights: list = None,
 ) -> tuple[float, float, float, float, int, torch.nn.Sequential]:
     """This function trains the optimized model on the training dataset
 
@@ -823,6 +832,9 @@ def train_optimized_model(
         name of the model to be added to the save name
     shuffle : bool, optional
         Whether to shuffle the data, by default True
+    class_weights : list, optional
+        list of class weights for the loss function
+        this is used for imbalanced datasets, by default None
 
     Returns
     -------
@@ -841,7 +853,9 @@ def train_optimized_model(
     # criterion is the method in which we measure our loss
     # isn't defined as loss as it doesn't represent the loss value but the method
     if params.MODEL_TYPE == "Multi_Class":
-        criterion = nn.CrossEntropyLoss()
+        # make class_weights a tensor
+        class_weights = torch.tensor(class_weights).float().to(params.DEVICE)
+        criterion = nn.CrossEntropyLoss(weight=class_weights)
     elif params.MODEL_TYPE == "Binary_Classification":
         criterion = nn.BCEWithLogitsLoss()
     elif params.MODEL_TYPE == "Regression":
@@ -1189,7 +1203,7 @@ def results_output(
         # create graph directory for this model
         graph_path = pathlib.Path(
             f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
-        ).resolve(strict=True)
+        )
         pathlib.Path(graph_path).mkdir(parents=True, exist_ok=True)
         if shuffle:
             graph_path = pathlib.Path(
@@ -1279,16 +1293,14 @@ def results_output(
         # create graph directory for this model
         graph_path = pathlib.Path(
             f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
-        ).resolve(strict=True)
+        )
         pathlib.Path(graph_path).mkdir(parents=True, exist_ok=True)
         if shuffle:
             graph_path = pathlib.Path(
                 f"{graph_path}/ROC_graph_{test_name}_shuffled_data.png"
-            ).resolve(strict=True)
+            )
         elif not shuffle:
-            graph_path = pathlib.Path(
-                f"{graph_path}/ROC_graph_{test_name}.png"
-            ).resolve(strict=True)
+            graph_path = pathlib.Path(f"{graph_path}/ROC_graph_{test_name}.png")
         else:
             raise ModelNameError
 
@@ -1310,7 +1322,7 @@ def results_output(
         # create graph directory for this model
         graph_path = pathlib.Path(
             f"../../figures/{params.MODEL_TYPE}/{params.MODEL_NAME}/{params.CELL_TYPE}"
-        ).resolve(strict=True)
+        )
         pathlib.Path(graph_path).mkdir(parents=True, exist_ok=True)
         if shuffle:
             graph_path = pathlib.Path(
@@ -1446,17 +1458,10 @@ def output_stats(
         raised if proper model type is not specified
     """
 
-    # Classification report
-    from sklearn.metrics import (
-        f1_score,
-        precision_recall_curve,
-        precision_score,
-        recall_score,
-    )
-
     if params.MODEL_TYPE == "Multi_Class":
         print(classification_report(test_data, prediction_list))
-        return classification_report(test_data, prediction_list)
+        return classification_report(test_data, prediction_list, output_dict=True)
+
     elif params.MODEL_TYPE == "Binary_Classification":
         print(classification_report(test_data, prediction_list))
         recall = recall_score(test_data, prediction_list, average="binary")

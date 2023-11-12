@@ -17,6 +17,7 @@ install.packages("ggmagnify", repos = c("https://hughjonesd.r-universe.dev",
 suppressPackageStartupMessages(suppressWarnings(library(ggmagnify)))
 source("../utils/figure_themes.r")
 
+
 # Load in the treatment list
 toml_path <- file.path("..","..","1.Exploratory_Data_Analysis/utils/params.toml")
 p <- parseTOML(toml_path)
@@ -81,7 +82,6 @@ treatment_order <- c(
 cytokine_values$oneb_Treatment_Dose_Inhibitor_Dose <- factor(cytokine_values$oneb_Treatment_Dose_Inhibitor_Dose, levels = treatment_order)
 
 
-
 # set plot size
 options(repr.plot.width=15, repr.plot.height=5)
 # Plot
@@ -94,7 +94,7 @@ cytokine_scatter_plot <- (
             color = oneb_Treatment_Dose_Inhibitor_Dose
         )
     )
-    + geom_point()
+    + geom_point(size = 5, alpha = 0.7)
     + theme_bw()
     + xlab("IL-1 beta Abundance")
     + ylab("TNF alpha Abundance")
@@ -103,8 +103,8 @@ cytokine_scatter_plot <- (
     # rename legend title
     + labs(color = "Treatment", hjust = 0.5)
     + figure_theme
-        + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-            + theme(
+        + theme(axis.text.x = element_text( vjust = 0.5, hjust=1))
+        + theme(
          legend.text = element_text(size = 16),
         legend.title = element_text(size = 20, hjust = 0.5))
 
@@ -122,6 +122,7 @@ cytokine_scatter_plot <- cytokine_scatter_plot + geom_magnify(# allow for small 
     from = from, to = to
 )
 cytokine_scatter_plot
+
 
 cytokine_scatter_plot1 <- (
     ggplot(
@@ -179,6 +180,7 @@ cytokine_values_melted <- cytokine_values_melted[cytokine_values_melted$cytokine
     "CCL13 [NSU]",
     "IL-2 [NSU]"
     ),]
+
 
 # set the order of the cytokines
 cytokine_values_melted$Cytokine <- factor(cytokine_values_melted$cytokine, levels = c(
@@ -271,6 +273,7 @@ treatment_order <- c(
     'Thapsigargin 10.0 uM'
 )
 cytokine_values_melted_agg$oneb_Treatment_Dose_Inhibitor_Dose <- factor(cytokine_values_melted_agg$oneb_Treatment_Dose_Inhibitor_Dose, levels = treatment_order)
+
 
 # set plot size
 options(repr.plot.width=15, repr.plot.height=10)
@@ -412,6 +415,7 @@ cytokine_values_melted_agg_filtered <- cytokine_values_melted_agg_filtered %>%
 
 
 head(cytokine_values_melted_agg_filtered)
+
 
 
 # fix the col name
@@ -608,6 +612,7 @@ cytokine_values_melted_agg_filtered <- cytokine_values_melted_agg_filtered %>%
 
 head(cytokine_values_melted_agg_filtered)
 
+
 # un melt the data cytokine_values_melted_agg_filtered
 # similar to pivot table in excel
 cytokine_values_melted_agg_filtered <- reshape2::dcast(cytokine_values_melted_agg_filtered, oneb_Treatment_Dose_Inhibitor_Dose ~ cytokine, value.var = "cytokine_value",fun.aggregate = mean)
@@ -656,6 +661,7 @@ heatmap_anova_cytokines <- (
 )
 heatmap_anova_cytokines
 
+
 # read in the UMAP results
 umap_results_path <- file.path("..","..","2.Nomic_nELISA_Analysis/1.umap/PBMC/results/nELISA_plate_430420_umap_PBMC.csv")
 
@@ -694,6 +700,7 @@ umap_results_selected_treatments <- umap_results_selected_treatments %>%
 
 
 unique(umap_results$oneb_Treatment_Dose_Inhibitor_Dose)
+
 
 umap_results <- umap_results %>%
     mutate(oneb_Treatment_Dose_Inhibitor_Dose = case_when(
@@ -739,6 +746,7 @@ umap_results <- umap_results %>%
         oneb_Treatment_Dose_Inhibitor_Dose =='media_ctr_0.0_0_Media_0.0_0' ~ "Media ctr 0.0 0"
     ))
 
+
 head(umap_results)
 
 
@@ -763,6 +771,7 @@ umap_results_selected_treatments$oneb_Treatment_Dose_Inhibitor_Dose <- factor(um
 
 
 
+
 # set the plot size
 options(repr.plot.width=35, repr.plot.height=5)
 # plot the umap results
@@ -776,7 +785,7 @@ umap_plot_all_treatments <- (
         )
 
     )
-    + geom_point()
+    + geom_point(size = 5, alpha = 0.7)
     + theme_bw()
     + labs(color = "Treatment", hjust = 0.5)
     + figure_theme
@@ -797,7 +806,7 @@ umap_plot_selected_treatments <- (
             color = oneb_Treatment_Dose_Inhibitor_Dose
         )
     )
-    + geom_point()
+    + geom_point(size = 5, alpha = 0.7)
     + theme_bw()
     + labs(color = "Treatment", hjust = 0.5)
     + figure_theme
@@ -818,12 +827,14 @@ new_heatmap <- as.ggplot(heatmap_anova_cytokines)
 umap_plot_selected_treatments <- umap_plot_selected_treatments + theme(legend.position = "none")
 new_heatmap
 
+
 # add padding to the bar plot
 cytokine_bar_plot <- cytokine_bar_plot + theme(plot.margin = unit(c(2,0,0,0), "cm"))
 # add padding to scatter plot
 cytokine_scatter_plot <- cytokine_scatter_plot + theme(plot.margin = unit(c(2,0,0,0), "cm"))
 # add padding to the umap
 umap_plot_selected_treatments <- umap_plot_selected_treatments + theme(plot.margin = unit(c(2,2,0,2), "cm"))
+
 
 # set the design of the plots in the figure
 # Where each letter represents a plot by order defined and the # represents a blank space

@@ -13,7 +13,7 @@
 #
 # Extra resources and references:
 # [CCA explaination](https://medium.com/@pozdrawiamzuzanna/canonical-correlation-analysis-simple-explanation-and-python-example-a5b8e97648d2)
-# [CCA Sklear](https://scikit-learn.org/stable/modules/generated/sklearn.cross_decomposition.CCA.html#sklearn.cross_decomposition.CCA.fit_transform)
+# [CCA Sklearn](https://scikit-learn.org/stable/modules/generated/sklearn.cross_decomposition.CCA.html#sklearn.cross_decomposition.CCA.fit_transform)
 # [Eigen value decomposition](https://gregorygundersen.com/blog/2018/07/17/cca/)
 # [High level explaination of CCA](https://medium.com/analytics-vidhya/what-is-canonical-correlation-analysis-58ef4349c0b0)
 # [CCA Tutorial](https://www.cs.cmu.edu/~tom/10701_sp11/slides/CCA_tutorial.pdf)
@@ -112,13 +112,20 @@ nomic_data_values.describe()
 # In[7]:
 
 
-# shuffle the data both rows and columns
+# shuffle the data for each column
+# this changes the single well values but keeps the distribution of each column
 if Shuffle:
     for column in nomic_data_values:
         np.random.shuffle(nomic_data_values[column].values)
     for column in morphology_data:
         np.random.shuffle(morphology_data[column].values)
 
+
+# Note this analysis only works for paired data.
+# Here the two datasets are the same size and the rows are paired.
+# Where each row represents one well in the plate.
+# Though the morphology data is at the single cell resolution, the data is averaged for each well.
+# This is to match the resolution of the Nomic data.
 
 # ### Variables
 # $Y_{N \times P} = MorphologyData$
@@ -134,14 +141,23 @@ if Shuffle:
 # unless $N < min(P,Q)$
 # then $K = min(N, P, Q)$
 
+# Note that K is the number of canonical variables that we will get out of the analysis.
+# We calculate the canonical variables for both the X and Y data sets later in the analysis.
+
+# We use the $min(N,P,Q)$ because the number of canonical variables is limited by the smallest dimension of the data sets.
+# This includes the number of rows in the data sets.
+# Usually the feature space is smaller than the number of samples, so $K = min(P,Q)$.
+# In our case here, the number of samples is smaller than the feature space, so $K = min(N, P, Q)$.
+# If we do not do this, we will get an error when we try to calculate the canonical variables.
+# This is due to the fact that the eigenvalue decomposition will not work if the number of eigenvalues is greater than the number of samples.
+# We transpose the data vectors when solving for the eigenvalues.
+
 # In[8]:
 
 
 # define the variables
 N = morphology_data.shape[0]
 P = morphology_data.shape[1]
-
-N = nomic_data_values.shape[0]
 Q = nomic_data_values.shape[1]
 print("N:", N, "P:", P, "Q:", Q)
 K = min(N, P, Q)
@@ -170,8 +186,8 @@ print("The R2 score for the Canonical Correlation is:", r2_model)
 # #### Extract the canonical loadings from the CCA
 # In the absence of scikit-learn canonical loadings.
 # We would calculate the loads as follows:
-# $\tilde{A} = corr(Y,U)$
-# $\tilde{B} = corr(X,V)$
+# ##### $\tilde{A} = corr(Y,U)$
+# ##### $\tilde{B} = corr(X,V)$
 # Where $X$ and $Y$ are the original data matrices
 # and $U$ and $V$ are the canonical variates
 
@@ -183,9 +199,9 @@ B_tilde = cca.y_loadings_.T
 
 
 # From the canonical coefficients we can calculate the variance extracted by each canonical variable.
-# $u_k = \frac{1}{P} \sum^P_{p=1} \tilde a^2_{pk}$
+# #### $u_k = \frac{1}{P} \sum^P_{p=1} \tilde a^2_{pk}$
 #
-# $v_k = \frac{1}{Q} \sum^Q_{q=1} \tilde b^2_{qk}$
+# #### $v_k = \frac{1}{Q} \sum^Q_{q=1} \tilde b^2_{qk}$
 # Where $k$ is the canonical variable number and $p$ and $q$ are the variables in the original data sets.
 #
 
@@ -227,8 +243,8 @@ for i in v_k:
     RI_v.append(i * r2)
 
 
-# We then caculate the total redundancy of both data sets as follows:
-# #### $RI_{total} = \sum^K_{k=1} RI_u + \sum^K_{k=1} RI_v$
+# We then calculate the total redundancy of both data sets as follows:
+# #### $RI_{total} = \sum^K_{k=1} RI_u +  RI_v$
 # From the total redundancy we can calculate the percentage contribution of each data set to the total redundancy as follows:
 # #### $RI_{u\%} = \frac{\sum^K_{k=1} RI_u}{RI_{total}}$
 # #### $RI_{v\%} = \frac{\sum^K_{k=1} RI_v}{RI_{total}}$

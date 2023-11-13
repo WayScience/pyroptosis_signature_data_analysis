@@ -6,8 +6,8 @@ source("../../../figures/utils/figure_themes.r")
 
 # set up argument parser
 parser <- arg_parser("Plot the results of the multi-classification experiment.")
-parser <- add_argument(parser, "--cell_type", help="Cell type to plot.", required=T)
-parser <- add_argument(parser, "--model_name", help="Model name to plot.", required=T)
+parser <- add_argument(parser, "--cell_type", help="Cell type to plot.")
+parser <- add_argument(parser, "--model_name", help="Model name to plot.")
 
 # parse arguments
 args <- parse_args(parser)
@@ -17,8 +17,6 @@ cell_type <- args$cell_type
 model_name <- args$model_name
 
 
-cell_type <- "SHSY5Y"
-model_name <- "MultiClass_MLP_h202_remove"
 
 
 # set file path for importing the data

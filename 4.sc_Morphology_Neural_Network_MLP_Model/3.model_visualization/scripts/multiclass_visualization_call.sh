@@ -21,7 +21,7 @@ for cell_type in "${cell_types[@]}"; do
     for model_name in "${model_names[@]}"; do
         Rscript \
         multi_classification_visualization.r \
-        --celltype $cell_type \
+        --cell_type $cell_type \
         --model_name $model_name
     done
 done

@@ -1,0 +1,197 @@
+[NbConvertApp] WARNING | Config option `kernel_spec_manager_class` not recognized by `NbConvertApp`.
+[NbConvertApp] Converting notebook ../notebooks/train_binary_model.ipynb to script
+[NbConvertApp] Writing 18688 bytes to train_binary_model.py
+[NbConvertApp] Converting notebook ../notebooks/train_multiclass_model.ipynb to script
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar/lib/python3.10/site-packages/nbformat/__init__.py:93: MissingIDFieldWarning: Code cell is missing an id field, this will become a hard error in future nbformat versions. You may want to use `normalize()` on your notebooks before validations (available since nbformat 5.1.4). Previous versions of nbformat are fixing this issue transparently, and will stop doing so in the future.
+  validate(nb)
+[NbConvertApp] Writing 31106 bytes to train_multiclass_model.py
+[NbConvertApp] Converting notebook ../notebooks/train_regression_model.ipynb to script
+[NbConvertApp] Writing 25120 bytes to train_regression_model.py
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:313: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_labels.drop_duplicates(inplace=True)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1015: UserWarning: Ignoring `palette` because no `hue` variable has been assigned.
+  sns.lineplot(x=df[x], y=df[y1], palette="blue", label="Train")
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1016: UserWarning: Ignoring `palette` because no `hue` variable has been assigned.
+  sns.lineplot(x=df[x], y=df[y2], palette="orange", label="Validation")
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1015: UserWarning: Ignoring `palette` because no `hue` variable has been assigned.
+  sns.lineplot(x=df[x], y=df[y1], palette="blue", label="Train")
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1016: UserWarning: Ignoring `palette` because no `hue` variable has been assigned.
+  sns.lineplot(x=df[x], y=df[y2], palette="orange", label="Validation")
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1036: UserWarning: The figure layout has changed to tight
+  plt.tight_layout()
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:577: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_labels["new_labels"] = df_labels["new_labels"].astype(str)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:651: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_labels["new_labels"] = df_labels["new_labels"].astype(str)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1219: UserWarning: The figure layout has changed to tight
+  plt.tight_layout()
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:879: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_labels["new_labels"] = df_labels["new_labels"].astype(str)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1219: UserWarning: The figure layout has changed to tight
+  plt.tight_layout()
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:1095: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_labels["new_labels"] = df_labels["new_labels"].astype(str)
+SHSY5Y MultiClass_MLP True
+[0.954878893196544, 0.4803479499984947, 0.5647731568049614]
+Data Subset Is Off
+(165097,) (41275,) (240629,) (150901,)
+(165097,) (41275,) (240629,) (150901,)
+597902
+(7972,) (93463,) (63662,)
+(1993,) (23367,) (15915,)
+(9965,) (116830,) (113834,)
+(7048,) (77041,) (66812,)
+(165097, 1251) (41275, 1251) (240629, 1251) (150901, 1251)
+(165097,) (41275,) (240629,) (150901,)
+Number of in features:  1251
+Number of out features:  3
+Multi_Class
+Adam
+Epoch 0: Validation loss decreased (inf --> 0.752602).  Saving model ...
+	 Train_Loss: 0.8174 Train_Acc: 64.872 Val_Loss: 0.7526  BEST VAL Loss: 0.7526  Val_Acc: 68.157
+
+Epoch 1: Validation loss did not decrease
+	 Train_Loss: 0.8334 Train_Acc: 63.686 Val_Loss: 0.7713  BEST VAL Loss: 0.7526  Val_Acc: 64.630
+
+Epoch 2: Validation loss did not decrease
+	 Train_Loss: 0.8462 Train_Acc: 61.240 Val_Loss: 0.8066  BEST VAL Loss: 0.7526  Val_Acc: 57.904
+
+Epoch 3: Validation loss did not decrease
+	 Train_Loss: 0.8541 Train_Acc: 59.050 Val_Loss: 0.8245  BEST VAL Loss: 0.7526  Val_Acc: 58.214
+
+Epoch 4: Validation loss did not decrease
+	 Train_Loss: 0.8595 Train_Acc: 62.182 Val_Loss: 0.8332  BEST VAL Loss: 0.7526  Val_Acc: 65.442
+
+Epoch 5: Validation loss did not decrease
+	 Train_Loss: 0.8632 Train_Acc: 62.990 Val_Loss: 0.8398  BEST VAL Loss: 0.7526  Val_Acc: 63.191
+
+Epoch 6: Validation loss did not decrease
+	 Train_Loss: 0.8660 Train_Acc: 62.901 Val_Loss: 0.8435  BEST VAL Loss: 0.7526  Val_Acc: 65.291
+
+Epoch 7: Validation loss did not decrease
+	 Train_Loss: 0.8692 Train_Acc: 60.552 Val_Loss: 0.8488  BEST VAL Loss: 0.7526  Val_Acc: 56.998
+
+Epoch 8: Validation loss did not decrease
+	 Train_Loss: 0.8714 Train_Acc: 61.610 Val_Loss: 0.8516  BEST VAL Loss: 0.7526  Val_Acc: 64.543
+
+Epoch 9: Validation loss did not decrease
+	 Train_Loss: 0.8736 Train_Acc: 61.967 Val_Loss: 0.8549  BEST VAL Loss: 0.7526  Val_Acc: 62.697
+
+Epoch 10: Validation loss did not decrease
+	 Train_Loss: 0.8750 Train_Acc: 61.970 Val_Loss: 0.8566  BEST VAL Loss: 0.7526  Val_Acc: 64.402
+
+Epoch 11: Validation loss did not decrease
+	 Train_Loss: 0.8765 Train_Acc: 61.839 Val_Loss: 0.8587  BEST VAL Loss: 0.7526  Val_Acc: 63.998
+
+Epoch 12: Validation loss did not decrease
+	 Train_Loss: 0.8780 Train_Acc: 60.886 Val_Loss: 0.8614  BEST VAL Loss: 0.7526  Val_Acc: 63.542
+
+Epoch 13: Validation loss did not decrease
+	 Train_Loss: 0.8792 Train_Acc: 61.378 Val_Loss: 0.8629  BEST VAL Loss: 0.7526  Val_Acc: 63.365
+
+Epoch 14: Validation loss did not decrease
+	 Train_Loss: 0.8801 Train_Acc: 61.915 Val_Loss: 0.8644  BEST VAL Loss: 0.7526  Val_Acc: 62.571
+
+Epoch 15: Validation loss did not decrease
+	 Train_Loss: 0.8807 Train_Acc: 61.869 Val_Loss: 0.8655  BEST VAL Loss: 0.7526  Val_Acc: 62.869
+
+Epoch 16: Validation loss did not decrease
+Early stopped at epoch : 16
+MultiClass_MLP_shuffle
+              precision    recall  f1-score   support
+
+           0       0.05      0.02      0.03      7972
+           1       0.56      0.72      0.63     93463
+           2       0.38      0.25      0.30     63662
+
+    accuracy                           0.51    165097
+   macro avg       0.33      0.33      0.32    165097
+weighted avg       0.47      0.51      0.48    165097
+
+MultiClass_MLP_shuffle
+              precision    recall  f1-score   support
+
+           0       0.04      0.02      0.02      1993
+           1       0.57      0.72      0.64     23367
+           2       0.38      0.26      0.31     15915
+
+    accuracy                           0.51     41275
+   macro avg       0.33      0.33      0.32     41275
+weighted avg       0.47      0.51      0.48     41275
+
+MultiClass_MLP_shuffle
+              precision    recall  f1-score   support
+
+           0       0.04      0.02      0.03      9965
+           1       0.49      0.70      0.57    116830
+           2       0.47      0.28      0.35    113834
+
+    accuracy                           0.47    240629
+   macro avg       0.33      0.33      0.32    240629
+weighted avg       0.46      0.47      0.45    240629
+
+Precision for class 0: 0.041575010998680155
+Recall for class 0: 0.01896638233818364
+Precision for class 1: 0.48556949950815276
+Recall for class 1: 0.6971411452537876
+Precision for class 2: 0.47107450108269444
+Recall for class 2: 0.28284168174710544
+3
+              precision    recall  f1-score   support
+
+           0       0.04      0.02      0.03      9965
+           1       0.49      0.70      0.57    116830
+           2       0.47      0.28      0.35    113834
+
+    accuracy                           0.47    240629
+   macro avg       0.33      0.33      0.32    240629
+weighted avg       0.46      0.47      0.45    240629
+
+MultiClass_MLP_shuffle
+              precision    recall  f1-score   support
+
+           0       0.04      0.02      0.03      7048
+           1       0.51      0.70      0.59     77041
+           2       0.44      0.28      0.34     66812
+
+    accuracy                           0.48    150901
+   macro avg       0.33      0.33      0.32    150901
+weighted avg       0.46      0.48      0.45    150901
+
+Precision for class 0: 0.04271186440677966
+Recall for class 0: 0.017877412031782065
+Precision for class 1: 0.5100085299971566
+Recall for class 1: 0.6984722420529329
+Precision for class 2: 0.44176621663014537
+Recall for class 2: 0.2806232413338921
+3
+              precision    recall  f1-score   support
+
+           0       0.04      0.02      0.03      7048
+           1       0.51      0.70      0.59     77041
+           2       0.44      0.28      0.34     66812
+
+    accuracy                           0.48    150901
+   macro avg       0.33      0.33      0.32    150901
+weighted avg       0.46      0.48      0.45    150901
+
+Done

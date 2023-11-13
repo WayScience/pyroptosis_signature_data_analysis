@@ -249,7 +249,7 @@ df1.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 # set path for index file
 index_file_path = pathlib.Path(
-    f"../../0.hyperparameter_optimization/indexes/SHSY5Y/multi_class/{params.MODEL_NAME}_data_split_indexes.tsv"
+    f"../../0.hyperparameter_optimization/indexes/{params.CELL_TYPE}/multi_class/{params.MODEL_NAME}_data_split_indexes.tsv"
 ).resolve(strict=True)
 
 # read index file

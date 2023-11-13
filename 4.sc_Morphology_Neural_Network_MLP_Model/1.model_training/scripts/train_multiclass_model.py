@@ -70,8 +70,8 @@ parser.add_argument(
 
 parser.add_argument(
     "--SHUFFLE",
-    type=bool,
-    default=False,
+    type=str,
+    default="False",
     help="Shuffle data before training. Default is False",
 )
 
@@ -81,6 +81,7 @@ args = parser.parse_args()
 CELL_TYPE = args.CELL_TYPE
 MODEL_NAME = args.MODEL_NAME
 SHUFFLE = args.SHUFFLE
+SHUFFLE = ast.literal_eval(SHUFFLE)
 print(CELL_TYPE, MODEL_NAME, SHUFFLE)
 
 

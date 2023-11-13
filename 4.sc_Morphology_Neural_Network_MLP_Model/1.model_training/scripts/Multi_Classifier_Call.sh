@@ -2,6 +2,7 @@
 
 #SBATCH --nodes=1
 #SBATCH --ntasks=8
+#SBATCH --mem=500G
 #SBATCH --partition=amem
 #SBATCH --qos=mem
 #SBATCH --time=72:00:00
@@ -15,7 +16,7 @@ conda activate Interstellar
 cell_types=( SHSY5Y PBMC )
 model_names=( MultiClass_MLP_h202_remove MultiClass_MLP )
 shuffles=( True False )
-jupyter nbconvert --to=script --FilesWriter.build_directory=../scripts *.ipynb
+jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
 
 shuffles=( True False )
 cell_types=( SHSY5Y PBMC )
@@ -33,7 +34,7 @@ model_name=${model_names[$model_name_idx]}
 
 command="python train_multiclass_model.py"
 
-$command --cell_type "$cell_type" --model_name "$model_name" --shuffle "$shuffle"
+$command --CELL_TYPE "$cell_type" --MODEL_NAME "$model_name" --SHUFFLE "$shuffle"
 
 
 echo "Done"

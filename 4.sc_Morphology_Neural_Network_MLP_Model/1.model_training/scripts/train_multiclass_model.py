@@ -39,19 +39,49 @@ from MLP_utils.utils import (
 from sklearn.model_selection import train_test_split
 
 sys.path.append("../../..")
+import argparse
+
 from utils.utils import df_stats
 
 # ## Papermill is used for executing notebooks in the CLI with multiple parameters
 # Here the `injected-parameters` cell is used to inject parameters into the notebook via papermill.
 # This enables multiple notebooks to be executed with different parameters, preventing to manually update parameters or have multiple copies of the notebook.
 
-# In[2]:
+# In[ ]:
 
 
-# Parameters
-CELL_TYPE = "PBMC"
-MODEL_NAME = "MultiClass_MLP"
-SHUFFLE = True
+# set up the parser
+parser = argparse.ArgumentParser(description="Train MLP model")
+
+# add arguments to parser
+parser.add_argument(
+    "--CELL_TYPE",
+    type=str,
+    default="all",
+    help="Cell type to train model on. Default is all",
+)
+
+parser.add_argument(
+    "--MODEL_NAME",
+    type=str,
+    default="MLP",
+    help="Model name to train. Default is MLP",
+)
+
+parser.add_argument(
+    "--SHUFFLE",
+    type=bool,
+    default=False,
+    help="Shuffle data before training. Default is False",
+)
+
+# parse the arguments
+args = parser.parse_args()
+
+CELL_TYPE = args.CELL_TYPE
+MODEL_NAME = args.MODEL_NAME
+SHUFFLE = args.SHUFFLE
+print(CELL_TYPE, MODEL_NAME, SHUFFLE)
 
 
 # In[3]:

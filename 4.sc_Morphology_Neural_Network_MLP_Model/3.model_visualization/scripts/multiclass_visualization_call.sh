@@ -20,7 +20,7 @@ jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipy
 for cell_type in "${cell_types[@]}"; do
     for model_name in "${model_names[@]}"; do
         Rscript \
-        binary_classification_training_visualization.r \
+        multi_classification_visualization.r \
         --celltype $cell_type \
         --model_name $model_name
     done

@@ -48,7 +48,7 @@ from utils.utils import df_stats
 
 
 # Parameters
-CELL_TYPE = "SHSY5Y"
+CELL_TYPE = "PBMC"
 MODEL_NAME = "MultiClass_MLP"
 
 
@@ -67,6 +67,7 @@ mlp_params.CELL_TYPE = CELL_TYPE
 mlp_params.MODEL_NAME = MODEL_NAME
 mlp_params.MODEL_NAME = MODEL_NAME
 MODEL_TYPE = mlp_params.MODEL_TYPE
+HYPERPARAMETER_BATCH_SIZE = mlp_params.HYPERPARAMETER_BATCH_SIZE
 
 
 # In[4]:
@@ -85,6 +86,18 @@ df1 = pd.read_parquet(file_path)
 # In[5]:
 
 
+if params.MODEL_NAME == "MultiClass_MLP_h202_remove":
+    # drop H2O2_100.000_uM_DMSO_0.025_% and H2O2_100.000_nM_DMSO_0.025_% while keeping the index order
+    df1 = df1[
+        ~df1["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
+            ["H2O2_100.000_uM_DMSO_0.025_%", "H2O2_100.000_nM_DMSO_0.025_%"]
+        )
+    ]
+
+
+# In[6]:
+
+
 # get paths for toml files
 ground_truth_file_path = pathlib.Path(f"../../MLP_utils/ground_truth.toml").resolve(
     strict=True
@@ -97,7 +110,7 @@ ground_truth = toml.load(ground_truth_file_path)
 treatment_splits = toml.load(treatment_splits_file_path)
 
 
-# In[6]:
+# In[7]:
 
 
 # get information from toml files
@@ -108,9 +121,10 @@ test_split_100 = treatment_splits["splits"]["data_splits_100"]
 test_split_75 = treatment_splits["splits"]["data_splits_75"]
 
 
-# In[7]:
+# In[8]:
 
 
+np.random.seed(0)
 if mlp_params.DATA_SUBSET_OPTION == "True":
     df1 = df1.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose").apply(
         lambda x: x.sample(n=mlp_params.DATA_SUBSET_NUMBER, random_state=0)
@@ -123,7 +137,7 @@ else:
     print("Data Subset Is Off")
 
 
-# In[8]:
+# In[9]:
 
 
 # add apoptosis, pyroptosis and healthy columns to dataframe
@@ -158,7 +172,7 @@ df1.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 # ### Split said data
 
-# In[9]:
+# In[10]:
 
 
 # randomly select wells to hold out for testing one per treatment group
@@ -179,7 +193,7 @@ print(
 )
 
 
-# In[10]:
+# In[11]:
 
 
 # variable test and train set splits
@@ -202,7 +216,7 @@ test_set_50 = df[
 print(test_set_all.shape, test_set_75.shape, test_set_50.shape)
 
 
-# In[11]:
+# In[12]:
 
 
 # get the train test splits from each group
@@ -244,7 +258,7 @@ print(
 print(f"Shape for the holdout set: {df_holdout.shape}")
 
 
-# In[12]:
+# In[13]:
 
 
 # combine all testing sets together while preserving the index
@@ -259,7 +273,7 @@ training_data_set = pd.concat([training_data_set_75, training_data_set_50], axis
 training_data_set = training_data_set.sort_index()
 training_data_set
 
-val_data_set, training_data_set = train_test_split(
+training_data_set, val_data_set = train_test_split(
     training_data_set,
     test_size=0.20,
     stratify=training_data_set["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
@@ -271,31 +285,113 @@ print(
     Validation set length: {len(val_data_set)}\n
     Holdout set length: {len(df_holdout)}"""
 )
+
+
+# In[14]:
+
+
+# # train
+# # downsample healthy and pyroptosis to match number of apoptosis
+# # to balance classes
+# df_healthy_train = training_data_set[training_data_set["labels"] == "healthy"]
+# df_pyroptosis_train = training_data_set[training_data_set["labels"] == "pyroptosis"]
+# df_apoptosis_train = training_data_set[training_data_set["labels"] == "apoptosis"]
+# print(df_healthy_train.shape, df_pyroptosis_train.shape, df_apoptosis_train.shape)
+
+# # downsample healthy and pyroptosis to match number of apoptosis
+# df_healthy_train = df_healthy_train.sample(n=df_apoptosis_train.shape[0], random_state=0)
+# df_pyroptosis_train = df_pyroptosis_train.sample(n=df_apoptosis_train.shape[0], random_state=0)
+# print(df_healthy_train.shape, df_pyroptosis_train.shape, df_apoptosis_train.shape)
+# training_data_set = pd.concat([df_healthy_train, df_pyroptosis_train, df_apoptosis_train])
+# # show that the df was downsampled and recombined correctly
+# assert (df_healthy_train + df_pyroptosis_train + df_apoptosis_train).shape[0] == training_data_set.shape[0]
+
+
+# # validation
+# # downsample healthy and pyroptosis to match number of apoptosis
+# # to balance classes
+# df_healthy_val = val_data_set[val_data_set["labels"] == "healthy"]
+# df_pyroptosis_val = val_data_set[val_data_set["labels"] == "pyroptosis"]
+# df_apoptosis_val = val_data_set[val_data_set["labels"] == "apoptosis"]
+# print(df_healthy_val.shape, df_pyroptosis_val.shape, df_apoptosis_val.shape)
+
+# # downsample healthy and pyroptosis to match number of apoptosis
+# df_healthy_val = df_healthy_val.sample(n=df_apoptosis_val.shape[0], random_state=0)
+# df_pyroptosis_val = df_pyroptosis_val.sample(n=df_apoptosis_val.shape[0], random_state=0)
+# print(df_healthy_val.shape, df_pyroptosis_val.shape, df_apoptosis_val.shape)
+# val_data_set = pd.concat([df_healthy_val, df_pyroptosis_val, df_apoptosis_val])
+# # show that the df was downsampled and recombined correctly
+# assert (df_healthy_val + df_pyroptosis_val + df_apoptosis_val).shape[0] == val_data_set.shape[0]
+
+
+# # test
+# # downsample healthy and pyroptosis to match number of apoptosis
+# # to balance classes
+# df_healthy_test = testing_data_set[testing_data_set["labels"] == "healthy"]
+# df_pyroptosis_test = testing_data_set[testing_data_set["labels"] == "pyroptosis"]
+# df_apoptosis_test = testing_data_set[testing_data_set["labels"] == "apoptosis"]
+# print(df_healthy_test.shape, df_pyroptosis_test.shape, df_apoptosis_test.shape)
+
+# # downsample healthy and pyroptosis to match number of apoptosis
+# df_healthy_test = df_healthy_test.sample(n=df_apoptosis_test.shape[0], random_state=0)
+# df_pyroptosis_test = df_pyroptosis_test.sample(n=df_apoptosis_test.shape[0], random_state=0)
+# print(df_healthy_test.shape, df_pyroptosis_test.shape, df_apoptosis_test.shape)
+# testing_data_set = pd.concat([df_healthy_test, df_pyroptosis_test, df_apoptosis_test])
+# # show that the df was downsampled and recombined correctly
+# assert (df_healthy_test + df_pyroptosis_test + df_apoptosis_test).shape[0] == testing_data_set.shape[0]
+
+
+# print(len(training_data_set), len(val_data_set), len(testing_data_set), len(df_holdout))
+
+
+# In[15]:
+
+
 # get the indexes for the training and testing sets
-testing_data_set_index = testing_data_set.index
+
 training_data_set_index = training_data_set.index
 val_data_set_index = val_data_set.index
+testing_data_set_index = testing_data_set.index
 df_holdout_index = df_holdout.index
 
 
-# In[13]:
+# In[16]:
+
+
+print(
+    training_data_set_index.shape,
+    val_data_set_index.shape,
+    testing_data_set_index.shape,
+    df_holdout_index.shape,
+)
+print(
+    training_data_set_index.shape[0]
+    + val_data_set_index.shape[0]
+    + testing_data_set_index.shape[0]
+    + df_holdout_index.shape[0]
+)
+
+
+# In[17]:
 
 
 # create pandas dataframe with all indexes and their respective labels, stratified by phenotypic class
 index_data = []
 for index in training_data_set_index:
     index_data.append({"labeled_data_index": index, "label": "train"})
+for index in val_data_set_index:
+    index_data.append({"labeled_data_index": index, "label": "val"})
 for index in testing_data_set_index:
     index_data.append({"labeled_data_index": index, "label": "test"})
 for index in df_holdout_index:
     index_data.append({"labeled_data_index": index, "label": "holdout"})
 
 # make index data a dataframe and sort it by labeled data index
-index_data = pd.DataFrame(index_data).sort_values(["labeled_data_index"])
+index_data = pd.DataFrame(index_data)
 index_data
 
 
-# In[14]:
+# In[18]:
 
 
 save_path = pathlib.Path(f"../indexes/{CELL_TYPE}/multi_class/")
@@ -305,11 +401,13 @@ print(save_path)
 save_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[15]:
+# In[19]:
 
 
 # save indexes as tsv file
-index_data.to_csv(f"{save_path}/multi_class_data_split_indexes.tsv", sep="\t")
+index_data.to_csv(
+    f"{save_path}/{params.MODEL_NAME}_data_split_indexes.tsv", sep="\t", index=False
+)
 
 
 # #### Set up Data to be compatible with model
@@ -317,7 +415,7 @@ index_data.to_csv(f"{save_path}/multi_class_data_split_indexes.tsv", sep="\t")
 # ##### Classification Models:
 # Comment out code if using regression
 
-# In[16]:
+# In[20]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -328,25 +426,51 @@ df_descriptive = df1[df_metadata]
 df_values = df1.drop(columns=df_metadata)
 
 
-# In[17]:
+# In[21]:
+
+
+# get the class weights for the loss function to account for class imbalance
+# get the number of samples in each class
+targets, counts = np.unique(df1["labels"], return_counts=True)
+print(targets, counts)
+total_counts = np.sum(counts)
+# get the class weights
+class_weights = []
+class_targets = []
+for class_name in enumerate(targets):
+    class_targets.append(class_name[0])
+for count in enumerate(counts):
+    class_weights.append(1 - (count[1] / total_counts))
+print(class_targets, class_weights)
+# write the class weights to a file for use in the model
+class_weights_file = pathlib.Path(f"../class_weights/{CELL_TYPE}/multi_class/")
+class_weights_file.mkdir(parents=True, exist_ok=True)
+with open(f"{class_weights_file}/class_weights.txt", "w") as filehandle:
+    for listitem in class_weights:
+        filehandle.write("%s\n" % listitem)
+
+
+# In[22]:
 
 
 # Creating label encoder
 le = preprocessing.LabelEncoder()
-# Converting strings into numbers
-df_values["labels"] = le.fit_transform(df_values["labels"])
+df_values["new_labels"] = le.fit_transform(df_values["labels"])
+# get mini dataframe that contains the decoder
+decoder = df_values[["labels", "new_labels"]].drop_duplicates()
 # split into X and Y where Y are the predictive column and x are the observable data
 df_values_X = df_values.drop(
-    ["labels"],
+    ["new_labels", "labels"],
     axis=1,
 )
-df_values_Y = df_values["labels"]
+df_values_Y = df_values["new_labels"]
 df_values_Y.head()
+df_values_Y.unique()
 
 
 # #### Split Data - All Models can proceed through this point
 
-# In[18]:
+# In[23]:
 
 
 # split into train and test sets from indexes previously defined
@@ -362,7 +486,7 @@ Y_test = df_values_Y.loc[testing_data_set_index]
 Y_holdout = df_values_Y.loc[df_holdout_index]
 
 
-# In[19]:
+# In[24]:
 
 
 # produce data objects for train, val and test datasets
@@ -377,7 +501,7 @@ test_data = Dataset_formatter(
 )
 
 
-# In[20]:
+# In[25]:
 
 
 mlp_params.IN_FEATURES = X_train.shape[1]
@@ -401,29 +525,26 @@ else:
 print(mlp_params.MODEL_TYPE)
 
 
-# In[21]:
+# In[26]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
 train_loader = torch.utils.data.DataLoader(
-    dataset=train_data, batch_size=mlp_params.BATCH_SIZE
+    dataset=train_data, batch_size=mlp_params.HYPERPARAMETER_BATCH_SIZE
 )
 valid_loader = torch.utils.data.DataLoader(
-    dataset=val_data, batch_size=mlp_params.BATCH_SIZE
-)
-test_loader = torch.utils.data.DataLoader(
-    dataset=test_data,
-    batch_size=1,
+    dataset=val_data, batch_size=mlp_params.HYPERPARAMETER_BATCH_SIZE
 )
 
 
-# In[22]:
+# In[27]:
 
 
+# check device
 print(mlp_params.DEVICE)
 
 
-# In[23]:
+# In[28]:
 
 
 # no accuracy function must be loss for regression
@@ -440,6 +561,7 @@ objective_lambda_func = lambda trial: objective_model_optimizer(
     params=params,
     metric=mlp_params.METRIC,
     return_info=False,
+    class_weights=class_weights,
 )
 
 
@@ -456,10 +578,11 @@ objective_model_optimizer(
     params=params,
     metric=mlp_params.METRIC,
     return_info=True,
+    class_weights=class_weights,
 )
 
 
-# In[24]:
+# In[29]:
 
 
 # create graph directory for this model
@@ -477,7 +600,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[25]:
+# In[30]:
 
 
 # create graph directory for this model
@@ -494,7 +617,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[26]:
+# In[31]:
 
 
 param_dict = extract_best_trial_params(

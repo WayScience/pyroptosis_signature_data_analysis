@@ -2,7 +2,7 @@
 
 #SBATCH --nodes=1
 #SBATCH --ntasks=16
-#SBATCH --mem=300G
+#SBATCH --mem=500G
 #SBATCH --partition=amem
 #SBATCH --qos=mem
 #SBATCH --time=24:00:00
@@ -19,12 +19,13 @@ shuffles=( True False )
 for cell_type in "${cell_types[@]}"; do
     for shuffle in "${shuffles[@]}"; do
         for model_name in "${model_names[@]}"; do
-            papermill \
-            Hyperparameter_Optimization_model_binary.ipynb \
-            Hyperparameter_Optimization_model_binary.ipynb \
-            -p CELL_TYPE $cell_type \
-            -p MODEL_NAME $model_name \
-            -p SHUFFLE $shuffle
+            echo "$cell_type $shuffle $model_name"
+            #papermill \
+            #train_multiclass_model.ipynb \
+            #train_multiclass_model.ipynb \
+            #-p CELL_TYPE $cell_type \
+            #-p MODEL_NAME $model_name \
+            #-p SHUFFLE $shuffle
         done
     done
 done

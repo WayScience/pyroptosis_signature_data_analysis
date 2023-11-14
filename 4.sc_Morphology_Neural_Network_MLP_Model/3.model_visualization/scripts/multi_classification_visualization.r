@@ -17,7 +17,8 @@ cell_type <- args$cell_type
 model_name <- args$model_name
 
 
-
+cell_type <- "PBMC"
+model_name <- "MultiClass_MLP"
 
 # set file path for importing the data
 training_metrics_file <- file.path(paste0(
@@ -41,6 +42,12 @@ training_metrics <- read.csv(training_metrics_file)
 confusion_matrix <- read.csv(confusion_matrix_file)
 
 
+
+support <- training_metrics[training_metrics$metric == "support",]
+# get apoptosis, healthy, and pyroptosis support rows in one df
+support <- support[support$label %in% c("apoptosis", "healthy", "pyroptosis"),]
+
+
 # get the rows that contain the F1 scores
 f1_scores <- training_metrics[training_metrics$metric == "f1-score",]
 # remove the rows that contain the macro and weighted averages
@@ -62,6 +69,16 @@ f1_scores$group <- factor(f1_scores$group, levels = c(
 # mutate the shuffled_data column
 f1_scores$shuffled_data <- gsub("True", "Shuffled", f1_scores$shuffled_data)
 f1_scores$shuffled_data <- gsub("False", "Not Shuffled", f1_scores$shuffled_data)
+# cbind the support column to the f1_scores df
+f1_scores <- cbind(f1_scores, support$value)
+# rename the support column
+colnames(f1_scores)[colnames(f1_scores) == "support$value"] <- "support"
+# dived the support by 10,000 to get the number of cells
+f1_scores$support <- f1_scores$support / 10000
+# round the support column to 2 decimal places
+f1_scores$support <- round(f1_scores$support, 2)
+# rename support column to support.10k
+head(f1_scores)
 
 
 # make the label a factor so that the order is preserved
@@ -71,7 +88,7 @@ f1_scores$label <- factor(
         )
     )
 
-
+head(f1_scores, 1)
 
 # set plot size
 width <- 10
@@ -79,23 +96,23 @@ height <- 5
 options(repr.plot.width = width, repr.plot.height = height)
 # bar plot of the F1 scores
 f1_score_plot <- (
-    ggplot(f1_scores, aes(x = group, y = value, fill = label))
+    ggplot(f1_scores, aes(x = shuffled_data, y = value, fill = group))
     + geom_bar(stat = "identity", position = "dodge")
+
     + ylim(0, 1)
-    + facet_wrap(~shuffled_data)
+    + facet_wrap(~label)
     + ylab("F1 Score")
     + xlab("Data Split")
     # change the legend title
     + labs(fill = "Predicted Class")
     # change the colours
     + scale_fill_manual(values = c(
-        "Healthy" = "#88F2F2",
-        "Apoptosis" = "#056CF2",
-        "Pyroptosis" = "#A6382E"
+        "Training" = "#88F2F2",
+        "Validation" = "#056CF2",
+        "Testing" = "#A6382E",
+        "Holdout" = "#F2A900"
     ))
     + figure_theme_wide
-
-
 
 )
 ggsave(f1_plot_path, f1_score_plot, width = width, height = height, dpi = 600)

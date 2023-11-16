@@ -16,7 +16,8 @@ cell_types=( SHSY5Y PBMC )
 model_names=( MultiClass_MLP_h202_remove MultiClass_MLP )
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb*
 
-
+# loop through cell types and model names
+# run the R script to plot the confusion matrix and model performance
 for cell_type in "${cell_types[@]}"; do
     for model_name in "${model_names[@]}"; do
         Rscript \

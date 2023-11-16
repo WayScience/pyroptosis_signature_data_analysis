@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# <span style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">An Exception was encountered at '<a href="#papermill-error-cell">In [3]</a>'.</span>
+
 # ## Hyperparameter tuning via Optuna
 
 # ### Being a binary model this notebook will be limited to predicting one class 1 or 0, yes or no.
@@ -47,11 +49,11 @@ from utils.utils import df_stats
 
 
 # Parameters
-CELL_TYPE = "SHSY5Y"
-CONTROL_NAME = "DMSO_0.100_%_DMSO_0.025_%"
-TREATMENT_NAME = "LPS_100.000_ug_per_ml_DMSO_0.025_%"
-MODEL_NAME = "DMSO_0.025_vs_LPS_100"
+CELL_TYPE = "PBMC"
+MODEL_NAME = "MultiClass_MLP"
 
+
+# <span id="papermill-error-cell" style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">Execution using papermill encountered an exception here and stopped:</span>
 
 # In[3]:
 
@@ -71,7 +73,7 @@ mlp_params.TREATMENT_NAME = TREATMENT_NAME
 mlp_params.MODEL_NAME = MODEL_NAME
 
 
-# In[4]:
+# In[ ]:
 
 
 # Import Data
@@ -84,7 +86,7 @@ file_path = pathlib.Path(
 df = pq.read_table(file_path).to_pandas()
 
 
-# In[5]:
+# In[ ]:
 
 
 df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
@@ -95,7 +97,7 @@ df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
 # ##### Classification Models:
 # Comment out code if using regression
 
-# In[6]:
+# In[ ]:
 
 
 # filter the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column to only include the treatment and control via loc
@@ -118,7 +120,7 @@ else:
     print("Data Subset Is Off")
 
 
-# In[7]:
+# In[ ]:
 
 
 np.random.seed(seed=0)
@@ -137,7 +139,7 @@ print(
 )
 
 
-# In[8]:
+# In[ ]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -148,7 +150,7 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[9]:
+# In[ ]:
 
 
 # Creating label encoder
@@ -172,7 +174,7 @@ df_values_Y = df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
 # #### Split Data - All Models can proceed through this point
 
-# In[10]:
+# In[ ]:
 
 
 X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
@@ -186,7 +188,7 @@ X_train, X_test, X_val, Y_train, Y_test, Y_val = data_split(
 )
 
 
-# In[11]:
+# In[ ]:
 
 
 # produce data objects for train, val and test datasets
@@ -201,7 +203,7 @@ test_data = Dataset_formatter(
 )
 
 
-# In[12]:
+# In[ ]:
 
 
 mlp_params.IN_FEATURES = X_train.shape[1]
@@ -227,7 +229,7 @@ else:
 print(mlp_params.MODEL_TYPE)
 
 
-# In[13]:
+# In[ ]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
@@ -243,13 +245,13 @@ test_loader = torch.utils.data.DataLoader(
 )
 
 
-# In[14]:
+# In[ ]:
 
 
 print(mlp_params.DEVICE)
 
 
-# In[15]:
+# In[ ]:
 
 
 # no accuracy function must be loss for regression
@@ -285,7 +287,7 @@ objective_model_optimizer(
 )
 
 
-# In[16]:
+# In[ ]:
 
 
 # create graph directory for this model
@@ -303,7 +305,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[17]:
+# In[ ]:
 
 
 # create graph directory for this model
@@ -320,7 +322,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[18]:
+# In[ ]:
 
 
 param_dict = extract_best_trial_params(

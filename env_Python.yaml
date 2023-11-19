@@ -1,0 +1,40 @@
+name: Interstellar_python
+channels:
+  - conda-forge
+  - anaconda
+dependencies:
+  - python=3.10
+  - conda-forge::pip
+  - conda-forge::numpy
+  - conda-forge::pandas
+  - conda-forge::scikit-learn
+  - conda-forge::matplotlib
+  - conda-forge::optuna
+  - conda-forge::pytorch
+  - conda-forge::seaborn
+  - conda-forge::pyarrow
+  - conda-forge::numba
+  - conda-forge::umap-learn
+  - conda-forge::nb_conda_kernels
+  - conda-forge::widgetsnbextension
+  - conda-forge::jupyter_contrib_nbextensions
+  - conda-forge::jupyter
+  - conda-forge::jupyterlab
+  - conda-forge::ipykernel
+  - conda-forge::python
+  - conda-forge::r-irkernel
+  - conda-forge::nb_conda_kernels
+  - conda-forge::widgetsnbextension
+  - conda-forge::jupyter_contrib_nbextensions
+  - pip:
+    - pre-commit
+    - black
+    - ipywidgets
+    - kaleido
+    - plotly
+    - matplotlib_venn
+    - nbformat>=4.2.0
+    - git+https://github.com/cytomining/pycytominer@a5ae6c81a275b692ef5d4c85cfeb37696bf69242
+    - nbqa
+    - papermill
+    - git+https://github.com/cytomining/cytominer-eval@643d3e7fc97464a1b45a4642fa921cc22269b118

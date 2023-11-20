@@ -16,4 +16,6 @@ CELL_TYPE=$2
 
 echo "Feature: $feature" "Cell type: $CELL_TYPE"
 
-python scripts/8.1_anova_all_groupings.py --feature $feature --cell_type $CELL_TYPE
+python 8.1_anova_all_groupings.py --feature $feature --cell_type $CELL_TYPE
+
+echo "Complete"

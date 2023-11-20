@@ -25,7 +25,7 @@ from sklearn.manifold import TSNE
 
 
 # Parameters
-celltype = "SHSY5Y"
+celltype = "PBMC"
 
 
 # In[3]:

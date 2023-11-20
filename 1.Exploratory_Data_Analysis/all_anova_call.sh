@@ -1,18 +1,18 @@
 #!/bin/bash
-# This script is used to train the regression models for the elastic network
-
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
+#SBATCH --mem=700G
 #SBATCH --partition=amem
 #SBATCH --qos=mem
-#SBATCH --mem=400G
 #SBATCH --time=24:00:00
 #SBATCH --output=sample-%j.out
 
 module load anaconda
 
-conda activate Interstellar_R
+conda activate Interstellar_python
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=scripts *.ipynb
 
-Rscript scripts/figure3.r
+papermill 8.anova_all_groupings.ipynb 8.anova_all_groupings.ipynb
+
+echo "Complete"

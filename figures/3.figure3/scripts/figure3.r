@@ -18,10 +18,11 @@ suppressPackageStartupMessages(suppressWarnings(library(purrr))) # data manipula
 suppressPackageStartupMessages(suppressWarnings(library(VennDiagram))) # venn diagram
 suppressPackageStartupMessages(suppressWarnings(library(tidyverse))) # data manipulation
 suppressPackageStartupMessages(suppressWarnings(library(ggvenn))) # venn diagram
+suppressPackageStartupMessages(suppressWarnings(library(grid))) # grid
 source("../utils/figure_themes.r")
 
 
-cell_type <- "SHSY5Y"
+cell_type <- "PBMC"
 
 
 montage_image_path = file.path("figures/Montage.png")
@@ -60,10 +61,15 @@ print(nrow(anova_results))
 print(ncol(anova_results))
 
 
+# change the group names to replace healhty with    control
+anova_results$group = str_replace_all(anova_results$group,"healthy","control")
+anova_results
+
+
 # create the three df sets for a venn diagram
-a_h <- anova_results %>% filter(group == "apoptosis_healthy")
+a_h <- anova_results %>% filter(group == "apoptosis_control")
 a_p <- anova_results %>% filter(group == "apoptosis_pyroptosis")
-h_p <- anova_results %>% filter(group == "healthy_pyroptosis")
+h_p <- anova_results %>% filter(group == "control_pyroptosis")
 a_h <- a_h %>% select(features)
 a_p <- a_p %>% select(features)
 h_p <- h_p %>% select(features)
@@ -83,7 +89,8 @@ options(repr.plot.width=width, repr.plot.height=height)
 myCol <- brewer.pal(3, "Dark2")
 venn_diagram_plot <- venn.diagram(
     x=x,
-    category.names = c("Apoptosis vs Healthy","Apoptosis vs Pyroptosis","Healthy vs Pyroptosis"),
+    show=TRUE,
+    category.names = c("Apoptosis \nvs \nControl","Apoptosis \nvs \nPyroptosis","Control \nvs \nPyroptosis"),
     filename = paste0("figures/",cell_type,"_venn_diagram.png"),
     # Output features
     imagetype="png" ,
@@ -101,15 +108,16 @@ venn_diagram_plot <- venn.diagram(
     fontfamily = "sans",
 
     # Set names
-    cat.cex = 1,
+    cat.cex = 0.8,
     cat.fontface = "bold",
     cat.default.pos = "outer",
-    cat.pos = c(-27, 27, 0),
-    cat.dist = c(-0.05, -0.05, -0.37),
+    cat.pos = c(-26, 23, 0),
+    cat.dist = c(-0.03, -0.03, -0.39),
     cat.fontfamily = "sans",
     rotation = 1
 
 )
+
 
 # Set the directory path
 directory <- "figures"
@@ -119,6 +127,7 @@ files <- list.files(directory, full.names = TRUE)
 log_files <- files[grep(".log$", files)]
 # Remove the log files
 file.remove(log_files)
+
 
 # read in the venn diagram from PNG
 venn_diagram_image_path = file.path(paste0("figures/",cell_type,"_venn_diagram.png"))
@@ -136,13 +145,14 @@ venn_diagram_image <- (
 class(venn_diagram_image)
 venn_diagram_image
 
+
 # add sets together
 a_h__a_p <- union(a_h_list, a_p_list)
 a_h__h_p <- union(a_h_list ,h_p_list)
 a_p__h_p <- union(a_p_list ,h_p_list)
 
 # get the unique features for each set
-# Apoptosis_vs_Healthy
+# Apoptosis_vs_Control
 # should be 117
 a_h_unique <- setdiff(a_h_list, a_p__h_p)
 length(a_h_unique)
@@ -152,26 +162,26 @@ length(a_h_unique)
 a_p_unique <- setdiff(a_p_list, a_h__h_p)
 length(a_p_unique)
 
-# Healthy_vs_Pyroptosis
+# Control_vs_Pyroptosis
 # should be 305
 h_p_unique <- setdiff(h_p_list, a_h__a_p)
 length(h_p_unique)
 
 
 # get the common features for each set
-# Apoptosis_vs_Healthy and Apoptosis_vs_Pyroptosis
+# Apoptosis_vs_Control and Apoptosis_vs_Pyroptosis
 # should be 5
 a_h__a_p_common <- intersect(a_h_list, a_p_list)
 a_h__a_p_common <- setdiff(a_h__a_p_common, h_p_list)
 length(a_h__a_p_common)
 
-# Apoptosis_vs_Healthy and Healthy_vs_Pyroptosis
+# Apoptosis_vs_Control and Control_vs_Pyroptosis
 # should be 27
 a_h__h_p_common <- intersect(a_h_list, h_p_list)
 a_h__h_p_common <- setdiff(a_h__h_p_common, a_p_list)
 length(a_h__h_p_common)
 
-# Apoptosis_vs_Pyroptosis and Healthy_vs_Pyroptosis
+# Apoptosis_vs_Pyroptosis and Control_vs_Pyroptosis
 # should be 16
 a_p__h_p_common <- intersect(a_p_list, h_p_list)
 a_p__h_p_common <- setdiff(a_p__h_p_common, a_h_list)
@@ -231,25 +241,7 @@ ER <- brewer.pal(12,"Paired")[4]
 Gasdermin <- brewer.pal(12,"Paired")[8]
 PM <- brewer.pal(12,"Paired")[6]
 Mito <- brewer.pal(12,"Paired")[10]
-
-
-# list_of_unique_features <- a_h__a_p_common
-# df <- anova_results_channels
-# filtered_df <- df %>% filter(features %in% list_of_unique_features)
-# # check if all channels are present and if not add them as a placeholder for plotting
-# if ("Nuclei" %in% filtered_df$channel_learned == FALSE) {
-#     filtered_df <- filtered_df %>% add_row(
-#         features = "Nuclei",
-#         compartment = "Nuclei",
-#         feature_group = "Nuclei",
-#         measurement = "Nuclei",
-#         channel = "Nuclei",
-#         parameter1 = "Nuclei",
-#         parameter2 = "Nuclei",
-#         channel_cleaned = "Nuclei",
-#         channel_learned = "Nuclei"
-#     )
-# }
+Other <- brewer.pal(8, "Accent")[8]
 
 
 # set plot size
@@ -260,12 +252,14 @@ unique_feature_plot_function <- function(df, list_of_unique_features){
     filtered_df <- df %>% filter(features %in% list_of_unique_features)
     # count the data
     filtered_df_counts <- count(filtered_df, channel_learned)
+    # make <NA> vlues in channel_learned Other
+    filtered_df_counts$channel_learned <- replace_na(filtered_df_counts$channel_learned, "Other")
     plot <- (
         ggplot(filtered_df_counts, aes(x=channel_learned, y=n, fill=channel_learned))
         + geom_bar(stat = "identity")
         + theme_bw()
         # change colours of bars manually
-        + scale_fill_manual(values = c("Nuclei" = DAPI, "Mito" = Mito, "ER" = ER, "GasderminD" = Gasdermin, "AGP" = PM, "Other" = "grey"))
+        + scale_fill_manual(values = c("Nuclei" = DAPI, "Mito" = Mito, "ER" = ER, "GasderminD" = Gasdermin, "AGP" = PM, "Other" = Other))
         + labs(
             x = "Channel",
             y = "Number of Features",
@@ -304,13 +298,13 @@ a_p__h_p_common_plot <- unique_feature_plot_function(anova_results_channels, a_p
 a_h__a_p__h_p_common_plot <- unique_feature_plot_function(anova_results_channels, a_h__a_p__h_p_common)
 
 # add titles to each plot
-a_h_unique_plot <- a_h_unique_plot + labs(title = "Apoptosis vs Healthy")
+a_h_unique_plot <- a_h_unique_plot + labs(title = "Apoptosis vs Control")
 a_p_unique_plot <- a_p_unique_plot + labs(title = "Apoptosis vs Pyroptosis")
-h_p_unique_plot <- h_p_unique_plot + labs(title = "Healthy vs Pyroptosis")
-a_h__a_p_common_plot <- a_h__a_p_common_plot + labs(title = "Common Features in Apoptosis vs Healthy and Apoptosis vs Pyroptosis")
-a_h__h_p_common_plot <- a_h__h_p_common_plot + labs(title = "Common Features in Apoptosis vs Healthy and Healthy vs Pyroptosis")
-a_p__h_p_common_plot <- a_p__h_p_common_plot + labs(title = "Common Features in Apoptosis vs Pyroptosis and Healthy vs Pyroptosis")
-a_h__a_p__h_p_common_plot <- a_h__a_p__h_p_common_plot + labs(title = "Common Features in Apoptosis vs Healthy, Apoptosis vs Pyroptosis and Healthy vs Pyroptosis")
+h_p_unique_plot <- h_p_unique_plot + labs(title = "Control vs Pyroptosis")
+a_h__a_p_common_plot <- a_h__a_p_common_plot + labs(title = "Common Features in Apoptosis vs Control and Apoptosis vs Pyroptosis")
+a_h__h_p_common_plot <- a_h__h_p_common_plot + labs(title = "Common Features in Apoptosis vs Control and Control vs Pyroptosis")
+a_p__h_p_common_plot <- a_p__h_p_common_plot + labs(title = "Common Features in Apoptosis vs Pyroptosis and Control vs Pyroptosis")
+a_h__a_p__h_p_common_plot <- a_h__a_p__h_p_common_plot + labs(title = "Common Features in Apoptosis vs Control, Apoptosis vs Pyroptosis and Control vs Pyroptosis")
 
 
 cell_umap_path <- file.path(paste0(
@@ -365,6 +359,7 @@ cell_umap <- cell_umap %>%
         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='media_ctr_0.0_0_Media_ctr_0.0_0' ~ "Media ctr 0.0 0",
         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='media_ctr_0.0_0_Media_0.0_0' ~ "Media ctr 0.0 0"
     ))
+
 
 # set plot size
 width <- 15
@@ -584,24 +579,11 @@ sub_figure3 <- (
 
     + h_p_unique_plot
     + plot_layout(design = layout)
-    + plot_annotation(tag_levels = list(c("C", "D", "E", "F"))) & theme(plot.tag = element_text(size = 20))
+    + plot_annotation(tag_levels = list(c( "D", "E", "F", "G"))) & theme(plot.tag = element_text(size = 20))
 
 )
 sub_figure3
 
-
-design <-   "
-            AAA
-            AAA
-            AAA
-            AAA
-            BBB
-            BBB
-            CCC
-            CCC
-            CCC
-            CCC
-            "
 
 layout <- c(
     area(t=1, b=3, l=1, r=4),
@@ -625,7 +607,7 @@ fig3 <- (
     # + sub_figure3
     + plot_layout(design = layout, widths = c(8,8 ))
     # make bottom plot not align
-    + plot_annotation(tag_levels = list(c("A", "B"))) & theme(plot.tag = element_text(size = 20))
+    + plot_annotation(tag_levels = list(c("A", "B", "C"))) & theme(plot.tag = element_text(size = 20))
 
 )
 ggsave(
@@ -638,10 +620,6 @@ ggsave(
 )
 
 fig3
-
-
-
-
 
 
 sessionInfo()

@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --mem=256G
+#SBATCH --mem=500G
 #SBATCH --partition=amem
 #SBATCH --qos=mem
 #SBATCH --time=24:00:00
@@ -9,10 +9,10 @@
 
 module load anaconda
 
-conda activate Interstellar
+conda activate Interstellar_python
 
-papermill 4.cell_count_analysis.ipynb 4.cell_count_analysis.ipynb -p celltype "SHSY5Y"
-papermill 1.umap_analysis_plate2.ipynb 1.umap_analysis_plate2.ipynb -p celltype "SHSY5Y"
+#papermill 4.cell_count_analysis.ipynb 4.cell_count_analysis.ipynb -p celltype "SHSY5Y"
+#papermill 1.umap_analysis_plate2.ipynb 1.umap_analysis_plate2.ipynb -p celltype "SHSY5Y"
 
 papermill 4.cell_count_analysis.ipynb 4.cell_count_analysis.ipynb -p celltype "PBMC"
 papermill 1.umap_analysis_plate2.ipynb 1.umap_analysis_plate2.ipynb -p celltype "PBMC"

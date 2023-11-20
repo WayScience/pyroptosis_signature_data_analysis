@@ -36,9 +36,9 @@ from statsmodels.stats.multicomp import MultiComparison, pairwise_tukeyhsd
 
 # Parameters
 cell_type = "SHSY5Y"
-treatment1 = "DMSO_0.100_DMSO_0.025"
-treatment2 = "LPS_100.000_DMSO_0.025"
-treatment3 = "Thapsigargin_10.000_DMSO_0.025"
+treatment1 = "DMSO_0.100_%_DMSO_0.025_%"
+treatment2 = "LPS_100.000_ug_per_ml_DMSO_0.025_%"
+treatment3 = "Thapsigargin_10.000_uM_DMSO_0.025_%"
 
 
 # In[3]:
@@ -265,7 +265,7 @@ org_replace_dict = {
     "CorrGasdermin": "GasderminD",
     "CorrER": "ER",
     "CorrMito": "Mito",
-    "CorrDNA": "DNA",
+    "CorrDNA": "Nuclei",
     "CorrPM": "PM",
 }
 # set a value for all other strings that represent "organelle", which come from either AreaShape or Neighbors module
@@ -288,7 +288,7 @@ tukey_df_sig_trt_1v2_unique = tukey_df_sig_trt_1v2_unique[
 ]
 # seaborn plot of each organelle and the counts of features that are significant
 # set the order of the organelles
-organelle_order = ["Mito", "PM", "DNA", "ER", "GasderminD"]
+organelle_order = ["Mito", "PM", "Nuclei", "ER", "GasderminD"]
 plt.figure(figsize=(10, 5))
 sns.countplot(x="organelle", data=tukey_df_sig_trt_1v2_unique, order=organelle_order)
 plt.title(
@@ -307,7 +307,7 @@ for p in plt.gca().patches:
     )
 plt.xlabel("Organelle", size=20)
 plt.ylabel("Number of Significant Features \n (p-adj. < 0.01)", size=20)
-plt.ylim(0, 175)
+plt.ylim(0, 30)
 save_path = pathlib.Path(
     f"./Figures/anova_of_features/{treatment1}_vs_{treatment2}_vs_{treatment3}"
 )

@@ -1,12 +1,10 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --partition=amem
-#SBATCH --qos=mem
+#SBATCH --partition=amilan
+#SBATCH --qos=long
 #SBATCH --output=sample-%j.out
-#SBATCH --array=1-2
-#SBATCH --time=72:00:00
-#SBATCH --mem-per-cpu=250G
+#SBATCH --time=168:00:00
 
 
 module load anaconda
@@ -15,9 +13,6 @@ conda activate Interstellar_python
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
 
-PYTHON_SCRIPT="8.1_anova_all_groupings.py"
-# define the python interpreter path
-PYTHON_INTERP=$(which python)
 
 CELL_TYPE="SHSY5Y"
 
@@ -40,7 +35,7 @@ while true; do
         # Check if there are still items to process
         if [ -n "$feature" ]; then
             echo "Submitting job for item: $feature"
-            srun $PYTHON_INTERP $PYTHON_SCRIPT --feature $feature --cell_type $CELL_TYPE
+            sbatch all_anova_call_child.sh --feature $feature --cell_type $CELL_TYPE
         else
             echo "All items processed. Exiting."
             break

@@ -13,7 +13,11 @@ module load anaconda
 
 conda activate Interstellar_python
 
-jupyter nbconvert --to=script --FilesWriter.build_directory=scripts notebooks/*.ipynb
+jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
+
+PYTHON_SCRIPT="8.1_anova_all_groupings.py"
+# define the python interpreter path
+PYTHON_INTERP=$(which python)
 
 CELL_TYPE="SHSY5Y"
 
@@ -36,7 +40,7 @@ while true; do
         # Check if there are still items to process
         if [ -n "$feature" ]; then
             echo "Submitting job for item: $feature"
-            srun python scripts/8.1_anova_all_groupings.py --feature $feature --cell_type $CELL_TYPE
+            srun $PYTHON_INTERP $PYTHON_SCRIPT --feature $feature --cell_type $CELL_TYPE
         else
             echo "All items processed. Exiting."
             break

@@ -38,7 +38,7 @@ file_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
 df = pd.read_parquet(file_path)
 
 # index output for features
-output_file = pathlib.Path(f"../features/feature_index.tsv")
+output_file = pathlib.Path(f"../features/feature_index.txt")
 # create output directory if it doesn't exist
 output_file.parent.mkdir(parents=True, exist_ok=True)
 

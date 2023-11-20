@@ -61,6 +61,8 @@ nomic_df = nomic_df.rename(
 # functions to be used with the apply method
 # add trailing zeros to the concentration values to match the metadata and morphology data
 # this is crucial for the merge later on for data harmonization
+
+
 def add_trailing_zeros_3(x):
     return "{:.3f}".format(x)
 

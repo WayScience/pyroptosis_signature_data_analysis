@@ -19,14 +19,44 @@ rcParams.update({"figure.autolayout": True})
 # create a venn diagram of the features that are significant in all conditions
 
 warnings.filterwarnings("ignore")
+import argparse
+
 from pycytominer.cyto_utils import infer_cp_features
 from statsmodels.formula.api import ols
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
+# In[ ]:
+
+
+# set up command line argument parser
+parser = argparse.ArgumentParser(
+    description="Run ANOVA and Tukey's HSD on all groupings"
+)
+parser.add_argument(
+    "-c",
+    "--cell_type",
+    type=str,
+    help="Path to the config.toml file with analysis parameters",
+)
+
+parser.add_argument(
+    "-f",
+    "--feature",
+    type=str,
+    help="Path to the output directory for the results",
+)
+
+# parse arguments from command line
+args = parser.parse_args()
+cell_type = args.cell_type
+feature = args.feature
+
+
 # In[2]:
 
 
-cell_type = "PBMC"
+# cell_type = "SHSY5Y"
+# feature = "Nuclei_Texture_SumVariance_CorrMito_3_03_256"
 
 
 # In[3]:
@@ -34,7 +64,7 @@ cell_type = "PBMC"
 
 # Import Data
 # set data file path under pathlib path for multi-system use
-file_path = pathlib.Path(f"../data/{cell_type}_preprocessed_sc_norm.parquet")
+file_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
 df = pd.read_parquet(file_path)
 
 
@@ -43,7 +73,7 @@ df = pd.read_parquet(file_path)
 
 # toml file path
 ground_truth_file = pathlib.Path(
-    "../4.sc_Morphology_Neural_Network_MLP_Model/MLP_utils/ground_truth.toml"
+    "../../4.sc_Morphology_Neural_Network_MLP_Model/MLP_utils/ground_truth.toml"
 ).resolve(strict=True)
 # read toml file
 ground_truth = toml.load(ground_truth_file)
@@ -89,7 +119,6 @@ df_data = df.drop(df_metadata.columns, axis=1)
 df_data["Metadata_number_of_singlecells"] = df_metadata[
     "Metadata_number_of_singlecells"
 ]
-cp_features = infer_cp_features(df)
 
 
 # In[6]:
@@ -97,21 +126,21 @@ cp_features = infer_cp_features(df)
 
 # anova for each feature in the dataframe with posthoc tukey test to determine which groups are different from each other
 lst = []
-# for i in cp_features:
-for i in tqdm(cp_features):
-    formula = f"{i} ~ C(labels) + C(Metadata_number_of_singlecells)"
-    model = ols(formula, df_data).fit()
-    aov_table = sm.stats.anova_lm(model, typ=2)
-    posthoc = pairwise_tukeyhsd(
-        df_data[i],
-        df_data["labels"],
-        alpha=0.001,
-    )
-    # print(posthoc)
-    lst.append([posthoc, i])
 
 
-# In[ ]:
+formula = f"{feature} ~ C(labels) + C(Metadata_number_of_singlecells)"
+model = ols(formula, df_data).fit()
+aov_table = sm.stats.anova_lm(model, typ=2)
+posthoc = pairwise_tukeyhsd(
+    df_data[feature],
+    df_data["labels"],
+    alpha=0.001,
+)
+# print(posthoc)
+lst.append([posthoc, feature])
+
+
+# In[7]:
 
 
 tukey_df = pd.DataFrame()
@@ -140,17 +169,24 @@ tukey_df["pos_neg"] = np.where(tukey_df["p-adj"] > 0, "positive", "negative")
 # order the features by p-adj value
 
 
-# In[ ]:
+# In[8]:
 
 
 tukey_df.head()
 
 
-# In[ ]:
+# In[9]:
 
 
 # save the dataframe as a parquet file
 anova_results_path = pathlib.Path(
-    f"./results/{cell_type}_anova_results_all_treatments.parquet"
+    f"../results/{cell_type}/{feature}_anova_results_all_treatments.parquet"
 )
+# if the directory does not exist, create it
+if not anova_results_path.parent.exists():
+    anova_results_path.parent.mkdir(parents=True)
+# save the dataframe as a parquet file
 tukey_df.to_parquet(anova_results_path)
+
+
+# In[ ]:

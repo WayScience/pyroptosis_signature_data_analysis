@@ -17,10 +17,7 @@ jupyter nbconvert --to=script --FilesWriter.build_directory=scripts *.ipynb
 
 CELL_TYPE="SHSY5Y"
 
-echo "creating features list"
-papermill notebooks/8.0_create_feature_index.ipynb notebooks/8.0_create_feature_index_out.ipynb -p cell_type "$CELL_TYPE"
-
-filename="./features/${CELL_TYPE}_features_index.txt"
+filename="./features/feature_index.txt"
 # read all lines of the file to an array
 readarray -t features < $filename
 

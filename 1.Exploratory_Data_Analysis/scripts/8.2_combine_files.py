@@ -10,6 +10,7 @@ import pathlib
 import numpy as np
 import pandas as pd
 
+
 # In[2]:
 
 
@@ -62,3 +63,4 @@ final_df.shape
 
 # save the final_df
 final_df.to_parquet(output_file_path)
+

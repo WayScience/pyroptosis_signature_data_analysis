@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# Cleanup the Nomic data prior to use
+# Cleanup the Nomic data prior to use 
 
 # In[1]:
 
 
 import pathlib
+import sys
 
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
+
 
 # In[2]:
 
@@ -220,3 +222,4 @@ nomic_df["inducer_dose_unit"] = nomic_df_raw["inducer1_concentration_unit"]
 
 
 nomic_df.to_csv(nomic_df_filtered_out_path, index=False)
+

@@ -11,7 +11,7 @@
 
 module load anaconda
 
-conda activate Interstellar
+conda activate Interstellar_python
 
 cell_types=( SHSY5Y PBMC )
 model_names=( MultiClass_MLP_h202_remove MultiClass_MLP )

@@ -17,6 +17,7 @@ from sklearn import preprocessing
 
 sys.path.append("../..")
 
+import json
 
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
@@ -36,6 +37,7 @@ from MLP_utils.utils import (
 
 sys.path.append("../../..")
 from utils.utils import df_stats
+
 
 # ## Papermill is used for executing notebooks in the CLI with multiple parameters
 # Here the `injected-parameters` cell is used to inject parameters into the notebook via papermill.
@@ -745,3 +747,4 @@ if metrics_file.exists():
         metrics_df.to_csv(metrics_file, index=False)
 else:
     model_stats_df.to_csv(metrics_file, index=False)
+

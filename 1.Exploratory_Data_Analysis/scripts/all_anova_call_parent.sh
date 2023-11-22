@@ -30,7 +30,7 @@ for feature in "${features[@]}"; do
         NUM_SLURMS=$(squeue -u $USER | wc -l)
         if [ "$NUM_SLURMS" -lt 30 ]; then
             echo "Feature: $feature" "Cell type: $CELL_TYPE"
-            sbatch anova_call_test.sh $feature $CELL_TYPE
+            sbatch all_anova_call_child.sh $feature $CELL_TYPE
             break
         else
             sleep 10

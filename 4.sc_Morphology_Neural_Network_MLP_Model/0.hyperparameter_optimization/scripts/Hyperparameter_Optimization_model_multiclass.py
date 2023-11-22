@@ -6,7 +6,7 @@
 # ### Being a binary model this notebook will be limited to predicting one class 1 or 0, yes or no.
 # ### Here I will be predicting if a cell received a treatment or not
 
-# In[1]:
+# In[ ]:
 
 
 import pathlib
@@ -44,15 +44,15 @@ from utils.utils import df_stats
 # Here the `injected-parameters` cell is used to inject parameters into the notebook via papermill.
 # This enables multiple notebooks to be executed with different parameters, preventing to manually update parameters or have multiple copies of the notebook.
 
-# In[2]:
+# In[ ]:
 
 
 # Parameters
-CELL_TYPE = "PBMC"
+CELL_TYPE = "SHSY5Y"
 MODEL_NAME = "MultiClass_MLP"
 
 
-# In[3]:
+# In[ ]:
 
 
 ml_configs_file = pathlib.Path("../../MLP_utils/multi_class_config.toml").resolve(
@@ -65,12 +65,11 @@ mlp_params = parameter_set(params, ml_configs)
 # overwrite params via command line arguments from papermill
 mlp_params.CELL_TYPE = CELL_TYPE
 mlp_params.MODEL_NAME = MODEL_NAME
-mlp_params.MODEL_NAME = MODEL_NAME
 MODEL_TYPE = mlp_params.MODEL_TYPE
 HYPERPARAMETER_BATCH_SIZE = mlp_params.HYPERPARAMETER_BATCH_SIZE
 
 
-# In[4]:
+# In[ ]:
 
 
 # Import Data
@@ -83,7 +82,7 @@ file_path = pathlib.Path(
 df1 = pd.read_parquet(file_path)
 
 
-# In[5]:
+# In[ ]:
 
 
 if params.MODEL_NAME == "MultiClass_MLP_h202_remove":
@@ -95,7 +94,7 @@ if params.MODEL_NAME == "MultiClass_MLP_h202_remove":
     ]
 
 
-# In[6]:
+# In[ ]:
 
 
 # get paths for toml files
@@ -110,7 +109,7 @@ ground_truth = toml.load(ground_truth_file_path)
 treatment_splits = toml.load(treatment_splits_file_path)
 
 
-# In[7]:
+# In[ ]:
 
 
 # get information from toml files
@@ -121,7 +120,7 @@ test_split_100 = treatment_splits["splits"]["data_splits_100"]
 test_split_75 = treatment_splits["splits"]["data_splits_75"]
 
 
-# In[8]:
+# In[ ]:
 
 
 np.random.seed(0)
@@ -137,7 +136,7 @@ else:
     print("Data Subset Is Off")
 
 
-# In[9]:
+# In[ ]:
 
 
 # add apoptosis, pyroptosis and healthy columns to dataframe
@@ -172,7 +171,7 @@ df1.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 # ### Split said data
 
-# In[10]:
+# In[ ]:
 
 
 # randomly select wells to hold out for testing one per treatment group
@@ -193,7 +192,7 @@ print(
 )
 
 
-# In[11]:
+# In[ ]:
 
 
 # variable test and train set splits
@@ -216,7 +215,7 @@ test_set_50 = df[
 print(test_set_all.shape, test_set_75.shape, test_set_50.shape)
 
 
-# In[12]:
+# In[ ]:
 
 
 # get the train test splits from each group
@@ -258,7 +257,7 @@ print(
 print(f"Shape for the holdout set: {df_holdout.shape}")
 
 
-# In[13]:
+# In[ ]:
 
 
 # combine all testing sets together while preserving the index
@@ -287,7 +286,7 @@ print(
 )
 
 
-# In[14]:
+# In[ ]:
 
 
 # # train
@@ -344,7 +343,7 @@ print(
 # print(len(training_data_set), len(val_data_set), len(testing_data_set), len(df_holdout))
 
 
-# In[15]:
+# In[ ]:
 
 
 # get the indexes for the training and testing sets
@@ -355,7 +354,7 @@ testing_data_set_index = testing_data_set.index
 df_holdout_index = df_holdout.index
 
 
-# In[16]:
+# In[ ]:
 
 
 print(
@@ -372,7 +371,7 @@ print(
 )
 
 
-# In[17]:
+# In[ ]:
 
 
 # create pandas dataframe with all indexes and their respective labels, stratified by phenotypic class
@@ -391,7 +390,7 @@ index_data = pd.DataFrame(index_data)
 index_data
 
 
-# In[18]:
+# In[ ]:
 
 
 save_path = pathlib.Path(f"../indexes/{CELL_TYPE}/multi_class/")
@@ -401,7 +400,7 @@ print(save_path)
 save_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[19]:
+# In[ ]:
 
 
 # save indexes as tsv file
@@ -415,7 +414,7 @@ index_data.to_csv(
 # ##### Classification Models:
 # Comment out code if using regression
 
-# In[20]:
+# In[ ]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -426,7 +425,7 @@ df_descriptive = df1[df_metadata]
 df_values = df1.drop(columns=df_metadata)
 
 
-# In[21]:
+# In[ ]:
 
 
 # get the class weights for the loss function to account for class imbalance
@@ -450,7 +449,7 @@ with open(f"{class_weights_file}/class_weights.txt", "w") as filehandle:
         filehandle.write("%s\n" % listitem)
 
 
-# In[22]:
+# In[ ]:
 
 
 # Creating label encoder
@@ -470,7 +469,7 @@ df_values_Y.unique()
 
 # #### Split Data - All Models can proceed through this point
 
-# In[23]:
+# In[ ]:
 
 
 # split into train and test sets from indexes previously defined
@@ -486,7 +485,7 @@ Y_test = df_values_Y.loc[testing_data_set_index]
 Y_holdout = df_values_Y.loc[df_holdout_index]
 
 
-# In[24]:
+# In[ ]:
 
 
 # produce data objects for train, val and test datasets
@@ -501,7 +500,7 @@ test_data = Dataset_formatter(
 )
 
 
-# In[25]:
+# In[ ]:
 
 
 mlp_params.IN_FEATURES = X_train.shape[1]
@@ -525,7 +524,7 @@ else:
 print(mlp_params.MODEL_TYPE)
 
 
-# In[26]:
+# In[ ]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
@@ -537,14 +536,14 @@ valid_loader = torch.utils.data.DataLoader(
 )
 
 
-# In[27]:
+# In[ ]:
 
 
 # check device
 print(mlp_params.DEVICE)
 
 
-# In[28]:
+# In[ ]:
 
 
 # no accuracy function must be loss for regression
@@ -582,7 +581,7 @@ objective_model_optimizer(
 )
 
 
-# In[29]:
+# In[ ]:
 
 
 # create graph directory for this model
@@ -600,7 +599,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[30]:
+# In[ ]:
 
 
 # create graph directory for this model
@@ -617,7 +616,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[31]:
+# In[ ]:
 
 
 param_dict = extract_best_trial_params(

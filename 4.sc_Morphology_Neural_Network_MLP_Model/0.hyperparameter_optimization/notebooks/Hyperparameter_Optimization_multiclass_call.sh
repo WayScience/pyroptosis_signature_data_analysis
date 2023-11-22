@@ -18,8 +18,8 @@ model_names=( MultiClass_MLP )
 for cell_type in "${cell_types[@]}"; do
     for model_name in "${model_names[@]}"; do
         papermill \
-        Hyperparameter_Optimization_model_binary.ipynb \
-        Hyperparameter_Optimization_model_binary.ipynb \
+        Hyperparameter_Optimization_model_multiclass.ipynb \
+        Hyperparameter_Optimization_model_multiclass.ipynb \
         -p CELL_TYPE $cell_type \
         -p MODEL_NAME $model_name
     done

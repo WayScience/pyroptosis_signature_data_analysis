@@ -23,6 +23,10 @@
 import pathlib
 import sys
 
+
+# In[ ]:
+
+
 import numpy as np
 import optuna
 import pandas as pd
@@ -30,8 +34,6 @@ import pyarrow.parquet as pq
 import toml
 import torch
 from sklearn import preprocessing
-
-# In[ ]:
 
 
 # In[ ]:
@@ -57,11 +59,13 @@ from MLP_utils.utils import (
     un_nest,
 )
 
+
 # In[ ]:
 
 
 sys.path.append("../../..")
 from utils.utils import df_stats
+
 
 # ## Papermill is used for executing notebooks in the CLI with multiple parameters<br>
 # Here the `injected-parameters` cell is used to inject parameters into the notebook via papermill.<br>
@@ -456,3 +460,4 @@ fig.show()
 param_dict = extract_best_trial_params(
     study.best_params, params, model_name=mlp_params.MODEL_NAME
 )
+

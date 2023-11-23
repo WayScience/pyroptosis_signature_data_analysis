@@ -22,6 +22,8 @@ from sklearn import preprocessing
 
 sys.path.append("../..")
 
+import argparse
+
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
     Dataset_formatter,
@@ -40,16 +42,30 @@ from sklearn.model_selection import train_test_split
 sys.path.append("../../..")
 from utils.utils import df_stats
 
-# ## Papermill is used for executing notebooks in the CLI with multiple parameters
-# Here the `injected-parameters` cell is used to inject parameters into the notebook via papermill.
-# This enables multiple notebooks to be executed with different parameters, preventing to manually update parameters or have multiple copies of the notebook.
 
 # In[ ]:
 
 
-# Parameters
-CELL_TYPE = "SHSY5Y"
-MODEL_NAME = "MultiClass_MLP"
+# set up the parser
+parser = argparse.ArgumentParser(description="Run hyperparameter optimization")
+parser.add_argument(
+    "--cell_type",
+    type=str,
+    default="all",
+    help="Cell type to run hyperparameter optimization for",
+)
+parser.add_argument(
+    "--model_name",
+    type=str,
+    default="all",
+    help="Model name to run hyperparameter optimization for",
+)
+
+# parse arguments
+args = parser.parse_args()
+
+CELL_TYPE = args.cell_type
+MODEL_NAME = args.model_name
 
 
 # In[ ]:
@@ -80,18 +96,6 @@ file_path = pathlib.Path(
 ).resolve(strict=True)
 
 df1 = pd.read_parquet(file_path)
-
-
-# In[ ]:
-
-
-if params.MODEL_NAME == "MultiClass_MLP_h202_remove":
-    # drop H2O2_100.000_uM_DMSO_0.025_% and H2O2_100.000_nM_DMSO_0.025_% while keeping the index order
-    df1 = df1[
-        ~df1["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
-            ["H2O2_100.000_uM_DMSO_0.025_%", "H2O2_100.000_nM_DMSO_0.025_%"]
-        )
-    ]
 
 
 # In[ ]:
@@ -198,7 +202,7 @@ print(
 # variable test and train set splits
 # 100% test set
 # subset the following treatments for test set
-test_set_all = df[
+treatment_holdout = df[
     df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(test_split_100)
 ]
 # 75% test set and 25% train set
@@ -212,7 +216,7 @@ test_set_50 = df[
     ~df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(test_100_and_75)
 ]
 
-print(test_set_all.shape, test_set_75.shape, test_set_50.shape)
+print(treatment_holdout.shape, test_set_75.shape, test_set_50.shape)
 
 
 # In[ ]:
@@ -220,7 +224,7 @@ print(test_set_all.shape, test_set_75.shape, test_set_50.shape)
 
 # get the train test splits from each group
 # 100% test set
-test_set_all
+treatment_holdout
 
 # 75% test set and 25% train set
 test_ratio = 0.75
@@ -242,7 +246,7 @@ training_data_set_50, testing_data_set_50 = train_test_split(
 
 # verify that the correct splits have been made
 # 100% test set
-print(f"Shape for the 100% test set: {test_set_all.shape}\n")
+print(f"Shape for the 100% test set: {treatment_holdout.shape}\n")
 
 # 75% test set and 25% train set
 print(
@@ -260,10 +264,9 @@ print(f"Shape for the holdout set: {df_holdout.shape}")
 # In[ ]:
 
 
+treatment_holdout
 # combine all testing sets together while preserving the index
-testing_data_set = pd.concat(
-    [test_set_all, testing_data_set_75, testing_data_set_50], axis=0
-)
+testing_data_set = pd.concat([testing_data_set_75, testing_data_set_50], axis=0)
 testing_data_set = testing_data_set.sort_index()
 testing_data_set
 
@@ -282,65 +285,9 @@ print(
     Testing set length: {len(testing_data_set)}\n
     Training set length: {len(training_data_set)}\n
     Validation set length: {len(val_data_set)}\n
+    Treatment Holdout set length: {len(treatment_holdout)}\n
     Holdout set length: {len(df_holdout)}"""
 )
-
-
-# In[ ]:
-
-
-# # train
-# # downsample healthy and pyroptosis to match number of apoptosis
-# # to balance classes
-# df_healthy_train = training_data_set[training_data_set["labels"] == "healthy"]
-# df_pyroptosis_train = training_data_set[training_data_set["labels"] == "pyroptosis"]
-# df_apoptosis_train = training_data_set[training_data_set["labels"] == "apoptosis"]
-# print(df_healthy_train.shape, df_pyroptosis_train.shape, df_apoptosis_train.shape)
-
-# # downsample healthy and pyroptosis to match number of apoptosis
-# df_healthy_train = df_healthy_train.sample(n=df_apoptosis_train.shape[0], random_state=0)
-# df_pyroptosis_train = df_pyroptosis_train.sample(n=df_apoptosis_train.shape[0], random_state=0)
-# print(df_healthy_train.shape, df_pyroptosis_train.shape, df_apoptosis_train.shape)
-# training_data_set = pd.concat([df_healthy_train, df_pyroptosis_train, df_apoptosis_train])
-# # show that the df was downsampled and recombined correctly
-# assert (df_healthy_train + df_pyroptosis_train + df_apoptosis_train).shape[0] == training_data_set.shape[0]
-
-
-# # validation
-# # downsample healthy and pyroptosis to match number of apoptosis
-# # to balance classes
-# df_healthy_val = val_data_set[val_data_set["labels"] == "healthy"]
-# df_pyroptosis_val = val_data_set[val_data_set["labels"] == "pyroptosis"]
-# df_apoptosis_val = val_data_set[val_data_set["labels"] == "apoptosis"]
-# print(df_healthy_val.shape, df_pyroptosis_val.shape, df_apoptosis_val.shape)
-
-# # downsample healthy and pyroptosis to match number of apoptosis
-# df_healthy_val = df_healthy_val.sample(n=df_apoptosis_val.shape[0], random_state=0)
-# df_pyroptosis_val = df_pyroptosis_val.sample(n=df_apoptosis_val.shape[0], random_state=0)
-# print(df_healthy_val.shape, df_pyroptosis_val.shape, df_apoptosis_val.shape)
-# val_data_set = pd.concat([df_healthy_val, df_pyroptosis_val, df_apoptosis_val])
-# # show that the df was downsampled and recombined correctly
-# assert (df_healthy_val + df_pyroptosis_val + df_apoptosis_val).shape[0] == val_data_set.shape[0]
-
-
-# # test
-# # downsample healthy and pyroptosis to match number of apoptosis
-# # to balance classes
-# df_healthy_test = testing_data_set[testing_data_set["labels"] == "healthy"]
-# df_pyroptosis_test = testing_data_set[testing_data_set["labels"] == "pyroptosis"]
-# df_apoptosis_test = testing_data_set[testing_data_set["labels"] == "apoptosis"]
-# print(df_healthy_test.shape, df_pyroptosis_test.shape, df_apoptosis_test.shape)
-
-# # downsample healthy and pyroptosis to match number of apoptosis
-# df_healthy_test = df_healthy_test.sample(n=df_apoptosis_test.shape[0], random_state=0)
-# df_pyroptosis_test = df_pyroptosis_test.sample(n=df_apoptosis_test.shape[0], random_state=0)
-# print(df_healthy_test.shape, df_pyroptosis_test.shape, df_apoptosis_test.shape)
-# testing_data_set = pd.concat([df_healthy_test, df_pyroptosis_test, df_apoptosis_test])
-# # show that the df was downsampled and recombined correctly
-# assert (df_healthy_test + df_pyroptosis_test + df_apoptosis_test).shape[0] == testing_data_set.shape[0]
-
-
-# print(len(training_data_set), len(val_data_set), len(testing_data_set), len(df_holdout))
 
 
 # In[ ]:
@@ -351,6 +298,7 @@ print(
 training_data_set_index = training_data_set.index
 val_data_set_index = val_data_set.index
 testing_data_set_index = testing_data_set.index
+treatment_holdout_index = treatment_holdout.index
 df_holdout_index = df_holdout.index
 
 
@@ -361,12 +309,14 @@ print(
     training_data_set_index.shape,
     val_data_set_index.shape,
     testing_data_set_index.shape,
+    treatment_holdout_index.shape,
     df_holdout_index.shape,
 )
 print(
     training_data_set_index.shape[0]
     + val_data_set_index.shape[0]
     + testing_data_set_index.shape[0]
+    + treatment_holdout_index.shape[0]
     + df_holdout_index.shape[0]
 )
 
@@ -382,12 +332,20 @@ for index in val_data_set_index:
     index_data.append({"labeled_data_index": index, "label": "val"})
 for index in testing_data_set_index:
     index_data.append({"labeled_data_index": index, "label": "test"})
+for index in treatment_holdout_index:
+    index_data.append({"labeled_data_index": index, "label": "treatment_holdout"})
 for index in df_holdout_index:
     index_data.append({"labeled_data_index": index, "label": "holdout"})
 
 # make index data a dataframe and sort it by labeled data index
 index_data = pd.DataFrame(index_data)
 index_data
+
+
+# In[ ]:
+
+
+index_data["label"].unique()
 
 
 # In[ ]:
@@ -622,3 +580,4 @@ fig.show()
 param_dict = extract_best_trial_params(
     study.best_params, params, model_name=mlp_params.MODEL_NAME
 )
+

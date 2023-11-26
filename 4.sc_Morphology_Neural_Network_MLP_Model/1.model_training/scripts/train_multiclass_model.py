@@ -1509,9 +1509,9 @@ predictions_path.mkdir(parents=True, exist_ok=True)
 matrix_file = pathlib.Path(f"{predictions_path}/single_cell_predictions.parquet")
 if matrix_file.exists():
     predictions_df_tmp = pd.read_parquet(matrix_file)
-    if len(predictions_df_tmp["shuffled_data"].unique()) > 1:
+    if len(predictions_df_tmp["data_split"].unique()) > 1:
         pass
-    elif predictions_df_tmp["shuffled_data"].unique() == mlp_params.SHUFFLE:
+    elif predictions_df_tmp["data_split"].unique() == mlp_params.SHUFFLE:
         pass
     else:
         metrics_df = pd.concat([predictions_df_tmp, final_predictions_df], axis=0)

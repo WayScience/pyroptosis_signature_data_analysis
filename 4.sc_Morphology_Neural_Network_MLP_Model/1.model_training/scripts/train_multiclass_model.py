@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import ast
@@ -34,7 +34,8 @@ from MLP_utils.utils import (
 sys.path.append("../../..")
 import argparse
 
-# In[ ]:
+
+# In[2]:
 
 
 # set up the parser
@@ -42,25 +43,25 @@ parser = argparse.ArgumentParser(description="Train MLP model")
 
 # add arguments to parser
 parser.add_argument(
-    "--CELL_TYPE",
-    type=str,
-    default="all",
-    help="Cell type to train model on. Default is all",
-)
+     "--CELL_TYPE",
+     type=str,
+     default="all",
+     help="Cell type to train model on. Default is all",
+ )
 
 parser.add_argument(
-    "--MODEL_NAME",
-    type=str,
-    default="MLP",
-    help="Model name to train. Default is MLP",
-)
+     "--MODEL_NAME",
+     type=str,
+     default="MLP",
+     help="Model name to train. Default is MLP",
+ )
 
 parser.add_argument(
-    "--SHUFFLE",
-    type=str,
-    default="False",
-    help="Shuffle data before training. Default is False",
-)
+     "--SHUFFLE",
+     type=str,
+     default="False",
+     help="Shuffle data before training. Default is False",
+ )
 
 # parse the arguments
 args = parser.parse_args()
@@ -72,7 +73,15 @@ SHUFFLE = ast.literal_eval(SHUFFLE)
 print(CELL_TYPE, MODEL_NAME, SHUFFLE)
 
 
-# In[ ]:
+# In[3]:
+
+
+#CELL_TYPE = "SHSY5Y"
+#MODEL_NAME = "MultiClass_MLP"
+#SHUFFLE = False
+
+
+# In[4]:
 
 
 ml_configs_file = pathlib.Path("../../MLP_utils/multi_class_config.toml").resolve(
@@ -102,7 +111,7 @@ with open(class_weights_file_path, "r") as f:
 print(class_weights)
 
 
-# In[ ]:
+# In[5]:
 
 
 # Import Data
@@ -115,7 +124,7 @@ file_path = pathlib.Path(
 df1 = pd.read_parquet(file_path)
 
 
-# In[ ]:
+# In[6]:
 
 
 # get paths for toml files
@@ -130,7 +139,7 @@ ground_truth = toml.load(ground_truth_file_path)
 treatment_splits = toml.load(treatment_splits_file_path)
 
 
-# In[ ]:
+# In[7]:
 
 
 # get information from toml files
@@ -144,7 +153,7 @@ healthy_groups_list = ground_truth["Healthy"]["healthy_groups_list"]
 # ##### Classification Models:
 # Comment out code if using regression
 
-# In[ ]:
+# In[8]:
 
 
 np.random.seed(0)
@@ -160,7 +169,7 @@ else:
     print("Data Subset Is Off")
 
 
-# In[ ]:
+# In[9]:
 
 
 # add apoptosis, pyroptosis and healthy columns to dataframe
@@ -1029,6 +1038,9 @@ y_pred_df = pd.concat([y_pred_df, X_treatment_holdout], axis=1)
 # In[ ]:
 
 
+
+
+
 # In[ ]:
 
 
@@ -1040,6 +1052,9 @@ y_pred_df.set_index("index", inplace=True, drop=True)
 
 
 # In[ ]:
+
+
+
 
 
 # In[ ]:
@@ -1535,3 +1550,4 @@ if metrics_file.exists():
         metrics_df.to_csv(metrics_file, index=False)
 else:
     model_stats_df.to_csv(metrics_file, index=False)
+

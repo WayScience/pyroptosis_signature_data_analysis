@@ -7,8 +7,10 @@ suppressPackageStartupMessages(suppressWarnings(library(RColorBrewer)))
 suppressPackageStartupMessages(suppressWarnings(library(circlize)))
 suppressPackageStartupMessages(suppressWarnings(library(svglite)))
 
+
 # set cell type
 cell_type <- "PBMC"
+
 
 # set path for data of all models
 data_path <- file.path(paste0("../results/regression/", cell_type, "/", "all_model_performance.csv"))
@@ -18,10 +20,13 @@ figure_path <- file.path(paste0("../figures/regression/", cell_type, "/"))
 # make the directory if it doesn't exist
 dir.create(figure_path, recursive = TRUE, showWarnings = FALSE)
 
+
 # select MMP-1 secreted protein as the target
 df <- df %>% filter(shuffle == "final")
 
+
 head(df,2)
+
 
 # get the feature names for color bar visualization
 features <- df %>% select(feature_names)
@@ -54,6 +59,7 @@ features <- features %>%
             .missing="other"
     )
 
+
 r2_df <- df %>% select(r2)
 r2_df <- unique(r2_df)
 row_ha <- rowAnnotation(df = r2_df)
@@ -62,6 +68,7 @@ column_ha <- HeatmapAnnotation(Compartment = features$compartment,
 
                                Channel = features$channel_learned,
                                show_legend = TRUE)
+
 
 # make the df into a matrix for heatmap
 mat <- dcast(df, feature_names ~ secreted_proteins, value.var = "coefficients")
@@ -90,12 +97,14 @@ model_heatmap <- as.ggplot(model_heatmap)
 ggsave(file = paste0(figure_path, "all_features_heatmap.png"), plot = model_heatmap, width = 30, height = 30, units = "in", dpi = 500)
 model_heatmap
 
+
 # set path for data of all models
 data_path <- file.path(paste0("../results/regression/", cell_type, "/", "all_model_performance.csv"))
 df <- read.csv(data_path)
 head(df)
 # select MMP-1 secreted protein as the target
 df <- df %>% filter(shuffle == "final")
+
 
 # select rows that have r2 > 0.5
 df <- df %>% filter(r2 > 0.5)
@@ -134,6 +143,7 @@ features <- features %>%
             .missing="other"
     )
 
+
 r2_df <- df %>% select(r2)
 r2_df <- unique(r2_df)
 row_ha <- rowAnnotation(
@@ -148,6 +158,7 @@ row_ha <- rowAnnotation(
     # set color bar for r2 continuous value with brewer palette
     col = list(r2 = colorRamp2(c(0, 1), c(brewer.pal(9,"YlGn")[1], brewer.pal(9,"YlGn")[7])))
 )
+
 
 # make the df into a matrix for heatmap
 mat <- dcast(df, feature_names ~ secreted_proteins, value.var = "coefficients")
@@ -231,6 +242,7 @@ column_ha <- HeatmapAnnotation(
 mat <- mat %>% select(-feature_names)
 mat <- as.matrix(mat)
 
+
 # plot size
 options(repr.plot.width=15, repr.plot.height=20)
 # change margins
@@ -264,3 +276,4 @@ ggsave(file = paste0(figure_path, "filtered_features.svg"), plot = model_heatmap
 ggsave(file = paste0(figure_path, "filtered_features.png"), plot = model_heatmap, width = 15, height = 20, units = "in", dpi = 500)
 
 model_heatmap
+

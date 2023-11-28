@@ -51,6 +51,9 @@ from utils.utils import df_stats
 # Parameters
 CELL_TYPE = "PBMC"
 MODEL_NAME = "MultiClass_MLP"
+CONTROL_NAME = "DMSO_0.100_%_DMSO_0.025_%"
+TREATMENT_NAME = "Thapsigargin_1.000_uM_DMSO_0.025_%"
+MODEL_NAME = "DMSO_0.025_vs_Thapsigargin_1"
 
 
 # <span id="papermill-error-cell" style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">Execution using papermill encountered an exception here and stopped:</span>

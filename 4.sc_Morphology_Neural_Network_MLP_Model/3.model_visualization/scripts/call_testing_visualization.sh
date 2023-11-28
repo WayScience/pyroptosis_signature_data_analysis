@@ -32,10 +32,10 @@ for cell_type in "${cell_types[@]}"; do
     for model_name in "${model_names[@]}"; do
         for selected_treatment_comparison in "${selected_treatment_comparisons[@]}"; do
             Rscript \
-            binary_classification_training_visualization.r \
+            binary_classification_testing_visualization.r \
             --celltype $cell_type \
             --model_name $model_name \
-            --selected_treatment_comparison $selected_treatment_comparison
+            --selected_treatment_comparisons "${selected_treatment_comparison}"
         done
     done
 done

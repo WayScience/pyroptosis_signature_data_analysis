@@ -54,7 +54,9 @@ df
 
 df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 # subset the df for the control
-df = df[df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] == "DMSO_0.100_DMSO_0.025"]
+df = df[
+    df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] == "DMSO_0.100_%_DMSO_0.025_%"
+]
 df
 
 

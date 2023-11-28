@@ -75,11 +75,11 @@ pathlib.Path(f"Figures/cell_counts_plate2/{celltype}").mkdir(
     parents=True, exist_ok=True
 )
 # save figure
-plt.savefig(
-    f"Figures/cell_counts_plate2/{celltype}/Number_of_single_cells_per_treatment.png",
-    bbox_inches="tight",
-)
-plt.show()
+# plt.savefig(
+#     f"Figures/cell_counts_plate2/{celltype}/Number_of_single_cells_per_treatment.png",
+#     bbox_inches="tight",
+# )
+# plt.show()
 plt.close()
 
 

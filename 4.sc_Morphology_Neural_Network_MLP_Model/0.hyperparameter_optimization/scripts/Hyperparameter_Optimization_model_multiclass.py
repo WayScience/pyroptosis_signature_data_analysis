@@ -6,7 +6,7 @@
 # ### Being a binary model this notebook will be limited to predicting one class 1 or 0, yes or no.
 # ### Here I will be predicting if a cell received a treatment or not
 
-# In[ ]:
+# In[1]:
 
 
 import pathlib
@@ -43,7 +43,7 @@ sys.path.append("../../..")
 from utils.utils import df_stats
 
 
-# In[ ]:
+# In[2]:
 
 
 # set up the parser
@@ -68,7 +68,7 @@ CELL_TYPE = args.cell_type
 MODEL_NAME = args.model_name
 
 
-# In[ ]:
+# In[4]:
 
 
 ml_configs_file = pathlib.Path("../../MLP_utils/multi_class_config.toml").resolve(
@@ -85,7 +85,7 @@ MODEL_TYPE = mlp_params.MODEL_TYPE
 HYPERPARAMETER_BATCH_SIZE = mlp_params.HYPERPARAMETER_BATCH_SIZE
 
 
-# In[ ]:
+# In[5]:
 
 
 # Import Data
@@ -98,7 +98,7 @@ file_path = pathlib.Path(
 df1 = pd.read_parquet(file_path)
 
 
-# In[ ]:
+# In[6]:
 
 
 # get paths for toml files
@@ -113,7 +113,7 @@ ground_truth = toml.load(ground_truth_file_path)
 treatment_splits = toml.load(treatment_splits_file_path)
 
 
-# In[ ]:
+# In[7]:
 
 
 # get information from toml files
@@ -124,7 +124,7 @@ test_split_100 = treatment_splits["splits"]["data_splits_100"]
 test_split_75 = treatment_splits["splits"]["data_splits_75"]
 
 
-# In[ ]:
+# In[8]:
 
 
 np.random.seed(0)
@@ -140,7 +140,7 @@ else:
     print("Data Subset Is Off")
 
 
-# In[ ]:
+# In[9]:
 
 
 # add apoptosis, pyroptosis and healthy columns to dataframe
@@ -175,7 +175,7 @@ df1.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 # ### Split said data
 
-# In[ ]:
+# In[10]:
 
 
 # randomly select wells to hold out for testing one per treatment group
@@ -196,7 +196,7 @@ print(
 )
 
 
-# In[ ]:
+# In[11]:
 
 
 # variable test and train set splits
@@ -219,7 +219,7 @@ test_set_50 = df[
 print(treatment_holdout.shape, test_set_75.shape, test_set_50.shape)
 
 
-# In[ ]:
+# In[12]:
 
 
 # get the train test splits from each group
@@ -261,7 +261,7 @@ print(
 print(f"Shape for the holdout set: {df_holdout.shape}")
 
 
-# In[ ]:
+# In[13]:
 
 
 treatment_holdout
@@ -290,7 +290,7 @@ print(
 )
 
 
-# In[ ]:
+# In[14]:
 
 
 # get the indexes for the training and testing sets
@@ -302,7 +302,7 @@ treatment_holdout_index = treatment_holdout.index
 df_holdout_index = df_holdout.index
 
 
-# In[ ]:
+# In[15]:
 
 
 print(
@@ -321,7 +321,7 @@ print(
 )
 
 
-# In[ ]:
+# In[16]:
 
 
 # create pandas dataframe with all indexes and their respective labels, stratified by phenotypic class
@@ -342,13 +342,13 @@ index_data = pd.DataFrame(index_data)
 index_data
 
 
-# In[ ]:
+# In[17]:
 
 
 index_data["label"].unique()
 
 
-# In[ ]:
+# In[18]:
 
 
 save_path = pathlib.Path(f"../indexes/{CELL_TYPE}/multi_class/")
@@ -358,7 +358,7 @@ print(save_path)
 save_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[ ]:
+# In[19]:
 
 
 # save indexes as tsv file
@@ -372,7 +372,7 @@ index_data.to_csv(
 # ##### Classification Models:
 # Comment out code if using regression
 
-# In[ ]:
+# In[20]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -383,7 +383,7 @@ df_descriptive = df1[df_metadata]
 df_values = df1.drop(columns=df_metadata)
 
 
-# In[ ]:
+# In[21]:
 
 
 # get the class weights for the loss function to account for class imbalance
@@ -407,7 +407,7 @@ with open(f"{class_weights_file}/class_weights.txt", "w") as filehandle:
         filehandle.write("%s\n" % listitem)
 
 
-# In[ ]:
+# In[22]:
 
 
 # Creating label encoder
@@ -427,7 +427,7 @@ df_values_Y.unique()
 
 # #### Split Data - All Models can proceed through this point
 
-# In[ ]:
+# In[23]:
 
 
 # split into train and test sets from indexes previously defined
@@ -443,7 +443,7 @@ Y_test = df_values_Y.loc[testing_data_set_index]
 Y_holdout = df_values_Y.loc[df_holdout_index]
 
 
-# In[ ]:
+# In[24]:
 
 
 # produce data objects for train, val and test datasets
@@ -458,7 +458,7 @@ test_data = Dataset_formatter(
 )
 
 
-# In[ ]:
+# In[25]:
 
 
 mlp_params.IN_FEATURES = X_train.shape[1]
@@ -482,26 +482,26 @@ else:
 print(mlp_params.MODEL_TYPE)
 
 
-# In[ ]:
+# In[26]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
 train_loader = torch.utils.data.DataLoader(
-    dataset=train_data, batch_size=mlp_params.HYPERPARAMETER_BATCH_SIZE
+    dataset=train_data, batch_size=mlp_params.HYPERPARAMETER_BATCH_SIZE, shuffle=True
 )
 valid_loader = torch.utils.data.DataLoader(
-    dataset=val_data, batch_size=mlp_params.HYPERPARAMETER_BATCH_SIZE
+    dataset=val_data, batch_size=mlp_params.HYPERPARAMETER_BATCH_SIZE, shuffle=False
 )
 
 
-# In[ ]:
+# In[27]:
 
 
 # check device
 print(mlp_params.DEVICE)
 
 
-# In[ ]:
+# In[28]:
 
 
 # no accuracy function must be loss for regression
@@ -539,7 +539,7 @@ objective_model_optimizer(
 )
 
 
-# In[ ]:
+# In[29]:
 
 
 # create graph directory for this model
@@ -557,7 +557,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[ ]:
+# In[30]:
 
 
 # create graph directory for this model
@@ -574,7 +574,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[ ]:
+# In[31]:
 
 
 param_dict = extract_best_trial_params(

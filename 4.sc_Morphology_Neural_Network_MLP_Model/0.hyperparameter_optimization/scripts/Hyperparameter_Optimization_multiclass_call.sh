@@ -10,6 +10,8 @@
 #SBATCH --array=1-2%2
 
 module load anaconda
+module load gcc openmpi
+module load cuda
 
 conda activate Interstellar_python
 

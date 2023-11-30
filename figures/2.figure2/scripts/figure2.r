@@ -10,6 +10,8 @@ suppressPackageStartupMessages(suppressWarnings(library(gplots)))
 suppressPackageStartupMessages(suppressWarnings(library(ComplexHeatmap)))
 suppressPackageStartupMessages(suppressWarnings(library(ggplotify)))
 suppressPackageStartupMessages(suppressWarnings(library(arrow)))
+suppressPackageStartupMessages(suppressWarnings(library(scales)))
+suppressPackageStartupMessages(suppressWarnings(library(circlize)))
 
 # insall ggmagnify from hughjonesd's universe
 install.packages("ggmagnify", repos = c("https://hughjonesd.r-universe.dev",
@@ -120,6 +122,15 @@ from <- list(0, 0.05, -0.01, 0.08) #xmin, xmax, ymin, ymax
 to <- list(0, 0.25, 0.2, 0.45)
 cytokine_scatter_plot <- cytokine_scatter_plot + geom_magnify(# allow for small coordinates
     from = from, to = to
+)
+cytokine_scatter_plot
+
+
+# cytokine_scatter_plot add gates
+cytokine_scatter_plot <- (
+    cytokine_scatter_plot
+    + geom_vline(xintercept = 0.5, linetype = "dashed", color = "black", size = 1)
+    + geom_hline(yintercept = 0.5, linetype = "dashed", color = "black", size = 1)
 )
 cytokine_scatter_plot
 
@@ -298,6 +309,10 @@ cytokine_bar_plot <- (
     + theme(
          legend.text = element_text(size = 16),
         legend.title = element_text(size = 20, hjust = 0.5))
+     # remove x axis labels
+     + theme(
+          axis.title.x = element_blank(),
+     )
 
 
 )
@@ -351,10 +366,10 @@ cytokine_values_agg <- as.matrix(cytokine_values_agg)
 
 
 # set plot size
-options(repr.plot.width=25, repr.plot.height=5)
+options(repr.plot.width=15, repr.plot.height=40)
 heatmap_plot_all <- (
   Heatmap(
-  (cytokine_values_agg),
+  t(cytokine_values_agg),
   col = brewer.pal(9, "GnBu"),
   cluster_rows = TRUE,    # Cluster rows
   cluster_columns = TRUE, # Cluster columns
@@ -415,6 +430,9 @@ cytokine_values_melted_agg_filtered <- cytokine_values_melted_agg_filtered %>%
 
 
 head(cytokine_values_melted_agg_filtered)
+
+
+cytokine_values_melted_agg_filtered$old_cytokine <- cytokine_values_melted_agg_filtered$cytokine
 
 
 
@@ -606,11 +624,134 @@ cytokine_values_melted_agg_filtered <- cytokine_values_melted_agg_filtered %>%
     cytokine == "BMP2 [NSU]" ~ "BMP2",
     cytokine == "CD27L [NSU]" ~ "CD27L",
     cytokine == "NRG1 beta 1 [NSU]" ~ "NRG1 beta 1",
-    cytokine == "IL-11 [NSU]" ~ "IL-11"
+    cytokine == "IL-11 [NSU]" ~ "IL-11",
+    cytokine == "C5_C5a [NSU]" ~ "C5_C5a",
+    cytokine == "IL-15 [NSU]" ~ "IL-15",
+    cytokine == "IL-1 RA_RN [NSU]" ~ "IL-1 RA_RN",
+    cytokine == "IFN alpha 2 (alpha 2b) [NSU]" ~ "IFN alpha 2"
   ))
 
 
-head(cytokine_values_melted_agg_filtered)
+# select cytokine to keep in the heatmap
+list_of_cytokines <- c(
+'Activin A',
+'Amyloid beta',
+'BDNF',
+'BMP3',
+'CCL1',
+'CCL13',
+'CCL20',
+'CCL24',
+'CCL3',
+'CCL4',
+'CCL5',
+'CCL8',
+'CD40L',
+'CXCL1',
+'CXCL10',
+'CXCL11',
+'CXCL14',
+'CXCL16',
+'CXCL17',
+'CXCL3',
+'CXCL4',
+'CXCL9',
+'Cytochrome C',
+'FGF-1',
+'FGF-2',
+'G-CSF',
+'GDF-15 (MIC-1)',
+'GM-CSF',
+'Somatotropin',
+'IFN beta',
+'IFN gamma',
+'IFN-epsilon',
+'IL-1 alpha',
+'IL-1 beta',
+'IL-10',
+'IL-12 p40',
+'IL-15',
+'IL-16',
+'IL-17A',
+'IL-17D',
+'IL-18',
+'IL-2',
+'IL-22 BP',
+'IL-22',
+'IL-3',
+'IL-35',
+'IL-6',
+'IL-8',
+'M-CSF R (CD115)',
+'MMP-1',
+'MMP-7',
+'NRG1 beta 1',
+'Oncostatin M',
+'Osteopontin',
+'TGF-beta 1',
+'TIMP1',
+'TNF RIII',
+'TNF alpha',
+'Tissue Factor',
+'VEGF-A (165)',
+'XCL1'
+)
+
+# filter out the cytokines that are not in the list
+cytokine_values_melted_agg_filtered <- cytokine_values_melted_agg_filtered[cytokine_values_melted_agg_filtered$cytokine %in% list_of_cytokines,]
+
+
+
+
+cytokine_values_melted_agg_filtered$cytokine
+# select a few cytokines to visualize
+
+
+
+# factor the treatment column
+cytokine_values_melted_agg_filtered$oneb_Treatment_Dose_Inhibitor_Dose <- factor(
+    cytokine_values_melted_agg_filtered$oneb_Treatment_Dose_Inhibitor_Dose,
+    levels = treatment_order)
+treatments <- unique(cytokine_values_melted_agg_filtered$oneb_Treatment_Dose_Inhibitor_Dose)
+
+
+
+hex_codes1 <- hue_pal()(15)                       # Identify hex codes
+hex_codes1
+
+
+# create the row annotation
+row_ha <- rowAnnotation(
+        Treatment = treatments,
+       annotation_legend_param = list(
+        title_position = "topcenter",
+        title_gp = gpar(fontsize = 16, angle = 0),
+        labels_gp = gpar(fontsize = 16,
+        title = gpar(fontsize = 16))),
+    annotation_name_side = "bottom",
+    annotation_name_gp = gpar(fontsize = 16),
+    show_legend = c("Treatment" = FALSE),
+    col = list(
+            Treatment = c(
+                'DMSO 0.1%' = hex_codes1[1],
+                'Flagellin 0.1 ug/ml' = hex_codes1[2],
+                'Flagellin 1.0 ug/ml' = hex_codes1[3],
+                'LPS 0.01 ug/ml' = hex_codes1[4],
+                'LPS 0.1 ug/ml' = hex_codes1[5],
+                'LPS 1.0 ug/ml' = hex_codes1[6],
+                'LPS 10.0 ug/ml' = hex_codes1[7],
+                'LPS 100.0 ug/ml' = hex_codes1[8],
+                'LPS 1.0 ug/ml + Nigericin 1.0 uM' = hex_codes1[9],
+                'LPS 1.0 ug/ml + Nigericin 3.0 uM' = hex_codes1[10],
+                'LPS 1.0 ug/ml + Nigericin 10.0 uM' = hex_codes1[11],
+                'H2O2 100.0 nM' = hex_codes1[12],
+                'H2O2 100.0 uM' = hex_codes1[13],
+                'Thapsigargin 1.0 uM' = hex_codes1[14],
+                'Thapsigargin 10.0 uM' = hex_codes1[15]
+        )
+    )
+)
+row_ha
 
 
 # un melt the data cytokine_values_melted_agg_filtered
@@ -632,7 +773,9 @@ colnames(cytokine_values_melted_agg_filtered) <- gsub("\\[NSU\\]", "", colnames(
 
 col_func <- colorRampPalette(brewer.pal(9, "Purples"))
 # set plot size
-options(repr.plot.width=17, repr.plot.height=8, units = "cm")
+width <- 17
+height <- 8
+options(repr.plot.width=width, repr.plot.height=height, units = "cm")
 heatmap_anova_cytokines <- (
     Heatmap(
         (cytokine_values_melted_agg_filtered),
@@ -641,24 +784,56 @@ heatmap_anova_cytokines <- (
         cluster_columns = TRUE, # Cluster columns
         show_row_names = TRUE,  # Show row names
         show_column_names = TRUE, # Show column names
-        column_names_gp = gpar(fontsize = 8), # Column name label formatting
-        row_names_gp = gpar(fontsize = 12),    # Row name label formatting
+        column_names_gp = gpar(fontsize = 14, fontfamily = "sans"), # Column name label formatting
+        row_names_gp = gpar(fontsize = 14, fontfamily = "sans"),    # Row name label formatting
+        right_annotation = row_ha,
         # make the tiles rectangular
         rect_gp = gpar(col = NA),
         heatmap_legend_param = list(
-                title = "Level", at = c(0, 1),
+                title = "Cytokine\nAbundance", at = c(0, 1),
                 title_position = "topcenter",
                 title_gp = gpar(fontsize = 16),
                 labels_gp = gpar(fontsize = 16),
                 direction = "vertical",
                 padding = unit(c(10, 10, 5, 5), "mm"),
                 grid_width = unit(10, "mm"),
-                grid_height = unit(200, "mm")
+                grid_height = unit(190, "mm")
                 ),
         column_dend_height = unit(2, "cm"),
         row_dend_width = unit(1, "cm")
     )
 )
+# heatmap_anova_cytokines
+heatmap <- draw(
+    heatmap_anova_cytokines,
+    heatmap_legend_side = "right",
+    annotation_legend_side = "right",
+    # change locaiton of the legend
+    merge_legend = TRUE,
+    padding = unit(c(5, 5, 5, 15), "mm"),
+)
+# save the heatmap as png using device
+png(file.path("figures","selected_cytokines_heatmap.png"), width = width, height = height, units = "in", res = 600)
+# make path if it does not exist
+dir.create(file.path("figures"), showWarnings = FALSE)
+heatmap
+dev.off()
+
+
+
+
+# load in the png to a grob object
+heatmap_grob <- png::readPNG(file.path("figures","selected_cytokines_heatmap.png"))
+# convert the grob object to a raster grob
+heatmap_anova_cytokines <- rasterGrob(heatmap_grob, interpolate = TRUE, height = unit(1, "npc"), width = unit(1, "npc"))
+# heatmap_anova_cytokines
+heatmap_anova_cytokines
+# # Defien the heatmap as a ggplot heatmap for figure curation
+# set plot size
+width <- 17
+height <- 8
+options(repr.plot.width=width, repr.plot.height=height, units = "in")
+heatmap_anova_cytokines <- as.ggplot(heatmap_anova_cytokines)
 heatmap_anova_cytokines
 
 
@@ -669,9 +844,6 @@ umap_results_selected_treatments_path <- file.path("..","..","2.Nomic_nELISA_Ana
 # read in the data
 umap_results <- read.csv(umap_results_path, header = TRUE, sep = ",")
 umap_results_selected_treatments <- read.csv(umap_results_selected_treatments_path, header = TRUE, sep = ",")
-
-
-unique(umap_results_selected_treatments$oneb_Treatment_Dose_Inhibitor_Dose)
 
 
 umap_results_selected_treatments$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(umap_results_selected_treatments$oneb_Treatment_Dose_Inhibitor_Dose, levels = list_of_treatments)
@@ -697,9 +869,6 @@ umap_results_selected_treatments <- umap_results_selected_treatments %>%
         oneb_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_nM_DMSO_0.025_%' ~ "H2O2 100.0 nM",
         oneb_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_uM_DMSO_0.025_%' ~ "H2O2 100.0 uM"
     ))
-
-
-unique(umap_results$oneb_Treatment_Dose_Inhibitor_Dose)
 
 
 umap_results <- umap_results %>%
@@ -794,6 +963,9 @@ umap_plot_all_treatments <- (
 )
 umap_plot_all_treatments
 
+
+
+
 # set the plot size
 options(repr.plot.width=15, repr.plot.height=5)
 # plot the umap results
@@ -812,20 +984,88 @@ umap_plot_selected_treatments <- (
     + figure_theme
     + xlab("UMAP 0")
     + ylab("UMAP 1")
-)
+        # add box around points
+        + geom_rect(
+            aes(
+                xmin = -7,
+                xmax = -4,
+                ymin = 10,
+                ymax = 15
+            ),
+            fill = NA,
+            color = "black",
+            size = 1
+        )
+        + geom_rect(
+            aes(
+                xmin = 1,
+                xmax = 7,
+                ymin = 0,
+                ymax = 6
+            ),
+            fill = NA,
+            color = "black",
+            size = 1
+        )
+        + geom_rect(
+            aes(
+                xmin = 8.5,
+                xmax = 13,
+                ymin = 15,
+                ymax = 24
+            ),
+            fill = NA,
+            color = "black",
+            size = 1
+        )
+        + geom_rect(
+            aes(
+                xmin = -4,
+                xmax = 0,
+                ymin = -8,
+                ymax = -14
+            ),
+            fill = NA,
+            color = "black",
+            size = 1
+        )
+            + annotate(
+            geom = "text",
+            x = 4,
+            y = 8,
+            label = "Control",
+            size = 7
+        )
+        + annotate(
+            geom = "text",
+            x = 10.5,
+            y = 12,
+            label = "Pyroptosis",
+            size = 7
+        )
+        + annotate(
+            geom = "text",
+            x = -2,
+            y = -5,
+            label = "Pyroptosis ",
+            size = 7
+        )
+        + annotate(
+            geom = "text",
+            x = -5.5,
+            y = 17.5,
+            label = "Apoptosis",
+            size = 7
+        )
+    )
 umap_plot_selected_treatments
+# remove the legend
+umap_plot_selected_treatments <- umap_plot_selected_treatments + theme(legend.position = "none")
 
 
 # show the plots first as assigned names
 # set plot size
 options(repr.plot.width=5, repr.plot.height=5)
-
-
-# Defien the heatmap as a ggplot heatmap for figure curation
-new_heatmap <- as.ggplot(heatmap_anova_cytokines)
-# remove the legend for umap
-umap_plot_selected_treatments <- umap_plot_selected_treatments + theme(legend.position = "none")
-new_heatmap
 
 
 # add padding to the bar plot
@@ -850,7 +1090,7 @@ layout <- c(
     area(t=1, b=2, l=0, r=3), # A
     area(t=1, b=2, l=4, r=5), # B
     area(t=3, b=5, l=0, r=5), # C
-    area(t=6, b=8, l=0, r=5) # D
+    area(t=6.5, b=8, l=0, r=5) # D
 )
 
 # set plot size
@@ -864,17 +1104,19 @@ fig2 <- (
     # + cytokine_bar_plot
     + wrap_elements(full = cytokine_bar_plot)
     # + new_heatmap
-    + wrap_elements(full = new_heatmap)
-    + plot_layout(design = layout, widths = c(), heights = c(),)
+    + wrap_elements(full = heatmap_anova_cytokines)
+    + plot_layout(design = layout, widths = c(0.3,15), heights = c())
     + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
 )
 fig2
 ggsave(
-    filename = file.path("figure2.png"),
+    filename = file.path("figures","figure2.png"),
     plot = fig2,
     width = 25,
     height = 20,
     units = "in",
     dpi = 600
 )
+
+
 

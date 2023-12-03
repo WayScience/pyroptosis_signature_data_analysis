@@ -113,7 +113,7 @@ ground_truth = toml.load(ground_truth_file_path)
 treatment_splits = toml.load(treatment_splits_file_path)
 
 
-# In[7]:
+# In[9]:
 
 
 # get information from toml files
@@ -124,7 +124,7 @@ test_split_100 = treatment_splits["splits"]["data_splits_100"]
 test_split_75 = treatment_splits["splits"]["data_splits_75"]
 
 
-# In[8]:
+# In[10]:
 
 
 np.random.seed(0)
@@ -140,7 +140,7 @@ else:
     print("Data Subset Is Off")
 
 
-# In[9]:
+# In[11]:
 
 
 # add apoptosis, pyroptosis and healthy columns to dataframe
@@ -175,7 +175,7 @@ df1.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 # ### Split said data
 
-# In[10]:
+# In[12]:
 
 
 # randomly select wells to hold out for testing one per treatment group
@@ -196,7 +196,7 @@ print(
 )
 
 
-# In[11]:
+# In[13]:
 
 
 # variable test and train set splits
@@ -219,7 +219,7 @@ test_set_50 = df[
 print(treatment_holdout.shape, test_set_75.shape, test_set_50.shape)
 
 
-# In[12]:
+# In[14]:
 
 
 # get the train test splits from each group
@@ -261,7 +261,7 @@ print(
 print(f"Shape for the holdout set: {df_holdout.shape}")
 
 
-# In[13]:
+# In[15]:
 
 
 treatment_holdout
@@ -290,7 +290,7 @@ print(
 )
 
 
-# In[14]:
+# In[16]:
 
 
 # get the indexes for the training and testing sets
@@ -302,7 +302,7 @@ treatment_holdout_index = treatment_holdout.index
 df_holdout_index = df_holdout.index
 
 
-# In[15]:
+# In[17]:
 
 
 print(
@@ -321,7 +321,7 @@ print(
 )
 
 
-# In[16]:
+# In[18]:
 
 
 # create pandas dataframe with all indexes and their respective labels, stratified by phenotypic class
@@ -342,13 +342,13 @@ index_data = pd.DataFrame(index_data)
 index_data
 
 
-# In[17]:
+# In[19]:
 
 
 index_data["label"].unique()
 
 
-# In[18]:
+# In[20]:
 
 
 save_path = pathlib.Path(f"../indexes/{CELL_TYPE}/multi_class/")
@@ -358,7 +358,7 @@ print(save_path)
 save_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[19]:
+# In[21]:
 
 
 # save indexes as tsv file
@@ -372,7 +372,7 @@ index_data.to_csv(
 # ##### Classification Models:
 # Comment out code if using regression
 
-# In[20]:
+# In[22]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -383,7 +383,7 @@ df_descriptive = df1[df_metadata]
 df_values = df1.drop(columns=df_metadata)
 
 
-# In[21]:
+# In[23]:
 
 
 # get the class weights for the loss function to account for class imbalance
@@ -407,7 +407,7 @@ with open(f"{class_weights_file}/class_weights.txt", "w") as filehandle:
         filehandle.write("%s\n" % listitem)
 
 
-# In[22]:
+# In[24]:
 
 
 # Creating label encoder
@@ -427,7 +427,7 @@ df_values_Y.unique()
 
 # #### Split Data - All Models can proceed through this point
 
-# In[23]:
+# In[25]:
 
 
 # split into train and test sets from indexes previously defined
@@ -443,7 +443,7 @@ Y_test = df_values_Y.loc[testing_data_set_index]
 Y_holdout = df_values_Y.loc[df_holdout_index]
 
 
-# In[24]:
+# In[26]:
 
 
 # produce data objects for train, val and test datasets
@@ -458,7 +458,7 @@ test_data = Dataset_formatter(
 )
 
 
-# In[25]:
+# In[27]:
 
 
 mlp_params.IN_FEATURES = X_train.shape[1]
@@ -482,7 +482,7 @@ else:
 print(mlp_params.MODEL_TYPE)
 
 
-# In[26]:
+# In[28]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
@@ -494,14 +494,14 @@ valid_loader = torch.utils.data.DataLoader(
 )
 
 
-# In[27]:
+# In[29]:
 
 
 # check device
 print(mlp_params.DEVICE)
 
 
-# In[28]:
+# In[30]:
 
 
 # no accuracy function must be loss for regression
@@ -539,7 +539,7 @@ objective_model_optimizer(
 )
 
 
-# In[29]:
+# In[31]:
 
 
 # create graph directory for this model
@@ -557,7 +557,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[30]:
+# In[32]:
 
 
 # create graph directory for this model
@@ -574,7 +574,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[31]:
+# In[33]:
 
 
 param_dict = extract_best_trial_params(

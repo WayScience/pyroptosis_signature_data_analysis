@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import ast
@@ -35,45 +35,53 @@ sys.path.append("../../..")
 import argparse
 
 
-# In[ ]:
+# In[2]:
 
 
-# set up the parser
-parser = argparse.ArgumentParser(description="Train MLP model")
+# # set up the parser
+# parser = argparse.ArgumentParser(description="Train MLP model")
 
-# add arguments to parser
-parser.add_argument(
-    "--CELL_TYPE",
-    type=str,
-    default="all",
-    help="Cell type to train model on. Default is all",
-)
+# # add arguments to parser
+# parser.add_argument(
+#     "--CELL_TYPE",
+#     type=str,
+#     default="all",
+#     help="Cell type to train model on. Default is all",
+# )
 
-parser.add_argument(
-    "--MODEL_NAME",
-    type=str,
-    default="MLP",
-    help="Model name to train. Default is MLP",
-)
+# parser.add_argument(
+#     "--MODEL_NAME",
+#     type=str,
+#     default="MLP",
+#     help="Model name to train. Default is MLP",
+# )
 
-parser.add_argument(
-    "--SHUFFLE",
-    type=str,
-    default="False",
-    help="Shuffle data before training. Default is False",
-)
+# parser.add_argument(
+#     "--SHUFFLE",
+#     type=str,
+#     default="False",
+#     help="Shuffle data before training. Default is False",
+# )
 
-# parse the arguments
-args = parser.parse_args()
+# # parse the arguments
+# args = parser.parse_args()
 
-CELL_TYPE = args.CELL_TYPE
-MODEL_NAME = args.MODEL_NAME
-SHUFFLE = args.SHUFFLE
-SHUFFLE = ast.literal_eval(SHUFFLE)
-print(CELL_TYPE, MODEL_NAME, SHUFFLE)
+# CELL_TYPE = args.CELL_TYPE
+# MODEL_NAME = args.MODEL_NAME
+# SHUFFLE = args.SHUFFLE
+# SHUFFLE = ast.literal_eval(SHUFFLE)
+# print(CELL_TYPE, MODEL_NAME, SHUFFLE)
 
 
-# In[ ]:
+# In[3]:
+
+
+CELL_TYPE = "SHSY5Y"
+MODEL_NAME = "MultiClass_MLP"
+SHUFFLE = False
+
+
+# In[4]:
 
 
 ml_configs_file = pathlib.Path("../../MLP_utils/multi_class_config.toml").resolve(
@@ -103,7 +111,7 @@ with open(class_weights_file_path, "r") as f:
 print(class_weights)
 
 
-# In[ ]:
+# In[5]:
 
 
 # Import Data
@@ -116,7 +124,7 @@ file_path = pathlib.Path(
 df1 = pd.read_parquet(file_path)
 
 
-# In[ ]:
+# In[6]:
 
 
 # get paths for toml files
@@ -131,7 +139,7 @@ ground_truth = toml.load(ground_truth_file_path)
 treatment_splits = toml.load(treatment_splits_file_path)
 
 
-# In[ ]:
+# In[7]:
 
 
 # get information from toml files
@@ -145,7 +153,7 @@ healthy_groups_list = ground_truth["Healthy"]["healthy_groups_list"]
 # ##### Classification Models:
 # Comment out code if using regression
 
-# In[ ]:
+# In[8]:
 
 
 np.random.seed(0)
@@ -161,7 +169,7 @@ else:
     print("Data Subset Is Off")
 
 
-# In[ ]:
+# In[9]:
 
 
 # add apoptosis, pyroptosis and healthy columns to dataframe
@@ -194,7 +202,7 @@ df1["labels"] = df1.apply(
 df1.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 
-# In[ ]:
+# In[10]:
 
 
 # set path for index file
@@ -207,7 +215,7 @@ index_df = pd.read_csv(index_file_path, sep="\t")
 index_df.head()
 
 
-# In[ ]:
+# In[11]:
 
 
 # get train, validation, test, and holdout indexes
@@ -235,13 +243,13 @@ assert (
 ) == index_df.shape[0]
 
 
-# In[ ]:
+# In[12]:
 
 
 treatment_holdout.head()
 
 
-# In[ ]:
+# In[13]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -253,7 +261,7 @@ df_descriptive["labels"] = df1["labels"]
 df_values = df1.drop(columns=df_metadata)
 
 
-# In[ ]:
+# In[14]:
 
 
 # Creating label encoder
@@ -281,7 +289,7 @@ df_labels.drop_duplicates(inplace=True)
 df_labels.reset_index(drop=True, inplace=True)
 
 
-# In[ ]:
+# In[15]:
 
 
 print(
@@ -300,7 +308,7 @@ print(
 )
 
 
-# In[ ]:
+# In[16]:
 
 
 # get the train, validation, test, and holdout dataframes from the indexes
@@ -323,7 +331,7 @@ metadata_treatment_holdout = df_descriptive.iloc[treatment_holdout.values]
 metadata_holdout = df_descriptive.iloc[holdout_indexes.values]
 
 
-# In[ ]:
+# In[17]:
 
 
 print(
@@ -345,7 +353,7 @@ print(
 )
 
 
-# In[ ]:
+# In[18]:
 
 
 # reset indexes for all dataframes
@@ -362,7 +370,7 @@ Y_treatment_holdout.reset_index(drop=True, inplace=True)
 Y_holdout.reset_index(drop=True, inplace=True)
 
 
-# In[ ]:
+# In[19]:
 
 
 print(
@@ -376,7 +384,7 @@ print(
 # #### Shuffle Data
 # 
 
-# In[ ]:
+# In[20]:
 
 
 np.random.seed(0)
@@ -389,7 +397,7 @@ if SHUFFLE:
 
 # #### Split Data - All Models can proceed through this point
 
-# In[ ]:
+# In[21]:
 
 
 # produce data objects for train, val and test datasets
@@ -404,7 +412,7 @@ test_data = Dataset_formatter(
 )
 
 
-# In[ ]:
+# In[22]:
 
 
 mlp_params.IN_FEATURES = X_train.shape[1]
@@ -428,7 +436,7 @@ else:
 print(mlp_params.MODEL_TYPE)
 
 
-# In[ ]:
+# In[23]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
@@ -443,7 +451,7 @@ test_loader = torch.utils.data.DataLoader(
 )
 
 
-# In[ ]:
+# In[24]:
 
 
 # call the optimized training model
@@ -469,7 +477,7 @@ else:
     )
 
 
-# In[ ]:
+# In[25]:
 
 
 # create a dataframe to store the model stats
@@ -486,7 +494,7 @@ model_stats_df = pd.DataFrame(
 model_stats_df
 
 
-# In[ ]:
+# In[26]:
 
 
 if mlp_params.MODEL_TYPE == "Regression":
@@ -506,7 +514,7 @@ else:
     )
 
 
-# In[ ]:
+# In[27]:
 
 
 plot_metric_vs_epoch(
@@ -525,7 +533,7 @@ plot_metric_vs_epoch(
 
 # ### Test Models on training data
 
-# In[ ]:
+# In[28]:
 
 
 # test the model on training data
@@ -560,7 +568,7 @@ else:
     pass
 
 
-# In[ ]:
+# In[29]:
 
 
 stats_df = output_stats(
@@ -588,7 +596,7 @@ decoder["weighted avg"] = "weighted avg"
 stats_df["label"] = stats_df["label"].map(decoder)
 
 
-# In[ ]:
+# In[30]:
 
 
 stats_df["group"] = "train"
@@ -599,7 +607,7 @@ model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
 # ### Test models on Validation data
 
-# In[ ]:
+# In[31]:
 
 
 # test the model on training data
@@ -634,7 +642,7 @@ else:
     pass
 
 
-# In[ ]:
+# In[32]:
 
 
 stats_df = output_stats(
@@ -662,7 +670,7 @@ decoder["weighted avg"] = "weighted avg"
 stats_df["label"] = stats_df["label"].map(decoder)
 
 
-# In[ ]:
+# In[33]:
 
 
 stats_df["group"] = "validation"
@@ -671,7 +679,7 @@ stats_df["shuffled_data"] = mlp_params.SHUFFLE
 model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
 
-# In[ ]:
+# In[34]:
 
 
 mlp_params.MODEL_NAME
@@ -679,7 +687,7 @@ mlp_params.MODEL_NAME
 
 # ### Testing on the test data
 
-# In[ ]:
+# In[35]:
 
 
 # create a dataframe to store the model confusion matrix
@@ -688,7 +696,7 @@ data_split_conf_mat_df_all = pd.DataFrame(
 )
 
 
-# In[ ]:
+# In[36]:
 
 
 # calling the testing function and outputting list values of tested model
@@ -723,7 +731,7 @@ else:
     pass
 
 
-# In[ ]:
+# In[37]:
 
 
 # Call visualization function
@@ -755,20 +763,14 @@ else:
     raise Exception("Model type must be specified for proper model testing")
 
 
-# In[ ]:
-
-
-metadata_test
-
-
-# In[ ]:
+# In[38]:
 
 
 # define a final dataframe to store the predictions
 final_predictions_df = pd.DataFrame()
 
 
-# In[ ]:
+# In[39]:
 
 
 # merge the y_pred_list and Y_holdout into a dataframe
@@ -777,7 +779,7 @@ y_pred_df = pd.concat([y_pred_df, Y_test], axis=1)
 y_pred_df = pd.concat([y_pred_df, X_test], axis=1)
 
 
-# In[ ]:
+# In[40]:
 
 
 # merge y_pred_df with metadata_holdout whiile keeping the index of metadata_holdout
@@ -787,34 +789,41 @@ y_pred_df = pd.concat([y_pred_df, metadata_test], axis=1)
 y_pred_df.set_index("index", inplace=True, drop=True)
 
 
-# In[ ]:
+# In[41]:
 
 
-# save the y_pred_df to a parquet file
-# set path
-y_pred_df_path = pathlib.Path(
-    f"../../results/Multi_Class/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}/testing_single_cell_predictions.parquet"
-)
-# make path if it doesn't exist
-y_pred_df_path.parent.mkdir(parents=True, exist_ok=True)
-# save the dataframe
-y_pred_df.to_parquet(y_pred_df_path)
+y_pred_df
 
 
-# In[ ]:
+# In[42]:
 
 
 y_pred_df["data_split"] = "test"
 
 
-# In[ ]:
+# In[43]:
+
+
+# save the y_pred_df to a parquet file if shuffle is set to False
+if not SHUFFLE:
+    # set path
+    y_pred_df_path = pathlib.Path(
+        f"../../results/Multi_Class/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}/testing_single_cell_predictions.parquet"
+    )
+    # make path if it doesn't exist
+    y_pred_df_path.parent.mkdir(parents=True, exist_ok=True)
+    # save the dataframe
+    y_pred_df.to_parquet(y_pred_df_path)
+
+
+# In[44]:
 
 
 final_predictions_df = pd.concat([final_predictions_df, y_pred_df], axis=0)
 final_predictions_df
 
 
-# In[ ]:
+# In[45]:
 
 
 # rename columns from the decoder dictionary
@@ -826,13 +835,7 @@ confusion_matrix_df.rename(
 )
 
 
-# In[ ]:
-
-
-confusion_matrix_df
-
-
-# In[ ]:
+# In[46]:
 
 
 confusion_matrices = confusion_matrix_df.reset_index()
@@ -850,13 +853,7 @@ confusion_matrices["data_split"] = "testing"
 sum_of_columns = confusion_matrix_df.sum(axis=0)
 
 
-# In[ ]:
-
-
-confusion_matrices
-
-
-# In[ ]:
+# In[47]:
 
 
 # normalize confusion matrix
@@ -872,13 +869,7 @@ confusion_matrix_df["pyroptosis"] = (
 )
 
 
-# In[ ]:
-
-
-confusion_matrix_df
-
-
-# In[ ]:
+# In[48]:
 
 
 confusion_matrices_recall = confusion_matrix_df.reset_index()
@@ -904,13 +895,7 @@ data_split_conf_mat_df_all = pd.concat(
 )
 
 
-# In[ ]:
-
-
-data_split_conf_mat_df_all
-
-
-# In[ ]:
+# In[49]:
 
 
 ax = sns.heatmap(confusion_matrix_df, annot=True)
@@ -921,7 +906,7 @@ plt.ylabel("Predicted Values", size=15)
 plt.show()
 
 
-# In[ ]:
+# In[50]:
 
 
 stats_df = output_stats(
@@ -949,7 +934,7 @@ decoder["weighted avg"] = "weighted avg"
 stats_df["label"] = stats_df["label"].map(decoder)
 
 
-# In[ ]:
+# In[51]:
 
 
 stats_df["group"] = "test"
@@ -960,7 +945,7 @@ model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
 # ## Test the treatment holdout data on the model
 
-# In[ ]:
+# In[52]:
 
 
 treatment_holdout_data = Dataset_formatter(
@@ -1032,13 +1017,7 @@ else:
     raise Exception("Model type must be specified for proper model testing")
 
 
-# In[ ]:
-
-
-final_predictions_df
-
-
-# In[ ]:
+# In[53]:
 
 
 # merge the y_pred_list and Y_holdout into a dataframe
@@ -1047,13 +1026,7 @@ y_pred_df = pd.concat([y_pred_df, Y_treatment_holdout], axis=1)
 y_pred_df = pd.concat([y_pred_df, X_treatment_holdout], axis=1)
 
 
-# In[ ]:
-
-
-
-
-
-# In[ ]:
+# In[54]:
 
 
 # merge y_pred_df with metadata_holdout whiile keeping the index of metadata_holdout
@@ -1063,26 +1036,35 @@ y_pred_df = pd.concat([y_pred_df, metadata_treatment_holdout], axis=1)
 y_pred_df.set_index("index", inplace=True, drop=True)
 
 
-# In[ ]:
-
-
-
-
-
-# In[ ]:
+# In[55]:
 
 
 y_pred_df["data_split"] = "treatment_holdout"
 
 
-# In[ ]:
+# In[56]:
+
+
+# save the y_pred_df to a parquet file
+if not SHUFFLE:
+    # set path
+    y_pred_df_path = pathlib.Path(
+        f"../../results/Multi_Class/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}/treatment_holdout_single_cell_predictions.parquet"
+    )
+    # make path if it doesn't exist
+    y_pred_df_path.parent.mkdir(parents=True, exist_ok=True)
+    # save the dataframe
+    y_pred_df.to_parquet(y_pred_df_path)
+
+
+# In[57]:
 
 
 final_predictions_df = pd.concat([final_predictions_df, y_pred_df], axis=0)
 final_predictions_df
 
 
-# In[ ]:
+# In[58]:
 
 
 # rename columns from the decoder dictionary
@@ -1095,7 +1077,7 @@ confusion_matrix_df.rename(
 )
 
 
-# In[ ]:
+# In[59]:
 
 
 confusion_matrices = confusion_matrix_df.reset_index()
@@ -1113,13 +1095,7 @@ confusion_matrices["data_split"] = "treatment_holdout"
 sum_of_columns = confusion_matrix_df.sum(axis=0)
 
 
-# In[ ]:
-
-
-confusion_matrices
-
-
-# In[ ]:
+# In[60]:
 
 
 # normalize confusion matrix
@@ -1135,7 +1111,7 @@ confusion_matrix_df["pyroptosis"] = (
 )
 
 
-# In[ ]:
+# In[61]:
 
 
 # change the order of the columns
@@ -1146,7 +1122,7 @@ confusion_matrix_df = confusion_matrix_df.reindex(
 )
 
 
-# In[ ]:
+# In[62]:
 
 
 confusion_matrices_recall = confusion_matrix_df.reset_index()
@@ -1172,13 +1148,7 @@ data_split_conf_mat_df_all = pd.concat(
 )
 
 
-# In[ ]:
-
-
-data_split_conf_mat_df
-
-
-# In[ ]:
+# In[63]:
 
 
 ax = sns.heatmap(confusion_matrix_df, annot=True)
@@ -1188,7 +1158,7 @@ plt.ylabel("Predicted Values", size=15)
 plt.show()
 
 
-# In[ ]:
+# In[64]:
 
 
 stats_df = output_stats(
@@ -1216,7 +1186,7 @@ decoder["weighted avg"] = "weighted avg"
 stats_df["label"] = stats_df["label"].map(decoder)
 
 
-# In[ ]:
+# In[65]:
 
 
 stats_df["group"] = "treatment_holdout"
@@ -1228,7 +1198,7 @@ model_stats_df
 
 # ## Test the hold out wells
 
-# In[ ]:
+# In[66]:
 
 
 holdout_data = Dataset_formatter(
@@ -1299,7 +1269,7 @@ else:
     raise Exception("Model type must be specified for proper model testing")
 
 
-# In[ ]:
+# In[67]:
 
 
 # merge the y_pred_list and Y_holdout into a dataframe
@@ -1308,13 +1278,7 @@ y_pred_df = pd.concat([y_pred_df, Y_holdout], axis=1)
 y_pred_df = pd.concat([y_pred_df, X_holdout], axis=1)
 
 
-# In[ ]:
-
-
-y_pred_df
-
-
-# In[ ]:
+# In[68]:
 
 
 # merge y_pred_df with metadata_holdout whiile keeping the index of metadata_holdout
@@ -1324,20 +1288,35 @@ y_pred_df = pd.concat([y_pred_df, metadata_holdout], axis=1)
 y_pred_df.set_index("index", inplace=True, drop=True)
 
 
-# In[ ]:
+# In[69]:
 
 
 y_pred_df["data_split"] = "holdout"
 
 
-# In[ ]:
+# In[70]:
+
+
+# save the y_pred_df to a parquet file
+if not SHUFFLE:
+    # set path
+    y_pred_df_path = pathlib.Path(
+        f"../../results/Multi_Class/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}/holdout_single_cell_predictions.parquet"
+    )
+    # make path if it doesn't exist
+    y_pred_df_path.parent.mkdir(parents=True, exist_ok=True)
+    # save the dataframe
+    y_pred_df.to_parquet(y_pred_df_path)
+
+
+# In[71]:
 
 
 final_predictions_df = pd.concat([final_predictions_df, y_pred_df], axis=0)
 final_predictions_df
 
 
-# In[ ]:
+# In[72]:
 
 
 # rename columns from the decoder dictionary
@@ -1350,7 +1329,7 @@ confusion_matrix_df.rename(
 )
 
 
-# In[ ]:
+# In[73]:
 
 
 confusion_matrices = confusion_matrix_df.reset_index()
@@ -1368,13 +1347,7 @@ confusion_matrices["data_split"] = "holdout"
 sum_of_columns = confusion_matrix_df.sum(axis=0)
 
 
-# In[ ]:
-
-
-confusion_matrices
-
-
-# In[ ]:
+# In[74]:
 
 
 # normalize confusion matrix
@@ -1390,7 +1363,7 @@ confusion_matrix_df["pyroptosis"] = (
 )
 
 
-# In[ ]:
+# In[75]:
 
 
 # change the order of the columns
@@ -1401,7 +1374,7 @@ confusion_matrix_df = confusion_matrix_df.reindex(
 )
 
 
-# In[ ]:
+# In[76]:
 
 
 confusion_matrices_recall = confusion_matrix_df.reset_index()
@@ -1427,13 +1400,7 @@ data_split_conf_mat_df_all = pd.concat(
 )
 
 
-# In[ ]:
-
-
-data_split_conf_mat_df
-
-
-# In[ ]:
+# In[77]:
 
 
 ax = sns.heatmap(confusion_matrix_df, annot=True)
@@ -1443,7 +1410,7 @@ plt.ylabel("Predicted Values", size=15)
 plt.show()
 
 
-# In[ ]:
+# In[78]:
 
 
 stats_df = output_stats(
@@ -1471,7 +1438,7 @@ decoder["weighted avg"] = "weighted avg"
 stats_df["label"] = stats_df["label"].map(decoder)
 
 
-# In[ ]:
+# In[79]:
 
 
 stats_df["group"] = "holdout"
@@ -1481,7 +1448,7 @@ model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 model_stats_df
 
 
-# In[ ]:
+# In[80]:
 
 
 # set path for the model confusion matrices

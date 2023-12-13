@@ -9,9 +9,9 @@
 #SBATCH --output=sample-%j.out
 #SBATCH --array=1-2%2
 
-# module load anaconda
+module load anaconda
 
-# conda activate Interstellar_python
+conda activate Interstellar_python
 
 cell_types=( SHSY5Y PBMC )
 model_names=( MultiClass_MLP )

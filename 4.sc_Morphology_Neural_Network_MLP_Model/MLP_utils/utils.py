@@ -38,6 +38,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import label_binarize
+from torcheval.metrics import MulticlassPrecisionRecallCurve
 
 
 def parameter_set(params: Parameters, config: toml) -> object:
@@ -374,7 +375,8 @@ def train_n_validate(
     # _ isn't used but is needed to "absorb" the data index
     for _, (X_train_batch, y_train_batch) in enumerate(train_loader):
         if params.MODEL_TYPE == "Multi_Class":
-            y_train_batch = y_train_batch.type(torch.LongTensor)
+            y_train_batch = y_train_batch.type(torch.FloatTensor)
+            X_train_batch = X_train_batch.type(torch.FloatTensor)
         elif params.MODEL_TYPE == "Binary_Classification":
             pass
         elif params.MODEL_TYPE == "Regression":
@@ -387,14 +389,14 @@ def train_n_validate(
         ), y_train_batch.to(params.DEVICE)
         optimizer.zero_grad()
         output = model(X_train_batch)
-        # print(output)
         if params.MODEL_TYPE == "Multi_Class":
             y_pred = torch.log_softmax(output, dim=1)
-            _, y_pred = torch.max(y_pred, dim=1)
+            # _, y_pred = torch.max(output, dim=3)
             loss = criterion(output, y_train_batch)
             loss.backward()
             optimizer.step()
             running_loss += loss.item()  # sum loss for every batch
+            # calculate accuracy for multi-class
             correct += (y_pred == y_train_batch).sum().item()
             total += y_train_batch.size(0)
         elif params.MODEL_TYPE == "Binary_Classification":
@@ -430,7 +432,8 @@ def train_n_validate(
         model.eval()
         for _, (X_valid_batch, y_valid_batch) in enumerate(valid_loader):
             if params.MODEL_TYPE == "Multi_Class":
-                y_valid_batch = y_valid_batch.type(torch.LongTensor)
+                y_valid_batch = y_valid_batch.type(torch.FloatTensor)
+                X_valid_batch = X_valid_batch.type(torch.FloatTensor)
             elif params.MODEL_TYPE == "Binary_Classification":
                 pass
             elif params.MODEL_TYPE == "Regression":
@@ -446,7 +449,7 @@ def train_n_validate(
 
             if params.MODEL_TYPE == "Multi_Class":
                 y_pred = torch.log_softmax(output, dim=1)
-                _, y_pred = torch.max(y_pred, dim=1)
+                # _, y_pred = torch.max(y_pred, dim=1)
                 loss_v = criterion(output, y_valid_batch)
                 batch_loss += loss_v.item()
                 correct_v += (y_pred == y_valid_batch).sum().item()
@@ -1096,17 +1099,43 @@ def test_optimized_model(
         raise ModelTypeError
     y_pred_prob_list = []
     y_pred_list = []
+    precision_score = []
+    recall_score = []
+    thresholds = []
+    Y_test_list = []
+
+    # set up multiclass PRCurve
+    if params.MODEL_TYPE == "Multi_Class":
+        metric = MulticlassPrecisionRecallCurve(num_classes=params.OUT_FEATURES)
 
     with torch.no_grad():
         model.eval()
-        for _, (X_test_batch, _) in enumerate(test_loader):
+        for _, (X_test_batch, Y_test_batch) in enumerate(test_loader):
+            X_test_batch = X_test_batch.type(torch.FloatTensor)
             X_test_batch = X_test_batch.to(params.DEVICE)
+            Y_test_batch = Y_test_batch.type(torch.FloatTensor)
+            Y_test_batch = Y_test_batch.to(params.DEVICE)
+
             # PREDICTION
             output = model(X_test_batch)
 
             if params.MODEL_TYPE == "Multi_Class":
                 _, y_pred = torch.max(output, dim=1)
                 y_pred_list.append(y_pred.cpu().numpy())
+                y_pred_prob_list.append(torch.nn.functional.softmax(output, dim=1))
+
+                metric.update(output, y_pred)
+                precision, recall, thresholds = metric.compute()
+                # convert the tensors to numpy arrays
+                # precision = precision.numpy()
+                # recall = recall.numpy()
+                # thresholds = thresholds.numpy()
+                # append to lists for output
+                precision_score.append(precision)
+                recall_score.append(recall)
+                thresholds.append(thresholds)
+                Y_test_list.append(Y_test_batch)
+
             elif params.MODEL_TYPE == "Binary_Classification":
                 y_pred_prob = torch.sigmoid(output)
                 y_pred_prob_list.append(y_pred_prob.cpu().numpy())
@@ -1118,7 +1147,14 @@ def test_optimized_model(
                 raise ModelTypeError
     y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
     if params.MODEL_TYPE == "Multi_Class":
-        return y_pred_list
+        return (
+            y_pred_list,
+            y_pred_prob_list,
+            Y_test_list,
+            precision_score,
+            recall_score,
+            thresholds,
+        )
     elif params.MODEL_TYPE == "Binary_Classification":
         y_pred_prob_list = [a.squeeze().tolist() for a in y_pred_prob_list]
         return y_pred_list, y_pred_prob_list
@@ -1191,8 +1227,8 @@ def results_output(
     # Classification report
 
     if params.MODEL_TYPE == "Multi_Class":
-        print(classification_report(test_data, prediction_list))
-        confusion_matrix_df = pd.DataFrame(confusion_matrix(test_data, prediction_list))
+        print(classification_report(prediction_list, test_data))
+        confusion_matrix_df = pd.DataFrame(confusion_matrix(prediction_list, test_data))
         ax = sns.heatmap(confusion_matrix_df, annot=True, fmt="d")
         ax.invert_xaxis()
         ax.invert_yaxis()

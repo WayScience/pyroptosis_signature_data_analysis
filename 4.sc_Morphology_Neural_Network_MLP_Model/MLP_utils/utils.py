@@ -1099,9 +1099,6 @@ def test_optimized_model(
         raise ModelTypeError
     y_pred_prob_list = []
     y_pred_list = []
-    precision_score = []
-    recall_score = []
-    thresholds = []
     Y_test_list = []
 
     # set up multiclass PRCurve
@@ -1123,17 +1120,6 @@ def test_optimized_model(
                 _, y_pred = torch.max(output, dim=1)
                 y_pred_list.append(y_pred.cpu().numpy())
                 y_pred_prob_list.append(torch.nn.functional.softmax(output, dim=1))
-
-                metric.update(output, y_pred)
-                precision, recall, thresholds = metric.compute()
-                # convert the tensors to numpy arrays
-                # precision = precision.numpy()
-                # recall = recall.numpy()
-                # thresholds = thresholds.numpy()
-                # append to lists for output
-                precision_score.append(precision)
-                recall_score.append(recall)
-                thresholds.append(thresholds)
                 Y_test_list.append(Y_test_batch)
 
             elif params.MODEL_TYPE == "Binary_Classification":
@@ -1151,9 +1137,6 @@ def test_optimized_model(
             y_pred_list,
             y_pred_prob_list,
             Y_test_list,
-            precision_score,
-            recall_score,
-            thresholds,
         )
     elif params.MODEL_TYPE == "Binary_Classification":
         y_pred_prob_list = [a.squeeze().tolist() for a in y_pred_prob_list]

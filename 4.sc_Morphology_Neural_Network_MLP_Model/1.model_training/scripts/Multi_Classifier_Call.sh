@@ -1,10 +1,11 @@
 #!/bin/bash
 
 #SBATCH --nodes=1
-#SBATCH --ntasks=8
+#SBATCH --ntasks=4
 #SBATCH --mem=500G
 #SBATCH --partition=amem
 #SBATCH --qos=mem
+#SBATCH --account=amc-general
 #SBATCH --time=72:00:00
 #SBATCH --output=sample-%j.out
 #SBATCH --array=1-4%4

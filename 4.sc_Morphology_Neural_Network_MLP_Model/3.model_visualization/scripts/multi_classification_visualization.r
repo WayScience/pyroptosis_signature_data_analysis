@@ -4,8 +4,8 @@ suppressPackageStartupMessages(suppressWarnings(library(argparser))) # command l
 source("../../../figures/utils/figure_themes.r")
 
 
-cell_type <- "SHSY5Y"
-model_name <- "MLP_subset"
+cell_type <- "PBMC"
+model_name <- "MultiClass_MLP"
 
 
 # set file path for importing the data
@@ -110,7 +110,7 @@ f1_score_plot <- (
     + figure_theme_wide
 
 )
-ggsave(f1_plot_path, f1_score_plot, width = width, height = height, dpi = 600)Healthy
+ggsave(f1_plot_path, f1_score_plot, width = width, height = height, dpi = 600)
 f1_score_plot
 
 
@@ -122,7 +122,7 @@ confusion_matrix
 confusion_matrix$Recall <- round(confusion_matrix$Recall, 2)
 # mutate the label column for multiple cases
 confusion_matrix$True_Label <- gsub("healthy", "Control", confusion_matrix$True_Label)
-confusion_matrix$True_Label <- gsub("apoptosis", "Apoptosis", confusion_matrix$True_Label)Healthy
+confusion_matrix$True_Label <- gsub("apoptosis", "Apoptosis", confusion_matrix$True_Label)
 confusion_matrix$True_Label <- gsub("pyroptosis", "Pyroptosis", confusion_matrix$True_Label)
 confusion_matrix$Predicted_Label <- gsub("healthy", "Control", confusion_matrix$Predicted_Label)
 confusion_matrix$Predicted_Label <- gsub("apoptosis", "Apoptosis", confusion_matrix$Predicted_Label)
@@ -163,16 +163,20 @@ confusion_matrix_treatment_holdout <- confusion_matrix[confusion_matrix$data_spl
 confusion_matrix_testing_holdout <- rbind(confusion_matrix_testing, confusion_matrix_holdout)
 
 
+confusion_matrix_testing_holdout
+
+
+
 # plot dimensions
 width <- 14
 height <- 11
 options(repr.plot.width = width, repr.plot.height = height)
 # plot a confusion matrix
 confusion_matrix_plot <- (
-    ggplot(confusion_matrix_testing_holdout, aes(x = True_Label, y = Predicted_Label))
+    ggplot((confusion_matrix_testing_holdout), aes(x = True_Label, y = Predicted_Label))
     + facet_grid(data_split~shuffled_data)
     + geom_point(aes(color = Recall), size = 50, shape = 15)
-    + geom_text(aes(label = Recall))
+    + geom_text(aes(label = Count))
     + scale_color_gradient("Recall", low = "white", high = "dark red",limits = c(0, 1))
     + theme_bw()
     + ylab("Predicted Class")

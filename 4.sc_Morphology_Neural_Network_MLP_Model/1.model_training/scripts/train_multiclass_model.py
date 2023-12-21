@@ -32,51 +32,44 @@ from MLP_utils.utils import (
 from sklearn.metrics import precision_recall_curve
 
 sys.path.append("../../..")
+import argparse
 
 # In[2]:
 
 
-# # set up the parser
-# parser = argparse.ArgumentParser(description="Train MLP model")
+# set up the parser
+parser = argparse.ArgumentParser(description="Train MLP model")
 
-# # add arguments to parser
-# parser.add_argument(
-#     "--CELL_TYPE",
-#     type=str,
-#     default="all",
-#     help="Cell type to train model on. Default is all",
-# )
+# add arguments to parser
+parser.add_argument(
+    "--CELL_TYPE",
+    type=str,
+    default="all",
+    help="Cell type to train model on. Default is all",
+)
 
-# parser.add_argument(
-#     "--MODEL_NAME",
-#     type=str,
-#     default="MLP",
-#     help="Model name to train. Default is MLP",
-# )
+parser.add_argument(
+    "--MODEL_NAME",
+    type=str,
+    default="MLP",
+    help="Model name to train. Default is MLP",
+)
 
-# parser.add_argument(
-#     "--SHUFFLE",
-#     type=str,
-#     default="False",
-#     help="Shuffle data before training. Default is False",
-# )
+parser.add_argument(
+    "--SHUFFLE",
+    type=str,
+    default="False",
+    help="Shuffle data before training. Default is False",
+)
 
-# # parse the arguments
-# args = parser.parse_args()
+# parse the arguments
+args = parser.parse_args()
 
-# CELL_TYPE = args.CELL_TYPE
-# MODEL_NAME = args.MODEL_NAME
-# SHUFFLE = args.SHUFFLE
-# SHUFFLE = ast.literal_eval(SHUFFLE)
-# print(CELL_TYPE, MODEL_NAME, SHUFFLE)
-
-
-# In[3]:
-
-
-CELL_TYPE = "SHSY5Y"
-MODEL_NAME = "MultiClass_MLP"
-SHUFFLE = False
+CELL_TYPE = args.CELL_TYPE
+MODEL_NAME = args.MODEL_NAME
+SHUFFLE = args.SHUFFLE
+SHUFFLE = ast.literal_eval(SHUFFLE)
+print(CELL_TYPE, MODEL_NAME, SHUFFLE)
 
 
 # In[4]:

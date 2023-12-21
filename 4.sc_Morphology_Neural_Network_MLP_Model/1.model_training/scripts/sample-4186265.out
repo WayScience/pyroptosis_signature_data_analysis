@@ -1,0 +1,544 @@
+[NbConvertApp] WARNING | Config option `kernel_spec_manager_class` not recognized by `NbConvertApp`.
+[NbConvertApp] Converting notebook ../notebooks/train_binary_model.ipynb to script
+[NbConvertApp] Writing 18688 bytes to train_binary_model.py
+[NbConvertApp] Converting notebook ../notebooks/train_multiclass_model.ipynb to script
+[NbConvertApp] Writing 57482 bytes to train_multiclass_model.py
+[NbConvertApp] Converting notebook ../notebooks/train_regression_model.ipynb to script
+[NbConvertApp] Writing 25120 bytes to train_regression_model.py
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:252: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_descriptive["labels"] = df1["labels"]
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:279: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_labels.drop_duplicates(inplace=True)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1018: UserWarning: Ignoring `palette` because no `hue` variable has been assigned.
+  sns.lineplot(x=df[x], y=df[y1], palette="blue", label="Train")
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1019: UserWarning: Ignoring `palette` because no `hue` variable has been assigned.
+  sns.lineplot(x=df[x], y=df[y2], palette="orange", label="Validation")
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1018: UserWarning: Ignoring `palette` because no `hue` variable has been assigned.
+  sns.lineplot(x=df[x], y=df[y1], palette="blue", label="Train")
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/../../MLP_utils/utils.py:1019: UserWarning: Ignoring `palette` because no `hue` variable has been assigned.
+  sns.lineplot(x=df[x], y=df[y2], palette="orange", label="Validation")
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:663: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
+  pr_curve_df = pd.concat([pr_curve_df, pr_curve_0, pr_curve_1, pr_curve_2])
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:668: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  tmp_df.drop_duplicates(inplace=True)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:720: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
+  main_prob_df = pd.concat([main_prob_df, prob_df])
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:731: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
+  pr_curve_df_all = pd.concat([pr_curve_df_all, pr_curve_df], axis=0)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:796: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_labels["new_labels"] = df_labels["new_labels"].astype(str)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:810: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
+  model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:907: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
+  pr_curve_df = pd.concat([pr_curve_df, pr_curve_0, pr_curve_1, pr_curve_2])
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:913: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  tmp_df.drop_duplicates(inplace=True)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:991: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_labels["new_labels"] = df_labels["new_labels"].astype(str)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:1102: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
+  pr_curve_df = pd.concat([pr_curve_df, pr_curve_0, pr_curve_1, pr_curve_2])
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:1108: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  tmp_df.drop_duplicates(inplace=True)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:1303: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+  confusion_matrix_df["apoptosis"] = confusion_matrix_df["apoptosis"] / sum_of_columns[0]
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:1305: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+  confusion_matrix_df["healthy"] = confusion_matrix_df["healthy"] / sum_of_columns[1]
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:1308: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+  confusion_matrix_df["pyroptosis"] / sum_of_columns[2]
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:1333: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
+  data_split_conf_mat_df_all = pd.concat(
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:1369: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_labels["new_labels"] = df_labels["new_labels"].astype(str)
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_ranking.py:980: UserWarning: No positive class found in y_true, recall is set to one for all thresholds.
+  warnings.warn(
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_ranking.py:980: UserWarning: No positive class found in y_true, recall is set to one for all thresholds.
+  warnings.warn(
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:1489: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
+  pr_curve_df = pd.concat([pr_curve_df, pr_curve_0, pr_curve_1, pr_curve_2])
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:1495: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  tmp_df.drop_duplicates(inplace=True)
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1471: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1471: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1471: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1471: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 due to no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1471: UndefinedMetricWarning: Recall is ill-defined and being set to 0.0 due to no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_ranking.py:1133: UndefinedMetricWarning: No positive samples in y_true, true positive value should be meaningless
+  warnings.warn(
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_ranking.py:1133: UndefinedMetricWarning: No positive samples in y_true, true positive value should be meaningless
+  warnings.warn(
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_ranking.py:1124: UndefinedMetricWarning: No negative samples in y_true, false positive value should be meaningless
+  warnings.warn(
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1471: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1471: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1471: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1471: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1471: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1471: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:1705: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_labels["new_labels"] = df_labels["new_labels"].astype(str)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:1822: FutureWarning: The behavior of DataFrame concatenation with empty or all-NA entries is deprecated. In a future version, this will no longer exclude empty or all-NA columns when determining the result dtypes. To retain the old behavior, exclude the relevant entries before the concat operation.
+  pr_curve_df = pd.concat([pr_curve_df, pr_curve_0, pr_curve_1, pr_curve_2])
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:1828: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  tmp_df.drop_duplicates(inplace=True)
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:2005: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+  confusion_matrix_df["apoptosis"] = confusion_matrix_df["apoptosis"] / sum_of_columns[0]
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:2007: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+  confusion_matrix_df["healthy"] = confusion_matrix_df["healthy"] / sum_of_columns[1]
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:2010: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+  confusion_matrix_df["pyroptosis"] / sum_of_columns[2]
+/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/4.sc_Morphology_Neural_Network_MLP_Model/1.model_training/scripts/train_multiclass_model.py:2081: SettingWithCopyWarning:
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df_labels["new_labels"] = df_labels["new_labels"].astype(str)
+SHSY5Y MultiClass_MLP False
+[0.954878893196544, 0.505315252332322, 0.539805854471134]
+Data Subset Is Off
+(152275,) (38069,) (202050,) 392394     93196
+392395     93197
+392396     93198
+392397     93199
+392398     93200
+           ...
+446996    594342
+446997    594343
+446998    594344
+446999    594345
+447000    594346
+Name: labeled_data_index, Length: 54607, dtype: int64 (150901,)
+(152275,) (38069,) (202050,) 392394     93196
+392395     93197
+392396     93198
+392397     93199
+392398     93200
+           ...
+446996    594342
+446997    594343
+446998    594344
+446999    594345
+447000    594346
+Name: labeled_data_index, Length: 54607, dtype: int64 (150901,)
+597902
+(7972,) (89086,) (55217,)
+(1993,) (22273,) (13803,)
+(9965,) (111360,) (80725,)
+(0,) (0,) (54607,)
+(7048,) (73054,) (70799,)
+(152275, 1251) (38069, 1251) (202050, 1251) (54607, 1251) (150901, 1251)
+(152275,) (38069,) (202050,) (54607,) (150901,)
+3
+Number of in features:  1251
+Number of out features:  3
+Multi_Class
+SGD
+Epoch 0: Validation loss decreased (inf --> 0.309799).  Saving model ...
+	 Train_Loss: 0.3511 Train_Acc: 0.001 Val_Loss: 0.3098  BEST VAL Loss: 0.3098  Val_Acc: 0.000
+
+Epoch 1: Validation loss decreased (0.309799 --> 0.306452).  Saving model ...
+	 Train_Loss: 0.3331 Train_Acc: 0.001 Val_Loss: 0.3065  BEST VAL Loss: 0.3065  Val_Acc: 0.000
+
+Epoch 2: Validation loss decreased (0.306452 --> 0.303094).  Saving model ...
+	 Train_Loss: 0.3233 Train_Acc: 0.001 Val_Loss: 0.3031  BEST VAL Loss: 0.3031  Val_Acc: 0.000
+
+Epoch 3: Validation loss decreased (0.303094 --> 0.300800).  Saving model ...
+	 Train_Loss: 0.3162 Train_Acc: 0.001 Val_Loss: 0.3008  BEST VAL Loss: 0.3008  Val_Acc: 0.000
+
+Epoch 4: Validation loss decreased (0.300800 --> 0.297983).  Saving model ...
+	 Train_Loss: 0.3107 Train_Acc: 0.001 Val_Loss: 0.2980  BEST VAL Loss: 0.2980  Val_Acc: 0.000
+
+Epoch 5: Validation loss decreased (0.297983 --> 0.296008).  Saving model ...
+	 Train_Loss: 0.3063 Train_Acc: 0.001 Val_Loss: 0.2960  BEST VAL Loss: 0.2960  Val_Acc: 0.000
+
+Epoch 6: Validation loss decreased (0.296008 --> 0.294866).  Saving model ...
+	 Train_Loss: 0.3025 Train_Acc: 0.000 Val_Loss: 0.2949  BEST VAL Loss: 0.2949  Val_Acc: 0.000
+
+Epoch 7: Validation loss did not decrease
+	 Train_Loss: 0.2993 Train_Acc: 0.001 Val_Loss: 0.2949  BEST VAL Loss: 0.2949  Val_Acc: 0.000
+
+Epoch 8: Validation loss decreased (0.294866 --> 0.293870).  Saving model ...
+	 Train_Loss: 0.2964 Train_Acc: 0.001 Val_Loss: 0.2939  BEST VAL Loss: 0.2939  Val_Acc: 0.000
+
+Epoch 9: Validation loss decreased (0.293870 --> 0.292892).  Saving model ...
+	 Train_Loss: 0.2939 Train_Acc: 0.000 Val_Loss: 0.2929  BEST VAL Loss: 0.2929  Val_Acc: 0.000
+
+Epoch 10: Validation loss decreased (0.292892 --> 0.292032).  Saving model ...
+	 Train_Loss: 0.2916 Train_Acc: 0.001 Val_Loss: 0.2920  BEST VAL Loss: 0.2920  Val_Acc: 0.000
+
+Epoch 11: Validation loss decreased (0.292032 --> 0.291212).  Saving model ...
+	 Train_Loss: 0.2895 Train_Acc: 0.000 Val_Loss: 0.2912  BEST VAL Loss: 0.2912  Val_Acc: 0.000
+
+Epoch 12: Validation loss decreased (0.291212 --> 0.290814).  Saving model ...
+	 Train_Loss: 0.2876 Train_Acc: 0.001 Val_Loss: 0.2908  BEST VAL Loss: 0.2908  Val_Acc: 0.000
+
+Epoch 13: Validation loss decreased (0.290814 --> 0.290109).  Saving model ...
+	 Train_Loss: 0.2858 Train_Acc: 0.001 Val_Loss: 0.2901  BEST VAL Loss: 0.2901  Val_Acc: 0.000
+
+Epoch 14: Validation loss decreased (0.290109 --> 0.289509).  Saving model ...
+	 Train_Loss: 0.2841 Train_Acc: 0.001 Val_Loss: 0.2895  BEST VAL Loss: 0.2895  Val_Acc: 0.000
+
+Epoch 15: Validation loss decreased (0.289509 --> 0.289070).  Saving model ...
+	 Train_Loss: 0.2825 Train_Acc: 0.001 Val_Loss: 0.2891  BEST VAL Loss: 0.2891  Val_Acc: 0.000
+
+Epoch 16: Validation loss decreased (0.289070 --> 0.288692).  Saving model ...
+	 Train_Loss: 0.2810 Train_Acc: 0.001 Val_Loss: 0.2887  BEST VAL Loss: 0.2887  Val_Acc: 0.000
+
+Epoch 17: Validation loss decreased (0.288692 --> 0.287869).  Saving model ...
+	 Train_Loss: 0.2796 Train_Acc: 0.000 Val_Loss: 0.2879  BEST VAL Loss: 0.2879  Val_Acc: 0.000
+
+Epoch 18: Validation loss decreased (0.287869 --> 0.287063).  Saving model ...
+	 Train_Loss: 0.2783 Train_Acc: 0.000 Val_Loss: 0.2871  BEST VAL Loss: 0.2871  Val_Acc: 0.000
+
+Epoch 19: Validation loss decreased (0.287063 --> 0.286882).  Saving model ...
+	 Train_Loss: 0.2770 Train_Acc: 0.001 Val_Loss: 0.2869  BEST VAL Loss: 0.2869  Val_Acc: 0.000
+
+Epoch 20: Validation loss decreased (0.286882 --> 0.286533).  Saving model ...
+	 Train_Loss: 0.2758 Train_Acc: 0.001 Val_Loss: 0.2865  BEST VAL Loss: 0.2865  Val_Acc: 0.000
+
+Epoch 21: Validation loss did not decrease
+	 Train_Loss: 0.2746 Train_Acc: 0.001 Val_Loss: 0.2866  BEST VAL Loss: 0.2865  Val_Acc: 0.000
+
+Epoch 22: Validation loss decreased (0.286533 --> 0.286003).  Saving model ...
+	 Train_Loss: 0.2735 Train_Acc: 0.001 Val_Loss: 0.2860  BEST VAL Loss: 0.2860  Val_Acc: 0.000
+
+Epoch 23: Validation loss decreased (0.286003 --> 0.285635).  Saving model ...
+	 Train_Loss: 0.2725 Train_Acc: 0.001 Val_Loss: 0.2856  BEST VAL Loss: 0.2856  Val_Acc: 0.003
+
+Epoch 24: Validation loss decreased (0.285635 --> 0.285615).  Saving model ...
+	 Train_Loss: 0.2715 Train_Acc: 0.001 Val_Loss: 0.2856  BEST VAL Loss: 0.2856  Val_Acc: 0.003
+
+Epoch 25: Validation loss decreased (0.285615 --> 0.285400).  Saving model ...
+	 Train_Loss: 0.2705 Train_Acc: 0.001 Val_Loss: 0.2854  BEST VAL Loss: 0.2854  Val_Acc: 0.003
+
+Epoch 26: Validation loss did not decrease
+	 Train_Loss: 0.2696 Train_Acc: 0.001 Val_Loss: 0.2855  BEST VAL Loss: 0.2854  Val_Acc: 0.003
+
+Epoch 27: Validation loss decreased (0.285400 --> 0.285141).  Saving model ...
+	 Train_Loss: 0.2687 Train_Acc: 0.001 Val_Loss: 0.2851  BEST VAL Loss: 0.2851  Val_Acc: 0.003
+
+Epoch 28: Validation loss decreased (0.285141 --> 0.284815).  Saving model ...
+	 Train_Loss: 0.2678 Train_Acc: 0.001 Val_Loss: 0.2848  BEST VAL Loss: 0.2848  Val_Acc: 0.003
+
+Epoch 29: Validation loss decreased (0.284815 --> 0.284398).  Saving model ...
+	 Train_Loss: 0.2670 Train_Acc: 0.001 Val_Loss: 0.2844  BEST VAL Loss: 0.2844  Val_Acc: 0.003
+
+Epoch 30: Validation loss decreased (0.284398 --> 0.284099).  Saving model ...
+	 Train_Loss: 0.2662 Train_Acc: 0.001 Val_Loss: 0.2841  BEST VAL Loss: 0.2841  Val_Acc: 0.000
+
+Epoch 31: Validation loss decreased (0.284099 --> 0.283917).  Saving model ...
+	 Train_Loss: 0.2654 Train_Acc: 0.000 Val_Loss: 0.2839  BEST VAL Loss: 0.2839  Val_Acc: 0.000
+
+Epoch 32: Validation loss decreased (0.283917 --> 0.283823).  Saving model ...
+	 Train_Loss: 0.2647 Train_Acc: 0.001 Val_Loss: 0.2838  BEST VAL Loss: 0.2838  Val_Acc: 0.000
+
+Epoch 33: Validation loss decreased (0.283823 --> 0.283793).  Saving model ...
+	 Train_Loss: 0.2639 Train_Acc: 0.001 Val_Loss: 0.2838  BEST VAL Loss: 0.2838  Val_Acc: 0.003
+
+Epoch 34: Validation loss decreased (0.283793 --> 0.283632).  Saving model ...
+	 Train_Loss: 0.2632 Train_Acc: 0.000 Val_Loss: 0.2836  BEST VAL Loss: 0.2836  Val_Acc: 0.000
+
+Epoch 35: Validation loss decreased (0.283632 --> 0.283523).  Saving model ...
+	 Train_Loss: 0.2625 Train_Acc: 0.000 Val_Loss: 0.2835  BEST VAL Loss: 0.2835  Val_Acc: 0.000
+
+Epoch 36: Validation loss decreased (0.283523 --> 0.283285).  Saving model ...
+	 Train_Loss: 0.2619 Train_Acc: 0.000 Val_Loss: 0.2833  BEST VAL Loss: 0.2833  Val_Acc: 0.000
+
+Epoch 37: Validation loss decreased (0.283285 --> 0.283089).  Saving model ...
+	 Train_Loss: 0.2612 Train_Acc: 0.001 Val_Loss: 0.2831  BEST VAL Loss: 0.2831  Val_Acc: 0.000
+
+Epoch 38: Validation loss decreased (0.283089 --> 0.282885).  Saving model ...
+	 Train_Loss: 0.2605 Train_Acc: 0.000 Val_Loss: 0.2829  BEST VAL Loss: 0.2829  Val_Acc: 0.003
+
+Epoch 39: Validation loss did not decrease
+	 Train_Loss: 0.2599 Train_Acc: 0.000 Val_Loss: 0.2829  BEST VAL Loss: 0.2829  Val_Acc: 0.000
+
+Epoch 40: Validation loss did not decrease
+	 Train_Loss: 0.2593 Train_Acc: 0.001 Val_Loss: 0.2831  BEST VAL Loss: 0.2829  Val_Acc: 0.003
+
+Epoch 41: Validation loss did not decrease
+	 Train_Loss: 0.2587 Train_Acc: 0.001 Val_Loss: 0.2831  BEST VAL Loss: 0.2829  Val_Acc: 0.003
+
+Epoch 42: Validation loss did not decrease
+	 Train_Loss: 0.2581 Train_Acc: 0.000 Val_Loss: 0.2832  BEST VAL Loss: 0.2829  Val_Acc: 0.003
+
+Epoch 43: Validation loss did not decrease
+	 Train_Loss: 0.2575 Train_Acc: 0.000 Val_Loss: 0.2830  BEST VAL Loss: 0.2829  Val_Acc: 0.003
+
+Epoch 44: Validation loss did not decrease
+	 Train_Loss: 0.2570 Train_Acc: 0.001 Val_Loss: 0.2829  BEST VAL Loss: 0.2829  Val_Acc: 0.003
+
+Epoch 45: Validation loss decreased (0.282885 --> 0.282823).  Saving model ...
+	 Train_Loss: 0.2564 Train_Acc: 0.000 Val_Loss: 0.2828  BEST VAL Loss: 0.2828  Val_Acc: 0.003
+
+Epoch 46: Validation loss did not decrease
+	 Train_Loss: 0.2559 Train_Acc: 0.000 Val_Loss: 0.2828  BEST VAL Loss: 0.2828  Val_Acc: 0.003
+
+Epoch 47: Validation loss decreased (0.282823 --> 0.282681).  Saving model ...
+	 Train_Loss: 0.2554 Train_Acc: 0.001 Val_Loss: 0.2827  BEST VAL Loss: 0.2827  Val_Acc: 0.003
+
+Epoch 48: Validation loss decreased (0.282681 --> 0.282549).  Saving model ...
+	 Train_Loss: 0.2549 Train_Acc: 0.001 Val_Loss: 0.2825  BEST VAL Loss: 0.2825  Val_Acc: 0.003
+
+Epoch 49: Validation loss decreased (0.282549 --> 0.282508).  Saving model ...
+	 Train_Loss: 0.2544 Train_Acc: 0.000 Val_Loss: 0.2825  BEST VAL Loss: 0.2825  Val_Acc: 0.003
+
+Epoch 50: Validation loss decreased (0.282508 --> 0.282498).  Saving model ...
+	 Train_Loss: 0.2540 Train_Acc: 0.001 Val_Loss: 0.2825  BEST VAL Loss: 0.2825  Val_Acc: 0.003
+
+Epoch 51: Validation loss decreased (0.282498 --> 0.282435).  Saving model ...
+	 Train_Loss: 0.2535 Train_Acc: 0.000 Val_Loss: 0.2824  BEST VAL Loss: 0.2824  Val_Acc: 0.003
+
+Epoch 52: Validation loss decreased (0.282435 --> 0.282409).  Saving model ...
+	 Train_Loss: 0.2530 Train_Acc: 0.000 Val_Loss: 0.2824  BEST VAL Loss: 0.2824  Val_Acc: 0.000
+
+Epoch 53: Validation loss decreased (0.282409 --> 0.282402).  Saving model ...
+	 Train_Loss: 0.2526 Train_Acc: 0.000 Val_Loss: 0.2824  BEST VAL Loss: 0.2824  Val_Acc: 0.003
+
+Epoch 54: Validation loss decreased (0.282402 --> 0.282293).  Saving model ...
+	 Train_Loss: 0.2521 Train_Acc: 0.000 Val_Loss: 0.2823  BEST VAL Loss: 0.2823  Val_Acc: 0.003
+
+Epoch 55: Validation loss decreased (0.282293 --> 0.282192).  Saving model ...
+	 Train_Loss: 0.2517 Train_Acc: 0.001 Val_Loss: 0.2822  BEST VAL Loss: 0.2822  Val_Acc: 0.003
+
+Epoch 56: Validation loss did not decrease
+	 Train_Loss: 0.2513 Train_Acc: 0.001 Val_Loss: 0.2822  BEST VAL Loss: 0.2822  Val_Acc: 0.003
+
+Epoch 57: Validation loss decreased (0.282192 --> 0.282115).  Saving model ...
+	 Train_Loss: 0.2508 Train_Acc: 0.000 Val_Loss: 0.2821  BEST VAL Loss: 0.2821  Val_Acc: 0.000
+
+Epoch 58: Validation loss decreased (0.282115 --> 0.282091).  Saving model ...
+	 Train_Loss: 0.2504 Train_Acc: 0.000 Val_Loss: 0.2821  BEST VAL Loss: 0.2821  Val_Acc: 0.000
+
+Epoch 59: Validation loss decreased (0.282091 --> 0.281987).  Saving model ...
+	 Train_Loss: 0.2500 Train_Acc: 0.001 Val_Loss: 0.2820  BEST VAL Loss: 0.2820  Val_Acc: 0.003
+
+Epoch 60: Validation loss decreased (0.281987 --> 0.281819).  Saving model ...
+	 Train_Loss: 0.2496 Train_Acc: 0.001 Val_Loss: 0.2818  BEST VAL Loss: 0.2818  Val_Acc: 0.003
+
+Epoch 61: Validation loss decreased (0.281819 --> 0.281716).  Saving model ...
+	 Train_Loss: 0.2492 Train_Acc: 0.000 Val_Loss: 0.2817  BEST VAL Loss: 0.2817  Val_Acc: 0.003
+
+Epoch 62: Validation loss decreased (0.281716 --> 0.281568).  Saving model ...
+	 Train_Loss: 0.2488 Train_Acc: 0.001 Val_Loss: 0.2816  BEST VAL Loss: 0.2816  Val_Acc: 0.003
+
+Epoch 63: Validation loss did not decrease
+	 Train_Loss: 0.2485 Train_Acc: 0.000 Val_Loss: 0.2816  BEST VAL Loss: 0.2816  Val_Acc: 0.003
+
+Epoch 64: Validation loss decreased (0.281568 --> 0.281566).  Saving model ...
+	 Train_Loss: 0.2481 Train_Acc: 0.001 Val_Loss: 0.2816  BEST VAL Loss: 0.2816  Val_Acc: 0.003
+
+Epoch 65: Validation loss decreased (0.281566 --> 0.281527).  Saving model ...
+	 Train_Loss: 0.2477 Train_Acc: 0.001 Val_Loss: 0.2815  BEST VAL Loss: 0.2815  Val_Acc: 0.003
+
+Epoch 66: Validation loss decreased (0.281527 --> 0.281489).  Saving model ...
+	 Train_Loss: 0.2474 Train_Acc: 0.000 Val_Loss: 0.2815  BEST VAL Loss: 0.2815  Val_Acc: 0.003
+
+Epoch 67: Validation loss decreased (0.281489 --> 0.281420).  Saving model ...
+	 Train_Loss: 0.2470 Train_Acc: 0.001 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 68: Validation loss decreased (0.281420 --> 0.281369).  Saving model ...
+	 Train_Loss: 0.2467 Train_Acc: 0.001 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 69: Validation loss did not decrease
+	 Train_Loss: 0.2463 Train_Acc: 0.000 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 70: Validation loss did not decrease
+	 Train_Loss: 0.2460 Train_Acc: 0.000 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 71: Validation loss did not decrease
+	 Train_Loss: 0.2456 Train_Acc: 0.000 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 72: Validation loss did not decrease
+	 Train_Loss: 0.2453 Train_Acc: 0.001 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 73: Validation loss did not decrease
+	 Train_Loss: 0.2449 Train_Acc: 0.000 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 74: Validation loss did not decrease
+	 Train_Loss: 0.2446 Train_Acc: 0.001 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 75: Validation loss did not decrease
+	 Train_Loss: 0.2443 Train_Acc: 0.001 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 76: Validation loss did not decrease
+	 Train_Loss: 0.2440 Train_Acc: 0.001 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 77: Validation loss did not decrease
+	 Train_Loss: 0.2437 Train_Acc: 0.001 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 78: Validation loss did not decrease
+	 Train_Loss: 0.2434 Train_Acc: 0.001 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 79: Validation loss did not decrease
+	 Train_Loss: 0.2430 Train_Acc: 0.001 Val_Loss: 0.2815  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 80: Validation loss did not decrease
+	 Train_Loss: 0.2428 Train_Acc: 0.000 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 81: Validation loss did not decrease
+	 Train_Loss: 0.2425 Train_Acc: 0.001 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 82: Validation loss did not decrease
+	 Train_Loss: 0.2422 Train_Acc: 0.000 Val_Loss: 0.2815  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 83: Validation loss did not decrease
+	 Train_Loss: 0.2419 Train_Acc: 0.001 Val_Loss: 0.2814  BEST VAL Loss: 0.2814  Val_Acc: 0.003
+
+Epoch 84: Validation loss did not decrease
+Early stopped at epoch : 84
+MultiClass_MLP
+              precision    recall  f1-score   support
+
+           0       0.99      0.86      0.92      7972
+           1       0.80      0.97      0.88     89086
+           2       0.92      0.64      0.75     55217
+
+    accuracy                           0.84    152275
+   macro avg       0.90      0.82      0.85    152275
+weighted avg       0.86      0.84      0.84    152275
+
+MultiClass_MLP
+              precision    recall  f1-score   support
+
+           0       0.90      0.65      0.76      1993
+           1       0.76      0.93      0.83     22273
+           2       0.83      0.57      0.67     13803
+
+    accuracy                           0.78     38069
+   macro avg       0.83      0.71      0.75     38069
+weighted avg       0.79      0.78      0.77     38069
+
+MultiClass_MLP
+              precision    recall  f1-score   support
+
+           0       0.65      0.90      0.75      7173
+           1       0.93      0.73      0.82    142975
+           2       0.55      0.85      0.67     51902
+
+    accuracy                           0.76    202050
+   macro avg       0.71      0.83      0.75    202050
+weighted avg       0.82      0.76      0.78    202050
+
+Precision for class 0: 0.9000418235048095
+Recall for class 0: 0.6478675363773206
+Precision for class 1: 0.7260709914320687
+Recall for class 1: 0.9322018678160919
+Precision for class 2: 0.8523370968363454
+Recall for class 2: 0.5480086714152989
+3
+              precision    recall  f1-score   support
+
+           0       0.90      0.65      0.75      9965
+           1       0.73      0.93      0.82    111360
+           2       0.85      0.55      0.67     80725
+
+    accuracy                           0.76    202050
+   macro avg       0.83      0.71      0.75    202050
+weighted avg       0.79      0.76      0.75    202050
+
+MultiClass_MLP
+              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00       306
+           1       0.00      0.00      0.00     38317
+           2       0.29      1.00      0.45     15984
+
+    accuracy                           0.29     54607
+   macro avg       0.10      0.33      0.15     54607
+weighted avg       0.09      0.29      0.13     54607
+
+Precision for class 0: 0.0
+Recall for class 0: 0.0
+Precision for class 1: 0.0
+Recall for class 1: 0.0
+Precision for class 2: 1.0
+Recall for class 2: 0.2927097258593221
+3
+              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00         0
+           1       0.00      0.00      0.00         0
+           2       1.00      0.29      0.45     54607
+
+    accuracy                           0.29     54607
+   macro avg       0.33      0.10      0.15     54607
+weighted avg       1.00      0.29      0.45     54607
+
+MultiClass_MLP
+              precision    recall  f1-score   support
+
+           0       0.63      0.90      0.74      4946
+           1       0.93      0.65      0.77    104838
+           2       0.51      0.88      0.65     41117
+
+    accuracy                           0.72    150901
+   macro avg       0.69      0.81      0.72    150901
+weighted avg       0.81      0.72      0.73    150901
+
+Precision for class 0: 0.8970885564092196
+Recall for class 0: 0.6295402951191827
+Precision for class 1: 0.6506705583853183
+Recall for class 1: 0.933761327237386
+Precision for class 2: 0.8795631977041126
+Recall for class 2: 0.5108122996087515
+3
+              precision    recall  f1-score   support
+
+           0       0.90      0.63      0.74      7048
+           1       0.65      0.93      0.77     73054
+           2       0.88      0.51      0.65     70799
+
+    accuracy                           0.72    150901
+   macro avg       0.81      0.69      0.72    150901
+weighted avg       0.77      0.72      0.71    150901
+
+Done

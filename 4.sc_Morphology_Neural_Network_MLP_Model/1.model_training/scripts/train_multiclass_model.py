@@ -2204,7 +2204,7 @@ probabilties_df_path = pathlib.Path(
 )
 probabilties_df_path.mkdir(parents=True, exist_ok=True)
 # check if the model training metrics file exists
-probabilties_df_file = pathlib.Path(f"{probabilties_df_path}/PR_curves.parquet")
+probabilties_df_file = pathlib.Path(f"{probabilties_df_path}/probabilities.parquet")
 if probabilties_df_file.exists():
     probabilties_df_old = pd.read_parquet(probabilties_df_file)
     if len(probabilties_df_old["shuffle"].unique()) > 1:

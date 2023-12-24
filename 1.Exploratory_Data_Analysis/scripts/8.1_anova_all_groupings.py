@@ -25,7 +25,6 @@ from pycytominer.cyto_utils import infer_cp_features
 from statsmodels.formula.api import ols
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
-
 # In[ ]:
 
 
@@ -56,8 +55,8 @@ feature = args.feature
 # In[2]:
 
 
-# cell_type = "SHSY5Y"
-# feature = "Nuclei_Texture_SumVariance_CorrMito_3_03_256"
+cell_type = "SHSY5Y"
+feature = "Cytoplasm_Texture_Contrast_CorrMito_3_02_256"
 
 
 # In[3]:
@@ -191,7 +190,3 @@ tukey_df.to_parquet(anova_results_path)
 
 
 # In[ ]:
-
-
-
-

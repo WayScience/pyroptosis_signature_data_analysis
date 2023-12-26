@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import pathlib
@@ -13,8 +13,6 @@ import statsmodels.api as sm
 import toml
 from matplotlib import rcParams
 from tqdm import tqdm
-
-rcParams.update({"figure.autolayout": True})
 
 # create a venn diagram of the features that are significant in all conditions
 
@@ -36,14 +34,14 @@ parser.add_argument(
     "-c",
     "--cell_type",
     type=str,
-    help="Path to the config.toml file with analysis parameters",
+    help="Cell type to run ANOVA and Tukey's HSD on",
 )
 
 parser.add_argument(
     "-f",
     "--feature",
     type=str,
-    help="Path to the output directory for the results",
+    help="feature to run ANOVA and Tukey's HSD on",
 )
 
 # parse arguments from command line
@@ -52,14 +50,7 @@ cell_type = args.cell_type
 feature = args.feature
 
 
-# In[2]:
-
-
-cell_type = "SHSY5Y"
-feature = "Cytoplasm_Texture_Contrast_CorrMito_3_02_256"
-
-
-# In[3]:
+# In[ ]:
 
 
 # Import Data
@@ -68,7 +59,7 @@ file_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
 df = pd.read_parquet(file_path)
 
 
-# In[4]:
+# In[ ]:
 
 
 # toml file path
@@ -111,7 +102,7 @@ df["labels"] = df.apply(
 df.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 
-# In[5]:
+# In[ ]:
 
 
 df_metadata = df.filter(regex="Metadata")
@@ -121,7 +112,7 @@ df_data["Metadata_number_of_singlecells"] = df_metadata[
 ]
 
 
-# In[6]:
+# In[ ]:
 
 
 # anova for each feature in the dataframe with posthoc tukey test to determine which groups are different from each other
@@ -140,7 +131,7 @@ posthoc = pairwise_tukeyhsd(
 lst.append([posthoc, feature])
 
 
-# In[7]:
+# In[ ]:
 
 
 tukey_df = pd.DataFrame()
@@ -169,13 +160,13 @@ tukey_df["pos_neg"] = np.where(tukey_df["p-adj"] > 0, "positive", "negative")
 # order the features by p-adj value
 
 
-# In[8]:
+# In[ ]:
 
 
 tukey_df.head()
 
 
-# In[9]:
+# In[ ]:
 
 
 # save the dataframe as a parquet file
@@ -187,6 +178,3 @@ if not anova_results_path.parent.exists():
     anova_results_path.parent.mkdir(parents=True)
 # save the dataframe as a parquet file
 tukey_df.to_parquet(anova_results_path)
-
-
-# In[ ]:

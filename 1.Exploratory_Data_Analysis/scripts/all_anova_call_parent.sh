@@ -7,16 +7,16 @@
 #SBATCH --time=168:00:00
 
 
-# module load anaconda
+module load anaconda
 
-# conda activate Interstellar_python
+conda activate Interstellar_python
 
-# jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
+jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
 
 
 CELL_TYPE="PBMC"
 
-filename="../features/feature_index.txt"
+filename="../features/${CELL_TYPE}_feature_index.txt"
 # read all lines of the file to an array
 readarray -t features < $filename
 

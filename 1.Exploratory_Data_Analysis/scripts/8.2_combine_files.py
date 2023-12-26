@@ -9,12 +9,12 @@ import pathlib
 
 import numpy as np
 import pandas as pd
-
+from tqdm import tqdm
 
 # In[2]:
 
 
-cell_type = "SHSY5Y"
+cell_type = "PBMC"
 
 
 # In[3]:
@@ -47,7 +47,7 @@ output_file_path = pathlib.Path(f"../results/{cell_type}_combined.parquet")
 file_list = [x for x in data_dir.iterdir() if x.is_file()]
 
 # loop through files
-for file in file_list:
+for file in tqdm(file_list):
     tmp_df = pd.read_parquet(file)
     final_df = pd.concat([final_df, tmp_df])
     # del the tmp_df to save memory
@@ -63,4 +63,3 @@ final_df.shape
 
 # save the final_df
 final_df.to_parquet(output_file_path)
-

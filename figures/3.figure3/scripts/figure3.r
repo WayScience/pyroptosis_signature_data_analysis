@@ -3,10 +3,8 @@ suppressPackageStartupMessages(suppressWarnings(library(dplyr))) # data manipula
 suppressPackageStartupMessages(suppressWarnings(library(patchwork))) # figure composition
 suppressPackageStartupMessages(suppressWarnings(library(cowplot))) # figure composition
 suppressPackageStartupMessages(suppressWarnings(library(RcppTOML))) # parsing config file
-suppressPackageStartupMessages(suppressWarnings(library(pheatmap))) # heatmap
 suppressPackageStartupMessages(suppressWarnings(library(lattice))) # heatmap
 suppressPackageStartupMessages(suppressWarnings(library(RColorBrewer))) # heatmap
-suppressPackageStartupMessages(suppressWarnings(library(gplots))) # heatmap
 suppressPackageStartupMessages(suppressWarnings(library(ComplexHeatmap))) # heatmap
 suppressPackageStartupMessages(suppressWarnings(library(ggplotify))) # grob
 suppressPackageStartupMessages(suppressWarnings(library(viridis))) # color
@@ -43,7 +41,7 @@ montage
 
 # set path to anova results
 anova_results_path = file.path(paste0(
-    "../../1.Exploratory_Data_Analysis/results/",cell_type,"_anova_results_all_treatments.parquet"
+    "../../1.Exploratory_Data_Analysis/results/",cell_type,"_combined.parquet"
 ))
 # read in path
 anova_results = arrow::read_parquet(anova_results_path)

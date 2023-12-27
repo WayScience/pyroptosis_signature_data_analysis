@@ -4,7 +4,7 @@
 #SBATCH --partition=amilan
 #SBATCH --qos=long
 #SBATCH --output=anova_parent-%j.out
-#SBATCH --time=168:00:00
+#SBATCH --time=4-00:00
 
 
 module load anaconda
@@ -14,7 +14,7 @@ conda activate Interstellar_python
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
 
 
-CELL_TYPE="PBMC"
+CELL_TYPE="SHSY5Y"
 
 filename="../features/${CELL_TYPE}_feature_index.txt"
 # read all lines of the file to an array

@@ -8,7 +8,6 @@
 
 import itertools
 import pathlib
-import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,16 +17,15 @@ import seaborn as sns
 import toml
 import umap
 
-get_ipython().run_line_magic('matplotlib', 'inline')
+get_ipython().run_line_magic("matplotlib", "inline")
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
-
 
 # In[2]:
 
 
 # Parameters
-celltype = "PBMC"
+celltype = "SHSY5Y"
 
 
 # In[3]:
@@ -131,4 +129,3 @@ plt.title("Visualized on umap")
 plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0)
 # if path does not exist create it
 plt.savefig(f"Figures/umap_plate2/{celltype}_umap.png", bbox_inches="tight")
-

@@ -1,0 +1,85 @@
+Input Notebook:  notebooks/4.cell_count_analysis.ipynb
+Output Notebook: noteboooks/4.cell_count_analysis.ipynb
+Passed unknown parameter: celltype
+
+Executing:   0%|          | 0/7 [00:00<?, ?cell/s]Traceback (most recent call last):
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/bin/papermill", line 8, in <module>
+    sys.exit(papermill())
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/click/core.py", line 1078, in main
+    rv = self.invoke(ctx)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/click/decorators.py", line 33, in new_func
+    return f(get_current_context(), *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/papermill/cli.py", line 254, in papermill
+    execute_notebook(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/papermill/execute.py", line 119, in execute_notebook
+    nb = papermill_engines.execute_notebook_with_engine(
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/papermill/engines.py", line 48, in execute_notebook_with_engine
+    return self.get_engine(engine_name).execute_notebook(nb, kernel_name, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/papermill/engines.py", line 363, in execute_notebook
+    nb_man.notebook_start()
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/papermill/engines.py", line 76, in wrapper
+    return func(self, *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/papermill/engines.py", line 204, in notebook_start
+    self.save()
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/papermill/engines.py", line 76, in wrapper
+    return func(self, *args, **kwargs)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/papermill/engines.py", line 145, in save
+    write_ipynb(self.nb, self.output_path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/papermill/iorw.py", line 499, in write_ipynb
+    papermill_io.write(nbformat.writes(nb), path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/papermill/iorw.py", line 106, in write
+    return self.get_handler(path, extensions).write(buf, path)
+  File "/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/papermill/iorw.py", line 226, in write
+    raise FileNotFoundError("output folder {} doesn't exist.".format(dirname))
+FileNotFoundError: output folder noteboooks doesn't exist.
+
+Executing:   0%|          | 0/7 [00:00<?, ?cell/s]
+Input Notebook:  notebooks/1.umap_analysis_plate2.ipynb
+Output Notebook: notebooks/1.umap_analysis_plate2.ipynb
+Passed unknown parameter: celltype
+
+Executing:   0%|          | 0/11 [00:00<?, ?cell/s]Executing notebook with kernel: python3
+
+Executing:   9%|▉         | 1/11 [00:04<00:45,  4.51s/cell]
+Executing:  18%|█▊        | 2/11 [00:25<02:06, 14.00s/cell]
+Executing:  45%|████▌     | 5/11 [00:26<00:26,  4.40s/cell]
+Executing:  55%|█████▍    | 6/11 [00:27<00:17,  3.46s/cell]
+Executing:  73%|███████▎  | 8/11 [09:29<05:48, 116.02s/cell]
+Executing:  91%|█████████ | 10/11 [09:48<01:16, 76.10s/cell]
+Executing: 100%|██████████| 11/11 [10:16<00:00, 65.77s/cell]
+Executing: 100%|██████████| 11/11 [10:17<00:00, 56.17s/cell]
+[NbConvertApp] WARNING | Config option `kernel_spec_manager_class` not recognized by `NbConvertApp`.
+[NbConvertApp] Converting notebook notebooks/0.nomic_cleanup_for_correlation.ipynb to script
+[NbConvertApp] Writing 5532 bytes to scripts/0.nomic_cleanup_for_correlation.py
+[NbConvertApp] Converting notebook notebooks/1.umap_analysis_plate2.ipynb to script
+[NbConvertApp] Writing 2623 bytes to scripts/1.umap_analysis_plate2.py
+[NbConvertApp] Converting notebook notebooks/2a.correlation_nomic_features.ipynb to script
+[NbConvertApp] Writing 2316 bytes to scripts/2a.correlation_nomic_features.py
+[NbConvertApp] Converting notebook notebooks/2b.correlation_agg_morphology_features.ipynb to script
+[NbConvertApp] Writing 4479 bytes to scripts/2b.correlation_agg_morphology_features.py
+[NbConvertApp] Converting notebook notebooks/2c.correlation_nomic_and_agg_morphology.ipynb to script
+[NbConvertApp] Writing 5212 bytes to scripts/2c.correlation_nomic_and_agg_morphology.py
+[NbConvertApp] Converting notebook notebooks/2.single_channel_umap_analysis.ipynb to script
+[NbConvertApp] Writing 5831 bytes to scripts/2.single_channel_umap_analysis.py
+[NbConvertApp] Converting notebook notebooks/3.correlation_visualization.ipynb to script
+[NbConvertApp] Writing 2905 bytes to scripts/3.correlation_visualization.r
+[NbConvertApp] Converting notebook notebooks/4.cell_count_analysis.ipynb to script
+[NbConvertApp] Writing 2305 bytes to scripts/4.cell_count_analysis.py
+[NbConvertApp] Converting notebook notebooks/5.anova.ipynb to script
+[NbConvertApp] Writing 8773 bytes to scripts/5.anova.py
+[NbConvertApp] Converting notebook notebooks/6.heterogeneity_analnysis.ipynb to script
+[NbConvertApp] Writing 2431 bytes to scripts/6.heterogeneity_analnysis.py
+[NbConvertApp] Converting notebook notebooks/8.0_create_feature_index.ipynb to script
+[NbConvertApp] Writing 1531 bytes to scripts/8.0_create_feature_index.py
+[NbConvertApp] Converting notebook notebooks/8.1_anova_all_groupings.ipynb to script
+/projects/mlippincott@xsede.org/software/anaconda/envs/Interstellar_python/lib/python3.10/site-packages/nbformat/__init__.py:93: MissingIDFieldWarning: Code cell is missing an id field, this will become a hard error in future nbformat versions. You may want to use `normalize()` on your notebooks before validations (available since nbformat 5.1.4). Previous versions of nbformat are fixing this issue transparently, and will stop doing so in the future.
+  validate(nb)
+[NbConvertApp] Writing 4144 bytes to scripts/8.1_anova_all_groupings.py
+[NbConvertApp] Converting notebook notebooks/8.2_combine_files.ipynb to script
+[NbConvertApp] Writing 985 bytes to scripts/8.2_combine_files.py

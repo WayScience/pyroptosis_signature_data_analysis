@@ -61,7 +61,6 @@ print(ncol(anova_results))
 
 # change the group names to replace healhty with    control
 anova_results$group = str_replace_all(anova_results$group,"healthy","control")
-anova_results
 
 
 # create the three df sets for a venn diagram
@@ -248,6 +247,8 @@ height <- 10
 options(repr.plot.width=width, repr.plot.height=height)
 unique_feature_plot_function <- function(df, list_of_unique_features){
     filtered_df <- df %>% filter(features %in% list_of_unique_features)
+    # drop duplicate features
+    filtered_df <- filtered_df[!duplicated(filtered_df$features),]
     # count the data
     filtered_df_counts <- count(filtered_df, channel_learned)
     # make <NA> vlues in channel_learned Other
@@ -621,4 +622,6 @@ fig3
 
 
 sessionInfo()
+
+
 

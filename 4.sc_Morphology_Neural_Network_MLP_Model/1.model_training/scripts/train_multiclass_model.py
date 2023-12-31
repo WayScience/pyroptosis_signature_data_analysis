@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import ast
+import gc
 import pathlib
 import sys
 
@@ -34,7 +35,7 @@ from sklearn.metrics import precision_recall_curve
 sys.path.append("../../..")
 import argparse
 
-# In[ ]:
+# In[2]:
 
 
 # set up the parser
@@ -72,7 +73,7 @@ SHUFFLE = ast.literal_eval(SHUFFLE)
 print(CELL_TYPE, MODEL_NAME, SHUFFLE)
 
 
-# In[ ]:
+# In[9]:
 
 
 ml_configs_file = pathlib.Path("../../MLP_utils/multi_class_config.toml").resolve(
@@ -102,7 +103,7 @@ with open(class_weights_file_path, "r") as f:
 print(class_weights)
 
 
-# In[ ]:
+# In[10]:
 
 
 # Import Data
@@ -113,6 +114,35 @@ file_path = pathlib.Path(
 ).resolve(strict=True)
 
 df1 = pd.read_parquet(file_path)
+
+df_no_fs_path = pathlib.Path(
+    f"../../../data/{mlp_params.CELL_TYPE}_sc.parquet"
+).resolve(strict=True)
+df_no_fs = pd.read_parquet(df_no_fs_path)
+
+
+# In[6]:
+
+
+df1["Metadata_Nuclei_Location_Center_X"] = df_no_fs["Nuclei_Location_Center_X"]
+df1["Metadata_Nuclei_Location_Center_Y"] = df_no_fs["Nuclei_Location_Center_Y"]
+df1["Metadata_Cytoplasm_AreaShape_BoundingBoxMaximum_X"] = df_no_fs[
+    "Cytoplasm_AreaShape_BoundingBoxMaximum_X"
+]
+df1["Metadata_Cytoplasm_AreaShape_BoundingBoxMaximum_Y"] = df_no_fs[
+    "Cytoplasm_AreaShape_BoundingBoxMaximum_Y"
+]
+df1["Metadata_Cytoplasm_AreaShape_BoundingBoxMinimum_X"] = df_no_fs[
+    "Cytoplasm_AreaShape_BoundingBoxMinimum_X"
+]
+df1["Metadata_Cytoplasm_AreaShape_BoundingBoxMinimum_Y"] = df_no_fs[
+    "Cytoplasm_AreaShape_BoundingBoxMinimum_Y"
+]
+
+df1["Metadata_Site"] = df_no_fs["Metadata_Site"]
+
+del df_no_fs
+gc.collect()
 
 
 # In[ ]:
@@ -806,6 +836,68 @@ stats_df
 model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
 
+# In[ ]:
+
+
+# define a final dataframe to store the predictions
+final_predictions_df = pd.DataFrame()
+
+
+# In[ ]:
+
+
+# make a df of the predictions and the true labels
+y_pred_df = pd.DataFrame(y_pred_list, columns=["predicted_label"])
+y_true_df = pd.DataFrame(Y_test_list, columns=["true_label"])
+# concat the two dataframes
+# final_predictions_df = pd.concat([y_true_df, y_pred_df], axis=1)
+y_pred_df = pd.concat([y_true_df, y_pred_df], axis=1)
+
+
+# In[ ]:
+
+
+# merge y_pred_df with metadata_holdout whiile keeping the index of metadata_holdout
+metadata_train.reset_index(inplace=True)
+y_pred_df = pd.concat([y_pred_df, metadata_train], axis=1)
+# set the index to the index column
+y_pred_df.set_index("index", inplace=True, drop=True)
+
+
+# In[ ]:
+
+
+y_pred_df["data_split"] = "train"
+y_pred_df["shuffle"] = mlp_params.SHUFFLE
+
+
+# In[ ]:
+
+
+# set path for the model confusion matrices
+y_pred_df_path = pathlib.Path(
+    f"../../results/Multi_Class/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}/training_single_cell_predictions.parquet"
+)
+y_pred_df_path.parent.mkdir(parents=True, exist_ok=True)
+if y_pred_df_path.exists():
+    predictions_df_tmp = pd.read_parquet(y_pred_df_path)
+    if len(predictions_df_tmp["data_split"].unique()) > 1:
+        pass
+    elif predictions_df_tmp["data_split"].unique() == mlp_params.SHUFFLE:
+        pass
+    else:
+        metrics_df = pd.concat([predictions_df_tmp, y_pred_df], axis=0)
+        metrics_df.to_parquet(y_pred_df_path, index=False)
+else:
+    y_pred_df.to_parquet(y_pred_df_path, index=False)
+
+
+# In[ ]:
+
+
+final_predictions_df = pd.concat([final_predictions_df, y_pred_df], axis=0)
+
+
 # ## Test models on Validation data
 
 # In[ ]:
@@ -999,6 +1091,61 @@ stats_df["group"] = "validation"
 stats_df["shuffled_data"] = mlp_params.SHUFFLE
 
 model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
+
+
+# In[ ]:
+
+
+# make a df of the predictions and the true labels
+y_pred_df = pd.DataFrame(y_pred_list, columns=["predicted_label"])
+y_true_df = pd.DataFrame(Y_test_list, columns=["true_label"])
+# concat the two dataframes
+# final_predictions_df = pd.concat([y_true_df, y_pred_df], axis=1)
+y_pred_df = pd.concat([y_true_df, y_pred_df], axis=1)
+
+
+# In[ ]:
+
+
+# merge y_pred_df with metadata_holdout whiile keeping the index of metadata_holdout
+metadata_val.reset_index(inplace=True)
+y_pred_df = pd.concat([y_pred_df, metadata_val], axis=1)
+# set the index to the index column
+y_pred_df.set_index("index", inplace=True, drop=True)
+
+
+# In[ ]:
+
+
+y_pred_df["data_split"] = "validation"
+y_pred_df["shuffle"] = mlp_params.SHUFFLE
+
+
+# In[ ]:
+
+
+# set path for the model confusion matrices
+y_pred_df_path = pathlib.Path(
+    f"../../results/Multi_Class/{mlp_params.MODEL_NAME}/{mlp_params.CELL_TYPE}/validation_single_cell_predictions.parquet"
+)
+y_pred_df_path.parent.mkdir(parents=True, exist_ok=True)
+if y_pred_df_path.exists():
+    predictions_df_tmp = pd.read_parquet(y_pred_df_path)
+    if len(predictions_df_tmp["data_split"].unique()) > 1:
+        pass
+    elif predictions_df_tmp["data_split"].unique() == mlp_params.SHUFFLE:
+        pass
+    else:
+        metrics_df = pd.concat([predictions_df_tmp, y_pred_df], axis=0)
+        metrics_df.to_parquet(y_pred_df_path, index=False)
+else:
+    y_pred_df.to_parquet(y_pred_df_path, index=False)
+
+
+# In[ ]:
+
+
+final_predictions_df = pd.concat([final_predictions_df, y_pred_df], axis=0)
 
 
 # ## Testing on the test data
@@ -1195,8 +1342,8 @@ else:
 # In[ ]:
 
 
-# define a final dataframe to store the predictions
-final_predictions_df = pd.DataFrame()
+# # define a final dataframe to store the predictions
+# final_predictions_df = pd.DataFrame()
 
 
 # In[ ]:
@@ -1213,7 +1360,7 @@ y_pred_df = pd.concat([y_true_df, y_pred_df], axis=1)
 # In[ ]:
 
 
-# merge y_pred_df with metadata_holdout whiile keeping the index of metadata_holdout
+# merge y_pred_df with metadata_holdout while keeping the index of metadata_holdout
 metadata_test.reset_index(inplace=True)
 y_pred_df = pd.concat([y_pred_df, metadata_test], axis=1)
 # set the index to the index column
@@ -1225,12 +1372,6 @@ y_pred_df.set_index("index", inplace=True, drop=True)
 
 y_pred_df["data_split"] = "test"
 y_pred_df["shuffle"] = mlp_params.SHUFFLE
-
-
-# In[ ]:
-
-
-y_pred_df.head()
 
 
 # In[ ]:

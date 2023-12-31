@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --mem=400G
+#SBATCH --mem=500G
 #SBATCH --partition=amem
 #SBATCH --qos=mem
 #SBATCH --time=24:00:00
@@ -9,7 +9,7 @@
 
 module load anaconda
 
-conda activate Interstellar
+conda activate Interstellar_python
 
 cell_types=( PBMC SHSY5Y)
 aggragates=( True False )
@@ -27,3 +27,5 @@ for cell_type in $cell_types; do
 done
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=scripts *.ipynb
+
+wcho "Complete"

@@ -3,8 +3,7 @@
 
 # This noteboook aggregates the data from the previous notebooks and creates the final dataset for the analysis barring the data are aggregated in the analysis.
 
-# In[ ]:
-
+# In[1]:
 
 
 import pathlib
@@ -12,16 +11,16 @@ import pathlib
 import numpy as np
 import pandas as pd
 
-# In[ ]:
+# In[2]:
 
 
 # Parameters
-cell_type = "SHSY5Y"
+cell_type = "PBMC"
 aggregation = True
 nomic = True
 
 
-# In[]:
+# In[3]:
 
 
 if aggregation and nomic:
@@ -36,16 +35,13 @@ elif aggregation and not nomic:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
     ).resolve(strict=True)
-
 elif not aggregation and not nomic:
     pass
 else:
     raise ValueError("Wrong parameters")
 
 
-
-# In[ ]:
-
+# In[4]:
 
 
 path = pathlib.Path(f"../data/{cell_type}_preprocessed_sc_norm.parquet")
@@ -73,7 +69,8 @@ elif not nomic:
 else:
     raise ValueError("Nomic data not imported")
 
-# In[ ]:
+
+# In[5]:
 
 
 # subset each column that contains metadata
@@ -90,7 +87,7 @@ metadata_well = metadata[
 data_df = pd.merge(data, metadata_well, left_index=True, right_index=True)
 
 
-# In[ ]:
+# In[6]:
 
 
 if nomic:
@@ -106,7 +103,7 @@ if nomic:
     )
 
 
-# In[ ]:
+# In[7]:
 
 
 if aggregation and nomic:
@@ -140,11 +137,8 @@ if aggregation and nomic:
 
 
 elif aggregation and not nomic:
-
     # get metadata columns
     metadata = data_df.filter(regex="Metadata")
-
-
     data_df = data_df.drop(metadata.columns, axis=1)
     metadata
     data_df = pd.concat([data_df, metadata], axis=1)
@@ -159,10 +153,8 @@ elif aggregation and not nomic:
     aggregated_data_path = pathlib.Path(
         f"../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
     )
-
     # reset the index
     data_df = data_df.reset_index()
-
 
 elif not aggregation and nomic:
     data_df = pd.merge(
@@ -182,7 +174,7 @@ else:
     raise ValueError("Wrong parameters nomica and/or aggregation not defined")
 
 
-# In[ ]:
+# In[8]:
 
 
 # save the data

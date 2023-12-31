@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --mem=256G
+#SBATCH --mem=400G
 #SBATCH --partition=amem
 #SBATCH --qos=mem
 #SBATCH --time=24:00:00
@@ -16,12 +16,11 @@ aggragates=( True False )
 nomics=( True False )
 
 for cell_type in $cell_types; do
-    papermill 1.preprocessing.ipynb 1.preprocessing.ipynb -p cell_type $cell_type
+    papermill 1.preprocessing_morphology_data.ipynb 1.preprocessing_morphology_data.ipynb -p cell_type $cell_type
+    papermill 2.preprocessing_nELISA_data.ipynb 2.preprocessing_nELISA_data.ipynb -p cell_type $cell_type
     for aggragate in $aggragates; do
         for nomic in $nomics; do
             echo $cell_type $aggragate $nomic
-            papermill 1.preprocessing_morphology_data.ipynb 1.preprocessing_morphology_data.ipynb -p cell_type $cell_type
-            papermill 2.preprocessing_nELISA_data.ipynb 2.preprocessing_nELISA_data.ipynb -p cell_type $cell_type
             papermill 3.data_aggregation.ipynb 3.data_aggregation.ipynb -p cell_type $cell_type -p aggregation $aggragate -p nomic $nomic
         done
     done

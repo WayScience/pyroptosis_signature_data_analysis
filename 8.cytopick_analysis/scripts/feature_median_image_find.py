@@ -26,13 +26,13 @@ cell_type = "SHSY5Y"
 feature = "Nuclei_Texture_SumVariance_CorrGasdermin_3_01_256"
 
 
-# In[4]:
+# In[3]:
 
 
 # define directories
 # where the images are
 image_dir_path = pathlib.Path(
-    "/media/lippincm/c58d4f19-ae4d-4b78-8370-2c2639886da0/interstellar_data/70117_20230210MM1_Gasdermin514_CP_BC430856__2023-03-22T15_42_38-Measurement1/2.IC/"
+    "/media/lippincm/18T/interstellar_data/70117_20230210MM1_Gasdermin514_CP_BC430856__2023-03-22T15_42_38-Measurement1/2.IC/"
 )
 # if path does not exist, create it
 image_dir_path.mkdir(parents=True, exist_ok=True)
@@ -42,7 +42,7 @@ image_out_dir_path = pathlib.Path("../figures/")
 image_out_dir_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[6]:
+# In[4]:
 
 
 df_path = pathlib.Path(f"../../data/{cell_type}_sc_norm_fs.parquet")
@@ -54,7 +54,7 @@ df_no_fs_path = pathlib.Path(f"../../data/{cell_type}_sc.parquet")
 df_no_fs = pd.read_parquet(df_no_fs_path)
 
 
-# In[7]:
+# In[5]:
 
 
 df["Nuclei_Location_Center_X"] = df_no_fs["Nuclei_Location_Center_X"]
@@ -73,7 +73,7 @@ df["Cytoplasm_AreaShape_BoundingBoxMinimum_Y"] = df_no_fs[
 ]
 
 
-# In[8]:
+# In[6]:
 
 
 median, median_index = cherrypick.find_median(df=df, feature_name=feature)
@@ -112,7 +112,7 @@ print(
 )
 
 
-# In[9]:
+# In[7]:
 
 
 well_dict = {
@@ -179,7 +179,7 @@ fov_dict = {
 }
 
 
-# In[10]:
+# In[8]:
 
 
 image_basename_1 = "p04-ch1sk1fk1fl1_IC.tiff"
@@ -189,14 +189,14 @@ image_basename_4 = "p04-ch4sk1fk1fl1_IC.tiff"
 image_basename_5 = "p04-ch5sk1fk1fl1_IC.tiff"
 
 
-# In[11]:
+# In[9]:
 
 
 print(row_id, column_id, image_id, fov_id)
 print(f"r{well_dict[row_id]}c{column_dict[column_id]}f{fov_dict[fov_id]}")
 
 
-# In[12]:
+# In[10]:
 
 
 image_name1 = f"r{well_dict[row_id]}c{column_dict[column_id]}f{fov_dict[fov_id]}{image_basename_1}"
@@ -220,7 +220,7 @@ image_path5 = image_dir_path.joinpath(image_name5)
 print(image_name5, "\n", image_path5)
 
 
-# In[13]:
+# In[11]:
 
 
 # define the radius of the circle to be drawn (actually a square) but a circle fits inside a square so it's all good
@@ -229,7 +229,7 @@ print(image_name5, "\n", image_path5)
 radius = 75
 
 
-# In[14]:
+# In[12]:
 
 
 # make each coordinate an integer
@@ -245,7 +245,7 @@ max_y_box = center_y + radius
 print(center_x, center_y, min_x_box, min_y_box, max_x_box, max_y_box)
 
 
-# In[15]:
+# In[13]:
 
 
 # crop all 5 channels of the image
@@ -270,7 +270,7 @@ im5 = cv2.imread(image_path5.as_posix(), cv2.IMREAD_GRAYSCALE)
 im_crop5 = im5[min_y_box:max_y_box, min_x_box:max_x_box]
 
 
-# In[16]:
+# In[14]:
 
 
 # pick three channels to stack
@@ -296,7 +296,7 @@ green_channel = (green_channel_stack / np.max(green_channel_stack) * 65535).asty
 red_channel = (red_channel_stack / np.max(red_channel_stack) * 65535).astype(np.uint16)
 
 
-# In[17]:
+# In[15]:
 
 
 composite_image = cv2.merge((blue_channel, green_channel, red_channel)).astype(
@@ -306,7 +306,7 @@ composite_image.shape
 composite_image = cv2.cvtColor(composite_image, cv2.COLOR_BGR2RGB)
 
 
-# In[18]:
+# In[16]:
 
 
 # transformations of the image to fix the orientation post pixel scaling
@@ -316,7 +316,7 @@ composite_image = cv2.flip(composite_image, 0)
 composite_image = cv2.rotate(composite_image, cv2.ROTATE_90_CLOCKWISE)
 
 
-# In[19]:
+# In[17]:
 
 
 # cv2.imshow("Composite", composite_image)
@@ -324,7 +324,7 @@ composite_image = cv2.rotate(composite_image, cv2.ROTATE_90_CLOCKWISE)
 # cv2.destroyAllWindows()
 
 
-# In[20]:
+# In[18]:
 
 
 # crop the composite image
@@ -334,7 +334,7 @@ im_crop = composite_image[min_y_box:max_y_box, min_x_box:max_x_box]
 # cv2.destroyAllWindows()
 
 
-# In[21]:
+# In[19]:
 
 
 # image_out_dir_path updated to include the feature name
@@ -355,6 +355,9 @@ tf.imwrite(
     im_crop,
     compression=None,
 )
+
+
+# In[ ]:
 
 
 # In[ ]:

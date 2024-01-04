@@ -18,7 +18,7 @@ import pyarrow.parquet as pq
 
 
 # Parameters
-cell_type = "SHSY5Y"
+cell_type = "PBMC"
 
 
 # In[3]:
@@ -257,3 +257,22 @@ for column in feature_df.columns:
 
 # write to parquet file
 feature_df.to_parquet(feature_df_out_path)
+
+
+# In[20]:
+
+
+del feature_df
+import gc
+
+gc.collect()
+
+
+# In[21]:
+
+
+# Define inputs
+feature_file = pathlib.Path(f"../data/{cell_type}_sc.parquet")
+feature_df = pd.read_parquet(feature_file)
+# quick check for site
+print(feature_df["Metadata_Site"])

@@ -1,4 +1,9 @@
 #!/bin/bash
+"""
+This script combines the intermediate result files from
+each of the child processes into one file.
+The result is one file.
+"""
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --mem=500G

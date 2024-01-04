@@ -35,10 +35,10 @@ from statsmodels.stats.multicomp import MultiComparison, pairwise_tukeyhsd
 
 
 # Parameters
-cell_type = "SHSY5Y"
-treatment1 = "DMSO_0.100_DMSO_0.025"
-treatment2 = "LPS_100.000_DMSO_0.025"
-treatment3 = "Thapsigargin_10.000_DMSO_0.025"
+cell_type = "PBMC"
+treatment1 = "DMSO_0.100_%_DMSO_0.025_%"
+treatment2 = "LPS_0.010_ug_per_ml_DMSO_0.025_%"
+treatment3 = "H2O2_100.000_nM_DMSO_0.025_%"
 
 
 # In[3]:

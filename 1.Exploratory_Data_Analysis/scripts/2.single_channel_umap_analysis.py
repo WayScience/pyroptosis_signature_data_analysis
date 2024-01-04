@@ -29,7 +29,7 @@ warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
 
 
 # Parameters
-cell_type = "SHSY5Y"
+cell_type = "PBMC"
 
 
 # In[3]:

@@ -5,7 +5,7 @@
 #SBATCH --ntasks=20
 #SBATCH --partition=amem
 #SBATCH --qos=mem
-#SBATCH --time=72:00:00
+#SBATCH --time=47:00:00
 #SBATCH --output=sample-%j.out
 #SBATCH --array=1-750%20
 

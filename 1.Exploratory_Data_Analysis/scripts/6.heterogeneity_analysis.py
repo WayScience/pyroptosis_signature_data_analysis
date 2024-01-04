@@ -8,6 +8,7 @@
 
 import itertools
 import pathlib
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,6 +18,7 @@ import seaborn as sns
 import toml
 import umap
 from sklearn.cluster import KMeans
+
 
 # In[2]:
 
@@ -128,3 +130,4 @@ plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0)
 plt.savefig(
     f"Figures/umap_plate2/cell_heterogeneity_{cell_type}_umap.png", bbox_inches="tight"
 )
+

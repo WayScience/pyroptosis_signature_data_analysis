@@ -1,4 +1,8 @@
 #!/bin/bash
+"""This script runs the exploratory analysis notebooks via papermill  with
+injectable parameters. The notebooks are then converted to scripts for
+readability and reproducibility."""
+
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --mem=500G
@@ -9,12 +13,13 @@
 
 module load anaconda
 
-conda activate Interstellar
+conda activate Interstellar_python
 
-papermill 4.cell_count_analysis.ipynb 4.cell_count_analysis.ipynb -p celltype "SHSY5Y"
-papermill 1.umap_analysis_plate2.ipynb 1.umap_analysis_plate2.ipynb -p celltype "SHSY5Y"
+papermill notebooks/4.cell_count_analysis.ipynb noteboooks/4.cell_count_analysis.ipynb -p celltype "SHSY5Y"
+papermill notebooks/1.umap_analysis_plate2.ipynb notebooks/1.umap_analysis_plate2.ipynb -p celltype "SHSY5Y"
 
-papermill 4.cell_count_analysis.ipynb 4.cell_count_analysis.ipynb -p celltype "PBMC"
-papermill 1.umap_analysis_plate2.ipynb 1.umap_analysis_plate2.ipynb -p celltype "PBMC"
+papermill notebooks/4.cell_count_analysis.ipynb notebooks/4.cell_count_analysis.ipynb -p celltype "PBMC"
+papermill notebooks/1.umap_analysis_plate2.ipynb notebooks/1.umap_analysis_plate2.ipynb -p celltype "PBMC"
 
-jupyter nbconvert --to=script --FilesWriter.build_directory=scripts *.ipynb
+jupyter nbconvert --to=script --FilesWriter.build_directory=scripts notebooks/*.ipynb
+

@@ -391,7 +391,6 @@ def train_n_validate(
         output = model(X_train_batch)
         if params.MODEL_TYPE == "Multi_Class":
             y_pred = torch.log_softmax(output, dim=1)
-            # _, y_pred = torch.max(output, dim=3)
             loss = criterion(output, y_train_batch)
             loss.backward()
             optimizer.step()

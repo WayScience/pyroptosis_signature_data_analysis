@@ -22,6 +22,8 @@ from sklearn import preprocessing
 
 sys.path.append("../..")
 
+import argparse
+
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
     Dataset_formatter,
@@ -40,19 +42,32 @@ from sklearn.model_selection import train_test_split
 sys.path.append("../../..")
 from utils.utils import df_stats
 
-# ## Papermill is used for executing notebooks in the CLI with multiple parameters
-# Here the `injected-parameters` cell is used to inject parameters into the notebook via papermill.
-# This enables multiple notebooks to be executed with different parameters, preventing to manually update parameters or have multiple copies of the notebook.
-
 # In[2]:
 
 
-# Parameters
-CELL_TYPE = "PBMC"
-MODEL_NAME = "MultiClass_MLP"
+# set up the parser
+parser = argparse.ArgumentParser(description="Run hyperparameter optimization")
+parser.add_argument(
+    "--cell_type",
+    type=str,
+    default="all",
+    help="Cell type to run hyperparameter optimization for",
+)
+parser.add_argument(
+    "--model_name",
+    type=str,
+    default="all",
+    help="Model name to run hyperparameter optimization for",
+)
+
+# parse arguments
+args = parser.parse_args()
+
+CELL_TYPE = args.cell_type
+MODEL_NAME = args.model_name
 
 
-# In[3]:
+# In[4]:
 
 
 ml_configs_file = pathlib.Path("../../MLP_utils/multi_class_config.toml").resolve(
@@ -65,12 +80,11 @@ mlp_params = parameter_set(params, ml_configs)
 # overwrite params via command line arguments from papermill
 mlp_params.CELL_TYPE = CELL_TYPE
 mlp_params.MODEL_NAME = MODEL_NAME
-mlp_params.MODEL_NAME = MODEL_NAME
 MODEL_TYPE = mlp_params.MODEL_TYPE
 HYPERPARAMETER_BATCH_SIZE = mlp_params.HYPERPARAMETER_BATCH_SIZE
 
 
-# In[4]:
+# In[5]:
 
 
 # Import Data
@@ -81,18 +95,6 @@ file_path = pathlib.Path(
 ).resolve(strict=True)
 
 df1 = pd.read_parquet(file_path)
-
-
-# In[5]:
-
-
-if params.MODEL_NAME == "MultiClass_MLP_h202_remove":
-    # drop H2O2_100.000_uM_DMSO_0.025_% and H2O2_100.000_nM_DMSO_0.025_% while keeping the index order
-    df1 = df1[
-        ~df1["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
-            ["H2O2_100.000_uM_DMSO_0.025_%", "H2O2_100.000_nM_DMSO_0.025_%"]
-        )
-    ]
 
 
 # In[6]:
@@ -199,7 +201,7 @@ print(
 # variable test and train set splits
 # 100% test set
 # subset the following treatments for test set
-test_set_all = df[
+treatment_holdout = df[
     df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(test_split_100)
 ]
 # 75% test set and 25% train set
@@ -213,7 +215,7 @@ test_set_50 = df[
     ~df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(test_100_and_75)
 ]
 
-print(test_set_all.shape, test_set_75.shape, test_set_50.shape)
+print(treatment_holdout.shape, test_set_75.shape, test_set_50.shape)
 
 
 # In[12]:
@@ -221,7 +223,7 @@ print(test_set_all.shape, test_set_75.shape, test_set_50.shape)
 
 # get the train test splits from each group
 # 100% test set
-test_set_all
+treatment_holdout
 
 # 75% test set and 25% train set
 test_ratio = 0.75
@@ -243,7 +245,7 @@ training_data_set_50, testing_data_set_50 = train_test_split(
 
 # verify that the correct splits have been made
 # 100% test set
-print(f"Shape for the 100% test set: {test_set_all.shape}\n")
+print(f"Shape for the 100% test set: {treatment_holdout.shape}\n")
 
 # 75% test set and 25% train set
 print(
@@ -251,20 +253,15 @@ print(
 )
 
 # 50% test set and 50% train set
-print(
-    f"Shape for the 50% test set: {training_data_set_50.shape};\nShape for the 50% train set: {testing_data_set_50.shape}"
-)
-
 print(f"Shape for the holdout set: {df_holdout.shape}")
 
 
 # In[13]:
 
 
+treatment_holdout
 # combine all testing sets together while preserving the index
-testing_data_set = pd.concat(
-    [test_set_all, testing_data_set_75, testing_data_set_50], axis=0
-)
+testing_data_set = pd.concat([testing_data_set_75, testing_data_set_50], axis=0)
 testing_data_set = testing_data_set.sort_index()
 testing_data_set
 
@@ -283,6 +280,7 @@ print(
     Testing set length: {len(testing_data_set)}\n
     Training set length: {len(training_data_set)}\n
     Validation set length: {len(val_data_set)}\n
+    Treatment Holdout set length: {len(treatment_holdout)}\n
     Holdout set length: {len(df_holdout)}"""
 )
 
@@ -290,89 +288,35 @@ print(
 # In[14]:
 
 
-# # train
-# # downsample healthy and pyroptosis to match number of apoptosis
-# # to balance classes
-# df_healthy_train = training_data_set[training_data_set["labels"] == "healthy"]
-# df_pyroptosis_train = training_data_set[training_data_set["labels"] == "pyroptosis"]
-# df_apoptosis_train = training_data_set[training_data_set["labels"] == "apoptosis"]
-# print(df_healthy_train.shape, df_pyroptosis_train.shape, df_apoptosis_train.shape)
-
-# # downsample healthy and pyroptosis to match number of apoptosis
-# df_healthy_train = df_healthy_train.sample(n=df_apoptosis_train.shape[0], random_state=0)
-# df_pyroptosis_train = df_pyroptosis_train.sample(n=df_apoptosis_train.shape[0], random_state=0)
-# print(df_healthy_train.shape, df_pyroptosis_train.shape, df_apoptosis_train.shape)
-# training_data_set = pd.concat([df_healthy_train, df_pyroptosis_train, df_apoptosis_train])
-# # show that the df was downsampled and recombined correctly
-# assert (df_healthy_train + df_pyroptosis_train + df_apoptosis_train).shape[0] == training_data_set.shape[0]
-
-
-# # validation
-# # downsample healthy and pyroptosis to match number of apoptosis
-# # to balance classes
-# df_healthy_val = val_data_set[val_data_set["labels"] == "healthy"]
-# df_pyroptosis_val = val_data_set[val_data_set["labels"] == "pyroptosis"]
-# df_apoptosis_val = val_data_set[val_data_set["labels"] == "apoptosis"]
-# print(df_healthy_val.shape, df_pyroptosis_val.shape, df_apoptosis_val.shape)
-
-# # downsample healthy and pyroptosis to match number of apoptosis
-# df_healthy_val = df_healthy_val.sample(n=df_apoptosis_val.shape[0], random_state=0)
-# df_pyroptosis_val = df_pyroptosis_val.sample(n=df_apoptosis_val.shape[0], random_state=0)
-# print(df_healthy_val.shape, df_pyroptosis_val.shape, df_apoptosis_val.shape)
-# val_data_set = pd.concat([df_healthy_val, df_pyroptosis_val, df_apoptosis_val])
-# # show that the df was downsampled and recombined correctly
-# assert (df_healthy_val + df_pyroptosis_val + df_apoptosis_val).shape[0] == val_data_set.shape[0]
-
-
-# # test
-# # downsample healthy and pyroptosis to match number of apoptosis
-# # to balance classes
-# df_healthy_test = testing_data_set[testing_data_set["labels"] == "healthy"]
-# df_pyroptosis_test = testing_data_set[testing_data_set["labels"] == "pyroptosis"]
-# df_apoptosis_test = testing_data_set[testing_data_set["labels"] == "apoptosis"]
-# print(df_healthy_test.shape, df_pyroptosis_test.shape, df_apoptosis_test.shape)
-
-# # downsample healthy and pyroptosis to match number of apoptosis
-# df_healthy_test = df_healthy_test.sample(n=df_apoptosis_test.shape[0], random_state=0)
-# df_pyroptosis_test = df_pyroptosis_test.sample(n=df_apoptosis_test.shape[0], random_state=0)
-# print(df_healthy_test.shape, df_pyroptosis_test.shape, df_apoptosis_test.shape)
-# testing_data_set = pd.concat([df_healthy_test, df_pyroptosis_test, df_apoptosis_test])
-# # show that the df was downsampled and recombined correctly
-# assert (df_healthy_test + df_pyroptosis_test + df_apoptosis_test).shape[0] == testing_data_set.shape[0]
-
-
-# print(len(training_data_set), len(val_data_set), len(testing_data_set), len(df_holdout))
-
-
-# In[15]:
-
-
 # get the indexes for the training and testing sets
 
 training_data_set_index = training_data_set.index
 val_data_set_index = val_data_set.index
 testing_data_set_index = testing_data_set.index
+treatment_holdout_index = treatment_holdout.index
 df_holdout_index = df_holdout.index
 
 
-# In[16]:
+# In[15]:
 
 
 print(
     training_data_set_index.shape,
     val_data_set_index.shape,
     testing_data_set_index.shape,
+    treatment_holdout_index.shape,
     df_holdout_index.shape,
 )
 print(
     training_data_set_index.shape[0]
     + val_data_set_index.shape[0]
     + testing_data_set_index.shape[0]
+    + treatment_holdout_index.shape[0]
     + df_holdout_index.shape[0]
 )
 
 
-# In[17]:
+# In[16]:
 
 
 # create pandas dataframe with all indexes and their respective labels, stratified by phenotypic class
@@ -383,12 +327,20 @@ for index in val_data_set_index:
     index_data.append({"labeled_data_index": index, "label": "val"})
 for index in testing_data_set_index:
     index_data.append({"labeled_data_index": index, "label": "test"})
+for index in treatment_holdout_index:
+    index_data.append({"labeled_data_index": index, "label": "treatment_holdout"})
 for index in df_holdout_index:
     index_data.append({"labeled_data_index": index, "label": "holdout"})
 
 # make index data a dataframe and sort it by labeled data index
 index_data = pd.DataFrame(index_data)
 index_data
+
+
+# In[17]:
+
+
+index_data["label"].unique()
 
 
 # In[18]:
@@ -479,29 +431,66 @@ X_train = df_values_X.loc[training_data_set_index]
 X_val = df_values_X.loc[val_data_set_index]
 X_test = df_values_X.loc[testing_data_set_index]
 X_holdout = df_values_X.loc[df_holdout_index]
+X_treatment_holdout = df_values_X.loc[treatment_holdout_index]
 
 Y_train = df_values_Y.loc[training_data_set_index]
 Y_val = df_values_Y.loc[val_data_set_index]
 Y_test = df_values_Y.loc[testing_data_set_index]
 Y_holdout = df_values_Y.loc[df_holdout_index]
+Y_treatment_holdout = df_values_Y.loc[treatment_holdout_index]
 
 
 # In[24]:
 
 
-# produce data objects for train, val and test datasets
-train_data = Dataset_formatter(
-    torch.FloatTensor(X_train.values), torch.FloatTensor(Y_train.values)
-)
-val_data = Dataset_formatter(
-    torch.FloatTensor(X_val.values), torch.FloatTensor(Y_val.values)
-)
-test_data = Dataset_formatter(
-    torch.FloatTensor(X_test.values), torch.FloatTensor(Y_test.values)
-)
+mlp_params.OUT_FEATURES = len(df_values_Y.unique())
+mlp_params.OUT_FEATURES
 
 
 # In[25]:
+
+
+Y_train = torch.tensor(Y_train.values)
+Y_train = torch.nn.functional.one_hot(
+    Y_train, num_classes=mlp_params.OUT_FEATURES
+).float()
+
+Y_val = torch.tensor(Y_val.values)
+Y_val = torch.nn.functional.one_hot(Y_val, num_classes=mlp_params.OUT_FEATURES).float()
+
+Y_test = torch.tensor(Y_test.values)
+Y_test = torch.nn.functional.one_hot(
+    Y_test, num_classes=mlp_params.OUT_FEATURES
+).float()
+
+Y_holdout = torch.tensor(Y_holdout.values)
+Y_holdout = torch.nn.functional.one_hot(
+    Y_holdout, num_classes=mlp_params.OUT_FEATURES
+).float()
+
+Y_treatment_holdout = torch.tensor(Y_treatment_holdout.values)
+Y_treatment_holdout = torch.nn.functional.one_hot(
+    Y_treatment_holdout, num_classes=mlp_params.OUT_FEATURES
+).float()
+
+# convert the X dataframes to tensors
+X_train = torch.tensor(X_train.values)
+X_val = torch.tensor(X_val.values)
+X_test = torch.tensor(X_test.values)
+X_holdout = torch.tensor(X_holdout.values)
+X_treatment_holdout = torch.tensor(X_treatment_holdout.values)
+
+
+# In[26]:
+
+
+# produce data objects for train, val and test datasets
+train_data = torch.utils.data.TensorDataset(X_train, Y_train)
+val_data = torch.utils.data.TensorDataset(X_val, Y_val)
+test_data = torch.utils.data.TensorDataset(X_test, Y_test)
+
+
+# In[27]:
 
 
 mlp_params.IN_FEATURES = X_train.shape[1]
@@ -525,26 +514,32 @@ else:
 print(mlp_params.MODEL_TYPE)
 
 
-# In[26]:
+# In[28]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
 train_loader = torch.utils.data.DataLoader(
-    dataset=train_data, batch_size=mlp_params.HYPERPARAMETER_BATCH_SIZE
+    dataset=train_data, batch_size=mlp_params.HYPERPARAMETER_BATCH_SIZE, shuffle=True
 )
 valid_loader = torch.utils.data.DataLoader(
-    dataset=val_data, batch_size=mlp_params.HYPERPARAMETER_BATCH_SIZE
+    dataset=val_data, batch_size=mlp_params.HYPERPARAMETER_BATCH_SIZE, shuffle=False
 )
 
 
-# In[27]:
+# In[29]:
+
+
+mlp_params.OUT_FEATURES
+
+
+# In[30]:
 
 
 # check device
 print(mlp_params.DEVICE)
 
 
-# In[28]:
+# In[31]:
 
 
 # no accuracy function must be loss for regression
@@ -582,7 +577,7 @@ objective_model_optimizer(
 )
 
 
-# In[29]:
+# In[32]:
 
 
 # create graph directory for this model
@@ -600,7 +595,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[30]:
+# In[33]:
 
 
 # create graph directory for this model
@@ -617,7 +612,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[31]:
+# In[34]:
 
 
 param_dict = extract_best_trial_params(

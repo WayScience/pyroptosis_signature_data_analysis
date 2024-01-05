@@ -17,7 +17,7 @@ parser <- ArgumentParser()
 parser$add_argument("--cell_type", default="none",
     help="define the cell type"
     )
-
+    
 parser$add_argument("--level", default="none",
     help="defines the data level of aggregation"
     )
@@ -67,7 +67,7 @@ if (file.exists(figure_dir, recursive = TRUE)){
     setwd(figure_dir)
 }
 
-# make list of treatments into a list
+# make list of treatments into a list 
 list_of_treatments <- c(p$list_of_treatments$treatments)
 
 if (filtered_option == TRUE){

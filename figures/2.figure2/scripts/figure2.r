@@ -1502,7 +1502,7 @@ umap_plot_selected_treatments <- (
         )
         + annotate(
             geom = "text",
-            x = -5.5,
+            x = -4.5,
             y = 17.5,
             label = "Apoptosis",
             size = 7
@@ -1567,6 +1567,4 @@ ggsave(
     units = "in",
     dpi = 600
 )
-
-
 

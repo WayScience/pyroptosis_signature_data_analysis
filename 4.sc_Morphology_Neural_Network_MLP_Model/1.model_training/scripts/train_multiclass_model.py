@@ -1467,7 +1467,7 @@ data_split_conf_mat_df = pd.merge(
     confusion_matrices_recall,
     on=["True_Label", "Predicted_Label", "data_split"],
 )
-data_split_conf_mat_df["shuffled_data"] = mlp_params.SHUFFLE
+data_split_conf_mat_df["shuffle"] = mlp_params.SHUFFLE
 data_split_conf_mat_df_all = pd.concat(
     [data_split_conf_mat_df_all, data_split_conf_mat_df], axis=0
 )
@@ -2186,7 +2186,7 @@ data_split_conf_mat_df = pd.merge(
     confusion_matrices_recall,
     on=["True_Label", "Predicted_Label", "data_split"],
 )
-data_split_conf_mat_df["shuffled_data"] = mlp_params.SHUFFLE
+data_split_conf_mat_df["shuffle"] = mlp_params.SHUFFLE
 data_split_conf_mat_df_all = pd.concat(
     [data_split_conf_mat_df_all, data_split_conf_mat_df], axis=0
 )
@@ -2276,9 +2276,9 @@ matrix_path.mkdir(parents=True, exist_ok=True)
 matrix_file = pathlib.Path(f"{matrix_path}/confusion_matrices.parquet")
 if matrix_file.exists():
     metrics_df = pd.read_parquet(matrix_file)
-    if len(metrics_df["shuffled_data"].unique()) > 1:
+    if len(metrics_df["shuffle"].unique()) > 1:
         pass
-    elif metrics_df["shuffled_data"].unique() == mlp_params.SHUFFLE:
+    elif metrics_df["shuffle"].unique() == mlp_params.SHUFFLE:
         pass
     else:
         metrics_df = pd.concat([metrics_df, data_split_conf_mat_df_all], axis=0)
@@ -2299,9 +2299,9 @@ metrics_path.mkdir(parents=True, exist_ok=True)
 metrics_file = pathlib.Path(f"{metrics_path}/training_metrics.parquet")
 if metrics_file.exists():
     metrics_df = pd.read_parquet(metrics_file)
-    if len(metrics_df["shuffled_data"].unique()) > 1:
+    if len(metrics_df["shuffle"].unique()) > 1:
         pass
-    elif metrics_df["shuffled_data"].unique() == mlp_params.SHUFFLE:
+    elif metrics_df["shuffle"].unique() == mlp_params.SHUFFLE:
         pass
     else:
         metrics_df = pd.concat([metrics_df, model_stats_df], axis=0)

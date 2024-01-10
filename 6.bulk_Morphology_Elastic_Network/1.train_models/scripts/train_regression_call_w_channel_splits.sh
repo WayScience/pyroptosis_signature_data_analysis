@@ -3,10 +3,10 @@
 
 #SBATCH --nodes=1
 #SBATCH --ntasks=50
-#SBATCH --partition=amilan
+#SBATCH --partition=amem
 #SBATCH --account=amc-general
-#SBATCH --qos=normal
-#SBATCH --time=10:00:00
+#SBATCH --qos=mem
+#SBATCH --time=72:00:00
 #SBATCH --output=sample-%j.out
 #SBATCH --array=1-750%50
 

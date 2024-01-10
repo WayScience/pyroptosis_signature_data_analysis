@@ -4,6 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --partition=amem
 #SBATCH --account=amc-general
+#SBATCH --mem=400G
 #SBATCH --qos=mem
 #SBATCH --time=72:00:00
 #SBATCH --output=sample-%j.out

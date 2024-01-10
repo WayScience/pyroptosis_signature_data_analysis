@@ -12,19 +12,16 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-# import pillow and open cv
-import PIL
-import seaborn as sns
-import tifffile as tf
-from cytocherrypick import cherrypick
-from PIL import Image, ImageEnhance
-from tqdm import tqdm
+import tifffile as tf  # write tiff files
+from PIL import Image  # read tiff files
+from tqdm import tqdm  # progress bar
 
 # In[2]:
 
 
 # function that selects a random image from the dataframe
+
+
 def random_cell_select(
     df: pd.DataFrame,
     n: int = 1,
@@ -55,26 +52,51 @@ def random_cell_select(
 
 # parameters
 CELL_TYPE = "PBMC"
-feature = "Nuclei_Texture_SumVariance_CorrGasdermin_3_01_256"
 
 
 # In[4]:
+
+
+# Get the current working directory
+cwd = pathlib.Path.cwd()
+
+if (cwd / ".git").is_dir():
+    root_dir = cwd
+
+else:
+    root_dir = None
+    for parent in cwd.parents:
+        if (parent / ".git").is_dir():
+            root_dir = parent
+            break
+
+# Check if a Git root directory was found
+if root_dir is None:
+    raise FileNotFoundError("No Git root directory found.")
+root_dir
+
+
+# In[5]:
+
+
+image_out_dir_path = pathlib.Path(f"{root_dir}/8.cytopick_analysis/figures/PBMC/")
+
+
+# In[6]:
 
 
 # define directories
 # where the images are
 image_dir_path = pathlib.Path(
     "/media/lippincm/18T/interstellar_data/70117_20230210MM1_Gasdermin514_CP_BC430856__2023-03-22T15_42_38-Measurement1/2.IC/"
-)
-# if path does not exist, create it
-image_dir_path.mkdir(parents=True, exist_ok=True)
+).resolve(strict=True)
 
-image_out_dir_path = pathlib.Path("../figures/")
+
 # if path does not exist, create it
 image_out_dir_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[5]:
+# In[7]:
 
 
 df_path = pathlib.Path(
@@ -82,15 +104,10 @@ df_path = pathlib.Path(
 )
 # read in the data
 df = pd.read_parquet(df_path)
-
-# df_no_fs_path = pathlib.Path(f"../../data/{cell_type}_sc.parquet")
-# # read in the data
-# df_no_fs = pd.read_parquet(df_no_fs_path)
-
 df.head()
 
 
-# In[6]:
+# In[8]:
 
 
 # add column for if the prediction was correct
@@ -101,7 +118,7 @@ df_incorrect = df[df["correct"] == False]
 assert len(df_correct) + len(df_incorrect) == len(df)
 
 
-# In[7]:
+# In[9]:
 
 
 # split the data into the different classes
@@ -272,7 +289,7 @@ for key, value in dict_of_dfs.items():
         print(key)
 
 
-# In[8]:
+# In[10]:
 
 
 # define a dictionary for coding the wells and FOVs correctly
@@ -340,7 +357,7 @@ fov_dict = {
 }
 
 
-# In[9]:
+# In[11]:
 
 
 image_basename_1 = "p04-ch1sk1fk1fl1_IC.tiff"
@@ -350,15 +367,7 @@ image_basename_4 = "p04-ch4sk1fk1fl1_IC.tiff"
 image_basename_5 = "p04-ch5sk1fk1fl1_IC.tiff"
 
 
-# In[10]:
-
-
-image_out_dir_path = pathlib.Path(f"../figures/{CELL_TYPE}/")
-# if path does not exist, create it
-image_out_dir_path.mkdir(parents=True, exist_ok=True)
-
-
-# In[11]:
+# In[12]:
 
 
 # set constants for the loop
@@ -367,7 +376,7 @@ radius = 50
 n = 5
 
 
-# In[12]:
+# In[13]:
 
 
 dict_of_subset_dfs = {}
@@ -382,7 +391,7 @@ for key in tqdm(dict_of_dfs):
         dict_of_subset_dfs[key] = df
 
 
-# In[13]:
+# In[14]:
 
 
 # create a blank df to append the data to
@@ -391,7 +400,7 @@ main_df = dict_of_subset_dfs["pyroptosis_shuffled_train_df"]
 main_df = main_df.drop(main_df.index)
 
 
-# In[14]:
+# In[15]:
 
 
 for key in tqdm(dict_of_subset_dfs):
@@ -443,20 +452,22 @@ for key in tqdm(dict_of_subset_dfs):
             image_path5 = image_dir_path.joinpath(image_name5)
 
             # crop all 5 channels of the image
-            im1 = cv2.imread(image_path1.as_posix(), cv2.IMREAD_GRAYSCALE)
-            # im_crop1 = im1[min_y_box:max_y_box, min_x_box:max_x_box]
+            im1 = cv2.imread(image_path1.as_posix(), cv2.IMREAD_UNCHANGED)
+            # im1_crop = im1[min_y_box:max_y_box, min_x_box:max_x_box]
 
-            im2 = cv2.imread(image_path2.as_posix(), cv2.IMREAD_GRAYSCALE)
-            # im_crop2 = im2[min_y_box:max_y_box, min_x_box:max_x_box]
+            im2 = cv2.imread(image_path2.as_posix(), cv2.IMREAD_UNCHANGED)
+            # im2_crop = im2[min_y_box:max_y_box, min_x_box:max_x_box]
 
-            im3 = cv2.imread(image_path3.as_posix(), cv2.IMREAD_GRAYSCALE)
-            # im_crop3 = im3[min_y_box:max_y_box, min_x_box:max_x_box]
+            im3 = cv2.imread(image_path3.as_posix(), cv2.IMREAD_UNCHANGED)
+            # im3_crop = im3[min_y_box:max_y_box, min_x_box:max_x_box]
 
-            im4 = cv2.imread(image_path4.as_posix(), cv2.IMREAD_GRAYSCALE)
-            # im_crop4 = im4[min_y_box:max_y_box, min_x_box:max_x_box]
+            im4 = cv2.imread(image_path4.as_posix(), cv2.IMREAD_UNCHANGED)
+            # im4_crop = im4[min_y_box:max_y_box, min_x_box:max_x_box]
 
-            im5 = cv2.imread(image_path5.as_posix(), cv2.IMREAD_GRAYSCALE)
-            # im_crop5 = im5[min_y_box:max_y_box, min_x_box:max_x_box]
+            im5 = cv2.imread(image_path5.as_posix(), cv2.IMREAD_UNCHANGED)
+            # im5_crop = im5[min_y_box:max_y_box, min_x_box:max_x_box]
+
+            # check for non-edge cells
 
             ### channels ###
             # * Channel 1: DAPI
@@ -468,6 +479,10 @@ for key in tqdm(dict_of_subset_dfs):
             blue_channel_stack = np.stack(im1, axis=-1)
             green_channel_stack = np.stack(im3, axis=-1)
             red_channel_stack = np.stack(im4, axis=-1)
+
+            # blue_channel_stack_crop = np.stack(im1_crop, axis=-1)
+            # green_channel_stack_crop = np.stack(im3_crop, axis=-1)
+            # red_channel_stack_crop = np.stack(im4_crop, axis=-1)
 
             channel1 = "im1"
             channel2 = "im3"
@@ -483,17 +498,62 @@ for key in tqdm(dict_of_subset_dfs):
             red_channel = (
                 red_channel_stack / np.max(red_channel_stack) * 65535
             ).astype(np.uint16)
-            composite_image = cv2.merge(
-                (blue_channel, green_channel, red_channel)
-            ).astype(np.uint16)
-            composite_image = cv2.cvtColor(composite_image, cv2.COLOR_BGR2RGB)
 
+            # blue_channel_crop = (
+            #     blue_channel_stack_crop / np.max(blue_channel_stack_crop) * 65535
+            # ).astype(np.uint16)
+            # green_channel_crop = (
+            #     green_channel_stack_crop / np.max(green_channel_stack_crop) * 65535
+            # ).astype(np.uint16)
+            # red_channel_crop = (
+            #     red_channel_stack_crop / np.max(red_channel_stack_crop) * 65535
+            # ).astype(np.uint16)
+
+            # merge the channels together
+
+            composite_image = cv2.merge(
+                (red_channel, green_channel, blue_channel)
+            ).astype(np.uint16)
+            # composite_image = cv2.cvtColor(composite_image, cv2.COLOR_BGR2RGB)
+
+            composite_image_crop = composite_image[
+                min_y_box:max_y_box, min_x_box:max_x_box
+            ]
+
+            # im_crop = composite_image[min_y_box:max_y_box, min_x_box:max_x_box]
+            if composite_image_crop.shape[0] == 0 or composite_image_crop.shape[1] == 0:
+                print("Cell is on the edge of the image, skipping")
+                continue
+
+            # composite_image_crop = cv2.merge(
+            #     (blue_channel_crop, green_channel_crop, red_channel_crop)
+            # ).astype(np.uint16)
+            composite_image = cv2.cvtColor(composite_image, cv2.COLOR_BGR2RGB)
+            composite_image_crop = cv2.cvtColor(composite_image_crop, cv2.COLOR_BGR2RGB)
+
+            # The images end up being `wonky` so we need to do some post processing prior to saving
+            # this will ensure that the images are oriented correctly with X and Y centers prior to cropping
             # transformations of the image to fix the orientation post pixel scaling
             # flip the image vertically
             composite_image = cv2.flip(composite_image, 0)
+            composite_image_crop = cv2.flip(composite_image_crop, 0)
             # rotate the image 90 degrees clockwise
             composite_image = cv2.rotate(composite_image, cv2.ROTATE_90_CLOCKWISE)
-            im_crop = composite_image[min_y_box:max_y_box, min_x_box:max_x_box]
+            composite_image_crop = cv2.rotate(
+                composite_image_crop, cv2.ROTATE_90_CLOCKWISE
+            )
+
+            print(composite_image.shape)
+
+            # save the image as a png file
+            cv2.imwrite(
+                f"{image_out_dir_path}/{key}_{channel1}_{channel2}_{channel3}_composite_image_cell_{cell}.png",
+                composite_image,
+            )
+            cv2.imwrite(
+                f"{image_out_dir_path}/{key}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell_{cell}.png",
+                composite_image_crop,
+            )
 
             # image_out_dir_path updated to include the feature name
             # write images
@@ -508,20 +568,20 @@ for key in tqdm(dict_of_subset_dfs):
                 pathlib.Path(
                     f"{image_out_dir_path}/{key}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell_{cell}.tiff"
                 ),
-                im_crop,
+                composite_image_crop,
                 compression=None,
             )
             df = df.to_frame().T
             df[
                 "image_path"
-            ] = f"{image_out_dir_path}/{key}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell_{cell}.tiff"
+            ] = f"{image_out_dir_path}/{key}_{channel1}_{channel2}_{channel3}_composite_image_cell_{cell}.png"
             df[
                 "image_crop_path"
-            ] = f"{image_out_dir_path}/{key}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell_{cell}.tiff"
+            ] = f"{image_out_dir_path}/{key}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell_{cell}.png"
             main_df = pd.concat([main_df, df], ignore_index=True)
 
 
-# In[15]:
+# In[16]:
 
 
 # define main_df_path
@@ -530,3 +590,12 @@ main_df_path = pathlib.Path(f"../results/{CELL_TYPE}/")
 main_df_path.mkdir(parents=True, exist_ok=True)
 # save the dataframe
 main_df.to_parquet(f"{main_df_path}/single_cell_predictions.parquet")
+
+
+# In[17]:
+
+
+main_df
+
+
+# In[ ]:

@@ -22,21 +22,19 @@ filename="../../0.split_data/cytokine_list/channel_splits.txt"
 readarray -t channels < $filename
 
 # set the maximum number of pending jobs allowed prior to submitting new jobs
-max_pending_jobs=248
+max_jobs=248
 
 # loop through the data sets
 for data_set in "${channels[@]}"; do
     echo "data_set: $data_set"
 
     while true; do
-        # check the number of pending jobs in the queue
-        num_pending_jobs=$(squeue -u $USER -t PENDING | wc -l)
-        num_running_jobs=$(squeue -u $USER -t RUNNING | wc -l)
-        num_active_jobs=$((num_pending_jobs + num_running_jobs))
+	# check the number of total jobs
+	NUM_SLURMS=$(squeue -u $USER | wc -l)
 
         # submit a new job only if the number of pending jobs is less than the maximum allowed
-        if [ $num_active_jobs -lt $max_pending_jobs ]; then
-            sbatch train_regression_call_w_channel_splits.sh "$data_set"
+        if [ $NUM_SLURMS -lt $max_jobs ]; then
+            sbatch child_enet_LOCO.sh "$data_set"
             echo "Submitted new job to SLURM"
             break
         else

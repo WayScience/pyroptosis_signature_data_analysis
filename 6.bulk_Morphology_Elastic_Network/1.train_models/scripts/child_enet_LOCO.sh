@@ -26,6 +26,13 @@ readarray -t cytokine_array < $filename
 shuffles=( True False )
 cell_types=( SHSY5Y PBMC )
 
+
+for cytokine in "${cytokine_array[@]}"; do
+	while true; do
+
+
+
+
 # calculate the number of jobs
 job_id=$((SLURM_ARRAY_TASK_ID - 1))
 shuffle_idx=$((job_id % ${#shuffles[@]}))

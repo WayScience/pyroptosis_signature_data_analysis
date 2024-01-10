@@ -1,44 +1,62 @@
 #!/bin/bash
+# This script is used to train the regression models for the elastic network
 
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
 #SBATCH --partition=amilan
 #SBATCH --account=amc-general
 #SBATCH --qos=long
 #SBATCH --time=168:00:00
-#SBATCH --output=sample-%j.out
+#SBATCH --output=parent-%j.out
 
+module load anaconda
 
+conda activate Interstellar_python
 
-# This script is used to call all of the training jobs
-# this is a cheeky implementation of a job queueing system
-# the max number of jobs allowed for the HPC system that I am using is 1000
-# so I will submit the first 750 jobs and then wait for the queue to lower to 248 before submitting the next 750 jobs
-# 248 due to the fact that slurm indexes the jobs from 1-1000 thus 2 jobs are always running of one is pending
+jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
 
 # get the array of channels
 filename="../../0.split_data/cytokine_list/channel_splits.txt"
 # read all lines of the file to an array
 readarray -t channels < $filename
 
-# set the maximum number of pending jobs allowed prior to submitting new jobs
-max_jobs=248
+# get the array of cytokines
+filename="../../0.split_data/cytokine_list/cytokine_list.txt"
+# read all lines of the file to an array
+readarray -t cytokine_array < $filename
+shuffles=( True False )
+cell_types=( SHSY5Y PBMC )
 
-# loop through the data sets
-for data_set in "${channels[@]}"; do
-    echo "data_set: $data_set"
+# set the maximum number of jobs to run at once
+MAX_JOBS=50
+progress_counter=1
+# get the length of the arrays
+cytokine_array_length=${#cytokine_array[@]}
+channels_length=${#channels[@]}
+shuffles_length=${#shuffles[@]}
+cell_types_length=${#cell_types[@]}
+# calculate the total number of jobs
+total_jobs=$((cytokine_array_length*channels_length*shuffles_length*cell_types_length))
+echo "total_jobs: $total_jobs"
 
-    while true; do
-	# check the number of total jobs
-	NUM_SLURMS=$(squeue -u $USER | wc -l)
 
-        # submit a new job only if the number of pending jobs is less than the maximum allowed
-        if [ $NUM_SLURMS -lt $max_jobs ]; then
-            sbatch child_enet_LOCO.sh "$data_set"
-            echo "Submitted new job to SLURM"
-            break
-        else
-            sleep 120
-        fi
-    done
+for cell_type in "${cell_types[@]}"; do
+	for channel in "${channels[@]}"; do
+		for shuffle in "${shuffles[@]}"; do
+			for cytokine in "${cytokine_array[@]}"; do
+			while true; do
+				NUM_SLURMS=$(squeue -u $USER | wc -l)
+				if [ "$NUM_SLURMS" -lt $MAX_JOBS ]; then
+					echo "cell_type: $cell_type cytokine: $cytokine shuffle: $shuffle data: $channel"
+					sbatch grandchild_enet_LOCO.sh "$cell_type" "$cytokine" "$shuffle" "$data"
+					progress_counter=$((progress_counter+1))
+					# calculate the progress
+					progress=$((progress_counter*100/total_jobs))
+					echo "progress: $progress%"
+					break
+				else
+					sleep 120
+				fi
+			done
+		done
+	done
 done

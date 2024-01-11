@@ -168,3 +168,6 @@ patch_plot <- (
     + plot_layout(nrow = 2)
 )
 patch_plot
+# set save path for patchwork plot
+patchwork_platemap_path <- file.path(paste0(platemap_path,"figureS1.png"))
+ggsave(patchwork_platemap_path, patch_plot, width=17, height=17, dpi=600)

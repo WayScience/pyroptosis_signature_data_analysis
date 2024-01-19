@@ -42,8 +42,6 @@ height <- 7
 options(repr.plot.width = width, repr.plot.height = height)
 
 
-
-
 # add inducer 1 to inducer 1 concentration
 platemap_df$inducer1_conc <- paste(platemap_df$inducer1, platemap_df$inducer1_concentration, platemap_df$inducer1_concentration_unit, sep = " ")
 platemap_df$inducer2_conc <- paste(platemap_df$inducer2, platemap_df$inducer2_concentration,platemap_df$inducer2_concentration_unit, sep = " ")
@@ -62,6 +60,7 @@ platemap_df$inhibitor_conc <- paste(platemap_df$inhibitor, platemap_df$inhibitor
 # replace 'media ctr  µg/ml' with 'media ctr  ug/ml'
 platemap_df$inducer1_conc[platemap_df$inducer1_conc == "media ctr  µg/ml"] <- "Media ctr  "
 platemap_df$inducer1_conc[platemap_df$inducer1_conc == "media ctr  "] <- "Media ctr  "
+platemap_df$inducer1_conc[platemap_df$inducer1_conc == "Media ctr  "] <- "Media"
 platemap_df$inducer1_conc[platemap_df$inducer1_conc == '  '] <- "Blank"
 platemap_df$cell_type[platemap_df$cell_type == ''] <- "Blank"
 # replace 'flagellin 1.000 ' with 'flagellin 1.000 µg/ml
@@ -74,7 +73,7 @@ platemap_df$inducer1_conc <- factor(
     platemap_df$inducer1_conc,
     levels = c(
     'Blank',
-    'Media ctr  ',
+    'Media',
     'DMSO 0.100 %',
 
     'LPS 0.010 µg/ml',
@@ -132,7 +131,7 @@ platemap_plot_inducer_dose <- (
         + scale_fill_manual(
             values = c(
                 'Blank' = 'grey',
-                'Media ctr  ' = 'grey',
+                'Media' = 'grey',
                 'DMSO 0.100 %' = 'grey',
                 'LPS 0.010 µg/ml' = viridis_pal_custom[1],
                 'LPS 0.100 µg/ml' = viridis_pal_custom[2],
@@ -180,7 +179,7 @@ platemap_df$inhibitor_conc <- paste0(platemap_df$inhibitor, " ", platemap_df$inh
 platemap_df$inhibitor_conc[platemap_df$inhibitor_conc == " "] <- "Blank"
 
 
-viridis_pal_custom <- viridis::viridis_pal(option = "C")(6)
+viridis_pal_custom <- viridis::viridis_pal(option = "C")(7)
 
 # replace 'media ctr  µg/ml' with 'media ctr  ug/ml'
 platemap_df$inhibitor_conc[platemap_df$inhibitor_conc == "Media ctr NA "] <- "media ctr"
@@ -245,12 +244,12 @@ platemap_plot_inhibitor_dose <- (
                 'Blank' = 'grey',
                 'Media  ' = 'grey',
                 'DMSO 0.025 %' = 'grey',
-                'DMSO 1 %' = viridis_pal_custom[1],
-                'Disulfiram 0.1 µM' = viridis_pal_custom[2],
-                'Disulfiram 1 µM' = viridis_pal_custom[3],
-                'Disulfiram 2.5 µM' = viridis_pal_custom[4],
-                'Z-VAD-FMK 30 µM' = viridis_pal_custom[5],
-                'Z-VAD-FMK 100 µM' = viridis_pal_custom[6]
+                'DMSO 1 %' = viridis_pal_custom[2],
+                'Disulfiram 0.1 µM' = viridis_pal_custom[3],
+                'Disulfiram 1 µM' = viridis_pal_custom[4],
+                'Disulfiram 2.5 µM' = viridis_pal_custom[5],
+                'Z-VAD-FMK 30 µM' = viridis_pal_custom[6],
+                'Z-VAD-FMK 100 µM' = viridis_pal_custom[7]
             )
         )
         # change the shape of the blank well
@@ -292,5 +291,5 @@ patch_plot <- (
 )
 patch_plot
 # set save path for patchwork plot
-patchwork_platemap_path <- file.path(paste0(platemap_path,"figureS1.png"))
+patchwork_platemap_path <- file.path(paste0(platemap_path,"figureS2.png"))
 ggsave(patchwork_platemap_path, patch_plot, width=17, height=17, dpi=600)

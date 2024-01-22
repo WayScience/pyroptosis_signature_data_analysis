@@ -42,7 +42,7 @@ cytokine_values <- cytokine_values[cytokine_values$oneb_Treatment_Dose_Inhibitor
 # read in the ground truth data
 data_path_ground_truth <- file.path("../../../4.sc_Morphology_Neural_Network_MLP_Model/MLP_utils/ground_truth.toml")
 ground_truth <- parseTOML(data_path_ground_truth)
-# make a a list of the treatments that are in the ground truth data
+# make a list of the treatments that are in the ground truth data
 apoptosis_ground_truth_list <- c(ground_truth$Apoptosis$apoptosis_groups_list)
 pyroptosis_ground_truth_list <- c(ground_truth$Pyroptosis$pyroptosis_groups_list)
 control_ground_truth_list <- c(ground_truth$Healthy$healthy_groups_list)

@@ -184,7 +184,7 @@ layout <- c(
 )
 # set plot size
 width <- 17
-height <- 17
+height <- 23
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
 fig5_probabilities <- (
     ridge_plot_control
@@ -196,10 +196,10 @@ fig5_probabilities
 
 # save the plot
 ggsave(
-    filename = paste0("../figures/",model_name,"_",cell_type,"_probabilities_full.png"),
+    filename = paste0("../figures/","S9",".png"),
     plot = fig5_probabilities,
     width = width,
     height = height,
-    units = "cm",
+    units = "in",
     dpi = 600
 )

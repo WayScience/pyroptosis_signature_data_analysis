@@ -498,7 +498,7 @@ cell_type <- "PBMC"
 data_path <- file.path(paste0("../../../6.bulk_Morphology_Elastic_Network/4.model_performance/results/regression/", cell_type, "/", "all_model_performance.csv"))
 df <- read.csv(data_path)
 # setfigure path
-figure_path <- file.path(paste0("../figures/regression/", cell_type, "/"))
+figure_path <- file.path(paste0("../figures/"))
 # make the directory if it doesn't exist
 dir.create(figure_path, recursive = TRUE, showWarnings = FALSE)
 
@@ -743,19 +743,18 @@ features$channel_learned <- factor(features$channel_learned, levels = c("Nuclei"
 r2_df <- df %>% select(r2)
 r2_df <- unique(r2_df)
 column_ha <- HeatmapAnnotation(
-    df = r2_df,
+    R2 = r2_df$r2,
     show_legend = TRUE,
     annotation_name_side = "left",
     # rotate the title
     annotation_legend_param = list(
-        title_gp = gpar(fontsize = 16, angle = 0),
         labels_gp = gpar(fontsize = 16, angle = 0),
         title_position = "topcenter",
-        title_gp = gpar(fontsize = 16, angle = 0)
+        title_gp = gpar(fontsize = 16, angle = 0, fontface = "bold", hjust = 0.5)
     ),
     annotation_name_gp = gpar(fontsize = 16),
     # set color bar for r2 continuous value with brewer palette
-    col = list(r2 = colorRamp2(c(0, 0.5, 1), spectral_palette <- c(
+    col = list(R2 = colorRamp2(c(0, 0.5, 1), spectral_palette <- c(
         # white
         "#FFFFFF",
         # light blue
@@ -817,7 +816,7 @@ row_ha_1 <- rowAnnotation(
     # change the legend titles
     annotation_legend_param = list(
         title_position = "topcenter",
-        title_gp = gpar(fontsize = 16, angle = 0),
+        title_gp = gpar(fontsize = 16, angle = 0, fontface = "bold", hjust = 0.5),
         labels_gp = gpar(fontsize = 16,
         title = gpar(fontsize = 16))),
     annotation_name_side = "bottom",
@@ -828,17 +827,16 @@ row_ha_1 <- rowAnnotation(
             "Cells" = brewer.pal(12, "Accent")[7],
             "Cytoplasm" = brewer.pal(12, "Accent")[6],
             "Nuclei" = "#0000AB"
-        )
-
-
+            )
     )
 )
+
 
 row_ha_2 <- rowAnnotation(
         FeatureType = features$feature_group,
        annotation_legend_param = list(
         title_position = "topcenter",
-        title_gp = gpar(fontsize = 16, angle = 0),
+        title_gp = gpar(fontsize = 16, angle = 0, fontface = "bold", hjust = 0.5),
         labels_gp = gpar(fontsize = 16,
         title = gpar(fontsize = 16))),
     annotation_name_side = "bottom",
@@ -859,9 +857,8 @@ row_ha_3 <- rowAnnotation(
     Channel = features$channel_learned,
     annotation_legend_param = list(
         title_position = "topcenter",
-        title_gp = gpar(fontsize = 16, angle = 0),
+        title_gp = gpar(fontsize = 16, angle = 0, fontface = "bold", hjust = 0.5),
         labels_gp = gpar(fontsize = 16,
-        title = gpar(fontsize = 16),
         # make annotation bar text bigger
         legend = gpar(fontsize = 16),
         annotation_name = gpar(fontsize = 16),
@@ -871,9 +868,11 @@ row_ha_3 <- rowAnnotation(
         legend_height = unit(10, "cm"),
         legend_width = unit(1, "cm"),
         legend_key = gpar(fontsize = 16)
+        )
+    ),
 
-            )
-        ),
+
+
     annotation_name_side = "bottom",
     # make font size bigger
     annotation_name_gp = gpar(fontsize = 16),
@@ -889,6 +888,7 @@ row_ha_3 <- rowAnnotation(
 )
 
 
+
 # drop the feature names column
 mat <- mat %>% select(-feature_names)
 mat <- as.matrix(mat)
@@ -898,8 +898,6 @@ mat <- as.matrix(mat)
 width <- 40
 height <- 10
 options(repr.plot.width=width, repr.plot.height=height)
-# change margins
-# par(mar = c(1, 1, 1, 1))
 
 model_heatmap <- (
         Heatmap(
@@ -916,10 +914,8 @@ model_heatmap <- (
         heatmap_legend_param = list(
                 title = "Coefficient",
                 title_position = "topcenter",
-                title_gp = gpar(fontsize = 16),
+                title_gp = gpar(fontsize = 16, angle = 0, fontface = "bold", hjust = 0.5),
                 labels_gp = gpar(fontsize = 16)
-                # legend_height = unit(3, "cm"),
-                # legend_width = unit(1, "cm")
                 ),
         column_dend_height = unit(4, "cm"),
         row_dend_width = unit(4, "cm"),
@@ -934,7 +930,6 @@ model_heatmap <- (
 model_heatmap <- as.ggplot(model_heatmap)
 
 # # save the figure
-ggsave(file = paste0(figure_path, "filtered_features.svg"), plot = model_heatmap, width = width, height = height, units = "in", dpi = 500)
 ggsave(file = paste0(figure_path, "filtered_features.png"), plot = model_heatmap, width = width, height = height, units = "in", dpi = 500)
 # fix the position of the plot
 model_heatmap

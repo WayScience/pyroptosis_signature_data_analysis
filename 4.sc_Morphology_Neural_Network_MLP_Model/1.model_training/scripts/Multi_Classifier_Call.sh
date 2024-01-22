@@ -6,7 +6,7 @@
 #SBATCH --partition=amem
 #SBATCH --qos=mem
 #SBATCH --account=amc-general
-#SBATCH --time=72:00:00
+#SBATCH --time=36:00:00
 #SBATCH --output=sample-%j.out
 #SBATCH --array=1-4%4
 

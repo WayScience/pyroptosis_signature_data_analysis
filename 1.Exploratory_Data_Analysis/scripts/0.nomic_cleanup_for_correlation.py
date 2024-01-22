@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# Cleanup the Nomic data prior to use
+# Cleanup the Nomic data prior to use 
 
 # In[1]:
 
 
 import pathlib
+import sys
 
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
+
 
 # In[2]:
 
@@ -61,6 +63,8 @@ nomic_df = nomic_df.rename(
 # functions to be used with the apply method
 # add trailing zeros to the concentration values to match the metadata and morphology data
 # this is crucial for the merge later on for data harmonization
+
+
 def add_trailing_zeros_3(x):
     return "{:.3f}".format(x)
 
@@ -218,3 +222,4 @@ nomic_df["inducer_dose_unit"] = nomic_df_raw["inducer1_concentration_unit"]
 
 
 nomic_df.to_csv(nomic_df_filtered_out_path, index=False)
+

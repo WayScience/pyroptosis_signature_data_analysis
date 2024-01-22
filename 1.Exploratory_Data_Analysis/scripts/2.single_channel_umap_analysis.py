@@ -226,3 +226,4 @@ outpath = pathlib.Path(f"./results/umap_per_channel_all_treatments.parquet")
 # make a directory if it doesn't exist
 outpath.parent.mkdir(exist_ok=True, parents=True)
 final_df.to_parquet(outpath)
+

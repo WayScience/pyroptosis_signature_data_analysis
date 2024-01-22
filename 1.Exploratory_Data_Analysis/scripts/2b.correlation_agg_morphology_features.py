@@ -2,7 +2,7 @@
 # coding: utf-8
 
 # # Correlation of Aggregated Features
-# Each well is median aggregated and normalized.
+# Each well is median aggregated and normalized.  
 # The correlation of the aggregated features is calculated per:
 # * well
 # * per treatment
@@ -15,6 +15,7 @@ import pathlib
 
 import numpy as np
 import pandas as pd
+
 
 # In[2]:
 
@@ -173,3 +174,4 @@ feature_df = (
 save_path = pathlib.Path(f"./results/correlation/{cell_type}/aggregated_morphology")
 save_path.mkdir(parents=True, exist_ok=True)
 feature_df.to_csv(f"{save_path}/treatments.csv")
+

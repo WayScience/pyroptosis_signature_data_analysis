@@ -894,7 +894,7 @@ heatmap_cytokines <- rasterGrob(heatmap_grob, interpolate = TRUE)
 
 # heatmap_anova_cytokines
 heatmap_cytokines
-# # Defien the heatmap as a ggplot heatmap for figure curation
+# # Define the heatmap as a ggplot heatmap for figure curation
 # set plot size
 width <- 30
 height <- 40

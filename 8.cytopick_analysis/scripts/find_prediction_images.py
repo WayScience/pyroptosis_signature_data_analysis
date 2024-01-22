@@ -22,7 +22,7 @@ from tqdm import tqdm  # progress bar
 # function that selects a random image from the dataframe
 
 
-def random_cell_select(
+def top_n_cell_select(
     df: pd.DataFrame,
     n: int = 1,
 ) -> pd.DataFrame:
@@ -42,9 +42,10 @@ def random_cell_select(
         The return dataframe with the random cell selected
     """
 
-    # select a random cell
-    random_cell = df.sample(n=n, random_state=0)
-    return random_cell
+    # select the top n cells
+    df = df.head(n)
+
+    return df
 
 
 # In[3]:
@@ -57,7 +58,7 @@ CELL_TYPE = "PBMC"
 # In[4]:
 
 
-# Get the current working directory
+# Get the current working directory of the repository
 cwd = pathlib.Path.cwd()
 
 if (cwd / ".git").is_dir():
@@ -86,7 +87,13 @@ image_out_dir_path = pathlib.Path(f"{root_dir}/8.cytopick_analysis/figures/PBMC/
 
 
 # define directories
-# where the images are
+# where the images are on a local machine
+# this is a hard coded path to the 1TB image directory
+
+#####
+"""THIS PATH NEEDS TO BE CHANGED TO THE LOCAL IMAGE DIRECTORY ON YOUR MACHINE"""
+#####
+
 image_dir_path = pathlib.Path(
     "/media/lippincm/18T/interstellar_data/70117_20230210MM1_Gasdermin514_CP_BC430856__2023-03-22T15_42_38-Measurement1/2.IC/"
 ).resolve(strict=True)
@@ -96,29 +103,38 @@ image_dir_path = pathlib.Path(
 image_out_dir_path.mkdir(parents=True, exist_ok=True)
 
 
+# ### Get single-cell probabilities
+
 # In[7]:
 
 
-df_path = pathlib.Path(
-    f"../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/MultiClass_MLP/{CELL_TYPE}/single_cell_predictions.parquet"
-)
-# read in the data
-df = pd.read_parquet(df_path)
-df.head()
+# define probability path
+prob_df_path = pathlib.Path(
+    f"../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/MultiClass_MLP/PBMC/probabilities.parquet"
+).resolve(strict=True)
+
+# read in the probability dataframe
+df = pd.read_parquet(prob_df_path)
 
 
 # In[8]:
 
 
+df.head()
+
+
+# In[9]:
+
+
 # add column for if the prediction was correct
-df["correct"] = df.apply(lambda x: x["true_label"] == x["predicted_label"], axis=1)
+df["correct"] = df.apply(lambda x: x["label_true"] == x["label_pred"], axis=1)
 # split the data into correct and incorrect
 df_correct = df[df["correct"] == True]
 df_incorrect = df[df["correct"] == False]
 assert len(df_correct) + len(df_incorrect) == len(df)
 
 
-# In[9]:
+# In[10]:
 
 
 # split the data into the different classes
@@ -139,7 +155,7 @@ pyroptosis_shuffled_train_df = pyroptosis_shuffled_df[
     pyroptosis_shuffled_df["data_split"] == "train"
 ]
 pyroptosis_shuffled_test_df = pyroptosis_shuffled_df[
-    pyroptosis_shuffled_df["data_split"] == "test"
+    pyroptosis_shuffled_df["data_split"] == "testing"
 ]
 pyroptosis_shuffled_validation_df = pyroptosis_shuffled_df[
     pyroptosis_shuffled_df["data_split"] == "validation"
@@ -155,7 +171,7 @@ pyroptosis_unshuffled_train_df = pyroptosis_unshuffled_df[
     pyroptosis_unshuffled_df["data_split"] == "train"
 ]
 pyroptosis_unshuffled_test_df = pyroptosis_unshuffled_df[
-    pyroptosis_unshuffled_df["data_split"] == "test"
+    pyroptosis_unshuffled_df["data_split"] == "testing"
 ]
 pyroptosis_unshuffled_validation_df = pyroptosis_unshuffled_df[
     pyroptosis_unshuffled_df["data_split"] == "validation"
@@ -171,7 +187,7 @@ apoptosis_shuffled_train_df = apoptosis_shuffled_df[
     apoptosis_shuffled_df["data_split"] == "train"
 ]
 apoptosis_shuffled_test_df = apoptosis_shuffled_df[
-    apoptosis_shuffled_df["data_split"] == "test"
+    apoptosis_shuffled_df["data_split"] == "testing"
 ]
 apoptosis_shuffled_validation_df = apoptosis_shuffled_df[
     apoptosis_shuffled_df["data_split"] == "validation"
@@ -187,7 +203,7 @@ apoptosis_unshuffled_train_df = apoptosis_unshuffled_df[
     apoptosis_unshuffled_df["data_split"] == "train"
 ]
 apoptosis_unshuffled_test_df = apoptosis_unshuffled_df[
-    apoptosis_unshuffled_df["data_split"] == "test"
+    apoptosis_unshuffled_df["data_split"] == "testing"
 ]
 apoptosis_unshuffled_validation_df = apoptosis_unshuffled_df[
     apoptosis_unshuffled_df["data_split"] == "validation"
@@ -203,7 +219,7 @@ control_shuffled_train_df = control_shuffled_df[
     control_shuffled_df["data_split"] == "train"
 ]
 control_shuffled_test_df = control_shuffled_df[
-    control_shuffled_df["data_split"] == "test"
+    control_shuffled_df["data_split"] == "testing"
 ]
 control_shuffled_validation_df = control_shuffled_df[
     control_shuffled_df["data_split"] == "validation"
@@ -219,7 +235,7 @@ control_unshuffled_train_df = control_unshuffled_df[
     control_unshuffled_df["data_split"] == "train"
 ]
 control_unshuffled_test_df = control_unshuffled_df[
-    control_unshuffled_df["data_split"] == "test"
+    control_unshuffled_df["data_split"] == "testing"
 ]
 control_unshuffled_validation_df = control_unshuffled_df[
     control_unshuffled_df["data_split"] == "validation"
@@ -230,6 +246,96 @@ control_unshuffled_treatment_holdout_df = control_unshuffled_df[
 control_unshuffled_holdout_df = control_unshuffled_df[
     control_unshuffled_df["data_split"] == "holdout"
 ]
+
+# sort the dataframes by the probability of the correct class
+pyroptosis_unshuffled_train_df = pyroptosis_unshuffled_train_df.sort_values(
+    by=["pyroptosis_prob"], ascending=False
+)
+pyroptosis_unshuffled_validation_df = pyroptosis_unshuffled_validation_df.sort_values(
+    by=["pyroptosis_prob"], ascending=False
+)
+pyroptosis_unshuffled_test_df = pyroptosis_unshuffled_test_df.sort_values(
+    by=["pyroptosis_prob"], ascending=False
+)
+pyroptosis_unshuffled_treatment_holdout_df = (
+    pyroptosis_unshuffled_treatment_holdout_df.sort_values(
+        by=["pyroptosis_prob"], ascending=False
+    )
+)
+pyroptosis_unshuffled_holdout_df = pyroptosis_unshuffled_holdout_df.sort_values(
+    by=["pyroptosis_prob"], ascending=False
+)
+
+pyroptosis_shuffled_train_df = pyroptosis_shuffled_train_df.sort_values(
+    by=["pyroptosis_prob"], ascending=False
+)
+pyroptosis_shuffled_validation_df = pyroptosis_shuffled_validation_df.sort_values(
+    by=["pyroptosis_prob"], ascending=False
+)
+pyroptosis_shuffled_test_df = pyroptosis_shuffled_test_df.sort_values(
+    by=["pyroptosis_prob"], ascending=False
+)
+pyroptosis_shuffled_treatment_holdout_df = (
+    pyroptosis_shuffled_treatment_holdout_df.sort_values(
+        by=["pyroptosis_prob"], ascending=False
+    )
+)
+pyroptosis_shuffled_holdout_df = pyroptosis_shuffled_holdout_df.sort_values(
+    by=["pyroptosis_prob"], ascending=False
+)
+
+apoptosis_unshuffled_train_df = apoptosis_unshuffled_train_df.sort_values(
+    by=["apoptosis_prob"], ascending=False
+)
+apoptosis_unshuffled_validation_df = apoptosis_unshuffled_validation_df.sort_values(
+    by=["apoptosis_prob"], ascending=False
+)
+apoptosis_unshuffled_test_df = apoptosis_unshuffled_test_df.sort_values(
+    by=["apoptosis_prob"], ascending=False
+)
+apoptosis_unshuffled_holdout_df = apoptosis_unshuffled_holdout_df.sort_values(
+    by=["apoptosis_prob"], ascending=False
+)
+
+apoptosis_shuffled_train_df = apoptosis_shuffled_train_df.sort_values(
+    by=["apoptosis_prob"], ascending=False
+)
+apoptosis_shuffled_validation_df = apoptosis_shuffled_validation_df.sort_values(
+    by=["apoptosis_prob"], ascending=False
+)
+apoptosis_shuffled_test_df = apoptosis_shuffled_test_df.sort_values(
+    by=["apoptosis_prob"], ascending=False
+)
+apoptosis_shuffled_holdout_df = apoptosis_shuffled_holdout_df.sort_values(
+    by=["apoptosis_prob"], ascending=False
+)
+
+control_unshuffled_train_df = control_unshuffled_train_df.sort_values(
+    by=["control_prob"], ascending=False
+)
+control_unshuffled_validation_df = control_unshuffled_validation_df.sort_values(
+    by=["control_prob"], ascending=False
+)
+control_unshuffled_test_df = control_unshuffled_test_df.sort_values(
+    by=["control_prob"], ascending=False
+)
+control_unshuffled_holdout_df = control_unshuffled_holdout_df.sort_values(
+    by=["control_prob"], ascending=False
+)
+
+control_shuffled_train_df = control_shuffled_train_df.sort_values(
+    by=["control_prob"], ascending=False
+)
+control_shuffled_validation_df = control_shuffled_validation_df.sort_values(
+    by=["control_prob"], ascending=False
+)
+control_shuffled_test_df = control_shuffled_test_df.sort_values(
+    by=["control_prob"], ascending=False
+)
+control_shuffled_holdout_df = control_shuffled_holdout_df.sort_values(
+    by=["control_prob"], ascending=False
+)
+
 
 # add each df to a dictionary
 dict_of_dfs = {}
@@ -289,7 +395,7 @@ for key, value in dict_of_dfs.items():
         print(key)
 
 
-# In[10]:
+# In[11]:
 
 
 # define a dictionary for coding the wells and FOVs correctly
@@ -357,7 +463,7 @@ fov_dict = {
 }
 
 
-# In[11]:
+# In[12]:
 
 
 image_basename_1 = "p04-ch1sk1fk1fl1_IC.tiff"
@@ -367,7 +473,7 @@ image_basename_4 = "p04-ch4sk1fk1fl1_IC.tiff"
 image_basename_5 = "p04-ch5sk1fk1fl1_IC.tiff"
 
 
-# In[12]:
+# In[13]:
 
 
 # set constants for the loop
@@ -376,7 +482,7 @@ radius = 50
 n = 5
 
 
-# In[13]:
+# In[14]:
 
 
 dict_of_subset_dfs = {}
@@ -386,12 +492,12 @@ for key in tqdm(dict_of_dfs):
         pass
     else:
         # select n random cells from the dataframe
-        df = random_cell_select(df, n)
+        df = top_n_cell_select(df, n)
         # add the df to the dictionary
         dict_of_subset_dfs[key] = df
 
 
-# In[14]:
+# In[15]:
 
 
 # create a blank df to append the data to
@@ -400,7 +506,7 @@ main_df = dict_of_subset_dfs["pyroptosis_shuffled_train_df"]
 main_df = main_df.drop(main_df.index)
 
 
-# In[15]:
+# In[16]:
 
 
 for key in tqdm(dict_of_subset_dfs):
@@ -409,8 +515,8 @@ for key in tqdm(dict_of_subset_dfs):
         for cell in range(len(dict_of_subset_dfs[key])):
             # get the first row of the dataframe
             df = dict_of_subset_dfs[key].iloc[cell]
-            image_id = df["Metadata_ImageNumber"]
-            fov_id = df["Metadata_Site"].astype(str)
+            image_id = df["Metadata_ImageNumber"].astype(int).astype(str)
+            fov_id = df["Metadata_Site"].astype(int).astype(str)
             cell_id = df["Metadata_Cells_Number_Object_Number"]
             well_id = df["Metadata_Well"]
             row_id = well_id[0]
@@ -453,19 +559,14 @@ for key in tqdm(dict_of_subset_dfs):
 
             # crop all 5 channels of the image
             im1 = cv2.imread(image_path1.as_posix(), cv2.IMREAD_UNCHANGED)
-            # im1_crop = im1[min_y_box:max_y_box, min_x_box:max_x_box]
 
             im2 = cv2.imread(image_path2.as_posix(), cv2.IMREAD_UNCHANGED)
-            # im2_crop = im2[min_y_box:max_y_box, min_x_box:max_x_box]
 
             im3 = cv2.imread(image_path3.as_posix(), cv2.IMREAD_UNCHANGED)
-            # im3_crop = im3[min_y_box:max_y_box, min_x_box:max_x_box]
 
             im4 = cv2.imread(image_path4.as_posix(), cv2.IMREAD_UNCHANGED)
-            # im4_crop = im4[min_y_box:max_y_box, min_x_box:max_x_box]
 
             im5 = cv2.imread(image_path5.as_posix(), cv2.IMREAD_UNCHANGED)
-            # im5_crop = im5[min_y_box:max_y_box, min_x_box:max_x_box]
 
             # check for non-edge cells
 
@@ -476,13 +577,17 @@ for key in tqdm(dict_of_subset_dfs):
             # * Channel 4: AGP (Actin, Golgi, and Plasma membrane)
             # * Channel 5: Mitochondria
 
+            # prior to merging adjust the brightness of the image to make it easier to see
+            # adjust the brightness of the image to make it easier to see
+            alpha = 0.05  # Contrast control (1.0-3.0)
+            beta = 0  # Brightness control (0-100)
+            im3 = cv2.convertScaleAbs(im3, alpha=alpha, beta=beta)
+            im4 = cv2.convertScaleAbs(im4, alpha=alpha, beta=beta)
+            # blue channel does not need to be adjusted as it is the DAPI channel and is already bright
+
             blue_channel_stack = np.stack(im1, axis=-1)
             green_channel_stack = np.stack(im3, axis=-1)
             red_channel_stack = np.stack(im4, axis=-1)
-
-            # blue_channel_stack_crop = np.stack(im1_crop, axis=-1)
-            # green_channel_stack_crop = np.stack(im3_crop, axis=-1)
-            # red_channel_stack_crop = np.stack(im4_crop, axis=-1)
 
             channel1 = "im1"
             channel2 = "im3"
@@ -499,39 +604,27 @@ for key in tqdm(dict_of_subset_dfs):
                 red_channel_stack / np.max(red_channel_stack) * 65535
             ).astype(np.uint16)
 
-            # blue_channel_crop = (
-            #     blue_channel_stack_crop / np.max(blue_channel_stack_crop) * 65535
-            # ).astype(np.uint16)
-            # green_channel_crop = (
-            #     green_channel_stack_crop / np.max(green_channel_stack_crop) * 65535
-            # ).astype(np.uint16)
-            # red_channel_crop = (
-            #     red_channel_stack_crop / np.max(red_channel_stack_crop) * 65535
-            # ).astype(np.uint16)
-
             # merge the channels together
 
             composite_image = cv2.merge(
                 (red_channel, green_channel, blue_channel)
             ).astype(np.uint16)
-            # composite_image = cv2.cvtColor(composite_image, cv2.COLOR_BGR2RGB)
 
             composite_image_crop = composite_image[
                 min_y_box:max_y_box, min_x_box:max_x_box
             ]
 
-            # im_crop = composite_image[min_y_box:max_y_box, min_x_box:max_x_box]
             if composite_image_crop.shape[0] == 0 or composite_image_crop.shape[1] == 0:
                 print("Cell is on the edge of the image, skipping")
                 continue
 
-            # composite_image_crop = cv2.merge(
-            #     (blue_channel_crop, green_channel_crop, red_channel_crop)
-            # ).astype(np.uint16)
             composite_image = cv2.cvtColor(composite_image, cv2.COLOR_BGR2RGB)
             composite_image_crop = cv2.cvtColor(composite_image_crop, cv2.COLOR_BGR2RGB)
 
             # The images end up being `wonky` so we need to do some post processing prior to saving
+            # where wonky means that the image is not oriented correctly
+            # the image is rotated 90 degrees clockwise and flipped vertically
+
             # this will ensure that the images are oriented correctly with X and Y centers prior to cropping
             # transformations of the image to fix the orientation post pixel scaling
             # flip the image vertically
@@ -581,7 +674,7 @@ for key in tqdm(dict_of_subset_dfs):
             main_df = pd.concat([main_df, df], ignore_index=True)
 
 
-# In[16]:
+# In[17]:
 
 
 # define main_df_path
@@ -592,10 +685,7 @@ main_df_path.mkdir(parents=True, exist_ok=True)
 main_df.to_parquet(f"{main_df_path}/single_cell_predictions.parquet")
 
 
-# In[17]:
+# In[18]:
 
 
-main_df
-
-
-# In[ ]:
+main_df.head()

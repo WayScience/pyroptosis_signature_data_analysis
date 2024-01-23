@@ -6,13 +6,14 @@
 
 import matplotlib.pyplot as plt
 
-get_ipython().run_line_magic("matplotlib", "inline")
+get_ipython().run_line_magic('matplotlib', 'inline')
 import pathlib
 
 import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 import seaborn as sns
+
 
 # In[2]:
 
@@ -75,11 +76,11 @@ pathlib.Path(f"Figures/cell_counts_plate2/{celltype}").mkdir(
     parents=True, exist_ok=True
 )
 # save figure
-plt.savefig(
-    f"Figures/cell_counts_plate2/{celltype}/Number_of_single_cells_per_treatment.png",
-    bbox_inches="tight",
-)
-plt.show()
+# plt.savefig(
+#     f"Figures/cell_counts_plate2/{celltype}/Number_of_single_cells_per_treatment.png",
+#     bbox_inches="tight",
+# )
+# plt.show()
 plt.close()
 
 
@@ -113,3 +114,4 @@ for i in df["Metadata_Treatment"].unique():
     )
     plt.show()
     plt.close()
+

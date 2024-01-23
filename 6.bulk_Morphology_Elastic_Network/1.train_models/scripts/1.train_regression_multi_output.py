@@ -52,14 +52,6 @@ else:
 print(f"shuffle: {shuffle}")
 
 
-# In[3]:
-
-
-shuffle = "True"
-cell_type = "SHSY5Y"
-cytokine = "IL-1 beta [NSU]"
-
-
 # In[4]:
 
 

@@ -1,5 +1,6 @@
 suppressPackageStartupMessages(suppressWarnings(library(ggplot2)))
 
+
 cell_type = "PBMC"
 # path set
 input_file_path <- file.path(paste0("../results/","regression/",cell_type))
@@ -8,7 +9,9 @@ output_path <- file.path(paste0("../figures/","regression/",cell_type,"/"))
 # create output directory if it doesn't exist
 dir.create(output_path, recursive = TRUE, showWarnings = FALSE)
 
+
 files <- list.files(path = input_file_path, pattern = "*.csv", full.names = TRUE)
+
 
 # define empty df with column names
 model_df <- data.frame(
@@ -19,6 +22,7 @@ model_df <- data.frame(
     r2 = numeric()
 )
 
+
 for (i in 1:length(files)){
     df <- read.csv(files[i], header = TRUE, sep = ",", stringsAsFactors = FALSE)
     df <- df[1,]
@@ -28,6 +32,7 @@ for (i in 1:length(files)){
     model_df <- rbind(model_df, df)
 }
 head(model_df)
+
 
 # plot size
 options(repr.plot.width=10, repr.plot.height=5)
@@ -41,3 +46,4 @@ model_params_plot <- (
     + ggtitle("ElasticNet model parameters")
 )
 model_params_plot
+

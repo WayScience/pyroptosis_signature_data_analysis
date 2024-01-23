@@ -211,19 +211,6 @@ for (i in 1:length(loop_list)){
         + xlab("Channel")
         + ylab("Feature")
         + theme(
-            axis.text = element_text(size = 7),
-            axis.text.x = element_text(angle = 90, size = 7),
-            axis.title = element_text(size = 10),
-            legend.text = element_text(size = 9),
-            legend.title = element_text(size = 10),
-            strip.text = element_text(size = 8),
-            strip.background = element_rect(
-                colour = "black",
-                fill = "#fdfff4"
-            )
-        )
-        + ggtitle(paste0("LM Coefficients for: ",treatment))
-    )
-    plot(coef_gg)
+            axis.text = element_text(size = 7),and
 }
 dev.off()

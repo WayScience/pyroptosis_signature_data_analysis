@@ -1,19 +1,19 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --mem=300G
+#SBATCH --mem=700G
 #SBATCH --partition=amem
 #SBATCH --qos=mem
 #SBATCH --time=24:00:00
-#SBATCH --output=sample-%
+#SBATCH --output=sample-%j.out
 
 module load anaconda
 
 conda activate Interstellar
 
-treatment1s=( DMSO_0.100_DMSO_0.025 )
-treatment2s=( LPS_100.000_DMSO_0.025 LPS_10.000_DMSO_0.025 LPS_1.000_DMSO_0.025 LPS_0.100_DMSO_0.025 LPS_0.010_DMSO_0.025)
-treatment3s=( Thapsigargin_10.000_DMSO_0.025 Thapsigargin_1.000_DMSO_0.025 H202_100_Z-VAD-FMK_100 H202_100_DMSO_0.025)
+treatment1s=( 'DMSO_0.100_%_DMSO_0.025_%' )
+treatment2s=( 'LPS_100.000_ug_per_ml_DMSO_0.025_%' 'LPS_10.000_ug_per_ml_DMSO_0.025_%' 'LPS_1.000_ug_per_ml_DMSO_0.025_%' 'LPS_0.100_ug_per_ml_DMSO_0.025_%' 'LPS_0.010_ug_per_ml_DMSO_0.025_%' )
+treatment3s=( 'Thapsigargin_10.000_uM_DMSO_0.025_%' 'Thapsigargin_1.000_uM_DMSO_0.025_%' 'H2O2_100.000_uM_DMSO_0.025_%' 'H2O2_100.000_nM_DMSO_0.025_%' )
 cell_types=( SHSY5Y PBMC )
 
 for treatment1 in ${treatment1s[@]}; do

@@ -15,7 +15,7 @@ suppressPackageStartupMessages(suppressWarnings(library(circlize)))
 suppressPackageStartupMessages(suppressWarnings(library(reshape2))) # data manipulation
 suppressPackageStartupMessages(suppressWarnings(library(stringr))) # string manipulation
 suppressPackageStartupMessages(suppressWarnings(library(purrr))) # data manipulation
-source("../utils/figure_themes.r")
+source("../../utils/figure_themes.r")
 
 # set the cell type
 cell_type <- "PBMC"
@@ -23,16 +23,16 @@ cell_type <- "PBMC"
 
 # set the path to the data files
 df_stats_path <- file.path(
-    paste0("../../6.bulk_Morphology_Elastic_Network/2.test_model/results/regression/",cell_type,"/aggregated_with_nomic/model_stats.csv"
+    paste0("../../../6.bulk_Morphology_Elastic_Network/2.test_model/results/regression/",cell_type,"/aggregated_with_nomic/model_stats.csv"
     )
     )
 df_variance_path <- file.path(
-    paste0("../../6.bulk_Morphology_Elastic_Network/2.test_model/results/regression/",cell_type,"/aggregated_with_nomic/variance_r2_stats.csv"
+    paste0("../../../6.bulk_Morphology_Elastic_Network/2.test_model/results/regression/",cell_type,"/aggregated_with_nomic/variance_r2_stats.csv"
     )
 )
 
 # set the path to the figure output
-enet_cp_fig_path <- paste0("./figures/regression/",cell_type,"/aggregated_with_nomic/")
+enet_cp_fig_path <- paste0("../figures/regression/",cell_type,"/aggregated_with_nomic/")
 # if path does not exist, create it
 if (!file.exists(dirname(enet_cp_fig_path))) {
     print(dirname(enet_cp_fig_path))
@@ -53,8 +53,8 @@ df_variance$r2 <- as.numeric(df_variance$r2)
 head(df_variance)
 
 
-df_variance$shuffle <- gsub("final", "Final", df_variance$shuffle)
-df_variance$shuffle <- gsub("shuffled_baseline", "Shuffled Baseline", df_variance$shuffle)
+df_variance$shuffle <- gsub("final", "Final\n ", df_variance$shuffle)
+df_variance$shuffle <- gsub("shuffled_baseline", "Shuffled\nbaseline", df_variance$shuffle)
 df_variance$data_split <- gsub("test_data", "Test Data", df_variance$data_split)
 df_variance$data_split <- gsub("train_data", "Train Data", df_variance$data_split)
 
@@ -78,6 +78,8 @@ variance_r2_plot_global <- (
     # alter the text size of the legend title
     + figure_theme
     + scale_shape_manual(values=c(16, 4))
+    # change the color of the points
+    + scale_color_manual(values=c("Darkblue", "orange"))
 
 )
 variance_r2_plot_global
@@ -110,6 +112,7 @@ variance_r2_plot_local <- (
     )
     + figure_theme
     # change the legend values
+    + scale_color_manual(values=c("Darkblue", "orange"))
 
 )
 legend <- get_legend(variance_r2_plot_local)
@@ -120,10 +123,10 @@ plot(legend)
 
 df_stats$shuffle_plus_data_split <- paste0(df_stats$shuffle, "_", df_stats$data_split)
 # replace 'final_test_data' with 'Final + Test' and 'final_train_data' with 'Final + Train'
-df_stats$shuffle_plus_data_split <- gsub("final_test_data", "Final + Test", df_stats$shuffle_plus_data_split)
-df_stats$shuffle_plus_data_split <- gsub("final_train_data", "Final + Train", df_stats$shuffle_plus_data_split)
-df_stats$shuffle_plus_data_split <- gsub("shuffled_baseline_test_data", "Shuffled + Test", df_stats$shuffle_plus_data_split)
-df_stats$shuffle_plus_data_split <- gsub("shuffled_baseline_train_data", "Shuffled + Train", df_stats$shuffle_plus_data_split)
+df_stats$shuffle_plus_data_split <- gsub("final_test_data", "Final (Test)", df_stats$shuffle_plus_data_split)
+df_stats$shuffle_plus_data_split <- gsub("final_train_data", "Final (Train)", df_stats$shuffle_plus_data_split)
+df_stats$shuffle_plus_data_split <- gsub("shuffled_baseline_test_data", "Shuffled (Test)", df_stats$shuffle_plus_data_split)
+df_stats$shuffle_plus_data_split <- gsub("shuffled_baseline_train_data", "Shuffled (Train)", df_stats$shuffle_plus_data_split)
 
 
 options(repr.plot.width=6, repr.plot.height=5)
@@ -195,6 +198,17 @@ pred_v_actual_plot <- function(df, cytokine){
     return(p)
 }
 
+
+# df_stats factor levels
+df_stats$shuffle_plus_data_split <- factor(
+    df_stats$shuffle_plus_data_split,
+    levels = c(
+        "Final (Train)",
+        "Final (Test)",
+        "Shuffled (Train)",
+        "Shuffled (Test)"
+    )
+)
 
 enet_cp_fig <- file.path(paste0(enet_cp_fig_path,"Predicted_vs_Actual_all_cytokines.png"))
 # set plot size
@@ -271,9 +285,23 @@ colnames(agg_df) <- c("shuffle_plus_data_split","mean_r2", "sd_r2")
 
 head(df_stats)
 
+# get the default R color palette
+default_colors <- c("#F8766D", "#00BA38", "#00BFC4", "#F564E3")
+
+
+# df_stats factor levels
+df_stats$shuffle_plus_data_split <- factor(
+    df_stats$shuffle_plus_data_split,
+    levels = c(
+        "Shuffled (Test)",
+        "Shuffled (Train)",
+        "Final (Test)",
+        "Final (Train)"
+    )
+)
 width = 8
 height = 5
-# options(repr.plot.width=width, repr.plot.height=height)
+options(repr.plot.width=width, repr.plot.height=height)
 r2_boxplot <- (
     ggplot(df_stats, aes(x=r2, y=shuffle_plus_data_split, fill=shuffle_plus_data_split))
         + geom_boxplot()
@@ -286,13 +314,21 @@ r2_boxplot <- (
         + figure_theme
         # remove legend
         + theme(legend.position="none")
+        # change color of the boxplot
+        + scale_fill_manual(values=c(
+            default_colors[4],
+            default_colors[3],
+            default_colors[2],
+            default_colors[1]
+        ))
+
 )
 r2_boxplot
 
 # path set
-input_file_path <- file.path(paste0("../../6.bulk_Morphology_Elastic_Network/3.model_coefficients/results/regression/",cell_type))
+input_file_path <- file.path(paste0("../../../6.bulk_Morphology_Elastic_Network/3.model_coefficients/results/regression/",cell_type))
 # read in the data
-output_path <- file.path(paste0("./figures/","regression/",cell_type,"/"))
+output_path <- file.path(paste0("../figures/","regression/",cell_type,"/"))
 # create output directory if it doesn't exist
 dir.create(output_path, recursive = TRUE, showWarnings = FALSE)
 
@@ -340,30 +376,33 @@ process_subset_data <- function(df){
 
 plot_coeffs <- function(df, cytokine, shuffle){
 
-# plot the data
-coef_gg <- (
-    ggplot(df, aes(x = channel_learned, y = feature_group))
-    + geom_point(aes(fill = abs(coefficients)), pch = 22, size = 5.75)
-    + facet_wrap("~compartment", ncol = 3)
-    + theme_bw()
-    + scale_fill_continuous(
-        name="Top Abs. val\ntreatment\nlinear model\ncoefficient",
-        low = "darkblue",
-        high = "yellow",
-    )
-    + xlab("Channel")
-    + ylab("Feature")
+    # replace '[NSU]' with ''
+    cytokine <- gsub("\\[NSU\\]", "", cytokine)
 
-    + figure_theme
-    + theme(
-        axis.text.x = element_text(angle = 45, hjust = 1, size = 14),
-    )
-    # rotate x axis labels
-    + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-    + ggtitle(paste0("Top Abs. val treatment ElasticNet coefficients for \n",cytokine,shuffle," model"))
-    + theme(plot.title = element_text(hjust = 0.5))
-    )
-    return(coef_gg)
+    # plot the data
+    coef_gg <- (
+        ggplot(df, aes(x = channel_learned, y = feature_group))
+        + geom_point(aes(fill = abs(coefficients)), pch = 22, size = 5.75)
+        + facet_wrap("~compartment", ncol = 3)
+        + theme_bw()
+        + scale_fill_continuous(
+            name="Top Abs. val\ntreatment\nlinear model\ncoefficient",
+            low = "darkblue",
+            high = "orange",
+        )
+        + xlab("Channel")
+        + ylab("Feature")
+
+        + figure_theme
+        + theme(
+            axis.text.x = element_text(angle = 45, hjust = 1, size = 14),
+        )
+        # rotate x axis labels
+        + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+        + ggtitle(paste0("Top Abs. val treatment ElasticNet coefficients for \n",cytokine,shuffle," model"))
+        + theme(plot.title = element_text(hjust = 0.5))
+        )
+        return(coef_gg)
 }
 
 
@@ -399,6 +438,47 @@ il1beta_final <- read.csv(filename, header = TRUE, sep = ",", stringsAsFactors =
 
 
 il1beta_final <- process_subset_data(il1beta_final)
+head(il1beta_final)
+# factor levels
+# rename the factor levels
+il1beta_final$channel_learned <- factor(
+    il1beta_final$channel_learned,
+    levels = c(
+        "nuclei",
+        "Mito",
+        "ER",
+        "gasdermin",
+        "PM",
+        "other"
+    ),
+    labels = c(
+        "Nuclei",
+        "Mito",
+        "ER",
+        "GasderminD",
+        "AGP",
+        "Other"
+    )
+)
+il1beta_final$feature_group <- factor(
+    il1beta_final$feature_group,
+    levels = c(
+        "AreaShape",
+        "Correlation",
+        "Granularity",
+        "Intensity",
+        "Location",
+        "Neighbors",
+        "RadialDistribution",
+        "Texture"
+    )
+)
+# reverese the order of the factor levels
+il1beta_final$feature_group <- factor(
+    il1beta_final$feature_group,
+    levels = rev(levels(il1beta_final$feature_group))
+)
+
 il1beta_final_plot <- plot_coeffs(il1beta_final, cytokine, shuffle)
 # output
 coef_gg_file <- file.path(paste0(output_path,"/","top_abs_val_coefficients_enet.pdf"))
@@ -415,10 +495,10 @@ cell_type <- "PBMC"
 
 
 # set path for data of all models
-data_path <- file.path(paste0("../../6.bulk_Morphology_Elastic_Network/4.model_performance/results/regression/", cell_type, "/", "all_model_performance.csv"))
+data_path <- file.path(paste0("../../../6.bulk_Morphology_Elastic_Network/4.model_performance/results/regression/", cell_type, "/", "all_model_performance.csv"))
 df <- read.csv(data_path)
 # setfigure path
-figure_path <- file.path(paste0("../figures/regression/", cell_type, "/"))
+figure_path <- file.path(paste0("../figures/"))
 # make the directory if it doesn't exist
 dir.create(figure_path, recursive = TRUE, showWarnings = FALSE)
 
@@ -651,29 +731,38 @@ features <- features %>%
             "CorrDNA" = "Nuclei",
             "CorrMito" = "Mito",
             "CorrER" = "ER",
-            "CorrGasdermin" = "Gasdermin",
-            "CorrPM" = "PM",
+            "CorrGasdermin" = "GasderminD",
+            "CorrPM" = "AGP",
             .default = "Other",
             .missing="Other"
     )
+# make the channel learned a factor
+features$channel_learned <- factor(features$channel_learned, levels = c("Nuclei", "Mito", "ER", "Gasdermin", "AGP", "Other"))
 
 
 r2_df <- df %>% select(r2)
 r2_df <- unique(r2_df)
 column_ha <- HeatmapAnnotation(
-    df = r2_df,
+    R2 = r2_df$r2,
     show_legend = TRUE,
     annotation_name_side = "left",
     # rotate the title
     annotation_legend_param = list(
-        title_gp = gpar(fontsize = 16, angle = 0),
         labels_gp = gpar(fontsize = 16, angle = 0),
         title_position = "topcenter",
-        title_gp = gpar(fontsize = 16, angle = 0)
+        title_gp = gpar(fontsize = 16, angle = 0, fontface = "bold", hjust = 0.5)
     ),
     annotation_name_gp = gpar(fontsize = 16),
     # set color bar for r2 continuous value with brewer palette
-    col = list(r2 = colorRamp2(c(0, 1), c(brewer.pal(9,"YlGn")[1], brewer.pal(9,"YlGn")[7])))
+    col = list(R2 = colorRamp2(c(0, 0.5, 1), spectral_palette <- c(
+        # white
+        "#FFFFFF",
+        # light blue
+        "#A6CEE3",
+        # dark blue
+        "#1F78B4"
+    )))
+
 )
 
 
@@ -714,65 +803,62 @@ features <- features %>%
             "CorrDNA" = "Nuclei",
             "CorrMito" = "Mito",
             "CorrER" = "ER",
-            "CorrGasdermin" = "Gasdermin",
-            "CorrPM" = "PM",
+            "CorrGasdermin" = "GasderminD",
+            "CorrPM" = "AGP",
             .default = "Other",
             .missing="Other"
     )
 
 # set annotations
 row_ha_1 <- rowAnnotation(
-    Compartment = features$compartment,
+    Object = features$compartment,
     show_legend = TRUE,
     # change the legend titles
     annotation_legend_param = list(
         title_position = "topcenter",
-        title_gp = gpar(fontsize = 16, angle = 0),
+        title_gp = gpar(fontsize = 16, angle = 0, fontface = "bold", hjust = 0.5),
         labels_gp = gpar(fontsize = 16,
         title = gpar(fontsize = 16))),
     annotation_name_side = "bottom",
     annotation_name_gp = gpar(fontsize = 16),
     # color
     col = list(
-        Compartment = c(
+        Object = c(
             "Cells" = brewer.pal(12, "Accent")[7],
             "Cytoplasm" = brewer.pal(12, "Accent")[6],
-            "Nuclei" = brewer.pal(12, "Accent")[5]
-        )
-
-
+            "Nuclei" = "#0000AB"
+            )
     )
 )
+
 
 row_ha_2 <- rowAnnotation(
         FeatureType = features$feature_group,
        annotation_legend_param = list(
         title_position = "topcenter",
-        title_gp = gpar(fontsize = 16, angle = 0),
+        title_gp = gpar(fontsize = 16, angle = 0, fontface = "bold", hjust = 0.5),
         labels_gp = gpar(fontsize = 16,
         title = gpar(fontsize = 16))),
     annotation_name_side = "bottom",
     annotation_name_gp = gpar(fontsize = 16),
     col = list(
             Feature_Type = c(
-            "AreaShape" = brewer.pal(12, "Paired")[1],
-            "Correlation" = brewer.pal(12, "Paired")[2],
-            "Granularity" = brewer.pal(12, "Paired")[5],
-            "Neighbors" = brewer.pal(12, "Paired")[8],
-            "RadialDistribution" = brewer.pal(12, "Paired")[10],
-            "Texture" = brewer.pal(12, "Paired")[11]
+            "AreaShape" = brewer.pal(8, "Dark2")[1],
+            "Correlation" = brewer.pal(8, "Dark2")[2],
+            "Granularity" = brewer.pal(8, "Dark2")[3],
+            "Neighbors" =  brewer.pal(8, "Dark2")[4],
+            "RadialDistribution" = brewer.pal(8, "Dark2")[5],
+            "Texture" = brewer.pal(8, "Dark2")[6]
         )
     )
 )
-
 
 row_ha_3 <- rowAnnotation(
     Channel = features$channel_learned,
     annotation_legend_param = list(
         title_position = "topcenter",
-        title_gp = gpar(fontsize = 16, angle = 0),
+        title_gp = gpar(fontsize = 16, angle = 0, fontface = "bold", hjust = 0.5),
         labels_gp = gpar(fontsize = 16,
-        title = gpar(fontsize = 16),
         # make annotation bar text bigger
         legend = gpar(fontsize = 16),
         annotation_name = gpar(fontsize = 16),
@@ -782,9 +868,11 @@ row_ha_3 <- rowAnnotation(
         legend_height = unit(10, "cm"),
         legend_width = unit(1, "cm"),
         legend_key = gpar(fontsize = 16)
+        )
+    ),
 
-            )
-        ),
+
+
     annotation_name_side = "bottom",
     # make font size bigger
     annotation_name_gp = gpar(fontsize = 16),
@@ -793,11 +881,12 @@ row_ha_3 <- rowAnnotation(
             "Nuclei" = "#0000AB",
             "Mito" = "#B000B0",
             "ER" = "#00D55B",
-            "Gasdermin" = "#FFFF00",
-            "PM" = "#C90000",
+            "GasderminD" = "#FFFF00",
+            "AGP" = "#C90000",
             "Other" = "#B09FB0")
     )
 )
+
 
 
 # drop the feature names column
@@ -805,14 +894,10 @@ mat <- mat %>% select(-feature_names)
 mat <- as.matrix(mat)
 
 
-
-
 # plot size
 width <- 40
 height <- 10
 options(repr.plot.width=width, repr.plot.height=height)
-# change margins
-# par(mar = c(1, 1, 1, 1))
 
 model_heatmap <- (
         Heatmap(
@@ -827,12 +912,10 @@ model_heatmap <- (
         bottom_annotation = column_ha,
         # rename fill legend
         heatmap_legend_param = list(
-                title = "Coef",
+                title = "Coefficient",
                 title_position = "topcenter",
-                title_gp = gpar(fontsize = 16),
+                title_gp = gpar(fontsize = 16, angle = 0, fontface = "bold", hjust = 0.5),
                 labels_gp = gpar(fontsize = 16)
-                # legend_height = unit(3, "cm"),
-                # legend_width = unit(1, "cm")
                 ),
         column_dend_height = unit(4, "cm"),
         row_dend_width = unit(4, "cm"),
@@ -847,7 +930,6 @@ model_heatmap <- (
 model_heatmap <- as.ggplot(model_heatmap)
 
 # # save the figure
-ggsave(file = paste0(figure_path, "filtered_features.svg"), plot = model_heatmap, width = width, height = height, units = "in", dpi = 500)
 ggsave(file = paste0(figure_path, "filtered_features.png"), plot = model_heatmap, width = width, height = height, units = "in", dpi = 500)
 # fix the position of the plot
 model_heatmap
@@ -886,11 +968,11 @@ fig4 <- (
 
     IL1beta_a_v_p
     + r2_boxplot
-    + variance_r2_plot_local
+    + wrap_elements(full = variance_r2_plot_local)
     + il1beta_final_plot
     + wrap_elements(full = model_heatmap)
     # + model_heatmap
-    + plot_layout(design = layout, widths = c(10, 10))
+    + plot_layout(design = layout, widths = c(0.9, 1))
     # make bottom plot not align
     + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
 )
@@ -898,4 +980,5 @@ fig4
 
 # save the figure
 ggsave(file = paste0(figure_path, "figure4.png"), plot = fig4, width = width, height = height, units = "in", dpi = 600)
-ggsave(file = paste0(figure_path, "figure4.svg"), plot = fig4, width = width, height = height, units = "in", dpi = 600)
+
+

@@ -8,17 +8,20 @@ suppressWarnings(suppressPackageStartupMessages(library(patchwork)))
 suppressWarnings(suppressPackageStartupMessages(library(arrow)))
 suppressWarnings(suppressPackageStartupMessages(library(dplyr)))
 
+# define the base directory
+base_dir <- file.path(
+    "..",
+    "..",
+    ".."
+)
+
 # Set the path to the index file
 index_file_path_PBMC <- file.path(
-    "../",
-    "../",
-    "../",
+    base_dir,
     "4.sc_Morphology_Neural_Network_MLP_Model/0.hyperparameter_optimization/indexes/PBMC/multi_class/MultiClass_MLP_data_split_indexes.tsv"
 )
 index_file_path_SHSY5Y <- file.path(
-    "../",
-    "../",
-    "../",
+    base_dir,
     "4.sc_Morphology_Neural_Network_MLP_Model/0.hyperparameter_optimization/indexes/SHSY5Y/multi_class/MultiClass_MLP_data_split_indexes.tsv"
 )
 # load the index file
@@ -94,10 +97,6 @@ metadata_file_SHSY5Y <- arrow::read_parquet(
 )
 head(metadata_file_SHSY5Y)
 
-
-
-
-
 ## PBMC
 
 # add column to metadata file with the labeled_data_index
@@ -163,15 +162,9 @@ head(combined_metadata)
 unique(combined_metadata$Metadata_cell_type)
 unique(combined_metadata$label)
 
-
-
-
-
 # load in the platemap
 platemap_file_path <- file.path(
-    "../",
-    "../",
-    "../",
+    base_dir,
     "data/",
     "Interstellar_plate2_platemap.csv"
 )
@@ -194,8 +187,6 @@ updated_platemap <- merge(
 head(updated_platemap)
 unique(updated_platemap$Metadata_cell_type)
 # replace "" in cell_type with "Blank" in label
-# updated_platemap$Metadata_cell_type[updated_platemap$Metadata_cell_type == NA] <- "Blank"
-# replace NA in cell_type with "Blank" in label
 updated_platemap$Metadata_cell_type[is.na(updated_platemap$Metadata_cell_type)] <- "Blank"
 # replace NA with "Blank" in label
 updated_platemap$label[is.na(updated_platemap$label)] <- "Blank"
@@ -232,14 +223,15 @@ width <- 14
 height <- 14
 options(repr.plot.width = width, repr.plot.height = height, units = "cm")
 # set pallette
-viridis_pal_custom <- viridis::viridis_pal(option = "C")(3)
+viridis_pal_custom <- viridis::viridis_pal(option = "C")(5)
 
 data_split_plate_map <- (
     raw_map(
         data = updated_platemap$label,
         well = updated_platemap$well_id,
-        plate = 384,
-        size = 14)
+        plate = 384, # number of wells in plate apriori known
+        size = 14 # size of the wells displayed
+        )
     + theme_dark()
         + ggplot2::geom_point(
         aes(shape = updated_platemap$Metadata_cell_type),
@@ -254,6 +246,7 @@ data_split_plate_map <- (
         legend.title = element_text(size = 18,hjust = 0.5),
         legend.text = element_text(size = 16),
     )
+    # cell type legend
     + scale_shape_manual(
         values = c(
             'Blank' = 0,
@@ -261,12 +254,13 @@ data_split_plate_map <- (
             'SH-SY5Y' = 8
         )
     )
+    # data split legend
     + scale_fill_manual(
     values = c(
         'Blank' = "grey",
-        'Pool' = viridis_pal_custom[1],
-        'Holdout' = viridis_pal_custom[2],
-        'Treatment Holdout' = viridis_pal_custom[3]
+        'Pool' = viridis_pal_custom[3],
+        'Holdout' = viridis_pal_custom[4],
+        'Treatment Holdout' = viridis_pal_custom[5]
 
     )
     )

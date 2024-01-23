@@ -811,7 +811,7 @@ features <- features %>%
 
 # set annotations
 row_ha_1 <- rowAnnotation(
-    Compartment = features$compartment,
+    Object = features$compartment,
     show_legend = TRUE,
     # change the legend titles
     annotation_legend_param = list(
@@ -823,7 +823,7 @@ row_ha_1 <- rowAnnotation(
     annotation_name_gp = gpar(fontsize = 16),
     # color
     col = list(
-        Compartment = c(
+        Object = c(
             "Cells" = brewer.pal(12, "Accent")[7],
             "Cytoplasm" = brewer.pal(12, "Accent")[6],
             "Nuclei" = "#0000AB"

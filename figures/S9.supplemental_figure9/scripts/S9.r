@@ -103,7 +103,7 @@ ridge_plot_control <- (
 
     + facet_grid(shuffle~data_split, scales = "free_y")
     + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
-    + scale_x_continuous(breaks = seq(0, ))
+    + scale_x_continuous(breaks = seq(0, 1, 0.5))
     + labs(title = "Control Prediction Probability", y = "Predicted Class",fill = "True Class")
     + labs()
     + theme_bw()
@@ -111,7 +111,6 @@ ridge_plot_control <- (
     # no legend
     + theme(legend.position = "none")
     + theme(plot.title = element_text(size = 20, hjust = 0.5))
-    # + theme(legend.position = "bottom", legend.direction = "horizontal")
     # remove x axis label
     + theme(axis.title.x = element_blank())
 )
@@ -130,7 +129,7 @@ ridge_plot_apoptosis <- (
     ))
     + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
     + facet_grid(shuffle~data_split, scales = "free_y")
-    + scale_x_continuous(breaks = seq(0, 1))
+    + scale_x_continuous(breaks = seq(0, 1, 0.5))
     + labs(title = "Apoptosis Prediction Probability", y = "Predicted Class",fill = "True Class")
     + labs()
     + theme_bw()
@@ -138,7 +137,6 @@ ridge_plot_apoptosis <- (
     # remove legend
     + theme(legend.position = "none")
     + theme(plot.title = element_text(size = 20, hjust = 0.5))
-    # + theme(legend.position = "bottom", legend.direction = "horizontal")
     # remove x axis label
     + theme(axis.title.x = element_blank())
 )
@@ -156,13 +154,11 @@ ridge_plot_pyroptosis <- (
     ))
     + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
     + facet_grid(shuffle~data_split, scales = "free_y")+ scale_x_continuous(breaks = seq(0, 1, 0.5))
-    + scale_x_continuous(breaks = seq(0, 1))
+    + scale_x_continuous(breaks = seq(0, 1, 0.5))
     + labs(title = "Pyroptosis Prediction Probability", y = "Predicted Class",fill = "True Class")
     + labs()
     + theme_bw()
     + figure_theme
-    # remove legend
-    # + theme(legend.position = "none")
     # make title larger
     + theme(plot.title = element_text(size = 20, hjust = 0.5))
     + theme(legend.position = "bottom", legend.direction = "horizontal")
@@ -173,9 +169,6 @@ ridge_plot_pyroptosis <- (
 ridge_plot_pyroptosis
 
 
-# ridge_plot_apoptosis
-# ridge_plot_control
-# ridge_plot_pyroptosis
 # patch the plots together via the patchwork package
 layout <- c(
     area(t=1, b=2, l=1, r=1), # A

@@ -6,9 +6,9 @@ suppressPackageStartupMessages(suppressWarnings(library(reshape2))) # data manip
 suppressPackageStartupMessages(suppressWarnings(library(ggridges))) # ridgeline plots
 suppressPackageStartupMessages(suppressWarnings(library(RColorBrewer))) # color palettes
 suppressPackageStartupMessages(suppressWarnings(library(cowplot))) # ggplot2 drawing
+suppressPackageStartupMessages(suppressWarnings(library(ggplotify))) # ggplot2 drawing
 
-
-source("../../figures/utils/figure_themes.r")
+source("../../utils/figure_themes.r")
 
 
 cell_type <- "PBMC"
@@ -16,28 +16,28 @@ model_name <- "MultiClass_MLP"
 
 # set file path for importing the data
 training_metrics_file <- file.path(paste0(
-    "../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/training_metrics.parquet"
+    "../../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/training_metrics.parquet"
 ))
 confusion_matrix_file <- file.path(paste0(
-    "../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/confusion_matrices.parquet"
+    "../../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/confusion_matrices.parquet"
 ))
 pr_curves_path <- file.path(paste0(
-        "../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/PR_curves.parquet"
+        "../../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/PR_curves.parquet"
 ))
 
 
 # set output file path for graphs
 f1_plot_path <- file.path(paste0(
-    "figures/Multi_Class/",model_name,"/",cell_type,"/f1_score.png"
+    "../figures/Multi_Class/",model_name,"/",cell_type,"/f1_score.png"
 ))
 
 confusion_matrix_plot_path <- file.path(paste0(
-    "figures/Multi_Class/",model_name,"/",cell_type,"/confusion_matrix.png"
+    "../figures/Multi_Class/",model_name,"/",cell_type,"/confusion_matrix.png"
 ))
 
 # make the output directory if it doesn't exist
 dir.create(file.path(paste0(
-    "figures/Multi_Class/",model_name,"/",cell_type
+    "../figures/Multi_Class/",model_name,"/",cell_type
 )), showWarnings = FALSE, recursive = TRUE)
 
 
@@ -163,8 +163,6 @@ confusion_matrix$data_split <- factor(confusion_matrix$data_split, levels = c(
 ))
 
 
-head(confusion_matrix)
-
 # add the , to the count column
 confusion_matrix$Count <- sapply(
     confusion_matrix$Count, function(x) format(x, big.mark = ",")
@@ -182,15 +180,11 @@ confusion_matrix_plot <- (
     + facet_grid(data_split~shuffle)
     + geom_point(aes(color = Recall), size = 20, shape = 15)
     + geom_text(aes(label = Count))
-    + scale_color_gradient("Recall", low = "white", high = "#0000ff",limits = c(0, 1))
+    + scale_color_gradient("Recall", low = "white", high = "red",limits = c(0, 1))
     + theme_bw()
     + ylab("Predicted Class")
     + xlab("True Class")
     + figure_theme
-    # move the legend to the bottom
-    # + theme(legend.position = "bottom")
-    # make the legend horizontal
-    # + theme(legend.direction = "horizontal")
     # change the legend title position
     + guides(
         color = guide_colorbar(
@@ -201,9 +195,6 @@ confusion_matrix_plot <- (
     )
     # make the facet labels larger
     + theme(strip.text = element_text(size = 18))
-    # change the length of the legend
-    # + theme(legend.key.height = unit(0.5, "cm"))
-    # + theme(legend.key.width = unit(1.5, "cm"))
     # x tick labels 45 degrees
     + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
@@ -249,10 +240,6 @@ PR_curves$label <- factor(
 
 # remove the treatment holdout rows
 PR_curves <- PR_curves[!grepl("Treatment Holdout", PR_curves$data_split),]
-# remove the training rows
-# PR_curves <- PR_curves[!grepl("Training", PR_curves$data_split),]
-# # remove the validation rows
-# PR_curves <- PR_curves[!grepl("Validation", PR_curves$data_split),]
 
 
 # make a line plot that has the shuffled and not shuffled lines
@@ -306,13 +293,13 @@ pr_plot <- (
     # rotate the x axis tick labels
     + theme(axis.text.x = element_text(angle = 45, hjust = 1))
   )
-ggsave("figures/Multi_Class/MultiClass_MLP/PBMC/PR_curves.png", pr_plot, width = width, height = height, dpi = 600)
+ggsave("../figures/Multi_Class/MultiClass_MLP/PBMC/PR_curves.png", pr_plot, width = width, height = height, dpi = 600)
 pr_plot
 
 # load in the probabilities
 treatment_holdout_probabilities_path <- file.path(
     paste0(
-        "../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/probabilities.parquet"
+        "../../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/probabilities.parquet"
     )
 )
 # read in the data from the parquet file
@@ -498,7 +485,7 @@ fig5_probabilities
 
 sc_preds_path <- file.path(
     paste0(
-        "../../8.cytopick_analysis/results/PBMC/single_cell_predictions.parquet"
+        "../../../8.cytopick_analysis/results/PBMC/single_cell_predictions.parquet"
     )
 )
 # read in the data from the parquet file
@@ -506,14 +493,6 @@ sc_preds <- arrow::read_parquet(
     sc_preds_path
 )
 head(sc_preds,2)
-# get the rows that are pyroptosis and correct = true and shuffle = false
-pyroptosis_correct_holdout <- sc_preds[
-    sc_preds$labels == "pyroptosis" &
-    sc_preds$correct == TRUE &
-    sc_preds$shuffle == FALSE &
-    sc_preds$data_split == "holdout",]
-# get the first row
-pyroptosis_correct_holdout$image_crop_path[1]
 
 
 # define df subsets for each class, data split
@@ -609,13 +588,15 @@ correct_class_dfs <- list(
 
 
 
+pyroptosis_correct_train
+
 width <- 2
 height <- 2
 options(repr.plot.width = width, repr.plot.height = height)
 # define function to return the image object
-get_image <- function(df){
+get_image <- function(df, i){
     # Load the PNG file
-    img <- png::readPNG(df$image_crop_path[4])
+    img <- png::readPNG(df$image_crop_path[i])
     # Convert the image to a raster object
     g <- grid::rasterGrob(img, interpolate=TRUE)
 
@@ -629,20 +610,20 @@ get_image <- function(df){
 }
 
 
-pyroptosis_correct_train_image <- get_image(pyroptosis_correct_train)
-pyroptosis_correct_validation_image <- get_image(pyroptosis_correct_validation)
-pyroptosis_correct_test_image <- get_image(pyroptosis_correct_test)
-pyroptosis_correct_holdout_image <- get_image(pyroptosis_correct_holdout)
+pyroptosis_correct_train_image <- get_image(pyroptosis_correct_train, 4)
+pyroptosis_correct_validation_image <- get_image(pyroptosis_correct_validation, 4)
+pyroptosis_correct_test_image <- get_image(pyroptosis_correct_test, 4)
+pyroptosis_correct_holdout_image <- get_image(pyroptosis_correct_holdout, 2)
 
-control_correct_train_image <- get_image(control_correct_train)
-control_correct_validation_image <- get_image(control_correct_validation)
-control_correct_test_image <- get_image(control_correct_test)
-control_correct_holdout_image <- get_image(control_correct_holdout)
+control_correct_train_image <- get_image(control_correct_train, 2)
+control_correct_validation_image <- get_image(control_correct_validation, 4)
+control_correct_test_image <- get_image(control_correct_test, 4)
+control_correct_holdout_image <- get_image(control_correct_holdout, 4)
 
-apoptosis_correct_train_image <- get_image(apoptosis_correct_train)
-apoptosis_correct_validation_image <- get_image(apoptosis_correct_validation)
-apoptosis_correct_test_image <- get_image(apoptosis_correct_test)
-apoptosis_correct_holdout_image <- get_image(apoptosis_correct_holdout)
+apoptosis_correct_train_image <- get_image(apoptosis_correct_train, 4)
+apoptosis_correct_validation_image <- get_image(apoptosis_correct_validation, 4)
+apoptosis_correct_test_image <- get_image(apoptosis_correct_test, 4)
+apoptosis_correct_holdout_image <- get_image(apoptosis_correct_holdout, 4)
 
 # add titles to each image
 pyroptosis_correct_train_image <- (
@@ -768,7 +749,7 @@ correct_class_images
 ggsave(
     file.path(
         paste0(
-            "figures/Multi_Class/",model_name,"/",cell_type,"/correct_class_images.png"
+            "../figures/Multi_Class/",model_name,"/",cell_type,"/correct_class_images.png"
         )
     ),
     correct_class_images, width = width, height = height, dpi = 600
@@ -789,21 +770,23 @@ layout <- c(
 
 # control correct train images + probabilties
 control_correct_train_probabilities <- (
-    ridge_plot_control
-    + control_correct_train_image
-    + control_correct_validation_image
-    + control_correct_test_image
-    + control_correct_holdout_image
+
+        wrap_elements(full = ridge_plot_control)
+        + control_correct_train_image
+        + control_correct_validation_image
+        + control_correct_test_image
+        + control_correct_holdout_image
     # + plot_layout(nrow =1 ,widths = c(2,1,1,1,1), heights = c(0.5,1,1,1,1))
     + plot_layout(design = layout)
 )
 
 apoptosis_correct_train_probabilities <- (
-    ridge_plot_apoptosis
-    + apoptosis_correct_train_image
-    + apoptosis_correct_validation_image
-    + apoptosis_correct_test_image
-    + apoptosis_correct_holdout_image
+        wrap_elements(full = ridge_plot_apoptosis)
+        + apoptosis_correct_train_image
+        + apoptosis_correct_validation_image
+        + apoptosis_correct_test_image
+        + apoptosis_correct_holdout_image
+
     # + plot_layout(nrow =1 ,widths = c(2,1,1,1,1), heights = c(0.5,1,1,1,1))
     + plot_layout(design = layout)
 )
@@ -820,24 +803,35 @@ layout <- c(
 )
 
 pyroptosis_correct_train_probabilities <- (
-    ridge_plot_pyroptosis
-    + pyroptosis_correct_train_image
-    + pyroptosis_correct_validation_image
-    + pyroptosis_correct_test_image
-    + pyroptosis_correct_holdout_image
+
+        wrap_elements(full = ridge_plot_pyroptosis)
+        + pyroptosis_correct_train_image
+        + pyroptosis_correct_validation_image
+        + pyroptosis_correct_test_image
+        + pyroptosis_correct_holdout_image
+
     + plot_layout(design = layout)
 
+
     # add title
-    + theme(plot.title = element_text(size = 20, hjust = 0.5)))
+    # + theme(plot.title = element_text(size = 20, hjust = 0.5))
+)
 
 pyroptosis_correct_train_probabilities
 
+# convert each plot to a ggplot object
+pr_plot <- as.grob(pr_plot)
+confusion_matrix_plot <- as.grob(confusion_matrix_plot)
+control_correct_train_probabilities <- as.grob(control_correct_train_probabilities)
+apoptosis_correct_train_probabilities <- as.grob(apoptosis_correct_train_probabilities)
+pyroptosis_correct_train_probabilities <- as.grob(pyroptosis_correct_train_probabilities)
+
 layout <- c(
-    area(t=1, b=4, l=1, r=2), # A
-    area(t=1, b=4, l=3, r=4), # B
-    area(t=5, b=5, l=1, r=4), # C
-    area(t=6, b=6, l=1, r=4), # D
-    area(t=7, b=7, l=1, r=4) # E
+    area(t=1, b=3, l=1, r=2), # A
+    area(t=1, b=3, l=3, r=4), # B
+    area(t=4, b=4, l=1, r=4), # C
+    area(t=5, b=5, l=1, r=4), # D
+    area(t=6, b=6, l=1, r=4) # E
 )
 # set plot size
 width <- 17
@@ -848,9 +842,9 @@ fig5 <- (
     + wrap_elements(full = confusion_matrix_plot)
     # + wrap_elements(full = fig5_probabilities)
     # + wrap_elements(full = correct_class_images)
-    + control_correct_train_probabilities
-    + apoptosis_correct_train_probabilities
-    + pyroptosis_correct_train_probabilities
+    + wrap_elements(full = control_correct_train_probabilities)
+    + wrap_elements(full = apoptosis_correct_train_probabilities)
+    + wrap_elements(full = pyroptosis_correct_train_probabilities)
 
 
     # + fig5_probabilities
@@ -861,5 +855,6 @@ fig5 <- (
 fig5
 
 # save the plot
-ggsave("figures/figure5.png", fig5, width = width, height = height, dpi = 600)
+
+ggsave("../figures/figure5.png", fig5, width = width, height = height, dpi = 600)
 

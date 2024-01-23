@@ -1,9 +1,7 @@
 macro "Maximum Intensity Projection" {
 	//INPUT/OUPUT folders
-	//inDir=getDirectory("Choose the input folder");
-	//outDir=getDirectory("Choose the ouput folder");
-	inDir="/home/lippincm/Documents/ML/Interstellar_Analysis/8.cytopick_analysis/figures/PBMC/"
-	outDir="/home/lippincm/Documents/ML/Interstellar_Analysis/8.cytopick_analysis/figures/PBMC/"
+	inDir=getDirectory("Choose the input folder");
+	outDir=getDirectory("Choose the ouput folder");
 	myList=getFileList(inDir);  //an array
 	start = getTime();
 	waitForUser("I solemnly swear I am up to no good");

@@ -368,7 +368,6 @@ width <- 25
 height <- 10
 options(repr.plot.width=width, repr.plot.height=height)
 # set the pallette
-# custom_pallette <- viridis::viridis_pal(option = "C")(length(unique(cytokine_values$group_treatment)))
 custom_pallette = createPalette(37,  c("#ff0000", "#00ff00", "#0000ff"))
 custom_pallette <- sortByHue(custom_pallette)
 custom_pallette <- as.vector(t(matrix(custom_pallette, ncol=4)))
@@ -904,14 +903,14 @@ heatmap_cytokines
 umap_results_path <- file.path("..","..","..","2.Nomic_nELISA_Analysis/1.umap/PBMC/results/nELISA_plate_430420_umap_PBMC.csv")
 # read in the data
 umap_results <- read.csv(umap_results_path, header = TRUE, sep = ",")
-
-
+length(unique(umap_results$oneb_Treatment_Dose_Inhibitor_Dose))
 
 # convert to a dataframe
 umap_results <- as.data.frame(umap_results)
 
 # replace Flagellin_0.100_ug_per_ml_DMSO_0.0_% with Flagellin_0.100_ug_per_ml_DMSO_0.025_%
 umap_results$oneb_Treatment_Dose_Inhibitor_Dose <- ifelse(umap_results$oneb_Treatment_Dose_Inhibitor_Dose == "Flagellin_0.100_ug_per_ml_DMSO_0.0_%", "Flagellin_0.100_ug_per_ml_DMSO_0.025_%", umap_results$oneb_Treatment_Dose_Inhibitor_Dose)
+umap_results$oneb_Treatment_Dose_Inhibitor_Dose <- ifelse(umap_results$oneb_Treatment_Dose_Inhibitor_Dose == "Flagellin_1.000_ug_per_ml_DMSO_0.0_%", "Flagellin_1.000_ug_per_ml_DMSO_0.025_%", umap_results$oneb_Treatment_Dose_Inhibitor_Dose)
 
 # make a new column that is the treatment group based on the ground truth data
 umap_results$group <- ifelse(umap_results$oneb_Treatment_Dose_Inhibitor_Dose %in% apoptosis_ground_truth_list, "Apoptosis",
@@ -932,7 +931,6 @@ umap_results <- umap_results %>%
         oneb_Treatment_Dose_Inhibitor_Dose =='Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM' ~ "Flagellin 1.0 ug/ml - Disulfiram 1.0 uM",
         oneb_Treatment_Dose_Inhibitor_Dose =='LPS_0.010_ug_per_ml_DMSO_0.025_%' ~ "LPS 0.01 ug/ml - DMSO 0.025%",
         oneb_Treatment_Dose_Inhibitor_Dose =='LPS_0.100_ug_per_ml_DMSO_0.025_%' ~ "LPS 0.1 ug/ml - DMSO 0.025%",
-        oneb_Treatment_Dose_Inhibitor_Dose =='Flagellin_0.100_ug_per_ml_DMSO_0.0_%' ~ "Flagellin 0.1 ug/ml - DMSO 0.0%",
         oneb_Treatment_Dose_Inhibitor_Dose =='Flagellin_0.100_ug_per_ml_DMSO_0.025_%' ~ "Flagellin 0.1 ug/ml - DMSO 0.025%",
         oneb_Treatment_Dose_Inhibitor_Dose =='Disulfiram_0.100_uM_DMSO_0.025_%' ~ "Disulfiram 0.1 uM - DMSO 0.025%",
         oneb_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_1.000_uM_DMSO_0.025_%' ~ "LPS 1.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%",
@@ -941,7 +939,6 @@ umap_results <- umap_results %>%
         oneb_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_10.000_uM_Z-VAD-FMK_100.000_uM' ~ "LPS 1.0 ug/ml + Nigericin 10.0 uM - Z-VAD-FMK 100.0 uM",
         oneb_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_3.000_uM_DMSO_0.025_%' ~ "LPS 1.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%",
         oneb_Treatment_Dose_Inhibitor_Dose =='LPS_1.000_ug_per_ml_DMSO_0.025_%' ~ "LPS 1.0 ug/ml - DMSO 0.025%",
-        oneb_Treatment_Dose_Inhibitor_Dose =='Flagellin_1.000_ug_per_ml_DMSO_0.0_%' ~ "Flagellin 1.0 ug/ml - DMSO 0.025%",
         oneb_Treatment_Dose_Inhibitor_Dose =='Disulfiram_1.000_uM_DMSO_0.025_%' ~ "Disulfiram 1.0 uM - DMSO 0.025%",
         oneb_Treatment_Dose_Inhibitor_Dose =='Thapsigargin_1.000_uM_DMSO_0.025_%' ~ "Thapsigargin 1.0 uM - DMSO 0.025%",
         oneb_Treatment_Dose_Inhibitor_Dose =='Topotecan_10.000_nM_DMSO_0.025_%' ~ "Topotecan 10.0 nM - DMSO 0.025%",
@@ -966,16 +963,14 @@ umap_results <- umap_results %>%
         oneb_Treatment_Dose_Inhibitor_Dose =='media_ctr_0.0_0_Media_0.0_0' ~ "Media ctr 0.0 0"
     ))
     # replace Media ctr 0.0 0 with Media
-cytokine_values$oneb_Treatment_Dose_Inhibitor_Dose <- gsub("Media ctr 0.0 0", "Media", cytokine_values$oneb_Treatment_Dose_Inhibitor_Dose)
+umap_results$oneb_Treatment_Dose_Inhibitor_Dose <- gsub("Media ctr 0.0 0", "Media", umap_results$oneb_Treatment_Dose_Inhibitor_Dose)
 
-unique(cytokine_values$oneb_Treatment_Dose_Inhibitor_Dose)
 
 # create grouping of treatment and group
 umap_results$group_treatment <- paste(umap_results$oneb_Treatment_Dose_Inhibitor_Dose, umap_results$group,  sep = ", ")
 # make the group_treatment column a factor
 umap_results$group_treatment <- factor(
     umap_results$group_treatment,
-    levels = c(
         levels = c(
             'Media, Control',
             'DMSO 0.1% - DMSO 0.025%, Control',
@@ -1020,17 +1015,17 @@ umap_results$group_treatment <- factor(
 
 )
     )
-)
-length(unique(umap_results$group_treatment))
+
 
 # set plot size
 width <- 25
 height <- 10
 options(repr.plot.width=width, repr.plot.height=height)
 # set the pallette
-# custom_pallette <- viridis::viridis_pal(option = "C")(length(unique(cytokine_values$group_treatment)))
-custom_pallette = createPalette(37,  c("#ff0000", "#00ff00", "#0000ff"))
+custom_pallette = createPalette(39,  c("#ff0000", "#00ff00", "#0000ff"))
 custom_pallette <- sortByHue(custom_pallette)
+custom_pallette <- as.vector(t(matrix(custom_pallette, ncol=4)))
+
 custom_pallette <- as.vector(t(matrix(custom_pallette, ncol=4)))
 
 UMAP_plot <- (
@@ -1189,9 +1184,12 @@ UMAP_plot <- (
         )
     )
     + theme(legend.position = "bottom")
-    # set the legend columns to 4
-    + guides(color = guide_legend(ncol = 2)
-    )
+    # set the legend columns to 2
+    + guides(color = guide_legend(
+        title.position = "top",
+        ncol = 2))
+    # add space between legend columns
+    + theme(legend.spacing.x = unit(2, 'cm'))
 )
 
 UMAP_plot

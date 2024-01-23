@@ -1,20 +1,33 @@
-suppressPackageStartupMessages(suppressWarnings(library(ggplot2))) # plotting
-suppressPackageStartupMessages(suppressWarnings(library(dplyr))) # data manipulation
-suppressPackageStartupMessages(suppressWarnings(library(patchwork))) # figure composition
-suppressPackageStartupMessages(suppressWarnings(library(cowplot))) # figure composition
-suppressPackageStartupMessages(suppressWarnings(library(RcppTOML))) # parsing config file
-suppressPackageStartupMessages(suppressWarnings(library(pheatmap))) # heatmap
-suppressPackageStartupMessages(suppressWarnings(library(lattice))) # heatmap
-suppressPackageStartupMessages(suppressWarnings(library(RColorBrewer))) # heatmap
-suppressPackageStartupMessages(suppressWarnings(library(gplots))) # heatmap
-suppressPackageStartupMessages(suppressWarnings(library(ComplexHeatmap))) # heatmap
-suppressPackageStartupMessages(suppressWarnings(library(ggplotify))) # grob
-suppressPackageStartupMessages(suppressWarnings(library(viridis))) # color
-suppressPackageStartupMessages(suppressWarnings(library(platetools))) # make plate plot
-suppressPackageStartupMessages(suppressWarnings(library(circlize)))
-suppressPackageStartupMessages(suppressWarnings(library(reshape2))) # data manipulation
-suppressPackageStartupMessages(suppressWarnings(library(stringr))) # string manipulation
-suppressPackageStartupMessages(suppressWarnings(library(purrr))) # data manipulation
+list_of_packages <- c(
+    "ggplot2", # for plotting
+    "dplyr", # for data manipulation
+    "patchwork", # for combining plots
+    "cowplot", # for combining plots
+    "RcppTOML", # for reading TOML files
+    "pheatmap", # for heatmaps
+    "lattice", # for heatmaps
+    "RColorBrewer", # for heatmaps
+    "RColorBrewer", # for heatmaps
+    "ComplexHeatmap", # for heatmaps
+    "ggplotify", # for heatmaps
+    "viridis", # for color palettes
+    "platetools", # for plate visualization
+    "circlize", # for plate visualization
+    "reshape2", # for data manipulation
+    "stringr", # for string manipulation
+    "purrr" # for data manipulation
+)
+for (package in list_of_packages) {
+    suppressPackageStartupMessages(
+        suppressWarnings(
+            suppressMessages(
+                library(package, character.only = TRUE)
+            )
+        )
+    )
+}
+
+#  import the theme
 source("../../utils/figure_themes.r")
 
 # set the cell type
@@ -32,10 +45,9 @@ df_variance_path <- file.path(
 )
 
 # set the path to the figure output
-enet_cp_fig_path <- paste0("../figures/regression/",cell_type,"/aggregated_with_nomic/")
+enet_cp_fig_path <- paste0("../figures/regression/",cell_type,"/")
 # if path does not exist, create it
 if (!file.exists(dirname(enet_cp_fig_path))) {
-    print(dirname(enet_cp_fig_path))
     dir.create(dirname(enet_cp_fig_path), recursive = TRUE)
 }
 
@@ -72,7 +84,7 @@ variance_r2_plot_global <- (
     ggplot(df_variance, aes(x=r2, y=actual_value,col=shuffle, shape = data_split))
     + geom_point()
     + theme_bw()
-    + labs(x="r2", y="variance")
+    + labs(x="R2", y="Explained variance")
     # update the legend title
     + labs(shape = "Data Split", col = "Model Shuffle")
     # alter the text size of the legend title
@@ -80,6 +92,10 @@ variance_r2_plot_global <- (
     + scale_shape_manual(values=c(16, 4))
     # change the color of the points
     + scale_color_manual(values=c("Darkblue", "orange"))
+    # legend position
+    # + theme(legend.position = "bottom", legend.box = "horizontal")
+    # change legend dot size
+    + guides(colour = guide_legend(override.aes = list(size=3)))
 
 )
 variance_r2_plot_global
@@ -115,6 +131,14 @@ global_prediction_trend_scatter <- (
     + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
     + facet_wrap(.~shuffle_plus_data_split, ncol=2)
     + labs(color="Model", hjust=0.5)
+    + figure_theme
+    + scale_x_continuous(breaks = seq(0, 1, 0.5))
+    # legend dot size
+    + guides(colour = guide_legend(override.aes = list(size=5), ncol = 2))
+    # legend position
+    + theme(legend.position = "bottom", legend.box = "horizontal")
+    # rotate x axis text
+    + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 )
 
 # save the plot
@@ -136,6 +160,15 @@ global_prediction_trend_line <- (
     + ylim(0, 1)
     + xlim(0, 1)
     + labs(color="Model", hjust=0.5)
+    + figure_theme
+    # x tick marks
+    + scale_x_continuous(breaks = seq(0, 1, 0.5))
+    # legend dot size
+    + guides(colour = guide_legend(override.aes = list(size=5), ncol = 2))
+    # legend position
+    + theme(legend.position = "bottom", legend.box = "horizontal")
+    # rotate x axis text
+    + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 )
 ggsave(global_prediction_trend_path, global_prediction_trend_line, width=5, height=5, dpi=500)
 global_prediction_trend_line
@@ -178,6 +211,15 @@ cytokine_predictions <- (
         linetype = guide_legend(override.aes = list(fill = NA)))
     + theme(legend.key = element_rect(fill = "white"))
     + facet_wrap(.~cytokine, ncol=3)
+        # x tick marks
+    + scale_x_continuous(breaks = seq(0, 1, 0.5))
+    # legend dot size
+    + guides(colour = guide_legend(override.aes = list(size=5), ncol = 2))
+    # legend position
+    + theme(legend.position = "bottom", legend.box = "horizontal")
+    # rotate x axis text
+    + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
     )
 cytokine_predictions
 
@@ -192,8 +234,6 @@ agg_df <- agg_df[, !names(agg_df) %in% c('log10_neg_mean_absolute_error')]
 colnames(agg_df) <- c("shuffle", "data_split", "cytokine", "treatment","mean_log10_neg_mean_absolute_error", "sd_log10_neg_mean_absolute_error")
 
 
-head(agg_df)
-
 # select cytokines of interest
 agg_df <- agg_df[agg_df$cytokine %in% c(
     "IL-1beta",
@@ -206,8 +246,6 @@ agg_df <- agg_df[agg_df$cytokine %in% c(
     "IL-6",
     "CCL4"
     ),]
-
-
 
 
 # per cytokine graph
@@ -251,7 +289,6 @@ model_performance_il1b <- (
         + geom_bar(stat="identity", position=position_dodge())
         + geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.2, position=position_dodge(.9))
         + labs(x="Data Split", y="log10_neg_mean_absolute_error")
-        + ggtitle(cytokine)
         + theme_bw()
         + figure_theme
         + ylab("-log10(MSE)")
@@ -261,6 +298,8 @@ model_performance_il1b <- (
         # center the plot title
         + theme(plot.title = element_text(size = 20, hjust = 0.5))
         + facet_wrap(.~cytokine)
+        # legend position
+        + theme(legend.position = "bottom", legend.box = "horizontal")
 )
 model_performance_il1b
 
@@ -314,32 +353,33 @@ process_subset_data <- function(df){
 
 
 plot_coeffs <- function(df, cytokine, shuffle){
+    # replace "[NSU]" with ""
+    cytokine <- gsub("\\[NSU\\]", "", cytokine)
+    # plot the data
+    coef_gg <- (
+        ggplot(df, aes(x = channel_learned, y = feature_group))
+        + geom_point(aes(fill = abs(coefficients)), pch = 22, size = 5.75)
+        + facet_wrap("~compartment", ncol = 3)
+        + theme_bw()
+        + scale_fill_continuous(
+            name="Top Abs. val\ntreatment\nlinear model\ncoefficient",
+            low = "darkblue",
+            high = "yellow",
+        )
+        + xlab("Channel")
+        + ylab("Feature")
 
-# plot the data
-coef_gg <- (
-    ggplot(df, aes(x = channel_learned, y = feature_group))
-    + geom_point(aes(fill = abs(coefficients)), pch = 22, size = 5.75)
-    + facet_wrap("~compartment", ncol = 3)
-    + theme_bw()
-    + scale_fill_continuous(
-        name="Top Abs. val\ntreatment\nlinear model\ncoefficient",
-        low = "darkblue",
-        high = "yellow",
-    )
-    + xlab("Channel")
-    + ylab("Feature")
-
-    + figure_theme
-    + theme(
-        axis.text.x = element_text(angle = 45, hjust = 1, size = 14),
-    )
-    # rotate x axis labels
-    + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-    + ggtitle(paste0("Top Abs. val treatment ElasticNet coefficients for \n",cytokine,shuffle," model"))
-    + theme(plot.title = element_text(hjust = 0.5))
-    )
-    return(coef_gg)
-}
+        + figure_theme
+        + theme(
+            axis.text.x = element_text(angle = 45, hjust = 1, size = 14),
+        )
+        # rotate x axis labels
+        + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+        + ggtitle(paste0("Top Abs. val treatment ElasticNet coefficients for \n",cytokine,shuffle," model"))
+        + theme(plot.title = element_text(hjust = 0.5))
+        )
+        return(coef_gg)
+    }
 
 
 # get all files in a directory
@@ -363,17 +403,6 @@ for (i in files){
     nested_list$shuffle <- c(nested_list$shuffle, shuffle)
 }
 
-
-cytokine_list <- c(
-    "IL-1beta",
-    "TFalpha",
-    "CCL24",
-    "IL-18",
-    "Osteopontin(OP)",
-    "CCL13",
-    "IL-2",
-    "IL-6",
-    "CCL4")
 
 cytokine <- 'IL-1 beta [NSU]'
 shuffle <- 'final'
@@ -1162,7 +1191,7 @@ features$channel_learned <- factor(features$channel_learned, levels = c("Nuclei"
 r2_df <- df %>% select(r2)
 r2_df <- unique(r2_df)
 column_ha <- HeatmapAnnotation(
-    df = r2_df,
+    R2 = r2_df$r2,
     show_legend = TRUE,
     annotation_name_side = "left",
     # rotate the title
@@ -1174,7 +1203,7 @@ column_ha <- HeatmapAnnotation(
     ),
     annotation_name_gp = gpar(fontsize = 16),
     # set color bar for r2 continuous value with brewer palette
-    col = list(r2 = colorRamp2(c(0, 0.5, 1), spectral_palette <- c(
+    col = list(R2 = colorRamp2(c(0, 0.5, 1), spectral_palette <- c(
         # white
         "#FFFFFF",
         # light blue
@@ -1193,8 +1222,6 @@ mat <- mat %>% select(-feature_names)
 mat <- as.matrix(mat)
 # na to 0
 mat[is.na(mat)] <- 0
-
-
 
 
 # # # drop rows that have 0 in 50% of the columns
@@ -1236,19 +1263,19 @@ features <- features %>%
 
 # set annotations
 row_ha_1 <- rowAnnotation(
-    Compartment = features$compartment,
+    Object = features$compartment,
     show_legend = TRUE,
     # change the legend titles
     annotation_legend_param = list(
         title_position = "topcenter",
         title_gp = gpar(fontsize = 16, angle = 0),
         labels_gp = gpar(fontsize = 16,
-        title = gpar(fontsize = 16))),
+        title = gpar(fontsize = 16, hjust = 0.5))),
     annotation_name_side = "bottom",
     annotation_name_gp = gpar(fontsize = 16),
     # color
     col = list(
-        Compartment = c(
+        Object = c(
             "Cells" = brewer.pal(12, "Accent")[7],
             "Cytoplasm" = brewer.pal(12, "Accent")[6],
             "Nuclei" = "#0000AB"
@@ -1285,7 +1312,7 @@ row_ha_3 <- rowAnnotation(
         title_position = "topcenter",
         title_gp = gpar(fontsize = 16, angle = 0),
         labels_gp = gpar(fontsize = 16,
-        title = gpar(fontsize = 16),
+        title = gpar(fontsize = 16, hjust = 0.5),
         # make annotation bar text bigger
         legend = gpar(fontsize = 16),
         annotation_name = gpar(fontsize = 16),
@@ -1316,11 +1343,9 @@ row_ha_3 <- rowAnnotation(
 mat <- mat %>% select(-feature_names)
 mat <- as.matrix(mat)
 
-
-
 # plot size
-width <- 40
-height <- 40
+width <- 30
+height <- 23
 options(repr.plot.width=width, repr.plot.height=height)
 # change margins
 # par(mar = c(1, 1, 1, 1))
@@ -1338,7 +1363,7 @@ model_heatmap <- (
         bottom_annotation = column_ha,
         # rename fill legend
         heatmap_legend_param = list(
-                title = "Coefeecient",
+                title = "Coef",
                 title_position = "topcenter",
                 title_gp = gpar(fontsize = 16),
                 labels_gp = gpar(fontsize = 16)
@@ -1359,7 +1384,6 @@ model_heatmap
 pt1 <- as.ggplot(model_heatmap)
 
 # # save the figure
-ggsave(file = paste0(figure_path, "filtered_features.svg"), plot = pt1, width = width, height = height, units = "in", dpi = 500)
 ggsave(file = paste0(figure_path, "filtered_features.png"), plot = pt1, width = width, height = height, units = "in", dpi = 500)
 # fix the position of the plot
 pt1 <- as.ggplot(pt1)
@@ -1369,9 +1393,10 @@ ggsave(
     plot = pt1,
     width = width,
     height = height,
-    units = "cm",
+    units = "in",
     dpi = 600
 )
+pt1
 
 width <- 5
 height <- 5
@@ -1391,8 +1416,8 @@ il2_final_plot <- as.ggplot(il2_final_plot)
 il6_final_plot <- as.ggplot(il6_final_plot)
 CCL4_final_plot <- as.ggplot(CCL4_final_plot)
 
-width <- 23
-height <- 17
+width <- 17
+height <- 23
 options(repr.plot.width=width, repr.plot.height=height)
 
 design2 <- "
@@ -1428,21 +1453,25 @@ pt3 <- (
     + il6_final_plot
     + CCL4_final_plot
 )
-pt3
+
 
 ggsave(
     filename = paste0(figure_path, "pt2.png"),
     plot = pt2,
     width = width,
     height = height,
-    units = "cm",
+    units = "in",
     dpi = 600
 )
+width <- 23
+height <- 15
+options(repr.plot.width=width, repr.plot.height=height)
 ggsave(
     filename = paste0(figure_path, "pt3.png"),
     plot = pt3,
     width = width,
     height = height,
-    units = "cm",
+    units = "in",
     dpi = 600
 )
+pt3

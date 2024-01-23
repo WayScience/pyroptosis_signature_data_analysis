@@ -19,7 +19,7 @@ from tqdm import tqdm  # progress bar
 # In[2]:
 
 
-# function that selects a random image from the dataframe
+# function that selects a random n images from the dataframe
 
 
 def top_n_cell_select(
@@ -27,7 +27,9 @@ def top_n_cell_select(
     n: int = 1,
 ) -> pd.DataFrame:
     """
-    Selects a random cell from the dataframe
+    Selects a random n cells from the dataframe
+
+    This function assumes that the dataframe is sorted.
 
     Parameters
     ----------
@@ -83,6 +85,10 @@ root_dir
 image_out_dir_path = pathlib.Path(f"{root_dir}/8.cytopick_analysis/figures/PBMC/")
 
 
+# if path does not exist, create it
+image_out_dir_path.mkdir(parents=True, exist_ok=True)
+
+
 # In[6]:
 
 
@@ -91,16 +97,12 @@ image_out_dir_path = pathlib.Path(f"{root_dir}/8.cytopick_analysis/figures/PBMC/
 # this is a hard coded path to the 1TB image directory
 
 #####
-"""THIS PATH NEEDS TO BE CHANGED TO THE LOCAL IMAGE DIRECTORY ON YOUR MACHINE"""
+# THIS PATH NEEDS TO BE CHANGED TO THE LOCAL IMAGE DIRECTORY ON YOUR MACHINE
 #####
 
 image_dir_path = pathlib.Path(
     "/media/lippincm/18T/interstellar_data/70117_20230210MM1_Gasdermin514_CP_BC430856__2023-03-22T15_42_38-Measurement1/2.IC/"
 ).resolve(strict=True)
-
-
-# if path does not exist, create it
-image_out_dir_path.mkdir(parents=True, exist_ok=True)
 
 
 # ### Get single-cell probabilities
@@ -509,7 +511,9 @@ main_df = main_df.drop(main_df.index)
 # In[16]:
 
 
+# loop through the dictionary of dataframes
 for key in tqdm(dict_of_subset_dfs):
+    # check if the dataframe is empty
     if len(dict_of_subset_dfs[key]) >= 1:
         # loop through the dataframe
         for cell in range(len(dict_of_subset_dfs[key])):

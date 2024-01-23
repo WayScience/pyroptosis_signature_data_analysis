@@ -19,7 +19,7 @@ from tqdm import tqdm  # progress bar
 # In[2]:
 
 
-# function that selects a random image from the dataframe
+# function that selects a random n images from the dataframe
 
 
 def top_n_cell_select(
@@ -27,7 +27,9 @@ def top_n_cell_select(
     n: int = 1,
 ) -> pd.DataFrame:
     """
-    Selects a random cell from the dataframe
+    Selects a random n cells from the dataframe
+
+    This function assumes that the dataframe is sorted.
 
     Parameters
     ----------
@@ -83,6 +85,10 @@ root_dir
 image_out_dir_path = pathlib.Path(f"{root_dir}/8.cytopick_analysis/figures/PBMC/")
 
 
+# if path does not exist, create it
+image_out_dir_path.mkdir(parents=True, exist_ok=True)
+
+
 # In[6]:
 
 
@@ -91,16 +97,12 @@ image_out_dir_path = pathlib.Path(f"{root_dir}/8.cytopick_analysis/figures/PBMC/
 # this is a hard coded path to the 1TB image directory
 
 #####
-"""THIS PATH NEEDS TO BE CHANGED TO THE LOCAL IMAGE DIRECTORY ON YOUR MACHINE"""
+# THIS PATH NEEDS TO BE CHANGED TO THE LOCAL IMAGE DIRECTORY ON YOUR MACHINE
 #####
 
 image_dir_path = pathlib.Path(
     "/media/lippincm/18T/interstellar_data/70117_20230210MM1_Gasdermin514_CP_BC430856__2023-03-22T15_42_38-Measurement1/2.IC/"
 ).resolve(strict=True)
-
-
-# if path does not exist, create it
-image_out_dir_path.mkdir(parents=True, exist_ok=True)
 
 
 # ### Get single-cell probabilities
@@ -509,7 +511,9 @@ main_df = main_df.drop(main_df.index)
 # In[16]:
 
 
+# loop through the dictionary of dataframes
 for key in tqdm(dict_of_subset_dfs):
+    # check if the dataframe is empty
     if len(dict_of_subset_dfs[key]) >= 1:
         # loop through the dataframe
         for cell in range(len(dict_of_subset_dfs[key])):
@@ -610,17 +614,6 @@ for key in tqdm(dict_of_subset_dfs):
                 (red_channel, green_channel, blue_channel)
             ).astype(np.uint16)
 
-            composite_image_crop = composite_image[
-                min_y_box:max_y_box, min_x_box:max_x_box
-            ]
-
-            if composite_image_crop.shape[0] == 0 or composite_image_crop.shape[1] == 0:
-                print("Cell is on the edge of the image, skipping")
-                continue
-
-            composite_image = cv2.cvtColor(composite_image, cv2.COLOR_BGR2RGB)
-            composite_image_crop = cv2.cvtColor(composite_image_crop, cv2.COLOR_BGR2RGB)
-
             # The images end up being `wonky` so we need to do some post processing prior to saving
             # where wonky means that the image is not oriented correctly
             # the image is rotated 90 degrees clockwise and flipped vertically
@@ -629,26 +622,18 @@ for key in tqdm(dict_of_subset_dfs):
             # transformations of the image to fix the orientation post pixel scaling
             # flip the image vertically
             composite_image = cv2.flip(composite_image, 0)
-            composite_image_crop = cv2.flip(composite_image_crop, 0)
             # rotate the image 90 degrees clockwise
             composite_image = cv2.rotate(composite_image, cv2.ROTATE_90_CLOCKWISE)
-            composite_image_crop = cv2.rotate(
-                composite_image_crop, cv2.ROTATE_90_CLOCKWISE
-            )
 
-            print(composite_image.shape)
+            composite_image_crop = composite_image[
+                min_y_box:max_y_box, min_x_box:max_x_box
+            ]
 
-            # save the image as a png file
-            cv2.imwrite(
-                f"{image_out_dir_path}/{key}_{channel1}_{channel2}_{channel3}_composite_image_cell_{cell}.png",
-                composite_image,
-            )
-            cv2.imwrite(
-                f"{image_out_dir_path}/{key}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell_{cell}.png",
-                composite_image_crop,
-            )
+            if composite_image_crop.shape[0] == 0 or composite_image_crop.shape[1] == 0:
+                print("Cell is on the edge of the image, skipping")
+                continue
 
-            # image_out_dir_path updated to include the feature name
+                # image_out_dir_path updated to include the feature name
             # write images
             tf.imwrite(
                 pathlib.Path(
@@ -664,6 +649,22 @@ for key in tqdm(dict_of_subset_dfs):
                 composite_image_crop,
                 compression=None,
             )
+
+            composite_image = cv2.cvtColor(composite_image, cv2.COLOR_BGR2RGB)
+            composite_image_crop = cv2.cvtColor(composite_image_crop, cv2.COLOR_BGR2RGB)
+
+            print(composite_image.shape)
+
+            # save the image as a png file
+            cv2.imwrite(
+                f"{image_out_dir_path}/{key}_{channel1}_{channel2}_{channel3}_composite_image_cell_{cell}.png",
+                composite_image,
+            )
+            cv2.imwrite(
+                f"{image_out_dir_path}/{key}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell_{cell}.png",
+                composite_image_crop,
+            )
+
             df = df.to_frame().T
             df[
                 "image_path"

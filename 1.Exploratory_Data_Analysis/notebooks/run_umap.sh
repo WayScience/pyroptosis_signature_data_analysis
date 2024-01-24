@@ -9,7 +9,7 @@
 
 module load anaconda
 
-conda activate Interstellar
+conda activate Interstellar_python
 
 cell_types=( PBMC )
 samples=( True False )

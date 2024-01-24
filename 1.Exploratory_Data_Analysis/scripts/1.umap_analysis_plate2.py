@@ -6,6 +6,7 @@
 # In[1]:
 
 
+import ast
 import itertools
 import pathlib
 
@@ -17,24 +18,22 @@ import seaborn as sns
 import toml
 import umap
 
-get_ipython().run_line_magic("matplotlib", "inline")
-from sklearn.cluster import KMeans
-from sklearn.manifold import TSNE
-
 # In[2]:
 
 
 # Parameters
-celltype = "PBMC"
+celltype = "SHSY5Y"
+sample = "True"
+sample = ast.literal_eval(sample)
 
 
-# In[3]:
+# In[4]:
 
 
 # read in toml file
 
 # set up the path
-toml_path = pathlib.Path("./utils/params.toml")
+toml_path = pathlib.Path("../utils/params.toml")
 # read in the toml file
 params = toml.load(toml_path)
 list_of_treatments = params["list_of_treatments"]["treatments"]
@@ -42,15 +41,26 @@ print(len(list_of_treatments))
 print(list_of_treatments)
 
 
-# In[4]:
+# In[5]:
 
 
 # Set path to parquet file
-path = pathlib.Path(f"../data/{celltype}_preprocessed_sc_norm.parquet").resolve(
+path = pathlib.Path(f"../../data/{celltype}_preprocessed_sc_norm.parquet").resolve(
     strict=True
 )
 # Read in parquet file
 df = pq.read_table(path).to_pandas()
+
+
+# In[ ]:
+
+
+# subsample the data
+n = 100
+# Assuming df is your DataFrame and 'column_name' is the column you want to subsample by
+df = df.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose").apply(
+    lambda x: x.sample(n)
+)
 
 
 # In[5]:
@@ -102,9 +112,14 @@ df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
 # randomize the rows of the dataframe to plot the order of the data evenly
 df_values = df_values.sample(frac=1, random_state=0)
 
-df_values_path = pathlib.Path(
-    f"./results/{celltype}_umap_values_morphology_all_cells.parquet"
-)
+if sample:
+    df_values_path = pathlib.Path(
+        f"./results/{celltype}_umap_values_morphology_sample_{n}.parquet"
+    )
+else:
+    df_values_path = pathlib.Path(
+        f"./results/{celltype}_umap_values_morphology_all_cells.parquet"
+    )
 # if path does not exist create it
 df_values_path.parent.mkdir(parents=True, exist_ok=True)
 # save the dataframe as a parquet file
@@ -127,5 +142,4 @@ sns.scatterplot(
 )
 plt.title("Visualized on umap")
 plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0)
-# if path does not exist create it
-plt.savefig(f"Figures/umap_plate2/{celltype}_umap.png", bbox_inches="tight")
+plt.show()

@@ -123,7 +123,7 @@ height <- 10
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
 fig5 <- (
     f1_score_plot
-    + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
+    + theme(plot.tag = element_text(size = 20))
 )
 fig5
 

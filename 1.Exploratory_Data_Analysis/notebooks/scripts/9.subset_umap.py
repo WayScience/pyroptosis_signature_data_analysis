@@ -175,4 +175,7 @@ final_df = pd.concat(final_df_dict.values(), ignore_index=True)
 # In[12]:
 
 
-final_df
+# write out the results
+out_path = pathlib.Path(f"../results/{cell_type}_combined_sub_UMAP_results.parquet")
+final_df.to_parquet(out_path)
+final_df.head()

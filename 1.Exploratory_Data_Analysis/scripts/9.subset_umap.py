@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import pathlib
@@ -12,13 +12,14 @@ import toml
 import umap
 from tqdm import tqdm
 
-# In[ ]:
+# In[2]:
 
 
-cell_type = "SHSY5Y"
+# Parameters
+cell_type = "PBMC"
 
 
-# In[ ]:
+# In[3]:
 
 
 # read in toml file
@@ -32,7 +33,7 @@ print(len(list_of_treatments))
 print(list_of_treatments)
 
 
-# In[ ]:
+# In[4]:
 
 
 # Set path to parquet file
@@ -43,7 +44,7 @@ path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet").reso
 df = pd.read_parquet(path)
 
 
-# In[ ]:
+# In[5]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -53,7 +54,7 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[ ]:
+# In[6]:
 
 
 anova_path = pathlib.Path(f"../results/{cell_type}_combined.parquet")
@@ -62,7 +63,7 @@ anova_results = pd.read_parquet(anova_path)
 anova_results.head()
 
 
-# In[ ]:
+# In[7]:
 
 
 # create a column that adds group1 and group2 together
@@ -92,7 +93,7 @@ a_h__h_p = np.union1d(a_h_list, h_p_list)
 a_p__h_p = np.union1d(a_p_list, h_p_list)
 
 
-# In[ ]:
+# In[8]:
 
 
 # get the unique features for each set
@@ -124,7 +125,7 @@ a_h__a_p__h_p_common = np.intersect1d(a_h__a_p__h_p_common, h_p_list)
 print(len(a_h__a_p__h_p_common))
 
 
-# In[ ]:
+# In[9]:
 
 
 # create a list of each list of features
@@ -138,7 +139,7 @@ dict_of_feature_lists["a_p__h_p_common"] = list(a_p__h_p_common)
 dict_of_feature_lists["a_h__a_p__h_p_common"] = list(a_h__a_p__h_p_common)
 
 
-# In[ ]:
+# In[10]:
 
 
 # set umap parameters
@@ -171,7 +172,10 @@ for key, value in tqdm(dict_of_feature_lists.items()):
 final_df = pd.concat(final_df_dict.values(), ignore_index=True)
 
 
-# In[ ]:
+# In[12]:
 
 
-final_df
+# write out the results
+out_path = pathlib.Path(f"../results/{cell_type}_combined_sub_UMAP_results.parquet")
+final_df.to_parquet(out_path)
+final_df.head()

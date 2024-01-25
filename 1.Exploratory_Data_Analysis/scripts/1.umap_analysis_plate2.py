@@ -6,7 +6,6 @@
 # In[1]:
 
 
-import ast
 import itertools
 import pathlib
 
@@ -22,12 +21,11 @@ import umap
 
 
 # Parameters
-celltype = "SHSY5Y"
-sample = "True"
-sample = ast.literal_eval(sample)
+cell_type = "PBMC"
+sample = False
 
 
-# In[4]:
+# In[3]:
 
 
 # read in toml file
@@ -41,18 +39,18 @@ print(len(list_of_treatments))
 print(list_of_treatments)
 
 
-# In[5]:
+# In[4]:
 
 
 # Set path to parquet file
-path = pathlib.Path(f"../../data/{celltype}_preprocessed_sc_norm.parquet").resolve(
+path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet").resolve(
     strict=True
 )
 # Read in parquet file
 df = pq.read_table(path).to_pandas()
 
 
-# In[ ]:
+# In[5]:
 
 
 # subsample the data
@@ -63,7 +61,7 @@ df = df.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose").apply(
 )
 
 
-# In[5]:
+# In[6]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -73,7 +71,7 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[6]:
+# In[7]:
 
 
 # set umap parameters
@@ -88,7 +86,7 @@ umap_params = umap.UMAP(
 )
 
 
-# In[7]:
+# In[8]:
 
 
 # fit and transform data for umap
@@ -98,7 +96,7 @@ df_values["umap_1"] = proj_2d[:, 0]
 df_values["umap_2"] = proj_2d[:, 1]
 
 
-# In[8]:
+# In[9]:
 
 
 df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
@@ -106,7 +104,7 @@ df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
 ]
 
 
-# In[9]:
+# In[10]:
 
 
 # randomize the rows of the dataframe to plot the order of the data evenly
@@ -114,11 +112,11 @@ df_values = df_values.sample(frac=1, random_state=0)
 
 if sample:
     df_values_path = pathlib.Path(
-        f"./results/{celltype}_umap_values_morphology_sample_{n}.parquet"
+        f"../results/{cell_type}_umap_values_morphology_sample_{n}.parquet"
     )
 else:
     df_values_path = pathlib.Path(
-        f"./results/{celltype}_umap_values_morphology_all_cells.parquet"
+        f"../results/{cell_type}_umap_values_morphology_all_cells.parquet"
     )
 # if path does not exist create it
 df_values_path.parent.mkdir(parents=True, exist_ok=True)
@@ -126,7 +124,7 @@ df_values_path.parent.mkdir(parents=True, exist_ok=True)
 df_values.to_parquet(df_values_path)
 
 
-# In[10]:
+# In[11]:
 
 
 # Figure Showing UMAP of Clusters vs Treatment

@@ -6,11 +6,11 @@ necrosis <- read.csv("../data/necrosis_results.csv", header = TRUE, sep = ",")
 ferroptosis <- read.csv("../data/ferroptosis_results.csv", header = TRUE, sep = ",")
 autophagy <- read.csv("../data/autophagy_results.csv", header = TRUE, sep = ",")
 
-apoptosis$label <- "../data/apoptosis"
-pyroptosis$label <- "../data/pyroptosis"
-necrosis$label <- "../data/necrosis"
-ferroptosis$label <- "../data/ferroptosis"
-autophagy$label <- "../data/autophagy"
+apoptosis$label <- "Apoptosis"
+pyroptosis$label <- "Pyroptosis"
+necrosis$label <- "Necrosis"
+ferroptosis$label <- "Ferroptosis"
+autophagy$label <- "Autophagy"
 
 # create output directory
 outdir <- file.path("..","figures")

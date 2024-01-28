@@ -127,6 +127,34 @@ plot <- (
             size = 20,
             hjust = 0.5
         )
+        # x axis text
+        , axis.text.x = element_text(
+            size = 16
+        )
+        # y axis text
+        , axis.text.y = element_text(
+            size = 16
+        )
+        # x axis title
+        , axis.title.x = element_text(
+            size = 18
+        )
+        # y axis title
+        , axis.title.y = element_text(
+            size = 18
+        )
+    )
+    # legend text
+    + theme(
+        legend.text = element_text(
+            size = 16
+        )
+    )
+    # legend title
+    + theme(
+        legend.title = element_text(
+            size = 18
+        )
     )
 )
 # save the plot

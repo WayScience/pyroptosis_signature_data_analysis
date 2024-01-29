@@ -193,6 +193,7 @@ figure <- (
     + shuffle_inset_full
 
     + plot_layout(ncol = 2)
+    + plot_annotation(tag_levels = "A")
 )
 figure
 ggsave(file.path(paste0(
@@ -217,5 +218,3 @@ print(paste0(
     round(shuffled_intercept, 2),
     " + epsilon"
 ))
-
-

@@ -243,6 +243,11 @@ Mito <- brewer.pal(12,"Paired")[6]
 Other <- brewer.pal(8, "Accent")[8]
 
 
+unique(anova_results_channels$channel_learned)
+
+# factorize the channel_cleaned column
+anova_results_channels$channel_learned <- factor(anova_results_channels$channel_learned, levels = c("Nuclei","ER","GasderminD","AGP","Mito","Other"))
+
 # set plot size
 width <- 10
 height <- 10
@@ -1081,4 +1086,3 @@ fig3
 
 
 sessionInfo()
-

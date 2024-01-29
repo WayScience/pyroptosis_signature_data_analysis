@@ -545,6 +545,19 @@ for i in final_dict:
     # rotate the image 90 degrees clockwise
     composite_image = cv2.rotate(composite_image, cv2.ROTATE_90_CLOCKWISE)
 
+    # flip the channels vertically
+    blue_channel = cv2.flip(blue_channel, 0)
+    yellow_channel = cv2.flip(yellow_channel, 0)
+    green_channel = cv2.flip(green_channel, 0)
+    red_channel = cv2.flip(red_channel, 0)
+    magenta_channel = cv2.flip(magenta_channel, 0)
+    # rotate the channels 90 degrees clockwise
+    blue_channel = cv2.rotate(blue_channel, cv2.ROTATE_90_CLOCKWISE)
+    yellow_channel = cv2.rotate(yellow_channel, cv2.ROTATE_90_CLOCKWISE)
+    green_channel = cv2.rotate(green_channel, cv2.ROTATE_90_CLOCKWISE)
+    red_channel = cv2.rotate(red_channel, cv2.ROTATE_90_CLOCKWISE)
+    magenta_channel = cv2.rotate(magenta_channel, cv2.ROTATE_90_CLOCKWISE)
+
     composite_image_crop = composite_image[min_y_box:max_y_box, min_x_box:max_x_box]
     # crop the individual channels
     blue_channel_crop = blue_channel[min_y_box:max_y_box, min_x_box:max_x_box]

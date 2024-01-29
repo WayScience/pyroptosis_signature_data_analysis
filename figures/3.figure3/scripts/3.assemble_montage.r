@@ -19,7 +19,7 @@ main_df_path = paste0("../results/", CELL_TYPE, "/","single_cell_predictions.par
 
 # read in data
 main_df = arrow::read_parquet(main_df_path)
-head(main_df)
+main_df
 unique(main_df$comparison)
 
 # split the df by comparison
@@ -270,21 +270,20 @@ control_er_path <- apoptosis_pyroptosis$image_ER_crop_path[1]
 control_gasdermin_path <- apoptosis_pyroptosis$image_GasderminD_crop_path[1]
 control_pm_path <- apoptosis_pyroptosis$image_AGP_crop_path[1]
 control_mito_path <- apoptosis_pyroptosis$image_Mitochondria_crop_path[1]
+control_composite_path <- apoptosis_pyroptosis$image_compsite_crop_path[1]
 
 apoptosis_dapi_image_path <- apoptosis_pyroptosis$image_DAPI_crop_path[2]
 apoptosis_er_path <- apoptosis_pyroptosis$image_ER_crop_path[2]
 apoptosis_gasdermin_path <- apoptosis_pyroptosis$image_GasderminD_crop_path[2]
 apoptosis_pm_path <- apoptosis_pyroptosis$image_AGP_crop_path[2]
 apoptosis_mito_path <- apoptosis_pyroptosis$image_Mitochondria_crop_path[2]
+apoptosis_composite_path <- apoptosis_pyroptosis$image_compsite_crop_path[2]
 
 pyroptosis_dapi_image_path <- apoptosis_pyroptosis$image_DAPI_crop_path[3]
 pyroptosis_er_path <- apoptosis_pyroptosis$image_ER_crop_path[3]
 pyroptosis_gasdermin_path <- apoptosis_pyroptosis$image_GasderminD_crop_path[3]
 pyroptosis_pm_path <- apoptosis_pyroptosis$image_AGP_crop_path[3]
 pyroptosis_mito_path <- apoptosis_pyroptosis$image_Mitochondria_crop_path[3]
-
-control_composite_path <- apoptosis_pyroptosis$image_compsite_crop_path[1]
-apoptosis_composite_path <- apoptosis_pyroptosis$image_compsite_crop_path[2]
 pyroptosis_composite_path <- apoptosis_pyroptosis$image_compsite_crop_path[3]
 
 # load images
@@ -457,5 +456,3 @@ ggsave(
     ),
     all_plot, width = width, height = height, dpi = 600
 )
-
-

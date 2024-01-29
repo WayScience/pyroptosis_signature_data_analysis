@@ -193,7 +193,7 @@ figure <- (
     + shuffle_inset_full
 
     + plot_layout(ncol = 2)
-    + plot_annotation(tag_levels = "A")
+    + plot_annotation(tag_levels = "A")  & theme(plot.tag = element_text(size = 20))
 )
 figure
 ggsave(file.path(paste0(

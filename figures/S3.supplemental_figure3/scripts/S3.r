@@ -125,7 +125,7 @@ cytokine_scatter_plot1 <- (
     + geom_point(size = 5, alpha = 0.7)
     + theme_bw()
     + xlab("IL-1 beta Abundance")
-    + ylab("CCL4 alpha Abundance")
+    + ylab("CCL24 alpha Abundance")
     + xlim(-0.1, 1)
     + ylim(-0.1, 1)
     # rename legend title

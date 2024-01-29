@@ -17,13 +17,15 @@ suppressPackageStartupMessages(suppressWarnings(library(VennDiagram))) # venn di
 suppressPackageStartupMessages(suppressWarnings(library(tidyverse))) # data manipulation
 suppressPackageStartupMessages(suppressWarnings(library(ggvenn))) # venn diagram
 suppressPackageStartupMessages(suppressWarnings(library(grid))) # grid
-source("../utils/figure_themes.r")
+suppressPackageStartupMessages(suppressWarnings(library(Polychrome)))
+
+source("../../utils/figure_themes.r")
 
 
 cell_type <- "PBMC"
 
 
-montage_image_path = file.path("figures/Montage.png")
+montage_image_path = file.path("../figures/PBMC_montage.png")
 montage_image = png::readPNG(montage_image_path)
 
 
@@ -41,7 +43,7 @@ montage
 
 # set path to anova results
 anova_results_path = file.path(paste0(
-    "../../1.Exploratory_Data_Analysis/results/",cell_type,"_combined.parquet"
+    "../../../1.Exploratory_Data_Analysis/results/",cell_type,"_combined.parquet"
 ))
 # read in path
 anova_results = arrow::read_parquet(anova_results_path)
@@ -61,7 +63,6 @@ print(ncol(anova_results))
 
 # change the group names to replace healhty with    control
 anova_results$group = str_replace_all(anova_results$group,"healthy","control")
-anova_results
 
 
 # create the three df sets for a venn diagram
@@ -89,7 +90,7 @@ venn_diagram_plot <- venn.diagram(
     x=x,
     show=TRUE,
     category.names = c("Apoptosis \nvs \nControl","Apoptosis \nvs \nPyroptosis","Control \nvs \nPyroptosis"),
-    filename = paste0("figures/",cell_type,"_venn_diagram.png"),
+    filename = paste0("../figures/",cell_type,"_venn_diagram.png"),
     # Output features
     imagetype="png" ,
     resolution = 600,
@@ -118,7 +119,7 @@ venn_diagram_plot <- venn.diagram(
 
 
 # Set the directory path
-directory <- "figures"
+directory <- "../figures"
 # List all files in the directory
 files <- list.files(directory, full.names = TRUE)
 # Filter files that end with ".log"
@@ -128,7 +129,7 @@ file.remove(log_files)
 
 
 # read in the venn diagram from PNG
-venn_diagram_image_path = file.path(paste0("figures/",cell_type,"_venn_diagram.png"))
+venn_diagram_image_path = file.path(paste0("../figures/",cell_type,"_venn_diagram.png"))
 venn_diagram_image = png::readPNG(venn_diagram_image_path)
 # plot the montage image to a ggplot object
 venn_diagram_image <- (
@@ -235,10 +236,10 @@ anova_results_channels$channel_learned <- factor(anova_results_channels$channel_
 
 # select specfic colors from the color palette
 DAPI <- brewer.pal(12,"Paired")[2]
-ER <- brewer.pal(12,"Paired")[4]
-Gasdermin <- brewer.pal(12,"Paired")[8]
-PM <- brewer.pal(12,"Paired")[6]
-Mito <- brewer.pal(12,"Paired")[10]
+ER <- brewer.pal(12,"Paired")[8]
+Gasdermin <- brewer.pal(12,"Paired")[4]
+PM <- brewer.pal(12,"Paired")[10]
+Mito <- brewer.pal(12,"Paired")[6]
 Other <- brewer.pal(8, "Accent")[8]
 
 
@@ -248,6 +249,8 @@ height <- 10
 options(repr.plot.width=width, repr.plot.height=height)
 unique_feature_plot_function <- function(df, list_of_unique_features){
     filtered_df <- df %>% filter(features %in% list_of_unique_features)
+    # drop duplicate features
+    filtered_df <- filtered_df[!duplicated(filtered_df$features),]
     # count the data
     filtered_df_counts <- count(filtered_df, channel_learned)
     # make <NA> vlues in channel_learned Other
@@ -271,21 +274,18 @@ unique_feature_plot_function <- function(df, list_of_unique_features){
             axis.text.x = element_blank(),
             axis.ticks.x = element_blank()
         )
+        # add the counts to the top of the bars
+        + geom_text(
+            aes(label=n),
+            vjust=-0.5,
+            size=8
+        )
+        + ylim(0, 150)
 
     )
     plot <- plot + scale_x_discrete(drop = FALSE)
     return(plot)
 }
-
-# subset and plot the unique features for each set in the list
-# a_h_unique
-# a_p_unique
-# h_p_unique
-# a_h__a_p_common
-# a_h__h_p_common
-# a_p__h_p_common
-# a_h__a_p__h_p_common
-
 
 a_h_unique_plot <- unique_feature_plot_function(anova_results_channels, a_h_unique)
 a_p_unique_plot <- unique_feature_plot_function(anova_results_channels, a_p_unique)
@@ -306,14 +306,49 @@ a_h__a_p__h_p_common_plot <- a_h__a_p__h_p_common_plot + labs(title = "Common Fe
 
 
 cell_umap_path <- file.path(paste0(
-    "../","../","1.Exploratory_Data_Analysis/results/",cell_type,"_umap_values_morphology_all_cells.parquet"
+    "../","../","../","1.Exploratory_Data_Analysis/results/",cell_type,"_umap_values_morphology_sample_100.parquet"
 ))
 
 cell_umap <- arrow::read_parquet(cell_umap_path)
-head(cell_umap)
 
 
-# rename the treatment names
+# Load data
+data_path_cytokine_values <- file.path("../../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_PBMC_clean.parquet")
+cytokine_values <- arrow::read_parquet(data_path_cytokine_values)
+# read in the ground truth data
+data_path_ground_truth <- file.path("../../../4.sc_Morphology_Neural_Network_MLP_Model/MLP_utils/ground_truth.toml")
+ground_truth <- parseTOML(data_path_ground_truth)
+# make a a list of the treatments that are in the ground truth data
+apoptosis_ground_truth_list <- c(ground_truth$Apoptosis$apoptosis_groups_list)
+pyroptosis_ground_truth_list <- c(ground_truth$Pyroptosis$pyroptosis_groups_list)
+control_ground_truth_list <- c(ground_truth$Healthy$healthy_groups_list)
+
+pyroptosis_ground_truth_list
+control_ground_truth_list
+
+
+
+# replace Flagellin_0.100_ug_per_ml_DMSO_0.0_% with Flagellin_0.100_ug_per_ml_DMSO_0.025_%
+
+cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- ifelse(cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose == "Flagellin_0.100_ug_per_ml_DMSO_0.000_%", "Flagellin_0.100_ug_per_ml_DMSO_0.025_%", cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
+cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- ifelse(cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose == "media_ctr_0.0_0_Media_0_0", "media_ctr_0.0_0_Media_ctr_0.0_0", cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
+cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- ifelse(cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose == "Flagellin_1.000_ug_per_ml_DMSO_0.000_%", "Flagellin_1.000_ug_per_ml_DMSO_0.0_%", cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
+cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- ifelse(cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose == "Flagellin_1.000_0_Disulfiram_1.000_uM", "Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM", cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
+cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- ifelse(cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose == "Flagellin_1.000_ug_per_ml_DMSO_0.000_%", "Flagellin_1.000_ug_per_ml_DMSO_0.0_%", cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
+cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- ifelse(cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose == "Flagellin_1.000_0_DMSO_0.025_%", "Flagellin_1.000_ug_per_ml_DMSO_0.0_%", cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
+
+# make a new column that is the treatment group based on the ground truth data
+cell_umap$group <- ifelse(cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% apoptosis_ground_truth_list, "Apoptosis",
+                                ifelse(cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% pyroptosis_ground_truth_list, "Pyroptosis",
+                                       ifelse(cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% control_ground_truth_list, "Control", "NA")))
+# make the group column a factor
+cell_umap$group <- factor(cell_umap$group, levels = c("Control","Apoptosis", "Pyroptosis"))
+
+unique(cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
+
+
+# mutate the names of each treatment
+
 cell_umap <- cell_umap %>%
     mutate(oneb_Metadata_Treatment_Dose_Inhibitor_Dose = case_when(
         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_DMSO_0.025_%' ~ "DMSO 0.1% - DMSO 0.025%",
@@ -357,68 +392,292 @@ cell_umap <- cell_umap %>%
         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='media_ctr_0.0_0_Media_ctr_0.0_0' ~ "Media ctr 0.0 0",
         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='media_ctr_0.0_0_Media_0.0_0' ~ "Media ctr 0.0 0"
     ))
+    # replace Media ctr 0.0 0 with Media
+cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- gsub("Media ctr 0.0 0", "Media", cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
+
+unique(cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
+
+unique(cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
+
+unique(cell_umap$group)
+
+# create grouping of treatment and group
+cell_umap$group_treatment <- paste(cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, cell_umap$group,  sep = ", ")
+# make the group_treatment column a factor
+cell_umap$group_treatment <- factor(
+    cell_umap$group_treatment,
+    levels = c(
+        levels = c(
+            'Media, Control',
+            'DMSO 0.1% - DMSO 0.025%, Control',
+            'DMSO 0.1% - DMSO 1.0%, Control',
+            'DMSO 0.1% - Z-VAD-FMK 30.0 uM, Control',
+            'DMSO 0.1% - Z-VAD-FMK 100.0 uM, Control',
+            'Disulfiram 0.1 uM - DMSO 0.025%, Control',
+            'Disulfiram 1.0 uM - DMSO 0.025%, Control',
+            'Disulfiram 2.5 uM - DMSO 0.025%, Control',
+            'Flagellin 0.1 ug/ml - DMSO 0.025%, Control',
+            'LPS 1.0 ug/ml + Nigericin 10.0 uM - Z-VAD-FMK 100.0 uM, Control',
+            'LPS 10.0 ug/ml - Z-VAD-FMK 100.0 uM, Control',
+            'H2O2 100.0 nM - DMSO 0.025%, Control',
+            'H2O2 100.0 uM - DMSO 0.025%, Control',
+            'H2O2 100.0 uM - Disulfiram 1.0 uM, Control',
+            'H2O2 100.0 uM - Z-VAD-FMK 100.0 uM, Control',
+            'Topotecan 5.0 nM - DMSO 0.025%, Control',
+            'Topotecan 10.0 nM - DMSO 0.025%, Control',
+            'Topotecan 20.0 nM - DMSO 0.025%, Control',
+
+
+            'Flagellin 1.0 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 0.01 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 0.1 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 1.0 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 1.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 1.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 1.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 10.0 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 100.0 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 100.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 100.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 100.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%, Pyroptosis',
+            'Flagellin 1.0 ug/ml - Disulfiram 1.0 uM, Pyroptosis',
+            'LPS 1.0 ug/ml + Nigericin 10.0 uM - Disulfiram 1.0 uM, Pyroptosis',
+            'LPS 10.0 ug/ml - Disulfiram 0.1 uM, Pyroptosis',
+            'LPS 10.0 ug/ml - Disulfiram 1.0 uM, Pyroptosis',
+            'LPS 10.0 ug/ml - Disulfiram 2.5 uM, Pyroptosis',
+
+            'Thapsigargin 1.0 uM - DMSO 0.025%, Apoptosis',
+            'Thapsigargin 10.0 uM - DMSO 0.025%, Apoptosis'
+
+)
+    )
+)
+length(unique(cell_umap$group_treatment))
+
+# # rename the treatment names
+# cell_umap <- cell_umap %>%
+#     mutate(oneb_Metadata_Treatment_Dose_Inhibitor_Dose = case_when(
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_DMSO_0.025_%' ~ "DMSO 0.1% - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_DMSO_1.000_%' ~ "DMSO 0.1% - DMSO 1.0%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_Z-VAD-FMK_100.000_uM' ~ "DMSO 0.1% - Z-VAD-FMK 100.0 uM",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_Z-VAD-FMK_30.000_uM' ~ "DMSO 0.1% - Z-VAD-FMK 30.0 uM",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Flagellin_1.000_ug_per_ml_DMSO_0.025_%' ~ "Flagellin 1.0 ug/ml - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM' ~ "Flagellin 1.0 ug/ml - Disulfiram 1.0 uM",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_0.010_ug_per_ml_DMSO_0.025_%' ~ "LPS 0.01 ug/ml - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_0.100_ug_per_ml_DMSO_0.025_%' ~ "LPS 0.1 ug/ml - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Flagellin_0.100_ug_per_ml_DMSO_0.0_%' ~ "Flagellin 0.1 ug/ml - DMSO 0.0%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Flagellin_0.100_ug_per_ml_DMSO_0.025_%' ~ "Flagellin 0.1 ug/ml - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Disulfiram_0.100_uM_DMSO_0.025_%' ~ "Disulfiram 0.1 uM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_1.000_uM_DMSO_0.025_%' ~ "LPS 1.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_10.000_uM_DMSO_0.025_%' ~ "LPS 1.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_10.000_uM_Disulfiram_1.000_uM' ~ "LPS 1.0 ug/ml + Nigericin 10.0 uM - Disulfiram 1.0 uM",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_10.000_uM_Z-VAD-FMK_100.000_uM' ~ "LPS 1.0 ug/ml + Nigericin 10.0 uM - Z-VAD-FMK 100.0 uM",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_3.000_uM_DMSO_0.025_%' ~ "LPS 1.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_1.000_ug_per_ml_DMSO_0.025_%' ~ "LPS 1.0 ug/ml - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Flagellin_1.000_ug_per_ml_DMSO_0.0_%' ~ "Flagellin 1.0 ug/ml - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Disulfiram_1.000_uM_DMSO_0.025_%' ~ "Disulfiram 1.0 uM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Thapsigargin_1.000_uM_DMSO_0.025_%' ~ "Thapsigargin 1.0 uM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Topotecan_10.000_nM_DMSO_0.025_%' ~ "Topotecan 10.0 nM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_DMSO_0.025_%' ~ "LPS 10.0 ug/ml - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_Disulfiram_0.100_uM' ~ "LPS 10.0 ug/ml - Disulfiram 0.1 uM",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_Disulfiram_1.000_uM' ~ "LPS 10.0 ug/ml - Disulfiram 1.0 uM",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_Disulfiram_2.500_uM' ~ "LPS 10.0 ug/ml - Disulfiram 2.5 uM",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_Z-VAD-FMK_100.000_uM' ~ "LPS 10.0 ug/ml - Z-VAD-FMK 100.0 uM",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Thapsigargin_10.000_uM_DMSO_0.025_%' ~ "Thapsigargin 10.0 uM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_nM_DMSO_0.025_%' ~ "H2O2 100.0 nM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_100.000_ug_per_ml_1.000_uM_DMSO_0.025_%' ~ "LPS 100.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_100.000_ug_per_ml_10.000_uM_DMSO_0.025_%' ~ "LPS 100.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_100.000_ug_per_ml_3.000_uM_DMSO_0.025_%' ~ "LPS 100.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_100.000_ug_per_ml_DMSO_0.025_%' ~ "LPS 100.0 ug/ml - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_uM_DMSO_0.025_%' ~ "H2O2 100.0 uM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_uM_Disulfiram_1.000_uM' ~ "H2O2 100.0 uM - Disulfiram 1.0 uM",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_uM_Z-VAD-FMK_100.000_uM' ~ "H2O2 100.0 uM - Z-VAD-FMK 100.0 uM",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Disulfiram_2.500_uM_DMSO_0.025_%' ~ "Disulfiram 2.5 uM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Topotecan_20.000_nM_DMSO_0.025_%' ~ "Topotecan 20.0 nM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Topotecan_5.000_nM_DMSO_0.025_%' ~ "Topotecan 5.0 nM - DMSO 0.025%",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='media_ctr_0.0_0_Media_ctr_0.0_0' ~ "Media ctr 0.0 0",
+#         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='media_ctr_0.0_0_Media_0.0_0' ~ "Media ctr 0.0 0"
+#     ))
+
+
+custom_pallette = createPalette(37,  c("#ff0000", "#00ff00", "#0000ff"))
+custom_pallette <- sortByHue(custom_pallette)
+custom_pallette <- as.vector(t(matrix(custom_pallette, ncol=4)))
 
 
 # set plot size
-width <- 15
-height <- 6
+width <- 17
+height <- 15
 options(repr.plot.width = width, repr.plot.height = height)
 umap_plot_all <- (
     ggplot(cell_umap, aes(x = umap_1, y = umap_2))
 
     + geom_point(
         aes(
-            color = oneb_Metadata_Treatment_Dose_Inhibitor_Dose
+            color = group_treatment,
+            shape = group_treatment
         ),
-        size = 1,
-        alpha = 0.3
+        size = 3,
+        alpha = 0.5
     )
     + theme_bw()
-    + guides(
-        color = guide_legend(
-            override.aes = list(
-                size = 4,
-                alpha = 1
-            )
+
+    # rename legend title
+    + labs(color = "Treatment", hjust = 0.5)
+    + figure_theme
+        + theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1))
+            + theme(
+         legend.text = element_text(size = 16),
+        legend.title = element_text(size = 20, hjust = 0.5))
+    + scale_color_manual(
+        name = "Treatment",
+        labels = c(
+            'Media, Control',
+            'DMSO 0.1% - DMSO 0.025%, Control',
+            'DMSO 0.1% - DMSO 1.0%, Control',
+            'DMSO 0.1% - Z-VAD-FMK 30.0 uM, Control',
+            'DMSO 0.1% - Z-VAD-FMK 100.0 uM, Control',
+            'Disulfiram 0.1 uM - DMSO 0.025%, Control',
+            'Disulfiram 1.0 uM - DMSO 0.025%, Control',
+            'Disulfiram 2.5 uM - DMSO 0.025%, Control',
+            'Flagellin 0.1 ug/ml - DMSO 0.025%, Control',
+            'LPS 1.0 ug/ml + Nigericin 10.0 uM - Z-VAD-FMK 100.0 uM, Control',
+            'LPS 10.0 ug/ml - Z-VAD-FMK 100.0 uM, Control',
+            'H2O2 100.0 nM - DMSO 0.025%, Control',
+            'H2O2 100.0 uM - DMSO 0.025%, Control',
+            'H2O2 100.0 uM - Disulfiram 1.0 uM, Control',
+            'H2O2 100.0 uM - Z-VAD-FMK 100.0 uM, Control',
+            'Topotecan 5.0 nM - DMSO 0.025%, Control',
+            'Topotecan 10.0 nM - DMSO 0.025%, Control',
+            'Topotecan 20.0 nM - DMSO 0.025%, Control',
+
+
+            'Flagellin 1.0 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 0.01 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 0.1 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 1.0 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 1.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 1.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 1.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 10.0 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 100.0 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 100.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 100.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 100.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%, Pyroptosis',
+            'Flagellin 1.0 ug/ml - Disulfiram 1.0 uM, Pyroptosis',
+            'LPS 1.0 ug/ml + Nigericin 10.0 uM - Disulfiram 1.0 uM, Pyroptosis',
+            'LPS 10.0 ug/ml - Disulfiram 0.1 uM, Pyroptosis',
+            'LPS 10.0 ug/ml - Disulfiram 1.0 uM, Pyroptosis',
+            'LPS 10.0 ug/ml - Disulfiram 2.5 uM, Pyroptosis',
+
+            'Thapsigargin 1.0 uM - DMSO 0.025%, Apoptosis',
+            'Thapsigargin 10.0 uM - DMSO 0.025%, Apoptosis'
+        ),
+        values = custom_pallette)
+    + scale_shape_manual(
+        name = "Treatment",
+        labels = c(
+            'Media, Control',
+            'DMSO 0.1% - DMSO 0.025%, Control',
+            'DMSO 0.1% - DMSO 1.0%, Control',
+            'DMSO 0.1% - Z-VAD-FMK 30.0 uM, Control',
+            'DMSO 0.1% - Z-VAD-FMK 100.0 uM, Control',
+            'Disulfiram 0.1 uM - DMSO 0.025%, Control',
+            'Disulfiram 1.0 uM - DMSO 0.025%, Control',
+            'Disulfiram 2.5 uM - DMSO 0.025%, Control',
+            'Flagellin 0.1 ug/ml - DMSO 0.025%, Control',
+            'LPS 1.0 ug/ml + Nigericin 10.0 uM - Z-VAD-FMK 100.0 uM, Control',
+            'LPS 10.0 ug/ml - Z-VAD-FMK 100.0 uM, Control',
+            'H2O2 100.0 nM - DMSO 0.025%, Control',
+            'H2O2 100.0 uM - DMSO 0.025%, Control',
+            'H2O2 100.0 uM - Disulfiram 1.0 uM, Control',
+            'H2O2 100.0 uM - Z-VAD-FMK 100.0 uM, Control',
+            'Topotecan 5.0 nM - DMSO 0.025%, Control',
+            'Topotecan 10.0 nM - DMSO 0.025%, Control',
+            'Topotecan 20.0 nM - DMSO 0.025%, Control',
+
+
+            'Flagellin 1.0 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 0.01 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 0.1 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 1.0 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 1.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 1.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 1.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 10.0 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 100.0 ug/ml - DMSO 0.025%, Pyroptosis',
+            'LPS 100.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 100.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%, Pyroptosis',
+            'LPS 100.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%, Pyroptosis',
+            'Flagellin 1.0 ug/ml - Disulfiram 1.0 uM, Pyroptosis',
+            'LPS 1.0 ug/ml + Nigericin 10.0 uM - Disulfiram 1.0 uM, Pyroptosis',
+            'LPS 10.0 ug/ml - Disulfiram 0.1 uM, Pyroptosis',
+            'LPS 10.0 ug/ml - Disulfiram 1.0 uM, Pyroptosis',
+            'LPS 10.0 ug/ml - Disulfiram 2.5 uM, Pyroptosis',
+
+            'Thapsigargin 1.0 uM - DMSO 0.025%, Apoptosis',
+            'Thapsigargin 10.0 uM - DMSO 0.025%, Apoptosis'
+        ),
+        values = c(
+            18,
+            18,
+            18,
+            18,
+            18,
+            18,
+            18,
+            18,
+            18,
+            18,
+            18,
+            18,
+            18,
+            18,
+            18,
+            18,
+            18,
+            18,
+
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            16,
+            17,
+            17
         )
     )
+    + theme(legend.position = "bottom")
+    # set the legend columns to 4
+    # change legend alpha
+    + guides(color = guide_legend(ncol =2, override.aes = list(alpha = 1, size = 5)))
     + labs(
-        x = "UMAP 0",
-        y = "UMAP 1",
-        color = "Treatment"
-    )
-    + ggtitle(
-        paste0(
-            cell_type,
-            " UMAP"
-        ),
-    )
-    + theme(
-        # change title size
-        plot.title = element_text(
-            size = 20,
-            face = "bold",
-            hjust = 0.5
-        ),
-        legend.title = element_text(
-            size = 20,
-            face = "bold",
-            hjust = 0.5
-        ),
+        x = "UMAP 1",
+        y = "UMAP 2"
     )
 )
-umap_plot_legend <- get_legend(umap_plot_all)
-# umap_plot <- umap_plot + theme(legend.position = "none")
 umap_plot_all
 
 
 # re-read in the cell_umap df
 cell_umap_path <- file.path(paste0(
-    "../","../","1.Exploratory_Data_Analysis/results/",cell_type,"_umap_values_morphology_all_cells.parquet"
+    "../","../","../","1.Exploratory_Data_Analysis/results/",cell_type,"_umap_values_morphology_sample_100.parquet"
 ))
 
 cell_umap <- arrow::read_parquet(cell_umap_path)
-toml_path <- file.path("..","..","1.Exploratory_Data_Analysis/utils/params.toml")
+toml_path <- file.path("..","..","../","1.Exploratory_Data_Analysis/utils/params.toml")
 p <- parseTOML(toml_path)
 # get the list that is in the toml file under the key "treatments"
 # define that list as a variable called list_of_treatments and print the list to verify
@@ -427,6 +686,22 @@ list_of_treatments <- c(p$list_of_treatments$treatments)
 cell_umap_selected_treatments <- cell_umap %>% filter(oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% list_of_treatments)
 head(cell_umap_selected_treatments)
 
+
+# read in the ground truth data
+data_path_ground_truth <- file.path("../../../4.sc_Morphology_Neural_Network_MLP_Model/MLP_utils/ground_truth.toml")
+ground_truth <- parseTOML(data_path_ground_truth)
+# make a a list of the treatments that are in the ground truth data
+apoptosis_ground_truth_list <- c(ground_truth$Apoptosis$apoptosis_groups_list)
+pyroptosis_ground_truth_list <- c(ground_truth$Pyroptosis$pyroptosis_groups_list)
+control_ground_truth_list <- c(ground_truth$Healthy$healthy_groups_list)
+
+
+# make a new column that is the treatment group based on the ground truth data
+cell_umap_selected_treatments$group <- ifelse(cell_umap_selected_treatments$oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% apoptosis_ground_truth_list, "Apoptosis",
+                                ifelse(cell_umap_selected_treatments$oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% pyroptosis_ground_truth_list, "Pyroptosis",
+                                       ifelse(cell_umap_selected_treatments$oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% control_ground_truth_list, "Control", "NA")))
+# make the group column a factor
+cell_umap_selected_treatments$group <- factor(cell_umap_selected_treatments$group, levels = c("Control","Apoptosis", "Pyroptosis"))
 
 
 
@@ -453,6 +728,30 @@ cell_umap_selected_treatments <- cell_umap_selected_treatments %>%
 
 
 
+# create grouping of treatment and group
+cell_umap_selected_treatments$group_treatment <- paste(cell_umap_selected_treatments$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, cell_umap_selected_treatments$group,  sep = ", ")
+# make the group_treatment column a factor
+cell_umap_selected_treatments$group_treatment <- factor(
+    cell_umap_selected_treatments$group_treatment,
+    levels = c(
+        'DMSO 0.1%, Control',
+        'Flagellin 0.1 ug/ml, Control',
+        'Flagellin 1.0 ug/ml, Pyroptosis',
+        'LPS 0.01 ug/ml, Pyroptosis',
+        'LPS 0.1 ug/ml, Pyroptosis',
+        'LPS 1.0 ug/ml, Pyroptosis',
+        'LPS 10.0 ug/ml, Pyroptosis',
+        'LPS 100.0 ug/ml, Pyroptosis',
+        'LPS 1.0 ug/ml + Nigericin 1.0 uM, Pyroptosis',
+        'LPS 1.0 ug/ml + Nigericin 3.0 uM, Pyroptosis',
+        'LPS 1.0 ug/ml + Nigericin 10.0 uM, Pyroptosis',
+        'H2O2 100.0 nM, Control',
+        'H2O2 100.0 uM, Control',
+        'Thapsigargin 1.0 uM, Apoptosis',
+        'Thapsigargin 10.0 uM, Apoptosis'
+    )
+)
+
 # set plot size
 width <- 15
 height <- 6
@@ -462,24 +761,26 @@ umap_plot_selected <- (
 
     + geom_point(
         aes(
-            color = oneb_Metadata_Treatment_Dose_Inhibitor_Dose
+            color = group_treatment,
+            shape = group_treatment
         ),
-        size = 1,
-        alpha = 0.3
+        size = 3,
+        alpha = 0.7
     )
     + theme_bw()
+    + figure_theme
     + guides(
         color = guide_legend(
             override.aes = list(
                 size = 4,
-                alpha = 1
+                alpha = 1.5
             )
         )
     )
     + labs(
         x = "UMAP 0",
         y = "UMAP 1",
-        color = "Treatment"
+        color = "Treatment",
     )
     + ggtitle(
         paste0(
@@ -500,10 +801,169 @@ umap_plot_selected <- (
             hjust = 0.5
         ),
     )
+    + scale_color_manual(
+        name = "Treatment",
+        labels = c(
+        'DMSO 0.1%, Control',
+        'Flagellin 0.1 ug/ml, Control',
+        'Flagellin 1.0 ug/ml, Pyroptosis',
+        'LPS 0.01 ug/ml, Pyroptosis',
+        'LPS 0.1 ug/ml, Pyroptosis',
+        'LPS 1.0 ug/ml, Pyroptosis',
+        'LPS 10.0 ug/ml, Pyroptosis',
+        'LPS 100.0 ug/ml, Pyroptosis',
+        'LPS 1.0 ug/ml + Nigericin 1.0 uM, Pyroptosis',
+        'LPS 1.0 ug/ml + Nigericin 3.0 uM, Pyroptosis',
+        'LPS 1.0 ug/ml + Nigericin 10.0 uM, Pyroptosis',
+        'H2O2 100.0 nM, Control',
+        'H2O2 100.0 uM, Control',
+        'Thapsigargin 1.0 uM, Apoptosis',
+        'Thapsigargin 10.0 uM, Apoptosis'
+        ),
+        values = c(
+        '#66c2a5',
+        '#3288bd',
+        '#f46d43',
+        '#5e4fa2',
+        "#058ED9",
+        "#848FA2",
+        "#2D3142",
+        "#FFC857",
+        '#66c2a5',
+        '#3288bd',
+        '#abdda4',
+        '#fdae61',
+        # dark grey
+        '#666666',
+        # greenoneb_Treatment_Dose_Inhibitor_Dose
+        '#66c2a5',
+        '#f46d43',
+        '#d53e4f'
+        ))
+    + scale_shape_manual(
+        name = "Treatment",
+        labels = c(
+        'DMSO 0.1%, Control',
+        'Flagellin 0.1 ug/ml, Control',
+        'Flagellin 1.0 ug/ml, Pyroptosis',
+        'LPS 0.01 ug/ml, Pyroptosis',
+        'LPS 0.1 ug/ml, Pyroptosis',
+        'LPS 1.0 ug/ml, Pyroptosis',
+        'LPS 10.0 ug/ml, Pyroptosis',
+        'LPS 100.0 ug/ml, Pyroptosis',
+        'LPS 1.0 ug/ml + Nigericin 1.0 uM, Pyroptosis',
+        'LPS 1.0 ug/ml + Nigericin 3.0 uM, Pyroptosis',
+        'LPS 1.0 ug/ml + Nigericin 10.0 uM, Pyroptosis',
+        'H2O2 100.0 nM, Control',
+        'H2O2 100.0 uM, Control',
+        'Thapsigargin 1.0 uM, Apoptosis',
+        'Thapsigargin 10.0 uM, Apoptosis'
+        ),
+        values = c(
+        18,
+        18,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        16,
+        18,
+        18,
+        17,
+        17
+        ))
+
+
 )
 umap_plot_legend <- get_legend(umap_plot_selected)
 # umap_plot <- umap_plot + theme(legend.position = "none")
+# remove the title
+umap_plot_selected <- umap_plot_selected + theme(plot.title = element_blank())
 umap_plot_selected
+
+
+# set plot size
+width <- 15
+height <- 6
+options(repr.plot.width = width, repr.plot.height = height)
+umap_plot_selected_death_type <- (
+    ggplot(cell_umap_selected_treatments, aes(x = umap_1, y = umap_2))
+
+    + geom_point(
+        aes(
+            color = group,
+            shape = group
+        ),
+        size = 3,
+        alpha = 0.7
+    )
+    + theme_bw()
+    + figure_theme
+    + guides(
+        color = guide_legend(
+            override.aes = list(
+                size = 4,
+                alpha = 1.5
+            )
+        )
+    )
+    + labs(
+        x = "UMAP 0",
+        y = "UMAP 1",
+        color = "Treatment",
+    )
+    + ggtitle(
+        paste0(
+            cell_type,
+            " UMAP"
+        ),
+    )
+    + theme(
+        # change title size
+        plot.title = element_text(
+            size = 20,
+            face = "bold",
+            hjust = 0.5
+        ),
+        legend.title = element_text(
+            size = 20,
+            face = "bold",
+            hjust = 0.5
+        ),
+    )
+    + scale_color_manual(
+        name = "Treatment",
+        labels = c(
+        'Control',
+        'Apoptosis',
+        'Pyroptosis'
+        ),
+        values = c(
+            brewer.pal(3, "Dark2")[2],
+            brewer.pal(3, "Dark2")[1],
+            brewer.pal(3, "Dark2")[3]
+        ))
+    + scale_shape_manual(
+        name = "Treatment",
+        labels = c(
+        'Control',
+        'Apoptosis',
+        'Pyroptosis'
+        ),
+        values = c(
+        18,
+        17,
+        16
+        ))
+
+)
+# remove the title
+umap_plot_selected_death_type <- umap_plot_selected_death_type + theme(plot.title = element_blank())
+umap_plot_selected_death_type
 
 
 # change bar plot title colours to match the venn diagram
@@ -553,8 +1013,8 @@ a_h__a_p__h_p_common_plot <- a_h__a_p__h_p_common_plot + ggtitle(
 
     ),
     axis.title.x = element_blank()
-)
 
+)
 
 # patch work plot of the venn diagram and bar plots
 
@@ -609,7 +1069,7 @@ fig3 <- (
 
 )
 ggsave(
-    filename = file.path("figures",paste0(cell_type,"_figure3.png")),
+    filename = file.path("..","figures",paste0(cell_type,"_figure3.png")),
     plot = fig3,
     width = width,
     height = height,

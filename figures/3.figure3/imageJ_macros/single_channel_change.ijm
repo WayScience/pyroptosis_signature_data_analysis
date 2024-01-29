@@ -34,7 +34,7 @@ macro "Maximum Intensity Projection" {
 			print("match");
 		} else if (indexOf(a, "red") >= 0) {
 			selectWindow(a);
-			run("Red");
+			run("Magenta");
 			print("match");
 		} else if (indexOf(a, "yellow") >= 0) {
 			selectWindow(a);
@@ -42,7 +42,7 @@ macro "Maximum Intensity Projection" {
 			print("match");
 		} else if (indexOf(a, "magenta") >= 0) {
 			selectWindow(a);
-			run("Magenta");
+			run("Red");
 			print("match");
 		} else {
 			print("no matches found");

@@ -96,7 +96,6 @@ variance_r2_plot_global <- (
     # + theme(legend.position = "bottom", legend.box = "horizontal")
     # change legend dot size
     + guides(colour = guide_legend(override.aes = list(size=3)))
-
 )
 variance_r2_plot_global
 ggsave(global_variance_r2_path, variance_r2_plot_global, width=5, height=5, dpi=500)
@@ -1433,25 +1432,26 @@ pt2 <- (
     + cytokine_predictions
     + model_performance_il1b
     + plot_layout(design = design2)
-
+    + plot_annotation(tag_levels = "A")  & theme(plot.tag = element_text(size = 20))
 
 )
 pt2
 
 pt3 <- (
-    il1beta_final_plot
-    + tnfa_final_plot
+    wrap_elements(full = il1beta_final_plot)
+    + wrap_elements(full = tnfa_final_plot)
 
-    + CCL24_final_plot
+    + wrap_elements(full = CCL24_final_plot)
 
-    + il18beta_final_plot
+    + wrap_elements(full = il18beta_final_plot)
 
 
-    + op_final_plot
-    + CCL13_final_plot
-    + il2_final_plot
-    + il6_final_plot
-    + CCL4_final_plot
+    + wrap_elements(full = op_final_plot)
+    + wrap_elements(full = CCL13_final_plot)
+    + wrap_elements(full = il2_final_plot)
+    + wrap_elements(full = il6_final_plot)
+    + wrap_elements(full = CCL4_final_plot)
+    + plot_annotation(tag_levels = "A")  & theme(plot.tag = element_text(size = 20))
 )
 
 

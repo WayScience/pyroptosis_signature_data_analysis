@@ -51,6 +51,17 @@ no_shuffle_min <- min(no_shuffle_df$RI_u, no_shuffle_df$RI_v)
 no_shuffle_max <- max(no_shuffle_df$RI_u, no_shuffle_df$RI_v)
 
 
+# linear model the shuffled and not shuffled data
+non_shuffled_lm <- lm(RI_v ~ RI_u, data = no_shuffle_df)
+non_shuffled_lm_summary <- summary(non_shuffled_lm)
+non_shuffled_slope <- as.data.frame(non_shuffled_lm_summary$coefficients)$Estimate[2]
+non_shuffled_intercept <- as.data.frame(non_shuffled_lm_summary$coefficients)$Estimate[1]
+
+shuffled_lm <- lm(RI_v ~ RI_u, data = shuffle_df)
+shuffled_lm_summary <- summary(shuffled_lm)
+shuffled_slope <- as.data.frame(shuffled_lm_summary$coefficients)$Estimate[2]
+shuffled_intercept <- as.data.frame(shuffled_lm_summary$coefficients)$Estimate[1]
+
 # set cutoff for axis break
 yticks_shuffle <- c(-1000,-100,-50,-10)
 # function to transform data to y position
@@ -94,8 +105,7 @@ RI_plot_w_inset <- (
         legend.text = element_text(size = 14),
         legend.title = element_text(size = 14),
         plot.title = element_text(size = 20, hjust = 0.5)
-
-)
+    )
 )
 # drop legend
 RI_plot_inset_shuffle <- RI_plot_inset_shuffle + theme(legend.position = "none")
@@ -183,6 +193,7 @@ figure <- (
     + shuffle_inset_full
 
     + plot_layout(ncol = 2)
+    + plot_annotation(tag_levels = "A")  & theme(plot.tag = element_text(size = 20))
 )
 figure
 ggsave(file.path(paste0(
@@ -191,3 +202,19 @@ ggsave(file.path(paste0(
     cell_type,
     "final_figure.png")), width = width, height = height
 )
+
+print(paste0(
+    "non-shuffled: f(x) = ",
+    round(non_shuffled_slope, 2),
+    "x + ",
+    round(non_shuffled_intercept, 2),
+    " + epsilon"
+))
+
+print(paste0(
+    "shuffled: f(x) = ",
+    round(shuffled_slope, 2),
+    "x + ",
+    round(shuffled_intercept, 2),
+    " + epsilon"
+))

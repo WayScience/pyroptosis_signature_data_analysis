@@ -32,7 +32,7 @@ necrosis$year <- rownames(necrosis)
 ferroptosis$year <- rownames(ferroptosis)
 autophagy$year <- rownames(autophagy)
 
-# # removve the row names
+# # remove the row names
 rownames(apoptosis) <- NULL
 rownames(pyroptosis) <- NULL
 rownames(necrosis) <- NULL

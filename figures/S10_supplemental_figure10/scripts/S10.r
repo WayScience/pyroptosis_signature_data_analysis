@@ -18,10 +18,6 @@ model_name <- "MultiClass_MLP"
 training_metrics_file <- file.path(paste0(
     "../../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/training_metrics.parquet"
 ))
-pr_curves_path <- file.path(paste0(
-        "../../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/PR_curves.parquet"
-))
-
 
 # set output file path for graphs
 f1_plot_path <- file.path(paste0(
@@ -37,8 +33,6 @@ dir.create(file.path(paste0(
 
 # read in the data
 training_metrics <- arrow::read_parquet(training_metrics_file)
-PR_curves <- arrow::read_parquet(pr_curves_path)
-
 
 
 support <- training_metrics[training_metrics$metric == "support",]
@@ -109,7 +103,7 @@ f1_score_plot <- (
     + labs(fill = "Predicted Class")
     # change the colours
     + scale_fill_manual(values = c(
-        "Treatment Holdout" = "#056CF2"
+        "Treatment Holdout" = brewer.pal(3, "Dark2")[3]
     ))
     # remove legend
 
@@ -120,96 +114,6 @@ f1_score_plot <- (
 ggsave(f1_plot_path, f1_score_plot, width = width, height = height, dpi = 600)
 f1_score_plot
 
-
-# replace strings in pr_curves
-PR_curves$label <- gsub("apoptosis", "Apoptosis", PR_curves$label)
-PR_curves$label <- gsub("healthy", "Control", PR_curves$label)
-PR_curves$label <- gsub("pyroptosis", "Pyroptosis", PR_curves$label)
-
-PR_curves$data_split <- gsub("train", "Training", PR_curves$data_split)
-PR_curves$data_split <- gsub("testing", "Testing", PR_curves$data_split)
-PR_curves$data_split <- gsub("validation", "Validation", PR_curves$data_split)
-PR_curves$data_split <- gsub("treatment_holdout", "Treatment Holdout", PR_curves$data_split)
-PR_curves$data_split <- gsub("holdout", "Holdout", PR_curves$data_split)
-
-# factorize the data_split column
-PR_curves$data_split <- factor(PR_curves$data_split, levels = c(
-    "Training", "Validation", "Testing","Treatment Holdout", "Holdout"
-))
-
-unique(PR_curves$label)
-unique(PR_curves$data_split)
-
-# replace strings in pr_curves shuffle
-PR_curves$shuffle <- gsub("TRUE", "Shuffled", PR_curves$shuffle)
-PR_curves$shuffle <- gsub("FALSE", "Not Shuffled", PR_curves$shuffle)
-
-# factorize the shuffled_data column
-PR_curves$shuffle <- factor(PR_curves$shuffle, levels = c(
-    "Not Shuffled", "Shuffled"
-))
-# class label factor
-
-
-# remove the treatment holdout rows
-PR_curves <- PR_curves[grepl("Treatment Holdout", PR_curves$data_split),]
-
-
-# make a line plot that has the shuffled and not shuffled lines
-# with shuffled lines dashed and not shuffled lines solid
-# color by label
-width <- 8
-height <- 8
-options(repr.plot.width = width, repr.plot.height = height)
-pr_plot <- (
-    ggplot(PR_curves, aes(x = recall, y = precision, color = label, linetype = label))
-    + geom_line(aes(linetype = shuffle), size = 1.1)
-    + facet_wrap(~data_split, ncol = 2)
-    + theme_bw()
-    + labs(color = "Predicted Class", linetype = "Data Shuffle", x = "Recall", y = "Precision")
-    # change the colours
-    + scale_color_manual(values = c(
-        "Control" = brewer.pal(3, "Dark2")[2],
-        "Apoptosis" = brewer.pal(3, "Dark2")[1],
-        "Pyroptosis" = brewer.pal(3, "Dark2")[3]
-    ))
-    # change the line thickness of the lines in the legend
-    + guides(linetype = guide_legend(override.aes = list(size = 1)))
-
-    # change the facet text size
-    + theme(
-        strip.text = element_text(size = 18),
-        # x and y axis text size
-        axis.text.x = element_text(size = 18),
-        axis.text.y = element_text(size = 18),
-        # x and y axis title size
-        axis.title.x = element_text(size = 18),
-        axis.title.y = element_text(size = 18),
-        # legend text size
-        legend.text = element_text(size = 18),
-        legend.title = element_text(size = 18),
-    )
-    # change the legend position
-    + theme(legend.position = "bottom")
-    # make the legend horizontal
-    + theme(legend.direction = "horizontal")
-    + guides(
-        linetype = guide_legend(
-            order = 1, title.position = "top",
-            title.theme = element_text(size = 20, hjust = 0.5),
-            ncol = 2
-            ),
-        color = guide_legend(
-            order = 2, title.position = "top",
-            title.theme = element_text(size = 20, hjust = 0.5),
-            ncol = 2
-            )
-            )
-    # rotate the x axis tick labels
-    + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-  )
-ggsave("../figures/PR_curves.png", pr_plot, width = width, height = height, dpi = 600)
-pr_plot
 
 # load in the probabilities
 treatment_holdout_probabilities_path <- file.path(
@@ -303,7 +207,6 @@ ridge_plot_pyroptosis <- (
     + figure_theme
 
     # remove legend
-    # + theme(legend.position = "none")
     # make title larger
     + theme(plot.title = element_text(size = 20, hjust = 0.5))
     + theme(legend.position = "bottom", legend.direction = "horizontal")
@@ -424,26 +327,23 @@ pyroptosis_correct_treatment_holdout_image <- (
 
 pyroptosis_correct_treatment_holdout_image
 
-# convert each plot to a ggplot object
-pr_plot <- as.grob(pr_plot)
-f1_score_plot <- as.grob(f1_score_plot)
+# # convert each plot to a ggplot object
+# f1_score_plot <- as.grob(f1_score_plot)
+# pyroptosis_correct_treatment_holdout_image <- as.grob(pyroptosis_correct_treatment_holdout_image)
+# f1_score_plot
 
 layout <- c(
     area(t=1, b=2, l=1, r=2), # A
-    area(t=1, b=2, l=3, r=4), # B
-    area(t=3, b=4, l=1, r=4) # C
+    area(t=3, b=4, l=1, r=2) # B
+
 )
 # set plot size
 width <- 15
 height <- 15
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
 figs10 <- (
-    wrap_elements(full = pr_plot)
-    + f1_score_plot
+    f1_score_plot
     + wrap_elements(full = pyroptosis_correct_treatment_holdout_image)
-
-
-    # + fig5_probabilities
     + plot_layout(design = layout, widths = c(10, 10))
     # make bottom plot not align
     + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))

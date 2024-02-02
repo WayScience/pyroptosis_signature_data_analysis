@@ -1546,7 +1546,7 @@ layout <- c(
 # set plot size
 width <- 17
 height <- 20
-options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
+options(repr.plot.width=width, repr.plot.height=height, units = "in", dpi = 600)
 fig2 <- (
     cytokine_scatter_plot
     # wrap_elements(full = cytokine_scatter_plot)
@@ -1558,13 +1558,8 @@ fig2 <- (
     + plot_layout(design = layout, widths = c(0.3,15), heights = c())
     + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
 )
+# save the figure as png using device
+png(file.path("figures","figure2.png"), width = width, height = height, units = "in", res = 600)
 fig2
-ggsave(
-    filename = file.path("figures","figure2.png"),
-    plot = fig2,
-    width = width,
-    height = height,
-    units = "in",
-    dpi = 600
-)
-
+dev.off()
+fig2

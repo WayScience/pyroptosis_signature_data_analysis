@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[1]:
 
 
 import pathlib
@@ -9,7 +9,7 @@ import pathlib
 import matplotlib.pyplot as plt
 from IPython.display import Math
 
-# In[6]:
+# In[2]:
 
 
 def latex2png(latex, filename, fontsize=300):
@@ -39,7 +39,7 @@ def latex2png(latex, filename, fontsize=300):
 # \newline
 # C = Pyroptosis \; vs. \; Control$$
 
-# In[7]:
+# In[3]:
 
 
 # set output path
@@ -48,22 +48,16 @@ out_path = pathlib.Path("../figures").resolve()
 out_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[8]:
+# In[4]:
 
 
 latex_string = r"""
-$$eq1: A \cap (B \cup C)^c$$
-$$eq2: B \cap (A \cup C)^c$$
-$$eq3: C \cap (A \cup B)^c$$
-
+$$\; eq1: A \cap (B \cup C)^c ; \; \; eq2: B \cap (A \cup C)^c ; \; \; eq3: C \cap (A \cup B)^c\; $$
 $$Where: $$
-$$A = Apoptosis \; vs. \; Control$$
-$$B = Apoptosis \; vs. \; Pyroptosis$$
-$$C = Pyroptosis \; vs. \; Control$$
+$$A = Apoptosis \; vs. \; Control \; ANOVA \; features$$
+$$B = Apoptosis \; vs. \; Pyroptosis \; ANOVA \; features$$
+$$C = Pyroptosis \; vs. \; Control \; ANOVA \; features$$
 """
 
 latex2png(latex_string, "../figures/equations.png", fontsize=300)
 Math(latex_string)
-
-
-# In[ ]:

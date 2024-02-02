@@ -49,7 +49,6 @@ colnames(autophagy) <- c("count", "label", "year")
 # # combine the data frames
 df <- rbind(apoptosis, pyroptosis, necrosis, ferroptosis, autophagy)
 # sort the data frame by year
-# df <- df[order(df$year),]
 # make the year a integer
 df$year <- as.integer(df$year)
 # make the count a integer

@@ -1382,8 +1382,6 @@ model_heatmap
 # ggplotify model_heatmap
 pt1 <- as.ggplot(model_heatmap)
 
-# # save the figure
-ggsave(file = paste0(figure_path, "filtered_features.png"), plot = pt1, width = width, height = height, units = "in", dpi = 500)
 # fix the position of the plot
 pt1 <- as.ggplot(pt1)
 

@@ -292,7 +292,8 @@ pr_plot <- (
             )
     # rotate the x axis tick labels
     + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-  )
+    + theme(plot.margin = margin(0,1,0,0, "cm"))
+)
 ggsave("../figures/Multi_Class/MultiClass_MLP/PBMC/PR_curves.png", pr_plot, width = width, height = height, dpi = 600)
 pr_plot
 
@@ -852,9 +853,8 @@ fig5 <- (
     # make bottom plot not align
     + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
 )
-fig5
 
 # save the plot
-
-ggsave("../figures/figure5.png", fig5, width = width, height = height, dpi = 600)
-
+png(filename = "../figures/figure5.png", width = width, height = height, units = "in", res = 600)
+fig5
+dev.off()

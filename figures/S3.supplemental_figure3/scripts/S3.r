@@ -1202,8 +1202,8 @@ options(repr.plot.width=5, repr.plot.height=5)
 
 
 # add padding to scatter plot
-cytokine_scatter_plot1 <- cytokine_scatter_plot1 + theme(plot.margin = unit(c(1,0,0,0), "cm"))
-cytokine_scatter_plot2 <- cytokine_scatter_plot2 + theme(plot.margin = unit(c(1,0,0,0), "cm"))
+cytokine_scatter_plot1 <- cytokine_scatter_plot1 + theme(plot.margin = unit(c(1,1,1,1), "cm"))
+cytokine_scatter_plot2 <- cytokine_scatter_plot2 + theme(plot.margin = unit(c(1,1,1,1), "cm"))
 
 # remove the legend
 cytokine_scatter_plot1 <- cytokine_scatter_plot1 + theme(legend.position = "none")
@@ -1226,10 +1226,8 @@ UMAP_plot <- as.ggplot(UMAP_plot)
 # each row represents a proportion of the total plot size
 # some plots may be on multiple rows or columns
 # plots can be proportioned by adding more letters to the row or column
-design <-  "AAAA
-            AAAA
-            BBBB
-            BBBB
+design <-  "AABB
+            AABB
             CCCC
             CCCC
             CCCC
@@ -1237,7 +1235,7 @@ design <-  "AAAA
 
 # set plot size
 width <- 17
-height <- 23
+height <- 17
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
 
 # sfig_pt1
@@ -1272,4 +1270,6 @@ ggsave(
     height = height,
     dpi = 600
 )
+
+
 

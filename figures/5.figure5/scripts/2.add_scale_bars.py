@@ -36,7 +36,7 @@ pd.set_option("display.max_columns", None)
 df.head()
 
 
-# In[5]:
+# In[4]:
 
 
 for image_path in df["image_crop_path"]:
@@ -45,10 +45,10 @@ for image_path in df["image_crop_path"]:
     image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
     # image to array
     image_array = np.array(image)
-    resolution = 0.1550  # pixels per micrometer
+    resolution = 3.3446  # pixels per micrometer
     # get the image size
     image_size = image_array.shape
-    if image_array.shape[1] <= 100:
+    if image_array.shape[1] <= 100:  # these were the set crop sizes
         scale_bar_length = 5  # um
         scale_bar_height = 1  # pixels
         padding = 3  # pixels

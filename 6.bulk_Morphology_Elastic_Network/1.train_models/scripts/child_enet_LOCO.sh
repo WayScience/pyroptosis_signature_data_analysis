@@ -2,11 +2,10 @@
 # This script is used to train the regression models for the elastic network
 
 #SBATCH --nodes=1
-#SBATCH --partition=amem
+#SBATCH --partition=amilan
 #SBATCH --account=amc-general
-#SBATCH --mem=400G
-#SBATCH --qos=mem
-#SBATCH --time=24:00:00
+#SBATCH --qos=normal
+#SBATCH --time=12:00:00
 #SBATCH --output=sample-%j.out
 
 module load anaconda

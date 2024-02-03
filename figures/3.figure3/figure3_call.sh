@@ -13,6 +13,6 @@ module load anaconda
 
 conda activate Interstellar_R
 
-jupyter nbconvert --to=script --FilesWriter.build_directory=. *.ipynb
+jupyter nbconvert --to=script --FilesWriter.build_directory=scripts notebooks/*.ipynb
 
 Rscript figure3.r

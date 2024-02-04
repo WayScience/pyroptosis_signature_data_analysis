@@ -1,18 +1,17 @@
 #!/bin/bash
 # This script is used to train the regression models for the elastic network
 
-#SBATCH --partition=amilan
-#SBATCH --qos=normal
+#SBATCH --partition=amem
+#SBATCH --mem= 500G
+#SBATCH --qos=mem
 #SBATCH --output=sample-%j.out
-#SBATCH --array=1-2%2
-#SBATCH --time=24:00:00
-#SBATCH --mem-per-cpu=200G
+#SBATCH --time=48:00:00
 
 module load anaconda
 
 conda activate Interstellar
 
-cell_types=( SHSY5Y PBMC )
+cell_types=( PBMC )
 
 # calculate the number of jobs
 job_id=$((SLURM_ARRAY_TASK_ID - 1))

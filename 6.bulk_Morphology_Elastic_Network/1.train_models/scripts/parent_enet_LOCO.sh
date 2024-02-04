@@ -5,7 +5,7 @@
 #SBATCH --partition=amilan
 #SBATCH --account=amc-general
 #SBATCH --qos=long
-#SBATCH --time=168:00:00
+#SBATCH --time=82:00:00
 #SBATCH --output=main_parent-%j.out
 
 module load anaconda
@@ -28,7 +28,7 @@ cell_types=( PBMC )
 cell_types=( PBMC )
 
 # set the maximum number of jobs to run at once
-MAX_JOBS=50
+MAX_JOBS=800
 progress_counter=1
 # get the length of the arrays
 cytokine_array_length=${#cytokine_array[@]}

@@ -57,12 +57,6 @@ print(f"shuffle: {shuffle}")
 # In[ ]:
 
 
-data = "DNA_ER_Mito_PM.parquet"
-
-
-# In[ ]:
-
-
 aggregation = True
 nomic = True
 data_group = data.strip(".parquet")
@@ -92,19 +86,13 @@ data_split_path = pathlib.Path(
     f"../../0.split_data/indexes/{cell_type}/regression/aggregated_sc_and_nomic_data_split_indexes.tsv"
 )
 data_path = pathlib.Path(
-    f"../../0.split_data/indexes/SHSY5Y/regression/channels/{data}"
+    f"../../0.split_data/indexes/{cell_type}/regression/channels/{data}"
 )
 
 # dataframe with only the labeled data we want (exclude certain phenotypic classes)
 data_df = pd.read_parquet(data_path)
 
 data_split_indexes = pd.read_csv(data_split_path, sep="\t")
-
-
-# In[ ]:
-
-
-data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
 
 # In[ ]:

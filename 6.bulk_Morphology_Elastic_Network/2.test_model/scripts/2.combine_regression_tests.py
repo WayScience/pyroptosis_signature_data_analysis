@@ -28,8 +28,10 @@ results_dir_path = pathlib.Path(
 ).resolve(strict=True)
 
 model_stats_final_output_path = pathlib.Path(
-    f"../results/regression/{cell_type}/aggregated_with_nomic/model_stats.csv"
+    f"../results/regression/{cell_type}/combined/model_stats.csv"
 )
+# make the directory if it does not exist
+model_stats_final_output_path.parent.mkdir(parents=True, exist_ok=True)
 
 variance_r2_stats_final_output_path = pathlib.Path(
     f"../results/regression/{cell_type}/aggregated_with_nomic/variance_r2_stats.csv"

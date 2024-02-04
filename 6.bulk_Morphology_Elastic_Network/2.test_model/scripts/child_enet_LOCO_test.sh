@@ -14,13 +14,13 @@ jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipy
 
 # pass through the cytokine and channels from the call script
 cell_type="$1"
-cytokine="$2"
-shuffle="$3"
+shuffle="$2"
+cytokine="$3"
 channel="$4"
 
 echo "cell_type: $cell_type cytokine: $cytokine shuffle: $shuffle data: $channel"
 
 # call the python script
-python 4.test_regression_multi_output_channel_split.py --cell_type "$cell_type" --cytokine "$cytokine" --shuffle "$shuffle" --data "$channel"
+python 4.test_regression_multi_output_channel_splits.py --cell_type "$cell_type"  --shuffle "$shuffle" --cytokine "$cytokine" --data "$channel"
 
 echo "job finished"

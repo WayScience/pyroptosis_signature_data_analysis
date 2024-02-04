@@ -44,8 +44,8 @@ for cell_type in "${cell_types[@]}"; do
 			while true; do
 				NUM_SLURMS=$(squeue -u "$USER" | wc -l)
 				if [ "$NUM_SLURMS" -lt $MAX_JOBS ]; then
-					echo "cell_type: $cell_type cytokine: $cytokine shuffle: $shuffle data: $channel"
-					sbatch child_enet_LOCO_test.sh "$cell_type" "$cytokine" "$shuffle" "$channel"
+					echo "cell_type: $cell_type shuffle: $shuffle cytokine: $cytokine data: $channel"
+					sbatch child_enet_LOCO_test.sh "$cell_type" "$shuffle" "$cytokine" "$channel"
 					progress_counter=$((progress_counter+1))
 					# calculate the progress
 					progress=$((progress_counter*100/total_jobs))

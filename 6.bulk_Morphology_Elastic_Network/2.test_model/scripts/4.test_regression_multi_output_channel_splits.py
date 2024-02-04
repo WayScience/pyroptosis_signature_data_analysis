@@ -43,13 +43,15 @@ argparser = argparse.ArgumentParser()
 argparser.add_argument("--cell_type", default="all")
 argparser.add_argument("--shuffle", default="False")
 argparser.add_argument("--cytokine", default="all")
+argparser.add_argument("--data", default="all")
 
 args = argparser.parse_args()
 
 cell_type = args.cell_type
 shuffle = ast.literal_eval(args.shuffle)
 cytokine = args.cytokine
-print(cell_type, shuffle, cytokine)
+data = args.data
+print(cell_type, shuffle, cytokine, data)
 
 
 # In[ ]:
@@ -58,6 +60,7 @@ print(cell_type, shuffle, cytokine)
 # Parameters
 aggregation = True
 nomic = True
+data_group = data.strip(".parquet")
 
 
 # In[ ]:
@@ -84,7 +87,7 @@ data_split_path = pathlib.Path(
     f"../../0.split_data/indexes/{cell_type}/regression/aggregated_sc_and_nomic_data_split_indexes.tsv"
 )
 data_path = pathlib.Path(
-    f"../../../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
+    f"../../0.split_data/indexes/SHSY5Y/regression/channels/{data}"
 )
 
 # dataframe with only the labeled data we want (exclude certain phenotypic classes)
@@ -237,11 +240,11 @@ for data_split in data_dict:
         metadata = data_dict[data_split]["metadata"]
     if shuffle == "shuffled_baseline":
         model = joblib.load(
-            f"../../1.train_models/{model_path}/{cytokine}_shuffled_baseline__all_nomic.joblib"
+            f"../../1.train_models/{model_path}/{cytokine}_{data_group}_shuffled_baseline__all_nomic.joblib"
         )
     elif shuffle == "final":
         model = joblib.load(
-            f"../../1.train_models/{model_path}/{cytokine}_final__all_nomic.joblib"
+            f"../../1.train_models/{model_path}/{cytokine}_{data_group}_final__all_nomic.joblib"
         )
     else:
         print("Error")
@@ -341,13 +344,15 @@ pathlib.Path(results_path).mkdir(parents=True, exist_ok=True)
 
 
 # check if the model training metrics file exists
-metrics_file = pathlib.Path(f"{results_path}/{cytokine}_{shuffle}_model_stats.csv")
+metrics_file = pathlib.Path(
+    f"{results_path}/{cytokine}_{shuffle}_{data_group}_model_stats.csv"
+)
 
 results_df.to_csv(metrics_file, index=False)
 
 # do the same for the variance df
 # check if the model training metrics file exists
 metrics_file = pathlib.Path(
-    f"{results_path}/{cytokine}_{shuffle}_variance_r2_stats.csv"
+    f"{results_path}/{cytokine}_{shuffle}_{data_group}_variance_r2_stats.csv"
 )
 var_df.to_csv(metrics_file, index=False)

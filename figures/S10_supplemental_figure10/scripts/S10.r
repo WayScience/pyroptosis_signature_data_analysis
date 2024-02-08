@@ -53,11 +53,11 @@ f1_scores$label <- gsub("pyroptosis", "Pyroptosis", f1_scores$label)
 f1_scores$group <- gsub("train", "Training", f1_scores$group)
 f1_scores$group <- gsub("test", "Testing", f1_scores$group)
 f1_scores$group <- gsub("validation", "Validation", f1_scores$group)
-f1_scores$group <- gsub("treatment_holdout", "Treatment Holdout", f1_scores$group)
-f1_scores$group <- gsub("holdout", "Holdout", f1_scores$group)
+f1_scores$group <- gsub("treatment_holdout", "Treatment holdout", f1_scores$group)
+# f1_scores$group <- gsub("holdout", "Holdout", f1_scores$group)
 # factorize the group column
 f1_scores$group <- factor(f1_scores$group, levels = c(
-    "Training", "Validation", "Testing","Treatment Holdout", "Holdout"
+    "Training", "Validation", "Testing","Treatment holdout", "Holdout"
 ))
 # mutate the shuffled_data column
 f1_scores$shuffle <- gsub("TRUE", "Shuffled", f1_scores$shuffle)
@@ -83,8 +83,9 @@ f1_scores$label <- factor(
 head(f1_scores, 1)
 
 # remove the treatment holdout rows
-f1_scores <- f1_scores[grepl("Treatment Holdout", f1_scores$group),]
+f1_scores <- f1_scores[grepl("Treatment holdout", f1_scores$group),]
 f1_scores <- f1_scores[grepl("Pyroptosis", f1_scores$label),]
+head(f1_scores, 1)
 
 # set plot size
 width <- 10
@@ -97,13 +98,13 @@ f1_score_plot <- (
 
     + ylim(0, 1)
     + facet_wrap(label~group)
-    + ylab("F1 Score")
-    + xlab("Data Split")
+    + ylab("F1 score")
+    + xlab("Data split")
     # change the legend title
-    + labs(fill = "Predicted Class")
+    + labs(fill = "Predicted class")
     # change the colours
     + scale_fill_manual(values = c(
-        "Treatment Holdout" = brewer.pal(3, "Dark2")[3]
+        "Treatment holdout" = brewer.pal(3, "Dark2")[3]
     ))
     # remove legend
 
@@ -150,19 +151,13 @@ probabilities$shuffle <- gsub("TRUE", "Shuffled", probabilities$shuffle)
 probabilities$shuffle <- gsub("FALSE", "Not Shuffled", probabilities$shuffle)
 
 # replace data_split value treatment_holdout with Treatment Holdout|
-probabilities$data_split <- gsub("treatment_holdout", "Treatment Holdout", probabilities$data_split)
-# replace data_split value holdout with Holdout
-probabilities$data_split <- gsub("holdout", "Holdout", probabilities$data_split)
-# replace training value train with Training
-probabilities$data_split <- gsub("train", "Training", probabilities$data_split)
-# replace testing value test with Testing
-probabilities$data_split <- gsub("testing", "Testing", probabilities$data_split)
-# replace validation value validation with Validation
-probabilities$data_split <- gsub("validation", "Validation", probabilities$data_split)
+probabilities$data_split <- gsub("treatment_holdout", "Treatment holdout", probabilities$data_split)
 
 
 head(probabilities, 2)
 unique(probabilities$shuffle)
+unique(probabilities$data_split)
+
 
 # change the label columns to be factors
 probabilities$label_true <- factor(probabilities$label_true , levels = c(
@@ -171,17 +166,14 @@ probabilities$label_true <- factor(probabilities$label_true , levels = c(
 probabilities$label_pred <- factor(probabilities$label_pred , levels = c(
     "Pyroptosis", "Apoptosis", "Control"
 ))
-# change the data_split column to be a factor
-probabilities$data_split <- factor(probabilities$data_split, levels = c(
-    "Training", "Validation", "Testing","Treatment Holdout", "Holdout"
-))
+
 # change the shuffled_data column to be a factor
 probabilities$shuffle <- factor(probabilities$shuffle, levels = c(
     "Not Shuffled", "Shuffled"
 ))
 
 # remove treatment holdout rows
-probabilities <- probabilities[grepl("Treatment Holdout", probabilities$data_split),]
+probabilities <- probabilities[grepl("Treatment holdout", probabilities$data_split),]
 
 height <- 5
 width <- 15
@@ -201,7 +193,7 @@ ridge_plot_pyroptosis <- (
     + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
     + facet_grid(shuffle ~ ., scales = "free_y")
     + scale_x_continuous(breaks = seq(0, 1, 0.5))
-    + labs(title = "Pyroptosis Prediction Probability", y = "Predicted Class",fill = "True Class")
+    + labs(title = "Pyroptosis prediction probability", y = "Predicted class",fill = "True class")
     + labs()
     + theme_bw()
     + figure_theme
@@ -218,7 +210,6 @@ ridge_plot_pyroptosis
 
 
 # get the legend
-legend <- get_legend(ridge_plot_pyroptosis)
 ridge_plot_pyroptosis <- (
     # remove the legend
     ridge_plot_pyroptosis + theme(legend.position = "none")
@@ -288,61 +279,97 @@ get_image <- function(df, i){
 }
 
 
-pyroptosis_correct_treatment_holdout_image <- get_image(pyroptosis_correct_treatment_holdout, 1)
+pyroptosis_correct_treatment_holdout_image_1 <- get_image(pyroptosis_correct_treatment_holdout, 1)
 # add the title
-pyroptosis_correct_treatment_holdout_image <- (
-    pyroptosis_correct_treatment_holdout_image
-    + ggtitle("Pyroptosis\n(Treatment Holdout)")
+pyroptosis_correct_treatment_holdout_image_1 <- (
+    pyroptosis_correct_treatment_holdout_image_1
+    + ggtitle("Pyroptosis\n(Treatment holdout)")
     + theme(plot.title = element_text(size = 18, hjust = 0.5))
     + theme(plot.margin = margin(0, 0, 0, 0, "cm"))
+)
+pyroptosis_correct_treatment_holdout_image_2 <- get_image(pyroptosis_correct_treatment_holdout, 2)
+# add the title
+pyroptosis_correct_treatment_holdout_image_2 <- (
+    pyroptosis_correct_treatment_holdout_image_2
+    + ggtitle("Pyroptosis\n(Treatment holdout)")
+    + theme(plot.title = element_text(size = 18, hjust = 0.5))
+    + theme(plot.margin = margin(0, 0, 0, 0, "cm"))
+)
 
+pyroptosis_correct_treatment_holdout_image_3 <- get_image(pyroptosis_correct_treatment_holdout, 3)
+# add the title
+pyroptosis_correct_treatment_holdout_image_3 <- (
+    pyroptosis_correct_treatment_holdout_image_3
+    + ggtitle("Pyroptosis\n(Treatment holdout)")
+    + theme(plot.title = element_text(size = 18, hjust = 0.5))
+    + theme(plot.margin = margin(0, 0, 0, 0, "cm"))
+)
+
+pyroptosis_correct_treatment_holdout_image_4 <- get_image(pyroptosis_correct_treatment_holdout, 4)
+# add the title
+pyroptosis_correct_treatment_holdout_image_4 <- (
+    pyroptosis_correct_treatment_holdout_image_4
+    + ggtitle("Pyroptosis\n(Treatment holdout)")
+    + theme(plot.title = element_text(size = 18, hjust = 0.5))
+    + theme(plot.margin = margin(0, 0, 0, 0, "cm"))
+)
+
+pyroptosis_correct_treatment_holdout_image_5 <- get_image(pyroptosis_correct_treatment_holdout, 5)
+# add the title
+pyroptosis_correct_treatment_holdout_image_5 <- (
+    pyroptosis_correct_treatment_holdout_image_5
+    + ggtitle("Pyroptosis\n(Treatment holdout)")
+    + theme(plot.title = element_text(size = 18, hjust = 0.5))
+    + theme(plot.margin = margin(0, 0, 0, 0, "cm"))
 )
 
 
-# make a list of the images
-correct_class_images <- list(
-    pyroptosis_correct_treatment_holdout_image
-)
-pyroptosis_correct_treatment_holdout_image
+pyroptosis_correct_treatment_holdout_image_1
+pyroptosis_correct_treatment_holdout_image_2
+pyroptosis_correct_treatment_holdout_image_3
+pyroptosis_correct_treatment_holdout_image_4
+pyroptosis_correct_treatment_holdout_image_5
 
-
-width <- 17
-height <- 10
+width <- 15
+height <- 5
 options(repr.plot.width = width, repr.plot.height = height)
 
-# new layout for pyroptosis legend
 layout <- c(
-    # 1 row 5 columns with the first column being wider than the rest
-    area(t=1, b=1, l=1, r=4), # A
-    area(t=1, b=1, l=5, r=6) # B
+    area(t=1, b=2, l=1, r=2), # A
+    area(t=1, b=2, l=3, r=4), # B
+    area(t=1, b=2, l=5, r=6), # C
+    area(t=1, b=2, l=7, r=8), # D
+    area(t=1, b=2, l=9, r=10)  # E
+
 )
 
 pyroptosis_correct_treatment_holdout_image <- (
 
-        wrap_elements(full = ridge_plot_pyroptosis)
-        + pyroptosis_correct_treatment_holdout_image
+        # wrap_elements(full = ridge_plot_pyroptosis)
+        pyroptosis_correct_treatment_holdout_image_1
+        + pyroptosis_correct_treatment_holdout_image_2
+        + pyroptosis_correct_treatment_holdout_image_3
+        + pyroptosis_correct_treatment_holdout_image_4
+        + pyroptosis_correct_treatment_holdout_image_5
 
     + plot_layout(design = layout)
 )
 
 pyroptosis_correct_treatment_holdout_image
 
-# # convert each plot to a ggplot object
-# f1_score_plot <- as.grob(f1_score_plot)
-# pyroptosis_correct_treatment_holdout_image <- as.grob(pyroptosis_correct_treatment_holdout_image)
-# f1_score_plot
-
 layout <- c(
     area(t=1, b=2, l=1, r=2), # A
-    area(t=3, b=4, l=1, r=2) # B
+    area(t=1, b=2, l=3, r=4), # B
+    area(t=3, b=4, l=1, r=4)  # C
 
 )
 # set plot size
 width <- 15
-height <- 15
+height <- 10
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
 figs10 <- (
     f1_score_plot
+    + wrap_elements(full = ridge_plot_pyroptosis)
     + wrap_elements(full = pyroptosis_correct_treatment_holdout_image)
     + plot_layout(design = layout, widths = c(10, 10))
     # make bottom plot not align

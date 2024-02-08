@@ -29,9 +29,6 @@ head(probabilities,2)
 unique(probabilities$data_split)
 unique(probabilities$shuffle)
 
-# # remove rows where shuffle is true
-# probabilities <- probabilities[!grepl("TRUE", probabilities$shuffle),]
-
 # replace label_true value 1 with Control
 probabilities$label_true <- gsub("1", "Control", probabilities$label_true)
 # replace label_true value 2 with pyroptosis
@@ -52,9 +49,11 @@ probabilities$shuffle <- gsub("TRUE", "Shuffled", probabilities$shuffle)
 probabilities$shuffle <- gsub("FALSE", "Not Shuffled", probabilities$shuffle)
 
 # replace data_split value treatment_holdout with Treatment Holdout
-probabilities$data_split <- gsub("treatment_holdout", "Treatment Holdout", probabilities$data_split)
+probabilities$data_split <- gsub("treatment_holdout", "Treatment holdout", probabilities$data_split)
+# remove treatment holdout rows
+probabilities <- probabilities[!grepl("Treatment holdout", probabilities$data_split),]
 # replace data_split value holdout with Holdout
-probabilities$data_split <- gsub("holdout", "Holdout", probabilities$data_split)
+probabilities$data_split <- gsub("holdout", "Holdout well", probabilities$data_split)
 # replace training value train with Training
 probabilities$data_split <- gsub("train", "Training", probabilities$data_split)
 # replace testing value test with Testing
@@ -66,6 +65,8 @@ probabilities$data_split <- gsub("validation", "Validation", probabilities$data_
 head(probabilities, 2)
 unique(probabilities$shuffle)
 
+unique(probabilities$data_split)
+
 # change the label columns to be factors
 probabilities$label_true <- factor(probabilities$label_true , levels = c(
     "Control", "Apoptosis", "Pyroptosis"
@@ -75,15 +76,14 @@ probabilities$label_pred <- factor(probabilities$label_pred , levels = c(
 ))
 # change the data_split column to be a factor
 probabilities$data_split <- factor(probabilities$data_split, levels = c(
-    "Training", "Validation", "Testing","Treatment Holdout", "Holdout"
+    "Training", "Validation", "Testing", "Holdout well"
 ))
 # change the shuffled_data column to be a factor
 probabilities$shuffle <- factor(probabilities$shuffle, levels = c(
     "Not Shuffled", "Shuffled"
 ))
 
-# remove treatment holdout rows
-probabilities <- probabilities[!grepl("Treatment Holdout", probabilities$data_split),]
+unique(probabilities$data_split)
 
 height <- 5
 width <- 15
@@ -104,15 +104,19 @@ ridge_plot_control <- (
     + facet_grid(shuffle~data_split, scales = "free_y")
     + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
     + scale_x_continuous(breaks = seq(0, 1, 0.5))
-    + labs(title = "Control Prediction Probability", y = "Predicted Class",fill = "True Class")
+    + labs(title = "Control prediction probability", y = "Predicted class",fill = "True class")
     + labs()
     + theme_bw()
     + figure_theme
     # no legend
     + theme(legend.position = "none")
     + theme(plot.title = element_text(size = 20, hjust = 0.5))
+    # facet text size
+    + theme(strip.text = element_text(size = 20))
     # remove x axis label
     + theme(axis.title.x = element_blank())
+    + theme(axis.title.y = element_text(size = 20))
+
 )
 ridge_plot_control
 
@@ -130,15 +134,19 @@ ridge_plot_apoptosis <- (
     + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
     + facet_grid(shuffle~data_split, scales = "free_y")
     + scale_x_continuous(breaks = seq(0, 1, 0.5))
-    + labs(title = "Apoptosis Prediction Probability", y = "Predicted Class",fill = "True Class")
+    + labs(title = "Apoptosis prediction probability", y = "Predicted class",fill = "True class")
     + labs()
     + theme_bw()
     + figure_theme
     # remove legend
     + theme(legend.position = "none")
     + theme(plot.title = element_text(size = 20, hjust = 0.5))
+    # facet text size
+    + theme(strip.text = element_text(size = 20))
     # remove x axis label
     + theme(axis.title.x = element_blank())
+    + theme(axis.title.y = element_text(size = 20))
+
 )
 ridge_plot_apoptosis
 
@@ -155,16 +163,25 @@ ridge_plot_pyroptosis <- (
     + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
     + facet_grid(shuffle~data_split, scales = "free_y")+ scale_x_continuous(breaks = seq(0, 1, 0.5))
     + scale_x_continuous(breaks = seq(0, 1, 0.5))
-    + labs(title = "Pyroptosis Prediction Probability", y = "Predicted Class",fill = "True Class")
+    + labs(title = "Pyroptosis prediction probability", y = "Predicted class",fill = "True class")
     + labs()
     + theme_bw()
     + figure_theme
     # make title larger
     + theme(plot.title = element_text(size = 20, hjust = 0.5))
+    # facet text size
+    + theme(strip.text = element_text(size = 20))
     + theme(legend.position = "bottom", legend.direction = "horizontal")
     # remove x axis label
     + theme(axis.title.x = element_blank())
     # add vertical line at 1
+    # make legend bigger
+    + theme(legend.text = element_text(size = 20))
+    + theme(legend.title = element_text(size = 20))
+    + theme(axis.title.y = element_text(size = 20))
+
+    + theme(legend.key.size = unit(1, "cm"))
+
 )
 ridge_plot_pyroptosis
 

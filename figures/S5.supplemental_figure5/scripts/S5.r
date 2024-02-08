@@ -122,6 +122,8 @@ if (!file.exists(dirname(global_prediction_trend_path))) {
 global_prediction_trend_scatter <- (
     ggplot(df_stats, aes(x=actual_value, y=predicted_value, col=shuffle_plus_data_split))
     + geom_point(alpha=0.5, size=0.5)
+    + geom_smooth(method="lm", se=TRUE, alpha=0.5, size=0.5, color="black")
+
     # add geom smooth with each line being a different color
     + labs(x="Actual", y="Predicted")
     + theme_bw()
@@ -144,34 +146,20 @@ global_prediction_trend_scatter <- (
 ggsave(global_prediction_trend_path, global_prediction_trend_scatter, width=5, height=5, dpi=500)
 global_prediction_trend_scatter
 
-global_prediction_trend_line <- (
-    ggplot(df_stats, aes(x=actual_value, y=predicted_value, col=shuffle_plus_data_split))
-    # add geom smooth with each line being a different color
-    + geom_smooth(method="lm", se=TRUE, alpha=0.5, size=0.5, aes(col=shuffle_plus_data_split))
-    # make colors different for each line
-    + scale_fill_gradientn(colours = viridis(10))
-    + labs(x="Actual", y="Predicted")
-    + theme_bw()
-    + labs(title="Global Prediction Trends of \nCytokine Concentrations")
-    # add y=x line
-    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
-    + facet_wrap(.~shuffle_plus_data_split, ncol=2)
-    + ylim(0, 1)
-    + xlim(0, 1)
-    + labs(color="Model", hjust=0.5)
-    + figure_theme
-    # x tick marks
-    + scale_x_continuous(breaks = seq(0, 1, 0.5))
-    # legend dot size
-    + guides(colour = guide_legend(override.aes = list(size=5), ncol = 2))
-    # legend position
-    + theme(legend.position = "bottom", legend.box = "horizontal")
-    # rotate x axis text
-    + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-)
-ggsave(global_prediction_trend_path, global_prediction_trend_line, width=5, height=5, dpi=500)
-global_prediction_trend_line
 
+#  aggregate the data by the cytokine
+df_stats_agg <- df_stats %>%
+    group_by(cytokine) %>%
+    summarise(
+        mean_r2 = mean(r2),
+        mean_neg_mean_squared_error = mean(neg_mean_squared_error),
+        mean_log10_neg_mean_squared_error = mean(log10_neg_mean_squared_error),
+        mean_actual_value = mean(actual_value),
+        mean_predicted_value = mean(predicted_value)
+    )
+# sort the data by the log10_neg_mean_squared_error descending
+df_stats_agg <- df_stats_agg[order(df_stats_agg$mean_log10_neg_mean_squared_error),]
+poor_performance_cytokines <- df_stats_agg$cytokine[1:9]
 
 # df_stats factor levels
 df_stats$shuffle_plus_data_split <- factor(
@@ -192,10 +180,10 @@ options(repr.plot.width=width, repr.plot.height=height)
 
 # subset the df_stats to only include the cytokines of interest
 cytokines <- c("IL-1beta", "TFalpha", "CCL24", "IL-18", "Osteopontin(OP)", "CCL13", "IL-2", "IL-6", "CCL4")
-df_stats <- df_stats[df_stats$cytokine %in% cytokines,]
+df_stats1 <- df_stats[df_stats$cytokine %in% cytokines,]
 
-cytokine_predictions <- (
-    ggplot(df_stats, aes(x=actual_value, y=predicted_value, col=shuffle_plus_data_split))
+cytokine_predictions1 <- (
+    ggplot(df_stats1, aes(x=actual_value, y=predicted_value, col=shuffle_plus_data_split))
     + geom_point()
     + theme_bw()
     + geom_smooth(method=lm, se=TRUE, formula = y ~ x, alpha=0.5, size=0.5)
@@ -220,87 +208,39 @@ cytokine_predictions <- (
     + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
     )
-cytokine_predictions
+cytokine_predictions1
 
 
-# calculate the se of each metric for each shuffle, data_split, and cytokine in R
-agg_df <- aggregate(log10_neg_mean_absolute_error ~ shuffle + data_split + cytokine + treatment, df_stats, function(x) c(mean = mean(x), sd = sd(x)))
-# split the log10_neg_mean_absolute_error column into two columns
-agg_df <- cbind(agg_df, agg_df$log10_neg_mean_absolute_error)
-# remove the log10_neg_mean_absolute_error column by name
-agg_df <- agg_df[, !names(agg_df) %in% c('log10_neg_mean_absolute_error')]
-# rename the columns
-colnames(agg_df) <- c("shuffle", "data_split", "cytokine", "treatment","mean_log10_neg_mean_absolute_error", "sd_log10_neg_mean_absolute_error")
+df_stats2 <- df_stats[df_stats$cytokine %in% poor_performance_cytokines,]
 
+cytokine_predictions2 <- (
+    ggplot(df_stats2, aes(x=actual_value, y=predicted_value, col=shuffle_plus_data_split))
+    + geom_point()
+    + theme_bw()
+    + geom_smooth(method=lm, se=TRUE, formula = y ~ x, alpha=0.5, size=0.5)
+    + labs(x="Actual", y="Predicted ")
+    + ylim(0, 1)
+    + xlim(0, 1)
+    + figure_theme
+    + labs(color="Model", hjust=0.5)
+    # change legend title
+    # make kegend key background white
+    + guides(color = guide_legend(override.aes = list(fill = NA)),
+        linetype = guide_legend(override.aes = list(fill = NA)))
+    + theme(legend.key = element_rect(fill = "white"))
+    + facet_wrap(.~cytokine, ncol=3)
+        # x tick marks
+    + scale_x_continuous(breaks = seq(0, 1, 0.5))
+    # legend dot size
+    + guides(colour = guide_legend(override.aes = list(size=5), ncol = 2))
+    # legend position
+    + theme(legend.position = "bottom", legend.box = "horizontal")
+    # rotate x axis text
+    + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-# select cytokines of interest
-agg_df <- agg_df[agg_df$cytokine %in% c(
-    "IL-1beta",
-    "TFalpha",
-    "CCL24",
-    "IL-18",
-    "Osteopontin(OP)",
-    "CCL13",
-    "IL-2",
-    "IL-6",
-    "CCL4"
-    ),]
+    )
+cytokine_predictions2
 
-
-# per cytokine graph
-file_path <- file.path(paste0(enet_cp_fig_path))
-# if path does not exist, create it
-if (!file.exists(dirname(file_path))) {
-    print(dirname(file_path))
-    dir.create(dirname(file_path), recursive = TRUE)
-}
-file=file.path(paste0(file_path,"individual_cytokine_prediction_metric.png"))
-
-cytokine <- "IL-1beta"
-# set output path
-# set plot size
-width <- 15
-height <- 15
-options(repr.plot.width=width, repr.plot.height=height)
-# plot a bar plot of the mean log10_neg_mean_absolute_error for each data split, cytokine, and shuffle with error bars
-# tmp_df <- agg_df[agg_df$cytokine == cytokine,]\
-tmp_df <- agg_df
-# get the mean and sd of the log10_neg_mean_absolute_error for each data split, cytokine, and shuffle
-tmp_df <- aggregate(mean_log10_neg_mean_absolute_error ~ shuffle + data_split + cytokine, tmp_df, function(x) c(mean = mean(x), sd = sd(x)))
-# split the log10_neg_mean_absolute_error column into two columns
-tmp_df <- cbind(tmp_df, tmp_df$mean_log10_neg_mean_absolute_error)
-# drop the log10_neg_mean_absolute_error column by name
-tmp_df <- tmp_df[, !names(tmp_df) %in% c('mean_log10_neg_mean_absolute_error')]
-# replace final with not shuffled
-tmp_df$shuffle <- gsub("final", "Not shuffled", tmp_df$shuffle)
-# replace shuffled_baseline with shuffled
-tmp_df$shuffle <- gsub("shuffled_baseline", "Shuffled", tmp_df$shuffle)
-# replace test_data with test
-tmp_df$data_split <- gsub("test_data", "Test", tmp_df$data_split)
-# replace train_data with train
-tmp_df$data_split <- gsub("train_data", "Train", tmp_df$data_split)
-# make test and train factors
-tmp_df$data_split <- factor(tmp_df$data_split, levels = c("Train", "Test"))
-
-
-model_performance_il1b <- (
-    ggplot(tmp_df, aes(x=data_split, y=mean, fill=shuffle))
-        + geom_bar(stat="identity", position=position_dodge())
-        + geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.2, position=position_dodge(.9))
-        + labs(x="Data Split", y="log10_neg_mean_absolute_error")
-        + theme_bw()
-        + figure_theme
-        + ylab("-log10(MSE)")
-        + scale_fill_manual(values=c("blue", "orange"))
-        # change legend title
-        + labs(fill = "Model Shuffle")
-        # center the plot title
-        + theme(plot.title = element_text(size = 20, hjust = 0.5))
-        + facet_wrap(.~cytokine)
-        # legend position
-        + theme(legend.position = "bottom", legend.box = "horizontal")
-)
-model_performance_il1b
 
 # path set
 input_file_path <- file.path(paste0("../../../6.bulk_Morphology_Elastic_Network/3.model_coefficients/results/regression/",cell_type))
@@ -361,7 +301,7 @@ plot_coeffs <- function(df, cytokine, shuffle){
         + facet_wrap("~compartment", ncol = 3)
         + theme_bw()
         + scale_fill_continuous(
-            name="Top Abs. val\ntreatment\nlinear model\ncoefficient",
+            name=paste0(cytokine,"\ntop Abs. val\ntreatment\nlinear model\ncoefficient"),
             low = "darkblue",
             high = "yellow",
         )
@@ -374,7 +314,6 @@ plot_coeffs <- function(df, cytokine, shuffle){
         )
         # rotate x axis labels
         + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-        + ggtitle(paste0("Top Abs. val treatment ElasticNet coefficients for \n",cytokine,shuffle," model"))
         + theme(plot.title = element_text(hjust = 0.5))
         )
         return(coef_gg)
@@ -651,6 +590,8 @@ filename <- filename[[1]]
 op_final <- read.csv(filename, header = TRUE, sep = ",", stringsAsFactors = FALSE)
 
 op_final <- process_subset_data(op_final)
+# replace (OPN with "" in the cytokine column)
+# op_final$secreted_proteins <- stringr::str_replace_all(op_final$secreted_proteins, "Osteopontin (OPN) [NSU]", "Osteopontin [NSU]")
 head(op_final)
 # factor levels
 # rename the factor levels
@@ -693,6 +634,14 @@ op_final$feature_group <- factor(
 )
 
 op_final_plot <- plot_coeffs(op_final, cytokine, shuffle)
+op_final_plot <- (
+    op_final_plot
+    + scale_fill_continuous(
+            name=paste0("Osteopontin","\ntop Abs. val\ntreatment\nlinear model\ncoefficient"),
+            low = "darkblue",
+            high = "yellow",
+        )
+)
 # output
 coef_gg_file <- file.path(paste0(output_path,"/","top_abs_val_coefficients_enet.pdf"))
 # set plot size
@@ -1187,6 +1136,9 @@ features <- features %>%
 features$channel_learned <- factor(features$channel_learned, levels = c("Nuclei", "Mito", "ER", "Gasdermin", "AGP", "Other"))
 
 
+legend_title_size <- 28
+legend_text_size <- 24
+
 r2_df <- df %>% select(r2)
 r2_df <- unique(r2_df)
 column_ha <- HeatmapAnnotation(
@@ -1195,12 +1147,11 @@ column_ha <- HeatmapAnnotation(
     annotation_name_side = "left",
     # rotate the title
     annotation_legend_param = list(
-        title_gp = gpar(fontsize = 16, angle = 0),
-        labels_gp = gpar(fontsize = 16, angle = 0),
+        labels_gp = gpar(fontsize = legend_text_size, angle = 0),
         title_position = "topcenter",
-        title_gp = gpar(fontsize = 16, angle = 0)
+        title_gp = gpar(fontsize = legend_title_size, hjust = 0.5, fontface = "bold")
     ),
-    annotation_name_gp = gpar(fontsize = 16),
+    annotation_name_gp = gpar(fontsize = 20),
     # set color bar for r2 continuous value with brewer palette
     col = list(R2 = colorRamp2(c(0, 0.5, 1), spectral_palette <- c(
         # white
@@ -1222,15 +1173,13 @@ mat <- as.matrix(mat)
 # na to 0
 mat[is.na(mat)] <- 0
 
-
-# # # drop rows that have 0 in 50% of the columns
-# # mat <- mat[rowSums(mat != 0) > ncol(mat)/2, ]
+legend_height <- unit(4, "cm")
+legend_width <- unit(10, "cm")
 mat <- as.data.frame(mat)
 # mat <- as.matrix(mat)
 # get the feature names from the index
 mat$feature_names <- row.names(mat)
 # get the feature names for color bar visualization
-# features <- mat %>% select(feature_names)
 # drop duplicate features from the feature names
 features <- unique(features)
 features <- features %>%
@@ -1267,11 +1216,15 @@ row_ha_1 <- rowAnnotation(
     # change the legend titles
     annotation_legend_param = list(
         title_position = "topcenter",
-        title_gp = gpar(fontsize = 16, angle = 0),
-        labels_gp = gpar(fontsize = 16,
-        title = gpar(fontsize = 16, hjust = 0.5))),
+        title_gp = gpar(fontsize = legend_title_size, hjust = 0.5,fontface = "bold"),
+        labels_gp = gpar(fontsize = legend_text_size),
+        legend_width = unit(legend_width, "cm"),
+        legend_height = unit(legend_height, "cm"),
+        direction = "horizontal"
+
+        ),
     annotation_name_side = "bottom",
-    annotation_name_gp = gpar(fontsize = 16),
+    annotation_name_gp = gpar(fontsize = 20),
     # color
     col = list(
         Object = c(
@@ -1279,8 +1232,6 @@ row_ha_1 <- rowAnnotation(
             "Cytoplasm" = brewer.pal(12, "Accent")[6],
             "Nuclei" = "#0000AB"
         )
-
-
     )
 )
 
@@ -1288,45 +1239,50 @@ row_ha_2 <- rowAnnotation(
         FeatureType = features$feature_group,
        annotation_legend_param = list(
         title_position = "topcenter",
-        title_gp = gpar(fontsize = 16, angle = 0),
-        labels_gp = gpar(fontsize = 16,
-        title = gpar(fontsize = 16))),
+        title_gp = gpar(fontsize = legend_title_size, hjust = 0.5,fontface = "bold"),
+        labels_gp = gpar(fontsize = legend_text_size),
+        legend_width = unit(legend_width, "cm"),
+        legend_height = unit(legend_height, "cm"),
+        direction = "horizontal"
+        ),
     annotation_name_side = "bottom",
-    annotation_name_gp = gpar(fontsize = 16),
+    annotation_name_gp = gpar(fontsize = 20),
     col = list(
-            Feature_Type = c(
+            FeatureType = c(
             "AreaShape" = brewer.pal(8, "Dark2")[1],
             "Correlation" = brewer.pal(8, "Dark2")[2],
             "Granularity" = brewer.pal(8, "Dark2")[3],
-            "Neighbors" =  brewer.pal(8, "Dark2")[4],
-            "RadialDistribution" = brewer.pal(8, "Dark2")[5],
-            "Texture" = brewer.pal(8, "Dark2")[6]
-        )
+            "Intensity" = brewer.pal(8, "Dark2")[4],
+            "Location" = brewer.pal(8, "Dark2")[5],
+            "Neighbors" =  brewer.pal(8, "Dark2")[6],
+            "RadialDistribution" = brewer.pal(8, "Dark2")[7],
+            "Texture" = brewer.pal(8, "Dark2")[8]
+
     )
+)
 )
 
 row_ha_3 <- rowAnnotation(
     Channel = features$channel_learned,
     annotation_legend_param = list(
         title_position = "topcenter",
-        title_gp = gpar(fontsize = 16, angle = 0),
-        labels_gp = gpar(fontsize = 16,
-        title = gpar(fontsize = 16, hjust = 0.5),
+        title_gp = gpar(fontsize = legend_title_size, hjust = 0.5,fontface = "bold"),
+        labels_gp = gpar(fontsize = legend_text_size),
         # make annotation bar text bigger
-        legend = gpar(fontsize = 16),
+        legend = gpar(fontsize = legend_text_size),
         annotation_name = gpar(fontsize = 16),
-        legend_height = unit(20, "cm"),
-        legend_width = unit(1, "cm"),
         # make legend taller
-        legend_height = unit(10, "cm"),
-        legend_width = unit(1, "cm"),
-        legend_key = gpar(fontsize = 16)
+        legend_width = unit(legend_width, "cm"),
+        legend_height = unit(legend_height, "cm"),
+        legend_key = gpar(fontsize = legend_text_size),
+        direction = "horizontal"
 
-            )
-        ),
+
+            ),
+
     annotation_name_side = "bottom",
     # make font size bigger
-    annotation_name_gp = gpar(fontsize = 16),
+    annotation_name_gp = gpar(fontsize = 20),
     col = list(
     Channel = c(
             "Nuclei" = "#0000AB",
@@ -1343,7 +1299,7 @@ mat <- mat %>% select(-feature_names)
 mat <- as.matrix(mat)
 
 # plot size
-width <- 30
+width <- 23
 height <- 23
 options(repr.plot.width=width, repr.plot.height=height)
 # change margins
@@ -1351,11 +1307,11 @@ options(repr.plot.width=width, repr.plot.height=height)
 
 model_heatmap <- (
         Heatmap(
-        mat,
+        (mat),
         cluster_rows = TRUE,    # Cluster rows
         cluster_columns = TRUE, # Cluster columns
         show_row_names = FALSE,  # Show row names
-        show_column_names = TRUE, # Show column names
+        show_column_names = FALSE, # Show column names
         column_names_gp = gpar(fontsize = 16), # Column name label formatting
         row_names_gp = gpar(fontsize = 14),    # Row name label formatting
         right_annotation = c(row_ha_1,row_ha_2,row_ha_3),
@@ -1364,10 +1320,10 @@ model_heatmap <- (
         heatmap_legend_param = list(
                 title = "Coef",
                 title_position = "topcenter",
-                title_gp = gpar(fontsize = 16),
-                labels_gp = gpar(fontsize = 16)
-                # legend_height = unit(3, "cm"),
-                # legend_width = unit(1, "cm")
+                title_gp = gpar(fontsize = legend_title_size, hjust = 0.5,fontface = "bold"),
+                labels_gp = gpar(fontsize = legend_text_size),
+                legend_height = unit(legend_height, "cm"),
+                legend_width = unit(legend_width, "cm")
                 ),
         column_dend_height = unit(4, "cm"),
         row_dend_width = unit(4, "cm"),
@@ -1375,83 +1331,89 @@ model_heatmap <- (
 
         )
 )
-model_heatmap
+model_heatmap <- draw(
 
-# dont use above line cannot get back into grob object
-
-# ggplotify model_heatmap
-pt1 <- as.ggplot(model_heatmap)
-
-# fix the position of the plot
-pt1 <- as.ggplot(pt1)
-
-ggsave(
-    filename = paste0(figure_path, "pt1.png"),
-    plot = pt1,
-    width = width,
-    height = height,
-    units = "in",
-    dpi = 600
+    model_heatmap,
+    merge_legend = TRUE,
+    padding = unit(c(1, 1, 1, 1), "cm")
 )
-pt1
 
-width <- 5
-height <- 5
-options(repr.plot.width=width, repr.plot.height=height)
-variance_r2_plot_global <- as.ggplot(variance_r2_plot_global)
-global_prediction_trend_scatter <- as.ggplot(global_prediction_trend_scatter)
-global_prediction_trend_line <- as.ggplot(global_prediction_trend_line)
-cytokine_predictions <- as.ggplot(cytokine_predictions)
-model_performance_il1b <- as.ggplot(model_performance_il1b)
-il1beta_final_plot <- as.ggplot(il1beta_final_plot)
-tnfa_final_plot <- as.ggplot(tnfa_final_plot)
-CCL24_final_plot <- as.ggplot(CCL24_final_plot)
-il18beta_final_plot <- as.ggplot(il18beta_final_plot)
-op_final_plot <- as.ggplot(op_final_plot)
-CCL13_final_plot <- as.ggplot(CCL13_final_plot)
-il2_final_plot <- as.ggplot(il2_final_plot)
-il6_final_plot <- as.ggplot(il6_final_plot)
-CCL4_final_plot <- as.ggplot(CCL4_final_plot)
+# save the plot
+png(filename = paste0(figure_path, "pt1.png"), width = width, height = height, units = "in", res = 600)
+model_heatmap
+dev.off()
 
 width <- 17
 height <- 23
 options(repr.plot.width=width, repr.plot.height=height)
 
 design2 <- "
-            AABBCC
+            AAACCC
             DDDEEE
             "
 
 pt2 <- (
-    variance_r2_plot_global
-    + global_prediction_trend_scatter
-    + global_prediction_trend_line
-
-    + cytokine_predictions
-    + model_performance_il1b
+    wrap_elements(full = variance_r2_plot_global)
+    + wrap_elements(full = global_prediction_trend_scatter)
+    + cytokine_predictions1
+    + cytokine_predictions2
     + plot_layout(design = design2)
     + plot_annotation(tag_levels = "A")  & theme(plot.tag = element_text(size = 20))
 
 )
 pt2
 
+# functions to remove x or y axis labels
+remove_x <- function(plot){
+    plot <- plot + theme(axis.title.x = element_blank(),  # Remove x-axis label
+        axis.text.x = element_blank())   # Remove x-axis text
+    return(plot)
+}
+
+# remove y axis labels
+remove_y <- function(plot){
+    plot <- plot + theme(axis.title.y = element_blank(),  # Remove y-axis label
+        axis.text.y = element_blank())   # Remove y-axis text
+    return(plot)
+}
+
+# remove the x axis information from certain plots
+il1beta_final_plot <- remove_x(il1beta_final_plot)
+tnfa_final_plot <- remove_x(tnfa_final_plot)
+CCL24_final_plot <- remove_x(CCL24_final_plot)
+il18beta_final_plot <- remove_x(il18beta_final_plot)
+op_final_plot <- remove_x(op_final_plot)
+CCL13_final_plot <- remove_x(CCL13_final_plot)
+
+# remove the y axis information from certain plots
+tnfa_final_plot <- remove_y(tnfa_final_plot)
+CCL24_final_plot <- remove_y(CCL24_final_plot)
+op_final_plot <- remove_y(op_final_plot)
+CCL13_final_plot <- remove_y(CCL13_final_plot)
+il6_final_plot <- remove_y(il6_final_plot)
+CCL4_final_plot <- remove_y(CCL4_final_plot)
+
+
+height <- 15
+width <- 17
+options(repr.plot.width=width, repr.plot.height=height)
+
 pt3 <- (
-    wrap_elements(full = il1beta_final_plot)
-    + wrap_elements(full = tnfa_final_plot)
+    il1beta_final_plot
+    + tnfa_final_plot
 
-    + wrap_elements(full = CCL24_final_plot)
+    + CCL24_final_plot
 
-    + wrap_elements(full = il18beta_final_plot)
+    +il18beta_final_plot
 
 
-    + wrap_elements(full = op_final_plot)
-    + wrap_elements(full = CCL13_final_plot)
-    + wrap_elements(full = il2_final_plot)
-    + wrap_elements(full = il6_final_plot)
-    + wrap_elements(full = CCL4_final_plot)
+    + op_final_plot
+    + CCL13_final_plot
+    + il2_final_plot
+    + il6_final_plot
+    + CCL4_final_plot
     + plot_annotation(tag_levels = "A")  & theme(plot.tag = element_text(size = 20))
 )
-
 
 ggsave(
     filename = paste0(figure_path, "pt2.png"),

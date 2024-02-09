@@ -194,7 +194,7 @@ layout <- c(
 )
 # set plot size
 width <- 17
-height <- 23
+height <- 17
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
 fig5_probabilities <- (
     ridge_plot_control

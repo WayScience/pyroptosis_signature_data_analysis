@@ -1079,7 +1079,7 @@ fig4 <- (
     scatter_compare
     + r2_boxplot
     + IL1beta_a_v_p
-    + il1beta_final_plot
+    + wrap_elements(full = il1beta_final_plot)
     + wrap_elements(full = model_heatmap)
     # + model_heatmap
     + plot_layout(design = layout, widths = c(0.9, 1))

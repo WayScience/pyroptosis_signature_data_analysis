@@ -34,6 +34,8 @@ logging.basicConfig(
 
 
 ## Helper function
+
+
 def shuffle_meta_labels(
     dataset: pd.DataFrame, target_col: str, seed: Optional[int] = 0
 ) -> pd.DataFrame:
@@ -145,19 +147,21 @@ df = pd.read_parquet(single_cell_data)
 
 
 # out paths
-map_out_dir = pathlib.Path("../data/processed/mAP_scores")
+map_out_dir = pathlib.Path("../data/processed/mAP_scores/morphology/")
 map_out_dir.mkdir(exist_ok=True, parents=True)
 
 # regular data output
 # saving to csv
-regular_feat_map_path = pathlib.Path(map_out_dir / "mAP_scores_regular_class.csv")
+regular_feat_map_path = pathlib.Path(map_out_dir / "mAP_scores_regular_treatment.csv")
 
 # shuffled data output
-shuffled_feat_map_path = pathlib.Path(map_out_dir / "mAP_scores_shuffled_class.csv")
+shuffled_feat_map_path = pathlib.Path(
+    map_out_dir / "mAP_scores_shuffled_class_treatment.csv"
+)
 
 # shuffled feature space output
 shuffled_feat_space_map_path = pathlib.Path(
-    map_out_dir / "mAP_scores_shuffled_feature_space_class.csv"
+    map_out_dir / "mAP_scores_shuffled_feature_space_treatment.csv"
 )
 
 
@@ -194,7 +198,35 @@ df["Metadata_labels"] = df.apply(
 )
 # # drop apoptosis, pyroptosis, and healthy columns
 df.drop(columns=["Apoptosis", "Pyroptosis", "Control"], inplace=True)
-df.drop(columns=["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"], inplace=True)
+
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
+# replace values in the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].replace(
+    "Flagellin_0.100_ug_per_ml_DMSO_0.000_%", "Flagellin_0.100_ug_per_ml_DMSO_0.025_%"
+)
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].replace("Flagellin_1.000_0_DMSO_0.025_%", "Flagellin_1.000_ug_per_ml_DMSO_0.025_%")
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].replace(
+    "Flagellin_1.000_ug_per_ml_DMSO_0.000_%", "Flagellin_1.000_ug_per_ml_DMSO_0.025_%"
+)
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].replace("media_ctr_0.0_0_Media_0_0", "Media")
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].replace("media_ctr_0.0_0_Media_ctr_0.0_0", "Media")
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].replace(
+    "Flagellin_1.000_0_Disulfiram_1.000_uM",
+    "Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM",
+)
+len(df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique())
 
 
 # In[7]:
@@ -207,27 +239,42 @@ map_out_dir.mkdir(parents=True, exist_ok=True)
 
 # ### mAP Pipeline Parameters
 
+# The null size needs to be determined for the mAP pipeline. This is the size of the null class that is used to determine the mAP score.
+
 # In[8]:
 
 
+tmp = (
+    df.groupby(["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"])
+    .count()
+    .reset_index()[["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]]
+)
+# get the counts of each oneb_Metadata_Treatment_Dose_Inhibitor_Dose
+min_count = tmp["Metadata_Well"].min()
+print(min_count)
+
+
+# In[9]:
+
+
 pos_sameby = [
-    "Metadata_labels",
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
 ]
 pos_diffby = ["Metadata_Well"]
 
 neg_sameby = []
-neg_diffby = ["Metadata_labels"]
+neg_diffby = ["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
-null_size = 1
+null_size = min_count
 batch_size = 1
 
 # number of resampling
-n_resamples = 11
+n_resamples = 10
 
 
 # ### mAP analysis for non-shuffled data
 
-# In[9]:
+# In[10]:
 
 
 # This will generated 100 values [0..100] as seed values
@@ -265,11 +312,12 @@ except ZeroDivisionError as e:
     logging.warning(f"{e} captured on phenotye:. Skipping")
 # concatenating all datasets
 result.to_csv(regular_feat_map_path, index=False)
+result.head()
 
 
 # ### mAP analysis for shuffled data (Phenotype)
 
-# In[10]:
+# In[11]:
 
 
 logging.info("Running mAP pipeline with shuffled phenotype labeled data")
@@ -282,7 +330,9 @@ seed = 0
 # This will generated 100 values [0..100] as seed values
 # splitting metadata labeled shuffled data
 logging.info("splitting shuffled data set into metadata and raw feature values")
-df = shuffle_meta_labels(dataset=df, target_col="Metadata_labels", seed=seed)
+df = shuffle_meta_labels(
+    dataset=df, target_col="oneb_Metadata_Treatment_Dose_Inhibitor_Dose", seed=seed
+)
 (
     df_meta,
     df_feats,
@@ -321,7 +371,7 @@ shuffled_result
 
 # ### mAP analysis for shuffled data (Feature space)
 
-# In[11]:
+# In[12]:
 
 
 seed = 0

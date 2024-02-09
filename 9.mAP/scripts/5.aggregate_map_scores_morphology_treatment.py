@@ -20,11 +20,9 @@ warnings.filterwarnings("ignore")
 
 # Directories
 processed_data_dir = pathlib.Path("../data/processed/")
-figures_dir = pathlib.Path("../figures/").resolve()
-figures_dir.mkdir(exist_ok=True)
-sc_ap_scores_dir = (processed_data_dir / "mAP_scores").resolve()
-agg_sc_ap_scores_dir = (processed_data_dir / "aggregate_mAPs").resolve()
-agg_sc_ap_scores_dir.mkdir(exist_ok=True)
+sc_ap_scores_dir = (processed_data_dir / "mAP_scores/morphology").resolve()
+agg_sc_ap_scores_dir = (processed_data_dir / "aggregate_mAPs/morphology").resolve()
+agg_sc_ap_scores_dir.mkdir(parents=True, exist_ok=True)
 
 
 # ## Preparing the dataset
@@ -35,7 +33,7 @@ agg_sc_ap_scores_dir.mkdir(exist_ok=True)
 
 all_files = list(sc_ap_scores_dir.glob("*.csv"))
 # get the files that contain the string class
-class_files = [file for file in all_files if "class" in file.stem]
+class_files = [file for file in all_files if "treatment" in file.stem]
 mAPs = []
 for file in class_files:
     df = pd.read_csv(file)
@@ -49,11 +47,6 @@ mAPs.head()
 # In[4]:
 
 
-# Separating data frames: One by feature type (CP, DP, CP_DP)
-# Additional split is performed using a shuffling approach:
-# - feature_shuffled: feature values within the feature space are shuffled.
-# - phenotype_shuffled: phenotypic labels are shuffled.
-
 # grabbing all cp features (regular, feature shuffled and labeled shuffled)
 reg_sc_mAPs = mAPs.loc[mAPs["shuffled"] == "non-shuffled"]
 shuffled_feat_sc_mAPs = mAPs.loc[mAPs["shuffled"] == "features_shuffled"]
@@ -61,6 +54,12 @@ shuffled_pheno_sc_mAPs = mAPs.loc[mAPs["shuffled"] == "phenotype_shuffled"]
 
 
 # In[5]:
+
+
+reg_sc_mAPs
+
+
+# In[6]:
 
 
 # Generating sampling_error df
@@ -74,7 +73,9 @@ merged_sc_ap_scores_df = pd.concat(
 )
 
 # grouping dataframe based on phenotype levels, feature and feature types
-df_group = merged_sc_ap_scores_df.groupby(by=["Metadata_labels", "shuffled"])
+df_group = merged_sc_ap_scores_df.groupby(
+    by=["oneb_Metadata_Treatment_Dose_Inhibitor_Dose", "shuffled"]
+)
 
 # calculating sampling error
 sampling_error_df = []
@@ -86,7 +87,7 @@ for name, df in df_group:
     sampling_error = np.std(avg_percision) / np.sqrt(len(avg_percision))
 
     sampling_error_df.append([pheno, shuffled_type, sampling_error])
-cols = ["Metadata_labels", "shuffled", "sampling_error"]
+cols = ["oneb_Metadata_Treatment_Dose_Inhibitor_Dose", "shuffled", "sampling_error"]
 sampling_error_df = pd.DataFrame(sampling_error_df, columns=cols)
 
 # updating name:
@@ -97,11 +98,13 @@ sampling_error_df.loc[
 sampling_error_df.head()
 
 
-# In[6]:
+# In[7]:
 
 
-# aggregate single cells scores with cell UUID
-data = tuple(merged_sc_ap_scores_df.groupby(by=["Metadata_labels"]))
+# aggregate single cells scores with cell labels
+data = tuple(
+    merged_sc_ap_scores_df.groupby(by=["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"])
+)
 columns = merged_sc_ap_scores_df.columns
 agg_sc_ap_scores_df = []
 for cell_id, df1 in data:
@@ -118,24 +121,30 @@ for cell_id, df1 in data:
 # saving into the results repo
 agg_sc_ap_scores_df = pd.DataFrame(data=agg_sc_ap_scores_df, columns=columns)
 agg_sc_ap_scores_df.to_csv(
-    sc_ap_scores_dir / "merged_sc_agg_ap_scores_class.csv", index=False
+    sc_ap_scores_dir / "merged_sc_agg_ap_scores_treatment.csv", index=False
 )
 agg_sc_ap_scores_df.head()
 
 
-# In[7]:
+# In[8]:
 
 
 # Generating aggregate scores with a threshold p-value of 0.05
 mAP_dfs = []
-for name, df in tuple(agg_sc_ap_scores_df.groupby(by=["Metadata_labels", "shuffled"])):
-    agg_df = aggregate(df, sameby=["Metadata_labels"], threshold=0.05)
-    agg_df["Metadata_labels"] = name[0]
+for name, df in tuple(
+    agg_sc_ap_scores_df.groupby(
+        by=["oneb_Metadata_Treatment_Dose_Inhibitor_Dose", "shuffled"]
+    )
+):
+    agg_df = aggregate(
+        df, sameby=["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"], threshold=0.05
+    )
+    agg_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = name[0]
     agg_df["shuffled"] = name[1]
     mAP_dfs.append(agg_df)
 
 mAP_dfs = pd.concat(mAP_dfs)
-mAP_dfs.to_csv(agg_sc_ap_scores_dir / "mAP_scores_class.csv", index=False)
+mAP_dfs.to_csv(agg_sc_ap_scores_dir / "mAP_scores_treatment.csv", index=False)
 mAP_dfs.head()
 
 
@@ -145,7 +154,7 @@ mAP_dfs.head()
 # ### Forming bar plots with CP Features
 #
 
-# In[8]:
+# In[9]:
 
 
 # selecting dataset to plot
@@ -164,26 +173,26 @@ df = (
     )
     .reset_index()
     .drop("index", axis=1)
-)[["Metadata_labels", "mean_average_precision", "shuffled"]]
+)[["oneb_Metadata_Treatment_Dose_Inhibitor_Dose", "mean_average_precision", "shuffled"]]
 
 
 fig = px.bar(
     df,
-    x="Metadata_labels",
+    x="oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
     y="mean_average_precision",
     color="shuffled",
     barmode="group",
     title="Mean Average Precision for each Cell Death Phenotype",
     labels={
         "mean_average_precision": "Mean Average Precision",
-        "Metadata_labels": "Cell Death Phenotypes",
+        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose": "Cell Death Phenotypes",
     },
 )
 
 
 # ## Generating box plots of single cell ap scores
 
-# In[9]:
+# In[10]:
 
 
 all_df = pd.concat(
@@ -195,22 +204,22 @@ all_df = pd.concat(
 )
 
 
-# In[10]:
+# In[11]:
 
 
 # Assuming all_cp_df, all_dp_df, and all_cp_dp_df are your DataFrames
-categories_order = all_df["Metadata_labels"].unique()
+categories_order = all_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
 
 # Create individual figures with the same category order
 fig1 = px.box(
     all_df,
-    x="Metadata_labels",
+    x="oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
     y="average_precision",
     color="shuffled",
     title="Single Well Average Percision Scores",
-    category_orders={"Metadata_labels": categories_order},
+    category_orders={"oneb_Metadata_Treatment_Dose_Inhibitor_Dose": categories_order},
     labels={
         "average_precision": "Average Precision Scores",
-        "Metadata_labels": "Cell Death Class",
+        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose": "Treatment",
     },
 )

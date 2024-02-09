@@ -204,7 +204,13 @@ cytokine_scatter_plot <- (
         'Thapsigargin 1.0 uM, Apoptosis',
         'Thapsigargin 10.0 uM, Apoptosis'
         ),
-        values = shapes_2)
+        values = c(
+            16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16
+        )
+
+        )
 )
 
 cytokine_scatter_plot
@@ -298,8 +304,13 @@ cytokine_scatter_plot1 <- (
         'Thapsigargin 1.0 uM, Apoptosis',
         'Thapsigargin 10.0 uM, Apoptosis'
         ),
-        values = shapes_2)
+        values = c(
+            16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16
+        )
 
+    )
 
 )
 
@@ -969,8 +980,7 @@ row_ha <- rowAnnotation(
         direction = "vertical",
         padding = unit(c(10, 10, 5, 5), "mm"),
         grid_width = unit(10, "mm"),
-        grid_height = unit(10, "mm"),
-        title = gpar(fontsize = 20)
+        grid_height = unit(10, "mm")
         ),
     annotation_name_side = "bottom",
     annotation_name_gp = gpar(fontsize = 18),
@@ -1290,7 +1300,11 @@ umap_plot_selected_treatments <- (
         'Thapsigargin 1.0 uM, Apoptosis',
         'Thapsigargin 10.0 uM, Apoptosis'
         ),
-        values = shapes_2)
+        values  = c(
+            16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16
+        ))
         # add box around points
         + geom_rect(
             aes(

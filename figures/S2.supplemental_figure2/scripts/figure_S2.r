@@ -197,7 +197,7 @@ colors <- c(
 viridis_pal_custom <- viridis::viridis_pal(option = 'C')(20)
 
 width <- 17
-height <- 15
+height <- 6
 options(repr.plot.width = width, repr.plot.height = height)
 inducer_well_dose_platemap <- file.path(paste0(platemap_path,"inducer_well_dose_platemap.png"))
 # if path does not exist, create it
@@ -286,7 +286,7 @@ platemap_df$inhibitor_conc <- factor(
 
 
 width <- 17
-height <- 15
+height <- 6
 options(repr.plot.width = width, repr.plot.height = height)
 inhibtor_well_dose_platemap <- file.path(paste0(platemap_path,"inhibtor_well_dose_platemap.png"))
 # if path does not exist, create it
@@ -345,13 +345,13 @@ platemap_plot_inhibitor_dose <- (
     + theme(plot.title = element_text(size = 28, hjust = 0.5))
 
 )
-ggsave(inhibtor_well_dose_platemap, platemap_plot_inhibitor_dose, width=8, height=8, dpi=500)
+ggsave(inhibtor_well_dose_platemap, platemap_plot_inhibitor_dose, width=width, height=height, dpi=600)
 platemap_plot_inhibitor_dose
 
 
 # pathwork for platemaps
 width <- 17
-height <- 17
+height <- 16
 options(repr.plot.width = width, repr.plot.height = height)
 
 layout <- c(

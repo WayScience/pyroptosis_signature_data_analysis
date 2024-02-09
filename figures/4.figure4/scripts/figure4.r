@@ -966,7 +966,7 @@ height <- 17
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
 fig4 <- (
     r2_boxplot
-    + IL1beta_a_v_p
+    + wrap_elements(full = IL1beta_a_v_p)
 
     + wrap_elements(full = variance_r2_plot_local)
     + il1beta_final_plot

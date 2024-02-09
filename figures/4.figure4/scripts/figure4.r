@@ -15,6 +15,7 @@ suppressPackageStartupMessages(suppressWarnings(library(circlize)))
 suppressPackageStartupMessages(suppressWarnings(library(reshape2))) # data manipulation
 suppressPackageStartupMessages(suppressWarnings(library(stringr))) # string manipulation
 suppressPackageStartupMessages(suppressWarnings(library(purrr))) # data manipulation
+suppressPackageStartupMessages(suppressWarnings(library(png))) # image manipulation
 source("../../utils/figure_themes.r")
 
 # set the cell type
@@ -895,7 +896,7 @@ mat <- as.matrix(mat)
 
 
 # plot size
-width <- 40
+width <- 17
 height <- 10
 options(repr.plot.width=width, repr.plot.height=height)
 
@@ -915,7 +916,8 @@ model_heatmap <- (
                 title = "Coefficient",
                 title_position = "topcenter",
                 title_gp = gpar(fontsize = 16, angle = 0, fontface = "bold", hjust = 0.5),
-                labels_gp = gpar(fontsize = 16)
+                labels_gp = gpar(fontsize = 16),
+                legend_height = unit(6.6, "cm")
                 ),
         column_dend_height = unit(4, "cm"),
         row_dend_width = unit(4, "cm"),
@@ -923,15 +925,22 @@ model_heatmap <- (
 
         )
 )
+model_heatmap <- draw(
+        model_heatmap,
+        # group the legends
+        merge_legend = TRUE
+)
 
 # dont use above line cannot get back into grob object
 
-# ggplotify model_heatmap
-model_heatmap <- as.ggplot(model_heatmap)
+png(filename = paste0(figure_path, "filtered_features.png"), width = width, height = height, units = "in", res = 600)
+model_heatmap
+dev.off()
 
-# # save the figure
-ggsave(file = paste0(figure_path, "filtered_features.png"), plot = model_heatmap, width = width, height = height, units = "in", dpi = 600)
-# fix the position of the plot
+# read in the heatmap
+model_heatmap <- readPNG(paste0(figure_path, "filtered_features.png"))
+# make a ggplot object
+model_heatmap <- rasterGrob(model_heatmap, interpolate=TRUE)
 model_heatmap
 
 # preprocess the figures
@@ -942,6 +951,107 @@ IL1beta_a_v_p <- IL1beta_a_v_p + theme(plot.title = element_blank())
 model_performance_il1b <- model_performance_il1b + theme(plot.title = element_blank())
 il1beta_final_plot <- il1beta_final_plot + theme(plot.title = element_blank())
 # model_heatmap <- model_heatmap + theme(plot.title = element_blank())
+
+# set path to the data morphology
+# class
+df_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","morphology","mAP_scores_class.csv")
+
+# set path to the secretome data
+# class
+df_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","secretome","mAP_scores_class.csv")
+
+# read in the data
+df_morphology_class <- read.csv(df_morphology_class_path)
+
+df_secretome_class <- read.csv(df_secretome_class_path)
+
+
+
+# declare the shuffled column as a factor
+# replace the values in the shuffled column
+# declare the shuffled column as a factor
+# replace the values in the shuffled column
+df_morphology_class$shuffled <- gsub("features_shuffled", "Shuffled features", df_morphology_class$shuffled)
+df_morphology_class$shuffled <- gsub("phenotype_shuffled", "Shuffled phenotypes", df_morphology_class$shuffled)
+df_morphology_class$shuffled <- gsub("non-shuffled", "Non-shuffled", df_morphology_class$shuffled)
+df_morphology_class$shuffled <- factor(df_morphology_class$shuffled, levels = c( "Non-shuffled", "Shuffled features", "Shuffled phenotypes"))
+df_morphology_class$Metadata_labels <- factor(df_morphology_class$Metadata_labels, levels = c("Control", "Apoptosis", "Pyroptosis"))
+
+df_secretome_class$shuffled <- gsub("features_shuffled", "Shuffled features", df_secretome_class$shuffled)
+df_secretome_class$shuffled <- gsub("phenotype_shuffled", "Shuffled phenotypes", df_secretome_class$shuffled)
+df_secretome_class$shuffled <- gsub("non-shuffled", "Non-shuffled", df_secretome_class$shuffled)
+df_secretome_class$shuffled <- factor(df_secretome_class$shuffled, levels = c( "Non-shuffled", "Shuffled features", "Shuffled phenotypes"))
+df_secretome_class$Metadata_labels <- factor(df_secretome_class$Metadata_labels, levels = c("Control", "Apoptosis", "Pyroptosis"))
+
+# chang ethe mean average precision column name
+df_morphology_class <- df_morphology_class %>%
+  rename(
+    morphology_mAP = mean_average_precision
+  )
+# select columns to keep
+df_morphology_class <- df_morphology_class %>%
+  select(
+    Metadata_labels,
+    shuffled,
+    morphology_mAP
+  )
+
+df_secretome_class <- df_secretome_class %>%
+  rename(
+    secretome_mAP = mean_average_precision
+  )
+# select columns to keep
+df_secretome_class <- df_secretome_class %>%
+  select(
+    Metadata_labels,
+    shuffled,
+    secretome_mAP
+  )
+
+
+# change the column names
+
+merged_agg <- merge(df_morphology_class, df_secretome_class, by = c("Metadata_labels", "shuffled"))
+
+width <- 8
+height <- 6
+options(repr.plot.width=width, repr.plot.height=height)
+# plot the data
+scatter_compare <- (
+    ggplot(merged_agg, aes(x=morphology_mAP, y=secretome_mAP, col = Metadata_labels, shape=shuffled))
+    + geom_point(size=3, alpha=1)
+    + labs(x="Morphology mAP score", y="Secretome mAP score")
+    + theme_bw()
+    + ylim(0,1)
+    + xlim(0,1)
+    # Change the legend title
+    # change the legend shape
+    + scale_shape_manual(
+        name="Shuffle type",
+        labels=c(
+            "Non-shuffled",
+            "Shuffled features",
+            "Shuffled phenotypes"
+        ),
+        values=c(19, 17, 15)
+    )
+    + scale_color_manual(
+        name="Class",
+        labels=c(
+            "Control",
+            "Apoptosis",
+            "Pyroptosis"
+        ),
+        values=c(
+            brewer.pal(3, "Dark2")[2],
+            brewer.pal(3, "Dark2")[1],
+            brewer.pal(3, "Dark2")[3]
+    )
+)
+    + figure_theme
+
+)
+scatter_compare
 
 
 # pathwork layout of each plot ( letters correspond to the order in which the plots are defined below in the pathwork figure)
@@ -956,6 +1066,7 @@ design <-   "AB
 layout <- c(
     area(t=1, b=1, l=1, r=1), # A
     area(t=1, b=1, l=2, r=2), # B
+    # area(t=1, b=1, l=3, r=3), # B
     area(t=2, b=2, l=1, r=1), # C
     area(t=2, b=2, l=2, r=2), # D
     area(t=3, b=5, l=0, r=2) # E
@@ -965,10 +1076,9 @@ width <- 17
 height <- 17
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
 fig4 <- (
-    r2_boxplot
-    + wrap_elements(full = IL1beta_a_v_p)
-
-    + wrap_elements(full = variance_r2_plot_local)
+    scatter_compare
+    + r2_boxplot
+    + IL1beta_a_v_p
     + il1beta_final_plot
     + wrap_elements(full = model_heatmap)
     # + model_heatmap

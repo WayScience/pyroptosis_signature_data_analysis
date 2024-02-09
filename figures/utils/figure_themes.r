@@ -33,6 +33,7 @@ figure_theme_wide <- (
 
 
 
+
 suppressPackageStartupMessages(library(ggplot2))
 
 palette <- c('#D81B60',
@@ -63,6 +64,7 @@ figure_theme_wide <- (
         strip.text = element_text(size = 16),
     )
 )
+
 
 # 9 colors
 # col 1 - 3 hues
@@ -142,6 +144,7 @@ shapes <- c(
     'Z-VAD-FMK 30.0 uM' = shape_list[7],
     'Z-VAD-FMK 100.0 uM' = shape_list[8]
 )
+
 
 
 # fig 2 colors

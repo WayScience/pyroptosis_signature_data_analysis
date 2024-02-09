@@ -388,7 +388,7 @@ plot_coeffs <- function(df, cytokine, shuffle){
         + scale_fill_continuous(
             name="Top Abs. val\ntreatment\nlinear model\ncoefficient",
             low = "darkblue",
-            high = "orange",
+            high = "yellow",
         )
         + xlab("Channel")
         + ylab("Feature")
@@ -824,8 +824,8 @@ row_ha_1 <- rowAnnotation(
     # color
     col = list(
         Object = c(
-            "Cells" = brewer.pal(12, "Accent")[7],
-            "Cytoplasm" = brewer.pal(12, "Accent")[6],
+            "Cells" = brewer.pal(8, "Accent")[7],
+            "Cytoplasm" = brewer.pal(8, "Accent")[6],
             "Nuclei" = "#0000AB"
             )
     )
@@ -843,12 +843,12 @@ row_ha_2 <- rowAnnotation(
     annotation_name_gp = gpar(fontsize = 16),
     col = list(
             Feature_Type = c(
-            "AreaShape" = brewer.pal(8, "Dark2")[1],
-            "Correlation" = brewer.pal(8, "Dark2")[2],
-            "Granularity" = brewer.pal(8, "Dark2")[3],
-            "Neighbors" =  brewer.pal(8, "Dark2")[4],
-            "RadialDistribution" = brewer.pal(8, "Dark2")[5],
-            "Texture" = brewer.pal(8, "Dark2")[6]
+            "AreaShape" = brewer.pal(6, "Dark2")[1],
+            "Correlation" = brewer.pal(6, "Dark2")[2],
+            "Granularity" = brewer.pal(6, "Dark2")[3],
+            "Neighbors" =  brewer.pal(6, "Dark2")[4],
+            "RadialDistribution" = brewer.pal(6, "Dark2")[5],
+            "Texture" = brewer.pal(6, "Dark2")[6]
         )
     )
 )
@@ -930,7 +930,7 @@ model_heatmap <- (
 model_heatmap <- as.ggplot(model_heatmap)
 
 # # save the figure
-ggsave(file = paste0(figure_path, "filtered_features.png"), plot = model_heatmap, width = width, height = height, units = "in", dpi = 500)
+ggsave(file = paste0(figure_path, "filtered_features.png"), plot = model_heatmap, width = width, height = height, units = "in", dpi = 600)
 # fix the position of the plot
 model_heatmap
 
@@ -965,9 +965,9 @@ width <- 17
 height <- 17
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
 fig4 <- (
+    r2_boxplot
+    + wrap_elements(full = IL1beta_a_v_p)
 
-    IL1beta_a_v_p
-    + r2_boxplot
     + wrap_elements(full = variance_r2_plot_local)
     + il1beta_final_plot
     + wrap_elements(full = model_heatmap)
@@ -976,9 +976,9 @@ fig4 <- (
     # make bottom plot not align
     + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
 )
+
+png(file = paste0(figure_path, "figure4.png"), width = width, height = height, units = "in", res = 600)
 fig4
+dev.off()
 
-# save the figure
-ggsave(file = paste0(figure_path, "figure4.png"), plot = fig4, width = width, height = height, units = "in", dpi = 600)
-
-
+fig4

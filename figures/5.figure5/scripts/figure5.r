@@ -182,8 +182,8 @@ confusion_matrix_plot <- (
     + geom_text(aes(label = Count), size = 5)
     + scale_color_gradient("Recall", low = "white", high = "red",limits = c(0, 1))
     + theme_bw()
-    + ylab("Predicted Class")
-    + xlab("True Class")
+    + ylab("True Class")
+    + xlab("Predicted Class")
     + figure_theme
     # change the legend title position
     + guides(

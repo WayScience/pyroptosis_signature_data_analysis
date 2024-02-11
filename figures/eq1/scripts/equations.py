@@ -65,20 +65,28 @@ Math(latex_string)
 
 # Equations 4-6
 
-# $\tilde{A} = corr(Y,U)$
-# $\tilde{B} = corr(X,V)$
-# $u_k = \frac{1}{P} \sum^P_{p=1} \tilde a^2_{pk}$
-# $v_k = \frac{1}{Q} \sum^Q_{q=1} \tilde b^2_{qk}$
-# $RI_u = u_k * r^2_k$
-# $RI_v = v_k * r^2_k$
+# ## $\tilde{A} = corr(Y,U) \; Where; \; Y=Dataset1 \; U$
+# ## $\tilde{B} = corr(X,V)$
+# ## $u_k = \frac{1}{P} \sum^P_{p=1} \tilde a^2_{pk}$
+# ## $v_k = \frac{1}{Q} \sum^Q_{q=1} \tilde b^2_{qk}$
+# ## $RI_u = u_k * r^2_k$
+# ## $RI_v = v_k * r^2_k$
 
 # In[5]:
 
 
 latex_string = r"""
-$$\textbf{eq.4:}\; \tilde{A} = corr(Y,U) ;\; \;  \textbf{eq.5:}\; \tilde{B} = corr(X,V)$$
-$$\textbf{eq.6:}\; u_k = \frac{1}{P} \sum^P_{p=1} \tilde a^2_{pk} ;\; \; \textbf{eq.7:}\;v_k = \frac{1}{Q} \sum^Q_{q=1} \tilde b^2_{qk}$$
-$$\textbf{eq.8:}\; RI_u = u_k * r^2_k ;\; \; \textbf{eq.9:}\;RI_v = v_k * r^2_k$$
+$$\textbf{eq.4:}\; X = \mathbb{R}^{N, P}; \; \textbf{eq.5:}\; Y = \mathbb{R}^{N, Q};\;\textbf{eq.6:}\; k = min(P, Q, N)$$
+$$\textbf{eq.7:}\; \tilde{A} = corr(X,U); \; Where: \; U=Canonical \; variates \; for \; dataset\;X$$
+$$\textbf{eq.8:}\; \tilde{B} = corr(Y,V); \; Where: \; V=Canonical \; variates \; for \; dataset\;Y$$
+
+
+$$Where: \; \tilde{A} \; is \; \mathbb{R}^{P, k}; \; \tilde{B} \;is \;\mathbb{R}^{Q, k}$$
+$$\textbf{eq.9:}\;u_k = \frac{1}{P} \sum^P_{p=1} \tilde a^2_{pk} \; \textbf{eq.10:}\;v_k = \frac{1}{Q} \sum^Q_{q=1} \tilde b^2_{qk}$$
+
+$$Where: \; r^2_k \; is \; the \; Coefficient \; of \; determination \; for \; the \; k^{th} \; canonical \; variate$$
+
+$$\textbf{eq.11:}\; RI_u = u_k * r^2_k; \;\; \textbf{eq.12:}\;\; RI_v = v_k * r^2_k$$
 """
 
 latex2png(latex_string, "../figures/equations4_9.png", fontsize=300)

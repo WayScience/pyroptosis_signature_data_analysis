@@ -1082,7 +1082,7 @@ fig4 <- (
     + wrap_elements(full = il1beta_final_plot)
     + wrap_elements(full = model_heatmap)
     # + model_heatmap
-    + plot_layout(design = layout, widths = c(0.9, 1))
+    + plot_layout(design = layout, widths = c(0.6, 1))
     # make bottom plot not align
     + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
 )

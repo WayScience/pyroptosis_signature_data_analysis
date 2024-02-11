@@ -32,7 +32,6 @@ figure_theme_wide <- (
 )
 
 
-
 suppressPackageStartupMessages(library(ggplot2))
 
 palette <- c('#D81B60',

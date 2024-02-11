@@ -289,31 +289,63 @@ pyroptosis_df = sc_cell_df[sc_cell_df["group"] == "Pyroptosis"]
 # In[15]:
 
 
+# define empty dictionary
+final_dict = {}
+
+
+# In[16]:
+
+
+control_df.head()
+# sort the control df by Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1
+control_df = control_df.sort_values(
+    by="Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1", ascending=False
+)
+apoptosis_df = apoptosis_df.sort_values(
+    by="Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1", ascending=False
+)
+pyroptosis_df = pyroptosis_df.sort_values(
+    by="Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1", ascending=False
+)
+
+control_df.reset_index(drop=True, inplace=True)
+apoptosis_df.reset_index(drop=True, inplace=True)
+pyroptosis_df.reset_index(drop=True, inplace=True)
+
+print(
+    control_df["Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1"][
+        control_df.last_valid_index()
+    ],
+    apoptosis_df["Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1"][
+        apoptosis_df.last_valid_index()
+    ],
+    pyroptosis_df["Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1"][0],
+)
+# get the last item in the control df
+
 dict_of_dfs = {}
 dict_of_dfs["control"] = control_df
 dict_of_dfs["apoptosis"] = apoptosis_df
 dict_of_dfs["pyroptosis"] = pyroptosis_df
 
 
-# In[16]:
-
-
-# define empty dictionary
-final_dict = {}
-
-
 # In[17]:
 
 
 for group in tqdm(dict_of_top_all):
+    print(group)
     for dataset in dict_of_dfs:
         feature = dict_of_top_all[group][0]
         key = f"{dataset}__{group}__{feature}"
         df = dict_of_dfs[dataset]
         df = df.sort_values(by=feature, ascending=False, inplace=False)
         df.reset_index(inplace=True, drop=True)
-        df = df.iloc[3, :]
-        print(df["Metadata_Well"], key)
+        # get the first and last 3 items in the df
+        first_3 = df.head(3)
+        last_3 = df.tail(3)
+        # add the first and last 3 items to the final dict
+        df = pd.concat([first_3, last_3], axis=0)
+        print(len(df))
         final_dict[key] = df
 
 
@@ -416,284 +448,293 @@ main_df = apoptosis_df.drop(apoptosis_df.index)
 # In[22]:
 
 
-for i in final_dict:
-    tmp_df = pd.DataFrame(final_dict[i]).T
-    image_id = tmp_df["Metadata_ImageNumber"].values[0]
-    fov_id = tmp_df["Metadata_Site"].values[0]
-    cell_id = tmp_df["Metadata_Cells_Number_Object_Number"].values[0]
-    well_id = tmp_df["Metadata_Well"].values[0]
-    row_id = well_id[0]
-    column_id = well_id[1:]
-    center_x = tmp_df["Metadata_Nuclei_Location_Center_X"].values[0]
-    center_y = tmp_df["Metadata_Nuclei_Location_Center_Y"].values[0]
-    # make each of the ids a string
-    fov_id = str(fov_id)
-    cell_id = str(cell_id)
-    well_id = str(well_id)
-    row_id = str(row_id)
-    column_id = str(column_id)
-    center_x = int(center_x)
-    center_y = int(center_y)
-    treatment = i.split("__")[0]
-    comparison = i.split("__")[1]
-    feature = i.split("__")[2]
-    print(well_id, treatment, comparison, feature)
-    # create a custom and contstant bounding box for the images
-    # this is made from the extracted center_x and center_y of the cell (nucleus)
-    min_x_box = center_x - radius
-    max_x_box = center_x + radius
-    min_y_box = center_y - radius
-    max_y_box = center_y + radius
-    print(group, fov_id, cell_id, row_id, column_id, center_x, center_y)
-    # create the image paths for each channel of the image
-    image_name1 = (
-        f"r{well_dict[row_id]}c{column_id}f{fov_dict[fov_id]}{image_basename_1}"
-    )
-    image_path1 = image_dir_path.joinpath(image_name1)
+for i in tqdm(final_dict):
+    for j in range(len(final_dict[i])):
+        tmp_df = pd.DataFrame(final_dict[i].iloc[j]).T
+        image_id = tmp_df["Metadata_ImageNumber"].values[0]
+        fov_id = tmp_df["Metadata_Site"].values[0]
+        cell_id = tmp_df["Metadata_Cells_Number_Object_Number"].values[0]
+        well_id = tmp_df["Metadata_Well"].values[0]
+        row_id = well_id[0]
+        column_id = well_id[1:]
+        center_x = tmp_df["Metadata_Nuclei_Location_Center_X"].values[0]
+        center_y = tmp_df["Metadata_Nuclei_Location_Center_Y"].values[0]
+        # make each of the ids a string
+        fov_id = str(fov_id)
+        cell_id = str(cell_id)
+        well_id = str(well_id)
+        row_id = str(row_id)
+        column_id = str(column_id)
+        center_x = int(center_x)
+        center_y = int(center_y)
+        treatment = i.split("__")[0]
+        comparison = i.split("__")[1]
+        feature = i.split("__")[2]
+        print(well_id, treatment, comparison, feature)
+        # create a custom and contstant bounding box for the images
+        # this is made from the extracted center_x and center_y of the cell (nucleus)
+        min_x_box = center_x - radius
+        max_x_box = center_x + radius
+        min_y_box = center_y - radius
+        max_y_box = center_y + radius
+        print(group, fov_id, cell_id, row_id, column_id, center_x, center_y)
+        # create the image paths for each channel of the image
+        image_name1 = (
+            f"r{well_dict[row_id]}c{column_id}f{fov_dict[fov_id]}{image_basename_1}"
+        )
+        image_path1 = image_dir_path.joinpath(image_name1)
 
-    image_name2 = (
-        f"r{well_dict[row_id]}c{column_id}f{fov_dict[fov_id]}{image_basename_2}"
-    )
-    image_path2 = image_dir_path.joinpath(image_name2)
+        image_name2 = (
+            f"r{well_dict[row_id]}c{column_id}f{fov_dict[fov_id]}{image_basename_2}"
+        )
+        image_path2 = image_dir_path.joinpath(image_name2)
 
-    image_name3 = (
-        f"r{well_dict[row_id]}c{column_id}f{fov_dict[fov_id]}{image_basename_3}"
-    )
-    image_path3 = image_dir_path.joinpath(image_name3)
+        image_name3 = (
+            f"r{well_dict[row_id]}c{column_id}f{fov_dict[fov_id]}{image_basename_3}"
+        )
+        image_path3 = image_dir_path.joinpath(image_name3)
 
-    image_name4 = (
-        f"r{well_dict[row_id]}c{column_id}f{fov_dict[fov_id]}{image_basename_4}"
-    )
-    image_path4 = image_dir_path.joinpath(image_name4)
+        image_name4 = (
+            f"r{well_dict[row_id]}c{column_id}f{fov_dict[fov_id]}{image_basename_4}"
+        )
+        image_path4 = image_dir_path.joinpath(image_name4)
 
-    image_name5 = (
-        f"r{well_dict[row_id]}c{column_id}f{fov_dict[fov_id]}{image_basename_5}"
-    )
-    image_path5 = image_dir_path.joinpath(image_name5)
+        image_name5 = (
+            f"r{well_dict[row_id]}c{column_id}f{fov_dict[fov_id]}{image_basename_5}"
+        )
+        image_path5 = image_dir_path.joinpath(image_name5)
 
-    # crop all 5 channels of the image
-    im1 = cv2.imread(image_path1.as_posix(), cv2.IMREAD_UNCHANGED)
+        # crop all 5 channels of the image
+        im1 = cv2.imread(image_path1.as_posix(), cv2.IMREAD_UNCHANGED)
 
-    im2 = cv2.imread(image_path2.as_posix(), cv2.IMREAD_UNCHANGED)
+        im2 = cv2.imread(image_path2.as_posix(), cv2.IMREAD_UNCHANGED)
 
-    im3 = cv2.imread(image_path3.as_posix(), cv2.IMREAD_UNCHANGED)
+        im3 = cv2.imread(image_path3.as_posix(), cv2.IMREAD_UNCHANGED)
 
-    im4 = cv2.imread(image_path4.as_posix(), cv2.IMREAD_UNCHANGED)
+        im4 = cv2.imread(image_path4.as_posix(), cv2.IMREAD_UNCHANGED)
 
-    im5 = cv2.imread(image_path5.as_posix(), cv2.IMREAD_UNCHANGED)
+        im5 = cv2.imread(image_path5.as_posix(), cv2.IMREAD_UNCHANGED)
 
-    # check for non-edge cells
+        # check for non-edge cells
 
-    ### channels ###
-    # * Channel 1: DAPI
-    # * Channel 2: ER
-    # * Channel 3: GasderminD
-    # * Channel 4: AGP (Actin, Golgi, and Plasma membrane)
-    # * Channel 5: Mitochondria
+        ### channels ###
+        # * Channel 1: DAPI
+        # * Channel 2: ER
+        # * Channel 3: GasderminD
+        # * Channel 4: AGP (Actin, Golgi, and Plasma membrane)
+        # * Channel 5: Mitochondria
 
-    # prior to merging adjust the brightness of the image to make it easier to see
-    # adjust the brightness of the image to make it easier to see
-    alpha = 0.05  # Contrast control (1.0-3.0)
-    beta = 0  # Brightness control (0-100)
-    im3 = cv2.convertScaleAbs(im3, alpha=alpha, beta=beta)
-    im4 = cv2.convertScaleAbs(im4, alpha=alpha, beta=beta)
-    # blue channel does not need to be adjusted as it is the DAPI channel and is already bright
+        # prior to merging adjust the brightness of the image to make it easier to see
+        # adjust the brightness of the image to make it easier to see
+        alpha = 0.05  # Contrast control (1.0-3.0)
+        beta = 0  # Brightness control (0-100)
+        im3 = cv2.convertScaleAbs(im3, alpha=alpha, beta=beta)
+        im4 = cv2.convertScaleAbs(im4, alpha=alpha, beta=beta)
+        # blue channel does not need to be adjusted as it is the DAPI channel and is already bright
 
-    blue_channel_stack = np.stack(im1, axis=-1)
-    yellow_channel_stack = np.stack(im2, axis=-1)
-    green_channel_stack = np.stack(im3, axis=-1)
-    red_channel_stack = np.stack(im4, axis=-1)
-    magenta_channel_stack = np.stack(im5, axis=-1)
+        blue_channel_stack = np.stack(im1, axis=-1)
+        yellow_channel_stack = np.stack(im2, axis=-1)
+        green_channel_stack = np.stack(im3, axis=-1)
+        red_channel_stack = np.stack(im4, axis=-1)
+        magenta_channel_stack = np.stack(im5, axis=-1)
 
-    channel1 = "im1"
-    channel2 = "im3"
-    channel3 = "im4"
-    channel4 = "im5"
-    channel5 = "im2"
+        channel1 = "im1"
+        channel2 = "im3"
+        channel3 = "im4"
+        channel4 = "im5"
+        channel5 = "im2"
 
-    # Scale the pixel values to fit within the 16-bit range (0-65535)
-    blue_channel = (blue_channel_stack / np.max(blue_channel_stack) * 65535).astype(
-        np.uint16
-    )
-    yellow_channel = (
-        yellow_channel_stack / np.max(yellow_channel_stack) * 65535
-    ).astype(np.uint16)
-    green_channel = (green_channel_stack / np.max(green_channel_stack) * 65535).astype(
-        np.uint16
-    )
-    red_channel = (red_channel_stack / np.max(red_channel_stack) * 65535).astype(
-        np.uint16
-    )
-    magenta_channel = (
-        magenta_channel_stack / np.max(magenta_channel_stack) * 65535
-    ).astype(np.uint16)
+        # Scale the pixel values to fit within the 16-bit range (0-65535)
+        blue_channel = (blue_channel_stack / np.max(blue_channel_stack) * 65535).astype(
+            np.uint16
+        )
+        yellow_channel = (
+            yellow_channel_stack / np.max(yellow_channel_stack) * 65535
+        ).astype(np.uint16)
+        green_channel = (
+            green_channel_stack / np.max(green_channel_stack) * 65535
+        ).astype(np.uint16)
+        red_channel = (red_channel_stack / np.max(red_channel_stack) * 65535).astype(
+            np.uint16
+        )
+        magenta_channel = (
+            magenta_channel_stack / np.max(magenta_channel_stack) * 65535
+        ).astype(np.uint16)
 
-    # merge the channels together
+        # merge the channels together
 
-    composite_image = cv2.merge((red_channel, green_channel, blue_channel)).astype(
-        np.uint16
-    )
+        composite_image = cv2.merge((red_channel, green_channel, blue_channel)).astype(
+            np.uint16
+        )
 
-    # The images end up being `wonky` so we need to do some post processing prior to saving
-    # where wonky means that the image is not oriented correctly
-    # the image is rotated 90 degrees clockwise and flipped vertically
+        # The images end up being `wonky` so we need to do some post processing prior to saving
+        # where wonky means that the image is not oriented correctly
+        # the image is rotated 90 degrees clockwise and flipped vertically
 
-    # this will ensure that the images are oriented correctly with X and Y centers prior to cropping
-    # transformations of the image to fix the orientation post pixel scaling
-    # flip the image vertically
-    composite_image = cv2.flip(composite_image, 0)
-    # rotate the image 90 degrees clockwise
-    composite_image = cv2.rotate(composite_image, cv2.ROTATE_90_CLOCKWISE)
+        # this will ensure that the images are oriented correctly with X and Y centers prior to cropping
+        # transformations of the image to fix the orientation post pixel scaling
+        # flip the image vertically
+        composite_image = cv2.flip(composite_image, 0)
+        # rotate the image 90 degrees clockwise
+        composite_image = cv2.rotate(composite_image, cv2.ROTATE_90_CLOCKWISE)
 
-    # flip the channels vertically
-    blue_channel = cv2.flip(blue_channel, 0)
-    yellow_channel = cv2.flip(yellow_channel, 0)
-    green_channel = cv2.flip(green_channel, 0)
-    red_channel = cv2.flip(red_channel, 0)
-    magenta_channel = cv2.flip(magenta_channel, 0)
-    # rotate the channels 90 degrees clockwise
-    blue_channel = cv2.rotate(blue_channel, cv2.ROTATE_90_CLOCKWISE)
-    yellow_channel = cv2.rotate(yellow_channel, cv2.ROTATE_90_CLOCKWISE)
-    green_channel = cv2.rotate(green_channel, cv2.ROTATE_90_CLOCKWISE)
-    red_channel = cv2.rotate(red_channel, cv2.ROTATE_90_CLOCKWISE)
-    magenta_channel = cv2.rotate(magenta_channel, cv2.ROTATE_90_CLOCKWISE)
+        # flip the channels vertically
+        blue_channel = cv2.flip(blue_channel, 0)
+        yellow_channel = cv2.flip(yellow_channel, 0)
+        green_channel = cv2.flip(green_channel, 0)
+        red_channel = cv2.flip(red_channel, 0)
+        magenta_channel = cv2.flip(magenta_channel, 0)
+        # rotate the channels 90 degrees clockwise
+        blue_channel = cv2.rotate(blue_channel, cv2.ROTATE_90_CLOCKWISE)
+        yellow_channel = cv2.rotate(yellow_channel, cv2.ROTATE_90_CLOCKWISE)
+        green_channel = cv2.rotate(green_channel, cv2.ROTATE_90_CLOCKWISE)
+        red_channel = cv2.rotate(red_channel, cv2.ROTATE_90_CLOCKWISE)
+        magenta_channel = cv2.rotate(magenta_channel, cv2.ROTATE_90_CLOCKWISE)
 
-    composite_image_crop = composite_image[min_y_box:max_y_box, min_x_box:max_x_box]
-    # crop the individual channels
-    blue_channel_crop = blue_channel[min_y_box:max_y_box, min_x_box:max_x_box]
-    yellow_channel_crop = yellow_channel[min_y_box:max_y_box, min_x_box:max_x_box]
-    green_channel_crop = green_channel[min_y_box:max_y_box, min_x_box:max_x_box]
-    red_channel_crop = red_channel[min_y_box:max_y_box, min_x_box:max_x_box]
-    magenta_channel_crop = magenta_channel[min_y_box:max_y_box, min_x_box:max_x_box]
+        composite_image_crop = composite_image[min_y_box:max_y_box, min_x_box:max_x_box]
+        # crop the individual channels
+        blue_channel_crop = blue_channel[min_y_box:max_y_box, min_x_box:max_x_box]
+        yellow_channel_crop = yellow_channel[min_y_box:max_y_box, min_x_box:max_x_box]
+        green_channel_crop = green_channel[min_y_box:max_y_box, min_x_box:max_x_box]
+        red_channel_crop = red_channel[min_y_box:max_y_box, min_x_box:max_x_box]
+        magenta_channel_crop = magenta_channel[min_y_box:max_y_box, min_x_box:max_x_box]
 
-    if composite_image_crop.shape[0] == 0 or composite_image_crop.shape[1] == 0:
-        print("Cell is on the edge of the image, skipping")
-        continue
+        if composite_image_crop.shape[0] == 0 or composite_image_crop.shape[1] == 0:
+            print("Cell is on the edge of the image, skipping")
+            continue
 
-        # image_out_dir_path updated to include the feature name
-    # write images
-    tf.imwrite(
-        pathlib.Path(
-            f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_cell.tiff"
-        ),
-        composite_image,
-        compression=None,
-    )
-    # write each channel as a tiff file
-    tf.imwrite(
-        pathlib.Path(f"{image_out_dir_path}/{i}_blue_channel_cell.tiff"),
-        blue_channel,
-        compression=None,
-    )
-    tf.imwrite(
-        pathlib.Path(f"{image_out_dir_path}/{i}_yellow_channel_cell.tiff"),
-        yellow_channel,
-        compression=None,
-    )
-    tf.imwrite(
-        pathlib.Path(f"{image_out_dir_path}/{i}_green_channel_cell.tiff"),
-        green_channel,
-        compression=None,
-    )
-    tf.imwrite(
-        pathlib.Path(f"{image_out_dir_path}/{i}_red_channel_cell.tiff"),
-        red_channel,
-        compression=None,
-    )
-    tf.imwrite(
-        pathlib.Path(f"{image_out_dir_path}/{i}_magenta_channel_cell.tiff"),
-        magenta_channel,
-        compression=None,
-    )
+            # image_out_dir_path updated to include the feature name
+        # write images
+        tf.imwrite(
+            pathlib.Path(
+                f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_cell_{j}.tiff"
+            ),
+            composite_image,
+            compression=None,
+        )
+        # write each channel as a tiff file
+        tf.imwrite(
+            pathlib.Path(f"{image_out_dir_path}/{i}_blue_channel_cell_{j}.tiff"),
+            blue_channel,
+            compression=None,
+        )
+        tf.imwrite(
+            pathlib.Path(f"{image_out_dir_path}/{i}_yellow_channel_cell_{j}.tiff"),
+            yellow_channel,
+            compression=None,
+        )
+        tf.imwrite(
+            pathlib.Path(f"{image_out_dir_path}/{i}_green_channel_cell_{j}.tiff"),
+            green_channel,
+            compression=None,
+        )
+        tf.imwrite(
+            pathlib.Path(f"{image_out_dir_path}/{i}_red_channel_cell_{j}.tiff"),
+            red_channel,
+            compression=None,
+        )
+        tf.imwrite(
+            pathlib.Path(f"{image_out_dir_path}/{i}_magenta_channel_cell_{j}.tiff"),
+            magenta_channel,
+            compression=None,
+        )
 
-    # write crops
-    tf.imwrite(
-        pathlib.Path(
-            f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell.tiff"
-        ),
-        composite_image_crop,
-        compression=None,
-    )
-    tf.imwrite(
-        pathlib.Path(f"{image_out_dir_path}/{i}_blue_channel_crop_cell.tiff"),
-        blue_channel_crop,
-        compression=None,
-    )
-    tf.imwrite(
-        pathlib.Path(f"{image_out_dir_path}/{i}_yellow_channel_crop_cell.tiff"),
-        yellow_channel_crop,
-        compression=None,
-    )
-    tf.imwrite(
-        pathlib.Path(f"{image_out_dir_path}/{i}_green_channel_crop_cell.tiff"),
-        green_channel_crop,
-        compression=None,
-    )
-    tf.imwrite(
-        pathlib.Path(f"{image_out_dir_path}/{i}_red_channel_crop_cell.tiff"),
-        red_channel_crop,
-        compression=None,
-    )
-    tf.imwrite(
-        pathlib.Path(f"{image_out_dir_path}/{i}_magenta_channel_crop_cell.tiff"),
-        magenta_channel_crop,
-        compression=None,
-    )
+        # write crops
+        tf.imwrite(
+            pathlib.Path(
+                f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell_{j}.tiff"
+            ),
+            composite_image_crop,
+            compression=None,
+        )
+        tf.imwrite(
+            pathlib.Path(f"{image_out_dir_path}/{i}_blue_channel_crop_cell_{j}.tiff"),
+            blue_channel_crop,
+            compression=None,
+        )
+        tf.imwrite(
+            pathlib.Path(f"{image_out_dir_path}/{i}_yellow_channel_crop_cell_{j}.tiff"),
+            yellow_channel_crop,
+            compression=None,
+        )
+        tf.imwrite(
+            pathlib.Path(f"{image_out_dir_path}/{i}_green_channel_crop_cell_{j}.tiff"),
+            green_channel_crop,
+            compression=None,
+        )
+        tf.imwrite(
+            pathlib.Path(f"{image_out_dir_path}/{i}_red_channel_crop_cell_{j}.tiff"),
+            red_channel_crop,
+            compression=None,
+        )
+        tf.imwrite(
+            pathlib.Path(
+                f"{image_out_dir_path}/{i}_magenta_channel_crop_cell_{j}.tiff"
+            ),
+            magenta_channel_crop,
+            compression=None,
+        )
 
-    composite_image = cv2.cvtColor(composite_image, cv2.COLOR_BGR2RGB)
-    composite_image_crop = cv2.cvtColor(composite_image_crop, cv2.COLOR_BGR2RGB)
+        composite_image = cv2.cvtColor(composite_image, cv2.COLOR_BGR2RGB)
+        composite_image_crop = cv2.cvtColor(composite_image_crop, cv2.COLOR_BGR2RGB)
 
-    # save the image as a png file
-    cv2.imwrite(
-        f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_cell.png",
-        composite_image,
-    )
-    cv2.imwrite(
-        f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell.png",
-        composite_image_crop,
-    )
+        # save the image as a png file
+        cv2.imwrite(
+            f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_cell_{j}.png",
+            composite_image,
+        )
+        cv2.imwrite(
+            f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell_{j}.png",
+            composite_image_crop,
+        )
 
-    tmp_df["comparison"] = comparison
-    tmp_df["treatment"] = treatment
-    tmp_df["feature"] = feature
+        tmp_df["comparison"] = comparison
+        tmp_df["treatment"] = treatment
+        tmp_df["feature"] = feature
 
-    # tmp_df = tmp_df.to_frame().T
-    tmp_df[
-        "image_compsite_path"
-    ] = f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_cell.png"
-    tmp_df[
-        "image_composite_crop_path"
-    ] = f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell.png"
+        # tmp_df = tmp_df.to_frame().T
+        tmp_df[
+            "image_compsite_path"
+        ] = f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_cell_{j}.png"
+        tmp_df[
+            "image_composite_crop_path"
+        ] = f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell_{j}.png"
 
-    tmp_df["image_DAPI_path"] = f"{image_out_dir_path}/{i}_blue_channel_cell.png"
-    tmp_df["image_ER_path"] = f"{image_out_dir_path}/{i}_yellow_channel_cell.png"
-    tmp_df["image_GasderminD_path"] = f"{image_out_dir_path}/{i}_green_channel_cell.png"
-    tmp_df["image_AGP_path"] = f"{image_out_dir_path}/{i}_red_channel_cell.png"
-    tmp_df[
-        "image_Mitochondria_path"
-    ] = f"{image_out_dir_path}/{i}_magenta_channel_cell.png"
+        tmp_df[
+            "image_DAPI_path"
+        ] = f"{image_out_dir_path}/{i}_blue_channel_cell_{j}.png"
+        tmp_df[
+            "image_ER_path"
+        ] = f"{image_out_dir_path}/{i}_yellow_channel_cell_{j}.png"
+        tmp_df[
+            "image_GasderminD_path"
+        ] = f"{image_out_dir_path}/{i}_green_channel_cell_{j}.png"
+        tmp_df["image_AGP_path"] = f"{image_out_dir_path}/{i}_red_channel_cell_{j}.png"
+        tmp_df[
+            "image_Mitochondria_path"
+        ] = f"{image_out_dir_path}/{i}_magenta_channel_cell_{j}.png"
 
-    # crops path
-    tmp_df[
-        "image_compsite_crop_path"
-    ] = f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell.png"
-    tmp_df[
-        "image_DAPI_crop_path"
-    ] = f"{image_out_dir_path}/{i}_blue_channel_crop_cell.png"
-    tmp_df[
-        "image_ER_crop_path"
-    ] = f"{image_out_dir_path}/{i}_yellow_channel_crop_cell.png"
-    tmp_df[
-        "image_GasderminD_crop_path"
-    ] = f"{image_out_dir_path}/{i}_green_channel_crop_cell.png"
-    tmp_df[
-        "image_AGP_crop_path"
-    ] = f"{image_out_dir_path}/{i}_red_channel_crop_cell.png"
-    tmp_df[
-        "image_Mitochondria_crop_path"
-    ] = f"{image_out_dir_path}/{i}_magenta_channel_crop_cell.png"
+        # crops path
+        tmp_df[
+            "image_compsite_crop_path"
+        ] = f"{composite_image_out_dir_path}/{i}_{channel1}_{channel2}_{channel3}_composite_image_crop_cell_{j}.png"
+        tmp_df[
+            "image_DAPI_crop_path"
+        ] = f"{image_out_dir_path}/{i}_blue_channel_crop_cell_{j}.png"
+        tmp_df[
+            "image_ER_crop_path"
+        ] = f"{image_out_dir_path}/{i}_yellow_channel_crop_cell_{j}.png"
+        tmp_df[
+            "image_GasderminD_crop_path"
+        ] = f"{image_out_dir_path}/{i}_green_channel_crop_cell_{j}.png"
+        tmp_df[
+            "image_AGP_crop_path"
+        ] = f"{image_out_dir_path}/{i}_red_channel_crop_cell_{j}.png"
+        tmp_df[
+            "image_Mitochondria_crop_path"
+        ] = f"{image_out_dir_path}/{i}_magenta_channel_crop_cell_{j}.png"
 
-    main_df = pd.concat([main_df, tmp_df], ignore_index=True)
+        main_df = pd.concat([main_df, tmp_df], ignore_index=True)
 
 
 # In[23]:

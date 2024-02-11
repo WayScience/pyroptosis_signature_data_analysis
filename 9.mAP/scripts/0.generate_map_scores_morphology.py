@@ -258,12 +258,9 @@ df_meta, df_feats = utils.split_data(df)
 df_feats = np.array(df_feats)
 
 # execute pipeline on negative control with training dataset with cp features
-# print(negative_training_cp_meta)
-# print(negative_training_cp_feats)
 try:
     # execute pipeline on negative control with trianing dataset with cp features
-    # print(negative_training_cp_meta)
-    # print(negative_training_cp_feats)
+
     logging.info(f"Running pipeline on CP features using phenotype")
     result = run_pipeline(
         meta=df_meta,

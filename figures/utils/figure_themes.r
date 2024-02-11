@@ -142,7 +142,6 @@ shapes <- c(
     'Z-VAD-FMK 100.0 uM' = shape_list[8]
 )
 
-
 # fig 2 colors
 colors_2 <- c(
     'DMSO 0.1%, Control' = colorgrad1[2],
@@ -211,3 +210,4 @@ colors_3 <- c(
     'Thapsigargin 1.0 uM' = colorgrad8[1],
     'Thapsigargin 10.0 uM' = colorgrad8[2]
 )
+

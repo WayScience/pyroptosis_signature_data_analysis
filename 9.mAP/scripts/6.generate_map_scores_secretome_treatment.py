@@ -152,14 +152,14 @@ map_out_dir.mkdir(exist_ok=True, parents=True)
 
 # regular data output
 # saving to csv
-regular_feat_map_path = pathlib.Path(map_out_dir / "mAP_scores_regular_class.csv")
+regular_feat_map_path = pathlib.Path(map_out_dir / "mAP_scores_regular_treatment.csv")
 
 # shuffled data output
-shuffled_feat_map_path = pathlib.Path(map_out_dir / "mAP_scores_shuffled_class.csv")
+shuffled_feat_map_path = pathlib.Path(map_out_dir / "mAP_scores_shuffled_treatment.csv")
 
 # shuffled feature space output
 shuffled_feat_space_map_path = pathlib.Path(
-    map_out_dir / "mAP_scores_shuffled_feature_space_class.csv"
+    map_out_dir / "mAP_scores_shuffled_feature_space_treatment.csv"
 )
 
 
@@ -196,7 +196,6 @@ df["Metadata_labels"] = df.apply(
 )
 # # drop apoptosis, pyroptosis, and healthy columns
 df.drop(columns=["Apoptosis", "Pyroptosis", "Control"], inplace=True)
-df.drop(columns=["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"], inplace=True)
 
 
 # In[7]:
@@ -205,6 +204,35 @@ df.drop(columns=["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"], inplace=True)
 # keep columns that contain Metdata and ['NSU']
 df = df.filter(regex="Metadata|NSU")
 df.head()
+
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
+# replace values in the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].replace(
+    "Flagellin_0.100_ug_per_ml_DMSO_0.000_%", "Flagellin_0.100_ug_per_ml_DMSO_0.025_%"
+)
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].replace("Flagellin_1.000_0_DMSO_0.025_%", "Flagellin_1.000_ug_per_ml_DMSO_0.025_%")
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].replace(
+    "Flagellin_1.000_ug_per_ml_DMSO_0.000_%", "Flagellin_1.000_ug_per_ml_DMSO_0.025_%"
+)
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].replace("media_ctr_0.0_0_Media_0_0", "Media")
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].replace("media_ctr_0.0_0_Media_ctr_0.0_0", "Media")
+df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].replace(
+    "Flagellin_1.000_0_Disulfiram_1.000_uM",
+    "Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM",
+)
+len(df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique())
 
 
 # In[8]:
@@ -223,29 +251,27 @@ map_out_dir.mkdir(parents=True, exist_ok=True)
 
 
 tmp = (
-    df.groupby(["Metadata_labels"])
+    df.groupby(["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"])
     .count()
-    .reset_index()[["Metadata_Well", "Metadata_labels"]]
+    .reset_index()[["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]]
 )
 # get the Pyroptosis number of Metadata_Well
-Pyroptosis_count = tmp[tmp["Metadata_labels"] == "Pyroptosis"]["Metadata_Well"].values[
-    0
-]
-Pyroptosis_count
+# get the counts of each oneb_Metadata_Treatment_Dose_Inhibitor_Dose
+min_count = tmp["Metadata_Well"].min()
 
 
 # In[10]:
 
 
 pos_sameby = [
-    "Metadata_labels",
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
 ]
 pos_diffby = ["Metadata_Well"]
 
 neg_sameby = []
-neg_diffby = ["Metadata_labels"]
+neg_diffby = ["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
-null_size = Pyroptosis_count
+null_size = min_count
 batch_size = 1
 
 # number of resampling
@@ -266,8 +292,10 @@ df_meta, df_feats = utils.split_data(df)
 df_feats = np.array(df_feats)
 
 # execute pipeline on negative control with training dataset with cp features
+
 try:
     # execute pipeline on negative control with trianing dataset with cp features
+
     logging.info(f"Running pipeline on CP features using phenotype")
     result = run_pipeline(
         meta=df_meta,
@@ -306,7 +334,9 @@ seed = 0
 # This will generated 100 values [0..100] as seed values
 # splitting metadata labeled shuffled data
 logging.info("splitting shuffled data set into metadata and raw feature values")
-df = shuffle_meta_labels(dataset=df, target_col="Metadata_labels", seed=seed)
+df = shuffle_meta_labels(
+    dataset=df, target_col="oneb_Metadata_Treatment_Dose_Inhibitor_Dose", seed=seed
+)
 (
     df_meta,
     df_feats,

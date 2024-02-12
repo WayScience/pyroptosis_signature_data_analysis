@@ -106,7 +106,7 @@ df1
 # replace values in the apoptotic column
 df1["apoptotic"] = df1["apoptotic"].replace({True: "apoptotic", False: " "})
 df1["pyroptotic"] = df1["pyroptotic"].replace({True: "pyroptotic", False: " "})
-df1["healthy"] = df1["healthy"].replace({True: "healthy", False: ":"})
+df1["healthy"] = df1["healthy"].replace({True: "healthy", False: ""})
 df1["all_significant"] = df1["all_significant"].replace(
     {True: "all_significant", False: " "}
 )
@@ -132,21 +132,45 @@ df1 = df1[
 # In[9]:
 
 
-df1
+# remove NSU from the cytokine names
+df1["cytokine"] = df1["cytokine"].str.replace(" \\[NSU\\]", "")
+df1.head()
 
 
 # In[10]:
 
 
-# print the table to a csv
-df1.to_csv("../results/consensus_cytokine_results_cleaned.csv", index=False)
+# list of inflammatory cytokines
+inflammatory_cytokines = ["IL-1 beta", "IL-6", "IL-18", "TNF-alpha"]
+
+
+# In[11]:
+
+
+df1["putative_function"] = "Not Annotated"
+df1.loc[
+    df1["cytokine"].isin(inflammatory_cytokines), "putative_function"
+] = "Inflammatory"
 
 
 # In[12]:
 
 
+# print the table to a csv
+df1.to_csv("../results/2023_Interstellar_Table_S1.csv", index=False)
+
+
+# In[13]:
+
+
 # csv to markdown
 df1.to_markdown("../results/consensus_cytokine_results_cleaned.md", index=False)
+
+
+# In[14]:
+
+
+df1.head()
 
 
 # In[ ]:

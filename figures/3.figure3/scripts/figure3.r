@@ -990,11 +990,11 @@ width <- 12
 height <- 10
 options(repr.plot.width=width, repr.plot.height=height)
 sub_figure3 <- (
-    a_h__a_p__h_p_common_plot
-    + a_p_unique_plot
+    h_p_unique_plot
     + a_h_unique_plot
+    + a_p_unique_plot
+    + a_h__a_p__h_p_common_plot
 
-    + h_p_unique_plot
     + plot_layout(design = layout)
     + plot_annotation(tag_levels = list(c( "D", "E", "F", "G"))) & theme(plot.tag = element_text(size = 20))
 

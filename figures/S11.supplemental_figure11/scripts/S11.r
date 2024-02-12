@@ -78,18 +78,14 @@ RI_plot_inset_shuffle <- (
     + theme_bw()
     + xlim(shuffle_min, shuffle_max)
     + ylim(shuffle_min, shuffle_max)
-    + xlab("Morphology Data Redundancy Index")
-    + ylab("nELISA Data Redundancy Index")
-    + geom_abline(intercept = 0, slope = 1)
-    + theme(
-        axis.title.x = element_text(size = 16),
-        axis.title.y = element_text(size = 16),
-        axis.text.x = element_text(size = 14),
-        axis.text.y = element_text(size = 14),
-        legend.text = element_text(size = 14),
-        legend.title = element_text(size = 14),
-        plot.title = element_text(size = 20, hjust = 0.5)
+    + ggtitle("Shuffled Data")
+    + xlab("Morphology RI")
+    + ylab("nELISA RI")
+    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
+    + figure_theme
 
+    + theme(
+        plot.title = element_text(size = 20, hjust = 0.5)
     )
 
 )
@@ -100,14 +96,10 @@ RI_plot_w_inset <- (
     + theme_bw()
     + xlim(-50, shuffle_max)
     + ylim(-600, shuffle_max)
-    + geom_abline(intercept = 0, slope = 1)
+    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
+    + figure_theme
+
     + theme(
-        axis.title.x = element_text(size = 16),
-        axis.title.y = element_text(size = 16),
-        axis.text.x = element_text(size = 14),
-        axis.text.y = element_text(size = 14),
-        legend.text = element_text(size = 14),
-        legend.title = element_text(size = 14),
         plot.title = element_text(size = 20, hjust = 0.5)
     )
 )
@@ -132,20 +124,15 @@ RI_plot_no_shuffle <- (
     + theme_bw()
     + xlim(no_shuffle_min, no_shuffle_max)
     + ylim(no_shuffle_min, no_shuffle_max)
-    + xlab("Morphology Data Redundancy Index")
-    + ylab("nELISA Data Redundancy Index")
-    + geom_abline(intercept = 0, slope = 1)
+    + ggtitle("Non-Shuffled Data")
+    + xlab("Morphology RI")
+    + ylab("nELISA RI")
+    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
     # change color of points to blue
     + scale_color_manual(values = c("blue"))
+    + figure_theme
     + theme(
-        axis.title.x = element_text(size = 16),
-        axis.title.y = element_text(size = 16),
-        axis.text.x = element_text(size = 16),
-        axis.text.y = element_text(size = 16),
-        legend.text = element_text(size = 16),
-        legend.title = element_text(size = 16),
         plot.title = element_text(size = 20, hjust = 0.5)
-
     )
 )
 
@@ -155,18 +142,13 @@ RI_plot_inset_no_shuffle <- (
     + theme_bw()
     + xlim(-0.1, no_shuffle_max)
     + ylim(-0.1, no_shuffle_max)
-    + xlab("Morphology Data Redundancy Index")
-    + ylab("nELISA Data Redundancy Index")
+    + xlab("Morphology RI")
+    + ylab("nELISA RI")
     + geom_abline(intercept = 0, slope = 1)
     # change color of points to blue
     + scale_color_manual(values = c("blue"))
+    + figure_theme
     + theme(
-        axis.title.x = element_text(size = 1),
-        axis.title.y = element_text(size = 16),
-        axis.text.x = element_text(size = 12, angle = 45, hjust = 1),
-        axis.text.y = element_text(size = 12),
-        legend.text = element_text(size = 16),
-        legend.title = element_text(size = 16),
         plot.title = element_text(size = 20, hjust = 0.5)
     )
 )
@@ -184,7 +166,12 @@ RI_plot_inset_no_shuffle <- RI_plot_inset_no_shuffle + theme(legend.position = "
 # )
 ggsave(redundancy_index_plot_not_shuffled_path, width = 8, height = 8)
 
-
+width <- 8
+height <- 4
+options(repr.plot.width = width, repr.plot.height = height)
+# combine the two plots
+RI_plots <- plot_grid(RI_plot_no_shuffle,  RI_plot_inset_shuffle,  label_size = 20, ncol = 2, align = "hv", rel_widths = c(1, 1))
+RI_plots
 
 # set path to the data morphology
 # class
@@ -444,16 +431,21 @@ head(merged_df)
 
 
 
+height <- 6
+width <- 6
+options(repr.plot.width=width, repr.plot.height=height)
 # aggregate the data by shuffled and oneb_Metadata_Treatment_Dose_Inhibitor_Dose and shuffled
 merged_agg <- aggregate(. ~ shuffled + oneb_Metadata_Treatment_Dose_Inhibitor_Dose + Metadata_labels, data=merged_df, FUN=mean)
 # scatter plot
 scatter_compare_treatment <- (
     ggplot(merged_agg, aes(x=morphology_ap, y=secretome_ap, col = Metadata_labels, shape=shuffled))
-    + geom_point(size=3, alpha=1)
-    + labs(x="Morphology mAP score", y="Secretome mAP score")
+    + geom_point(size=3, alpha=0.5)
+    + labs(x="Morphology mAP", y="Secretome mAP")
     + theme_bw()
     + ylim(0,1)
     + xlim(0,1)
+    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
+    + figure_theme
     # Change the legend title
     # change the legend shape
     + scale_shape_manual(
@@ -605,12 +597,14 @@ options(repr.plot.width=width, repr.plot.height=height)
 # scatter plot with fill being the treatment dose
 scatter_by_treatment <- (
     ggplot(merged_df, aes(x=morphology_ap, y=secretome_ap, col = inducer, shape=inhibitor))
-    + geom_point(size=3, alpha=1)
+    + geom_point(size=3, alpha=0.5)
     + labs(x="Morphology mAP score", y="Secretome mAP score")
     + theme_bw()
     + ylim(0,1)
     + xlim(0,1)
     + figure_theme
+    # add line
+    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
     # Change the legend title
     # change the legend shape
     + scale_color_manual(
@@ -672,6 +666,8 @@ scatter_by_treatment <- (
 
     + ggplot2::coord_fixed()
     + facet_grid(.~shuffled)
+    # set spacing between the facets
+    + theme(panel.spacing = unit(2, "lines"))
     # move legend to the bottom
     + theme(legend.position = "bottom")
     + guides(color = guide_legend(ncol = 2), shape = guide_legend(ncol = 1))
@@ -683,37 +679,46 @@ scatter_by_treatment <- (
 )
 scatter_by_treatment
 
+RI <- (
+    RI_plot_no_shuffle
+    + RI_plot_inset_shuffle
+)
+# as ggplot object
+library(ggplotify)
+RI <- as.ggplot(RI)
+
 width <- 17
-height <- 15
+height <- 14
 options(repr.plot.width = width, repr.plot.height = height)
 
 layout <- c(
-    area(t=1, b=2, l=1, r=1), # A
-    area(t=1, b=2, l=2, r=2), # B
-    area(t=1, b=2, l=3, r=3), # C
-    area(t=3, b=5, l=1, r=3) # D
+    area(t=1, b=2, l=1, r=2), # A
+    area(t=1, b=2, l=3, r=4), # B
+    area(t=1, b=2, l=5, r=6), # C
+    area(t=3, b=5, l=1, r=6) # D
 )
 
 
 figure <- (
-    # wrap_elements(full = RI_plot_inset_no_shuffle)
-    # + wrap_elements(full = RI_plot_inset_shuffle)
-    # + wrap_elements(full = scatter_compare_treatment)
     RI_plot_no_shuffle
     + RI_plot_inset_shuffle
     + scatter_compare_treatment
-    + wrap_elements(full = scatter_by_treatment)
-
-    + plot_layout(design = layout)
+    # move the plot left a bit
+    + wrap_elements(scatter_by_treatment)
+    + plot_layout(design = layout, heights = c(1, 0.5, 3))
     + plot_annotation(tag_levels = "A")  & theme(plot.tag = element_text(size = 20))
+
 )
-figure
-ggsave(file.path(paste0(
+png(filename = file.path(paste0(
     "../",
     "figures/",
     cell_type,
-    "final_figure.png")), width = width, height = height, dpi = 600
+    "final_figure.png")), width = width, height = height, units = "in", res = 600
 )
+figure
+dev.off()
+figure
+
 
 print(paste0(
     "non-shuffled: f(x) = ",

@@ -87,7 +87,7 @@ data_split_path = pathlib.Path(
     f"../../0.split_data/indexes/{cell_type}/regression/aggregated_sc_and_nomic_data_split_indexes.tsv"
 )
 data_path = pathlib.Path(
-    f"../../0.split_data/indexes/SHSY5Y/regression/channels/{data}"
+    f"../../0.split_data/indexes/{cell_type}/regression/channels/{data}"
 )
 
 # dataframe with only the labeled data we want (exclude certain phenotypic classes)

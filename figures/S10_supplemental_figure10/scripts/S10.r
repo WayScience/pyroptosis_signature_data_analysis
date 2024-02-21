@@ -97,7 +97,6 @@ f1_score_plot <- (
     + geom_bar(stat = "identity", position = "dodge")
 
     + ylim(0, 1)
-    + facet_wrap(label~group)
     + ylab("F1 score")
     + xlab("Data split")
     # change the legend title
@@ -283,7 +282,6 @@ pyroptosis_correct_treatment_holdout_image_1 <- get_image(pyroptosis_correct_tre
 # add the title
 pyroptosis_correct_treatment_holdout_image_1 <- (
     pyroptosis_correct_treatment_holdout_image_1
-    + ggtitle("Pyroptosis\n(Treatment holdout)")
     + theme(plot.title = element_text(size = 18, hjust = 0.5))
     + theme(plot.margin = margin(0, 0, 0, 0, "cm"))
 )
@@ -291,7 +289,6 @@ pyroptosis_correct_treatment_holdout_image_2 <- get_image(pyroptosis_correct_tre
 # add the title
 pyroptosis_correct_treatment_holdout_image_2 <- (
     pyroptosis_correct_treatment_holdout_image_2
-    + ggtitle("Pyroptosis\n(Treatment holdout)")
     + theme(plot.title = element_text(size = 18, hjust = 0.5))
     + theme(plot.margin = margin(0, 0, 0, 0, "cm"))
 )
@@ -300,7 +297,6 @@ pyroptosis_correct_treatment_holdout_image_3 <- get_image(pyroptosis_correct_tre
 # add the title
 pyroptosis_correct_treatment_holdout_image_3 <- (
     pyroptosis_correct_treatment_holdout_image_3
-    + ggtitle("Pyroptosis\n(Treatment holdout)")
     + theme(plot.title = element_text(size = 18, hjust = 0.5))
     + theme(plot.margin = margin(0, 0, 0, 0, "cm"))
 )
@@ -309,7 +305,6 @@ pyroptosis_correct_treatment_holdout_image_4 <- get_image(pyroptosis_correct_tre
 # add the title
 pyroptosis_correct_treatment_holdout_image_4 <- (
     pyroptosis_correct_treatment_holdout_image_4
-    + ggtitle("Pyroptosis\n(Treatment holdout)")
     + theme(plot.title = element_text(size = 18, hjust = 0.5))
     + theme(plot.margin = margin(0, 0, 0, 0, "cm"))
 )
@@ -318,7 +313,6 @@ pyroptosis_correct_treatment_holdout_image_5 <- get_image(pyroptosis_correct_tre
 # add the title
 pyroptosis_correct_treatment_holdout_image_5 <- (
     pyroptosis_correct_treatment_holdout_image_5
-    + ggtitle("Pyroptosis\n(Treatment holdout)")
     + theme(plot.title = element_text(size = 18, hjust = 0.5))
     + theme(plot.margin = margin(0, 0, 0, 0, "cm"))
 )
@@ -364,7 +358,7 @@ layout <- c(
 
 )
 # set plot size
-width <- 15
+width <- 17
 height <- 10
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
 figs10 <- (
@@ -380,4 +374,6 @@ figs10
 # save the plot
 
 ggsave("../figures/S10.png", figs10, width = width, height = height, dpi = 600)
+
+
 

@@ -165,6 +165,8 @@ ridge_plot_pyroptosis <- (
     # remove x axis label
     + theme(axis.title.x = element_blank())
     # add vertical line at 1
+    # change legend label order
+    + guides(fill = guide_legend(reverse = TRUE))
 )
 ridge_plot_pyroptosis
 
@@ -184,6 +186,7 @@ fig5_probabilities <- (
     + ridge_plot_apoptosis
     + ridge_plot_pyroptosis
     + plot_layout(design = layout)
+    + plot_annotation(tag_levels = "A") &  theme(plot.tag = element_text(size = 20))
 )
 fig5_probabilities
 

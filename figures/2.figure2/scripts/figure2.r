@@ -12,6 +12,7 @@ suppressPackageStartupMessages(suppressWarnings(library(ggplotify)))
 suppressPackageStartupMessages(suppressWarnings(library(arrow)))
 suppressPackageStartupMessages(suppressWarnings(library(scales)))
 suppressPackageStartupMessages(suppressWarnings(library(circlize)))
+suppressPackageStartupMessages(suppressWarnings(library(RcppTOML)))
 
 # insall ggmagnify from hughjonesd's universe
 install.packages("ggmagnify", repos = c("https://hughjonesd.r-universe.dev",
@@ -123,6 +124,8 @@ cytokine_values$group_treatment <- factor(
 )
 
 
+head(cytokine_values,2)
+
 # set plot size
 width = 15
 height = 10
@@ -141,8 +144,8 @@ cytokine_scatter_plot <- (
     )
     + geom_point(size = 5, alpha = 0.7)
     + theme_bw()
-    + xlab("IL-1 beta Abundance")
-    + ylab("TNF alpha Abundance")
+    + xlab("IL-1 beta abundance")
+    + ylab("TNF alpha abundance")
     + xlim(-0.1, 1)
     + ylim(-0.1, 1)
     # rename legend title
@@ -154,7 +157,6 @@ cytokine_scatter_plot <- (
         legend.title = element_text(size = 20, hjust = 0.5))
 )
 
-cytokine_scatter_plot
 
 
 # set plot size
@@ -182,26 +184,7 @@ cytokine_scatter_plot <- (
         'Thapsigargin 1.0 uM, Apoptosis',
         'Thapsigargin 10.0 uM, Apoptosis'
         ),
-        values = c(
-        '#66c2a5',
-        '#3288bd',
-        '#f46d43',
-        '#5e4fa2',
-        "#058ED9",
-        "#848FA2",
-        "#2D3142",
-        "#FFC857",
-        '#66c2a5',
-        '#3288bd',
-        '#abdda4',
-        '#fdae61',
-        # dark grey
-        '#666666',
-        # green
-        '#66c2a5',
-        '#f46d43',
-        '#d53e4f'
-        ))
+        values = colors_2)
     + scale_shape_manual(
         name = "Treatment",
         labels = c(
@@ -222,22 +205,12 @@ cytokine_scatter_plot <- (
         'Thapsigargin 10.0 uM, Apoptosis'
         ),
         values = c(
-        18,
-        18,
-        16,
-        16,
-        16,
-        16,
-        16,
-        16,
-        16,
-        16,
-        16,
-        18,
-        18,
-        17,
-        17
-        ))
+            16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16
+        )
+
+        )
 )
 
 cytokine_scatter_plot
@@ -260,7 +233,13 @@ cytokine_scatter_plot <- (
     + geom_vline(xintercept = 0.5, linetype = "dashed", color = "black", size = 1)
     + geom_hline(yintercept = 0.5, linetype = "dashed", color = "black", size = 1)
 )
+# fix the coordinates
+cytokine_scatter_plot <- (
+    cytokine_scatter_plot
+    + ggplot2::coord_fixed()
+)
 cytokine_scatter_plot
+
 
 
 cytokine_scatter_plot1 <- (
@@ -275,8 +254,8 @@ cytokine_scatter_plot1 <- (
     )
     + geom_point(size = 5, alpha = 0.7)
     + theme_bw()
-    + xlab("IL-1 beta Abundance")
-    + ylab("CCL4 alpha Abundance")
+    + xlab("IL-1 beta abundance")
+    + ylab("CCL4 alpha abundance")
     + xlim(-0.1, 1)
     + ylim(-0.1, 1)
     # rename legend title
@@ -305,26 +284,7 @@ cytokine_scatter_plot1 <- (
         'Thapsigargin 1.0 uM, Apoptosis',
         'Thapsigargin 10.0 uM, Apoptosis'
         ),
-        values = c(
-        '#66c2a5',
-        '#3288bd',
-        '#f46d43',
-        '#5e4fa2',
-        "#058ED9",
-        "#848FA2",
-        "#2D3142",
-        "#FFC857",
-        '#66c2a5',
-        '#3288bd',
-        '#abdda4',
-        '#fdae61',
-        # dark grey
-        '#666666',
-        # green
-        '#66c2a5',
-        '#f46d43',
-        '#d53e4f'
-        ))
+        values = colors_2)
     + scale_shape_manual(
         name = "Treatment",
         labels = c(
@@ -345,23 +305,12 @@ cytokine_scatter_plot1 <- (
         'Thapsigargin 10.0 uM, Apoptosis'
         ),
         values = c(
-        18,
-        18,
-        16,
-        16,
-        16,
-        16,
-        16,
-        16,
-        16,
-        16,
-        16,
-        18,
-        18,
-        17,
-        17
-        ))
+            16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16
+        )
 
+    )
 
 )
 
@@ -380,6 +329,11 @@ cytokine_scatter_plot1 <- (
     cytokine_scatter_plot1
     + geom_vline(xintercept = 0.5, linetype = "dashed", color = "black", size = 1)
     + geom_hline(yintercept = 0.5, linetype = "dashed", color = "black", size = 1)
+)
+# fix the coordinates
+cytokine_scatter_plot1 <- (
+    cytokine_scatter_plot1
+    + ggplot2::coord_fixed()
 )
 cytokine_scatter_plot1
 
@@ -512,7 +466,7 @@ cytokine_bar_plot <- (
     + geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.2, position=position_dodge(.9))
     + facet_wrap(.~cytokine, nrow =2)
     + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-    + ylab("Cytokine Abundacne")
+    + ylab("Cytokine abundacne")
     + xlab("Treatment")
     # strip x axis labels
 
@@ -537,31 +491,12 @@ cytokine_bar_plot
 cytokine_bar_plot <- (
     cytokine_bar_plot
     + scale_fill_manual(
-        values = c(
-        '#66c2a5',
-        '#3288bd',
-        '#f46d43',
-        '#5e4fa2',
-        "#058ED9",
-        "#848FA2",
-        "#2D3142",
-        "#FFC857",
-        '#66c2a5',
-        '#3288bd',
-        '#abdda4',
-        '#fdae61',
-        # dark grey
-        '#666666',
-        # green
-        '#66c2a5',
-        '#f46d43',
-        '#d53e4f'
-        )
+        values = colors_3
     )
     # move legend to the bottom
     + theme(legend.position = "bottom", legend.box = "horizontal")
     # change the nunmber of rows in the legend
-    + guides(fill = guide_legend(ncol = 5))
+    + guides(fill = guide_legend(ncol = 4))
 )
 
 cytokine_bar_plot
@@ -726,6 +661,22 @@ cytokine_values_melted_agg <- cytokine_values_melted %>%
     group_by(oneb_Treatment_Dose_Inhibitor_Dose, cytokine) %>%
     summarise(cytokine_value = mean(cytokine_value))
 
+
+# read in the ground truth
+ground_truth_path <- file.path(
+    "../../4.sc_Morphology_Neural_Network_MLP_Model/MLP_utils/ground_truth.toml"
+)
+ground_truth <- parseTOML(ground_truth_path)
+apoptosis_ground_truth_list <- ground_truth$Apoptosis$apoptosis_groups_list
+pyroptosis_ground_truth_list <- ground_truth$Pyroptosis$pyroptosis_groups_list
+control_ground_truth_list <- ground_truth$Healthy$healthy_groups_list
+
+# make a new column that is the treatment group based on the ground truth data
+cytokine_values_melted_agg$group <- ifelse(cytokine_values_melted_agg$oneb_Treatment_Dose_Inhibitor_Dose %in% apoptosis_ground_truth_list, "Apoptosis",
+                                ifelse(cytokine_values_melted_agg$oneb_Treatment_Dose_Inhibitor_Dose %in% pyroptosis_ground_truth_list, "Pyroptosis",
+                                       ifelse(cytokine_values_melted_agg$oneb_Treatment_Dose_Inhibitor_Dose %in% control_ground_truth_list, "Control", "NA")))
+# make the group column a factor
+cytokine_values_melted_agg$group <- factor(cytokine_values_melted_agg$group, levels = c("Control","Apoptosis", "Pyroptosis"))
 
 cytokine_values_melted_agg_filtered <- cytokine_values_melted_agg[cytokine_values_melted_agg$cytokine %in% unique(tukey_results$cytokine),]
 head(cytokine_values_melted_agg_filtered)
@@ -959,8 +910,6 @@ cytokine_values_melted_agg_filtered <- cytokine_values_melted_agg_filtered %>%
 list_of_cytokines <- c(
 'Activin A',
 'Amyloid beta',
-# 'BDNF',
-# 'BMP3',
 'CCL1',
 'CCL13',
 'CCL20',
@@ -968,31 +917,22 @@ list_of_cytokines <- c(
 'CCL3',
 'CCL4',
 'CCL5',
-# 'CCL8',
 'CD40L',
 'CXCL1',
-# 'CXCL10',
 'CXCL11',
 'CXCL14',
-# 'CXCL16',
 'CXCL17',
-# 'CXCL3',
 'CXCL4',
 'CXCL9',
 'Cytochrome C',
-# 'FGF-1',
-# 'FGF-2',
-# 'G-CSF',
-# 'GDF-15 (MIC-1)',
-# 'GM-CSF',
+
 'Somatotropin',
 'IFN beta',
 'IFN gamma',
 'IFN-epsilon',
 'IL-1 alpha',
 'IL-1 beta',
-# 'IL-10',
-# 'IL-12 p40',
+
 'IL-15',
 'IL-16',
 'IL-17A',
@@ -1004,20 +944,10 @@ list_of_cytokines <- c(
 'IL-3',
 'IL-35',
 'IL-6',
-# 'IL-8',
-# 'M-CSF R (CD115)',
-# 'MMP-1',
-# 'MMP-7',
-# 'NRG1 beta 1',
-# 'Oncostatin M',
 'Osteopontin',
 'TGF-beta 1',
-# 'TIMP1',
-# 'TNF RIII',
 'TNF alpha'
-# 'Tissue Factor',
-# 'VEGF-A (165)'
-# 'XCL1'
+
 )
 
 # filter out the cytokines that are not in the list
@@ -1029,58 +959,40 @@ cytokine_values_melted_agg_filtered$oneb_Treatment_Dose_Inhibitor_Dose <- factor
     levels = treatment_order)
 treatments <- unique(cytokine_values_melted_agg_filtered$oneb_Treatment_Dose_Inhibitor_Dose)
 
-hex_codes <- c(
-    '#66c2a5',
-    '#3288bd',
-    '#f46d43',
-    '#5e4fa2',
-    "#058ED9",
-    "#848FA2",
-    "#2D3142",
-    "#FFC857",
-    '#66c2a5',
-    '#3288bd',
-    '#abdda4',
-    '#fdae61',
-    # dark grey
-    '#666666',
-    # green
-    '#66c2a5',
-    '#f46d43',
-    '#d53e4f')
+# factor the group column
+cytokine_values_melted_agg_filtered$group <- factor(cytokine_values_melted_agg_filtered$group, levels = c("Control","Apoptosis", "Pyroptosis"))
+
+# aggregate the data by oneb_Treatment_Dose_Inhibitor_Dose and group
+tmp <- cytokine_values_melted_agg_filtered %>%
+    group_by(oneb_Treatment_Dose_Inhibitor_Dose, group) %>%
+    summarise(cytokine_value = mean(cytokine_value))
+# extract the group column as a list
+group_list <- tmp$group
+group_list
 
 # create the row annotation
 row_ha <- rowAnnotation(
-        Treatment = treatments,
+        Group = group_list,
        annotation_legend_param = list(
         title_position = "topcenter",
-        title_gp = gpar(fontsize = 16, angle = 0),
-        labels_gp = gpar(fontsize = 16,
-        title = gpar(fontsize = 16))),
+        title_gp = gpar(fontsize = 20),
+        labels_gp = gpar(fontsize = 18),
+        direction = "vertical",
+        padding = unit(c(10, 10, 5, 5), "mm"),
+        grid_width = unit(10, "mm"),
+        grid_height = unit(10, "mm")
+        ),
     annotation_name_side = "bottom",
-    annotation_name_gp = gpar(fontsize = 16),
-    show_legend = c("Treatment" = FALSE),
+    annotation_name_gp = gpar(fontsize = 18),
+    show_legend = c("Group" = TRUE),
     col = list(
-            Treatment = c(
-                 'DMSO 0.1%' = hex_codes[1],
-                'Flagellin 0.1 ug/ml' = hex_codes[2],
-                'Flagellin 1.0 ug/ml' = hex_codes[3],
-                'LPS 0.01 ug/ml' = hex_codes[4],
-                'LPS 0.1 ug/ml' = hex_codes[5],
-                'LPS 1.0 ug/ml' = hex_codes[6],
-                'LPS 10.0 ug/ml' = hex_codes[7],
-                'LPS 100.0 ug/ml' = hex_codes[8],
-                'LPS 1.0 ug/ml + Nigericin 1.0 uM' = hex_codes[9],
-                'LPS 1.0 ug/ml + Nigericin 3.0 uM' = hex_codes[10],
-                'LPS 1.0 ug/ml + Nigericin 10.0 uM' = hex_codes[11],
-                'H2O2 100.0 nM' = hex_codes[12],
-                'H2O2 100.0 uM' = hex_codes[13],
-                'Thapsigargin 1.0 uM' = hex_codes[14],
-                'Thapsigargin 10.0 uM' = hex_codes[15]
-
-
+            Group = c(
+                "Control" = brewer.pal(3, "Dark2")[1],
+                "Apoptosis" = brewer.pal(3, "Dark2")[2],
+                "Pyroptosis" = brewer.pal(3, "Dark2")[3]
         )
     )
+
 )
 
 # un melt the data cytokine_values_melted_agg_filtered
@@ -1113,15 +1025,15 @@ heatmap_anova_cytokines <- (
         show_row_names = TRUE,  # Show row names
         show_column_names = TRUE, # Show column names
         column_names_gp = gpar(fontsize = 18, fontfamily = "sans"), # Column name label formatting
-        row_names_gp = gpar(fontsize = 14, fontfamily = "sans"),    # Row name label formatting
+        row_names_gp = gpar(fontsize = 18, fontfamily = "sans"),    # Row name label formatting
         right_annotation = row_ha,
         # make the tiles rectangular
         rect_gp = gpar(col = NA),
         heatmap_legend_param = list(
-                title = "Cytokine\nAbundance", at = c(0, 1),
+                title = "Marker\nabundance", at = c(0, 1),
                 title_position = "topcenter",
-                title_gp = gpar(fontsize = 16),
-                labels_gp = gpar(fontsize = 16),
+                title_gp = gpar(fontsize = 20),
+                labels_gp = gpar(fontsize = 18),
                 direction = "vertical",
                 padding = unit(c(10, 10, 5, 5), "mm"),
                 grid_width = unit(10, "mm"),
@@ -1246,9 +1158,6 @@ umap_results <- umap_results %>%
     ))
 
 
-head(umap_results)
-
-
 treatment_order <- c(
     'DMSO 0.1%',
     'Flagellin 0.1 ug/ml',
@@ -1267,8 +1176,6 @@ treatment_order <- c(
     'Thapsigargin 10.0 uM'
 )
 umap_results_selected_treatments$oneb_Treatment_Dose_Inhibitor_Dose <- factor(umap_results_selected_treatments$oneb_Treatment_Dose_Inhibitor_Dose, levels = treatment_order)
-
-
 
 
 # set the plot size
@@ -1294,9 +1201,6 @@ umap_plot_all_treatments <- (
 )
 umap_plot_all_treatments
 
-
-
-
 # make a new column that is the treatment group based on the ground truth data
 umap_results_selected_treatments$group <- ifelse(umap_results_selected_treatments$oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% apoptosis_ground_truth_list, "Apoptosis",
                                 ifelse(umap_results_selected_treatments$oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% pyroptosis_ground_truth_list, "Pyroptosis",
@@ -1304,8 +1208,6 @@ umap_results_selected_treatments$group <- ifelse(umap_results_selected_treatment
 # make the group column a factor
 umap_results_selected_treatments$group <- factor(umap_results_selected_treatments$group, levels = c("Control","Apoptosis", "Pyroptosis"))
 unique(umap_results_selected_treatments$group)
-
-
 
 # create grouping of treatment and group
 umap_results_selected_treatments$group_treatment <- paste(
@@ -1378,26 +1280,7 @@ umap_plot_selected_treatments <- (
         'Thapsigargin 1.0 uM, Apoptosis',
         'Thapsigargin 10.0 uM, Apoptosis'
         ),
-        values = c(
-        '#66c2a5',
-        '#3288bd',
-        '#f46d43',
-        '#5e4fa2',
-        "#058ED9",
-        "#848FA2",
-        "#2D3142",
-        "#FFC857",
-        '#66c2a5',
-        '#3288bd',
-        '#abdda4',
-        '#fdae61',
-        # dark grey
-        '#666666',
-        # green
-        '#66c2a5',
-        '#f46d43',
-        '#d53e4f'
-        ))
+        values = colors_2)
     + scale_shape_manual(
         name = "Treatment",
         labels = c(
@@ -1417,22 +1300,10 @@ umap_plot_selected_treatments <- (
         'Thapsigargin 1.0 uM, Apoptosis',
         'Thapsigargin 10.0 uM, Apoptosis'
         ),
-        values = c(
-        18,
-        18,
-        16,
-        16,
-        16,
-        16,
-        16,
-        16,
-        16,
-        16,
-        16,
-        18,
-        18,
-        17,
-        17
+        values  = c(
+            16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16,
+            16, 16, 16, 16, 16
         ))
         # add box around points
         + geom_rect(
@@ -1522,49 +1393,45 @@ options(repr.plot.width=5, repr.plot.height=5)
 cytokine_bar_plot <- cytokine_bar_plot + theme(plot.margin = unit(c(2,0,0,0), "cm"))
 # add padding to scatter plot
 cytokine_scatter_plot <- cytokine_scatter_plot + theme(plot.margin = unit(c(1,0,0,0), "cm"))
-# add padding to the umap
-umap_plot_selected_treatments <- umap_plot_selected_treatments + theme(plot.margin = unit(c(1,0,0,0), "cm"))
-
 
 # set the design of the plots in the figure
 # Where each letter represents a plot by order defined and the # represents a blank space
 # each row represents a proportion of the total plot size
 # some plots may be on multiple rows or columns
 # plots can be proportioned by adding more letters to the row or column
-design <-  "AABBCC
-            AABBCC
-            DDDDDD
-            EEEEEE
-            EEEEEE"
+# layout <- c(
+#     area(t=1, b=2, l=0, r=3), # A
+#     area(t=1, b=2, l=4, r=5), # B
+#     area(t=3, b=5, l=0, r=5), # C
+#     area(t=6.5, b=8, l=0, r=5) # D
+# )
+
 layout <- c(
     area(t=1, b=2, l=0, r=3), # A
     area(t=1, b=2, l=4, r=5), # B
-    area(t=3, b=5, l=0, r=5), # C
-    area(t=6.5, b=8, l=0, r=5) # D
+    area(t=3, b=4, l=0, r=5), # C
+    area(t=5, b=8, l=0, r=5) # D
 )
+
 
 # set plot size
 width <- 17
-height <- 20
-options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
+height <- 17
+options(repr.plot.width=width, repr.plot.height=height, units = "in", dpi = 600)
 fig2 <- (
     cytokine_scatter_plot
-    # wrap_elements(full = cytokine_scatter_plot)
-    + wrap_elements(full = umap_plot_selected_treatments)
+    + umap_plot_selected_treatments
+    # + wrap_elements(full = umap_plot_selected_treatments)
     # + cytokine_bar_plot
-    + wrap_elements(full = cytokine_bar_plot)
+    + cytokine_bar_plot
     # + new_heatmap
-    + wrap_elements(full = heatmap_anova_cytokines)
+    # + wrap_elements(full = heatmap_anova_cytokines)
+    + heatmap_anova_cytokines
     + plot_layout(design = layout, widths = c(0.3,15), heights = c())
     + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
 )
+# save the figure as png using device
+png(file.path("figures","figure2.png"), width = width, height = height, units = "in", res = 600)
 fig2
-ggsave(
-    filename = file.path("figures","figure2.png"),
-    plot = fig2,
-    width = width,
-    height = height,
-    units = "in",
-    dpi = 600
-)
-
+dev.off()
+fig2

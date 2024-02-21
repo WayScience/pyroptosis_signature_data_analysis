@@ -156,12 +156,12 @@ confusion_matrix$shuffle <- gsub("TRUE", "Shuffled", confusion_matrix$shuffle)
 confusion_matrix$shuffle <- gsub("FALSE", "Not Shuffled", confusion_matrix$shuffle)
 # mutate the data type column
 confusion_matrix$data_split <- gsub("testing", "Testing", confusion_matrix$data_split)
-confusion_matrix$data_split <- gsub("holdout", "Hold Out Wells", confusion_matrix$data_split)
+confusion_matrix$data_split <- gsub("holdout", "Holdout wells", confusion_matrix$data_split)
 # make the data split column a factor
 confusion_matrix$data_split <- factor(confusion_matrix$data_split, levels = c(
-    "Testing", "Hold Out Wells"
+    "Testing", "Holdout wells"
 ))
-
+unique(confusion_matrix$data_split)
 
 # add the , to the count column
 confusion_matrix$Count <- sapply(
@@ -171,19 +171,19 @@ confusion_matrix$Count <- sapply(
 head(confusion_matrix)
 
 # plot dimensions
-width <- 14
-height <- 11
+width <- 8
+height <- 8
 options(repr.plot.width = width, repr.plot.height = height)
 # plot a confusion matrix
 confusion_matrix_plot <- (
     ggplot(confusion_matrix, aes(x = True_Label, y = Predicted_Label))
     + facet_grid(data_split~shuffle)
-    + geom_point(aes(color = Recall), size = 20, shape = 15)
-    + geom_text(aes(label = Count))
+    + geom_point(aes(color = Recall), size = 25, shape = 15)
+    + geom_text(aes(label = Count), size = 5)
     + scale_color_gradient("Recall", low = "white", high = "red",limits = c(0, 1))
     + theme_bw()
-    + ylab("Predicted Class")
-    + xlab("True Class")
+    + ylab("True Class")
+    + xlab("Predicted Class")
     + figure_theme
     # change the legend title position
     + guides(
@@ -213,11 +213,11 @@ PR_curves$data_split <- gsub("train", "Training", PR_curves$data_split)
 PR_curves$data_split <- gsub("testing", "Testing", PR_curves$data_split)
 PR_curves$data_split <- gsub("validation", "Validation", PR_curves$data_split)
 PR_curves$data_split <- gsub("treatment_holdout", "Treatment Holdout", PR_curves$data_split)
-PR_curves$data_split <- gsub("holdout", "Holdout", PR_curves$data_split)
+PR_curves$data_split <- gsub("holdout", "Holdout wells", PR_curves$data_split)
 
 # factorize the data_split column
 PR_curves$data_split <- factor(PR_curves$data_split, levels = c(
-    "Training", "Validation", "Testing","Treatment Holdout", "Holdout"
+    "Training", "Validation", "Testing","Treatment Holdout", "Holdout wells"
 ))
 
 unique(PR_curves$label)
@@ -250,7 +250,7 @@ height <- 11
 options(repr.plot.width = width, repr.plot.height = height)
 pr_plot <- (
     ggplot(PR_curves, aes(x = recall, y = precision, color = label, linetype = label))
-    + geom_line(aes(linetype = shuffle), size = 1.1)
+    + geom_line(aes(linetype = shuffle), linewidth = 1.1)
     + facet_wrap(~data_split, ncol = 2)
     + theme_bw()
     + labs(color = "Predicted Class", linetype = "Data Shuffle", x = "Recall", y = "Precision")
@@ -292,7 +292,8 @@ pr_plot <- (
             )
     # rotate the x axis tick labels
     + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-  )
+    + theme(plot.margin = margin(0,1,0,0, "cm"))
+)
 ggsave("../figures/Multi_Class/MultiClass_MLP/PBMC/PR_curves.png", pr_plot, width = width, height = height, dpi = 600)
 pr_plot
 
@@ -336,7 +337,7 @@ probabilities$shuffle <- gsub("FALSE", "Not Shuffled", probabilities$shuffle)
 # replace data_split value treatment_holdout with Treatment Holdout
 probabilities$data_split <- gsub("treatment_holdout", "Treatment Holdout", probabilities$data_split)
 # replace data_split value holdout with Holdout
-probabilities$data_split <- gsub("holdout", "Holdout", probabilities$data_split)
+probabilities$data_split <- gsub("holdout", "Holdout wells", probabilities$data_split)
 # replace training value train with Training
 probabilities$data_split <- gsub("train", "Training", probabilities$data_split)
 # replace testing value test with Testing
@@ -357,7 +358,7 @@ probabilities$label_pred <- factor(probabilities$label_pred , levels = c(
 ))
 # change the data_split column to be a factor
 probabilities$data_split <- factor(probabilities$data_split, levels = c(
-    "Training", "Validation", "Testing","Treatment Holdout", "Holdout"
+    "Training", "Validation", "Testing","Treatment Holdout", "Holdout wells"
 ))
 # change the shuffled_data column to be a factor
 probabilities$shuffle <- factor(probabilities$shuffle, levels = c(
@@ -648,7 +649,7 @@ pyroptosis_correct_test_image <- (
 )
 pyroptosis_correct_holdout_image <- (
     pyroptosis_correct_holdout_image
-    + ggtitle("Pyroptosis\n(Holdout)")
+    + ggtitle("Pyroptosis\n(Holdout wells)")
     + theme(plot.title = element_text(size = 18, hjust = 0.5))
     + theme(plot.margin = margin(0, 0, 0, 0, "cm"))
 
@@ -675,7 +676,7 @@ control_correct_test_image <- (
 )
 control_correct_holdout_image <- (
     control_correct_holdout_image
-    + ggtitle("Control\n(Holdout)")
+    + ggtitle("Control\n(Holdout wells)")
     + theme(plot.title = element_text(size = 18, hjust = 0.5))
     + theme(plot.margin = margin(0, 0, 0, 0, "cm"))
 )
@@ -700,7 +701,7 @@ apoptosis_correct_test_image <- (
 )
 apoptosis_correct_holdout_image <- (
     apoptosis_correct_holdout_image
-    + ggtitle("Apoptosis\n(Holdout)")
+    + ggtitle("Apoptosis\n(Holdout wells)")
     + theme(plot.title = element_text(size = 18, hjust = 0.5))
     + theme(plot.margin = margin(0, 0, 0, 0, "cm"))
 )
@@ -852,9 +853,8 @@ fig5 <- (
     # make bottom plot not align
     + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
 )
-fig5
 
 # save the plot
-
-ggsave("../figures/figure5.png", fig5, width = width, height = height, dpi = 600)
-
+png(filename = "../figures/figure5.png", width = width, height = height, units = "in", res = 600)
+fig5
+dev.off()

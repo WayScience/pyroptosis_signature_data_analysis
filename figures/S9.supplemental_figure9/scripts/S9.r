@@ -181,6 +181,8 @@ ridge_plot_pyroptosis <- (
     + theme(axis.title.y = element_text(size = 20))
 
     + theme(legend.key.size = unit(1, "cm"))
+    # reorder the legend
+    + guides(fill = guide_legend(reverse = TRUE))
 
 )
 ridge_plot_pyroptosis
@@ -201,6 +203,7 @@ fig5_probabilities <- (
     + ridge_plot_apoptosis
     + ridge_plot_pyroptosis
     + plot_layout(design = layout)
+    + plot_annotation(tag_levels = "A") & theme(plot.tag = element_text(size = 20))
 )
 fig5_probabilities
 

@@ -61,7 +61,7 @@ for path_type in image_path_columns:
         image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         # image to array
         image_array = np.array(image)
-        resolution = 0.1550  # pixels per micrometer
+        resolution = 3.3446  # pixels per micrometer
         # get the image size
         image_size = image_array.shape
         if image_array.shape[1] <= 100:
@@ -74,7 +74,7 @@ for path_type in image_path_columns:
             padding = 10
         # get the bottom right most corner based on scale 1 % of pixels
         scale_bar_x = (
-            image_size[1] - (scale_bar_length / resolution) - padding - padding
+            image_size[1] - (scale_bar_length * resolution) - padding - padding
         )
         scale_bar_y = image_size[0] - (scale_bar_height) - padding
         print(scale_bar_x, scale_bar_y)

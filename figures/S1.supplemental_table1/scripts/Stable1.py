@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# This notebook creates supplemental table 1
+
 # In[1]:
 
 

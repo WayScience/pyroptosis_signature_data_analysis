@@ -193,9 +193,9 @@ updated_platemap$label[is.na(updated_platemap$label)] <- "Blank"
 # replace pool with Pool in label
 updated_platemap$label[updated_platemap$label == "pool"] <- "Pool"
 # replace holdout with Holdout in label
-updated_platemap$label[updated_platemap$label == "holdout"] <- "Holdout"
+updated_platemap$label[updated_platemap$label == "holdout"] <- "Holdout well"
 # replace treatment_holdout with Treatment Holdout in label
-updated_platemap$label[updated_platemap$label == "treatment_holdout"] <- "Treatment Holdout"
+updated_platemap$label[updated_platemap$label == "treatment_holdout"] <- "Treatment holdout"
 unique(updated_platemap$Metadata_cell_type)
 unique(updated_platemap$label)
 
@@ -214,10 +214,76 @@ updated_platemap$label <- factor(
     levels = c(
         'Blank',
         'Pool',
-        'Holdout',
-        'Treatment Holdout'
+        'Holdout well',
+        'Treatment holdout'
     )
 )
+
+width <- 14
+height <- 14
+options(repr.plot.width = width, repr.plot.height = height, units = "cm")
+# set pallette
+viridis_pal_custom <- viridis::viridis_pal(option = "C")(5)
+
+data_split_plate_map_full <- (
+    raw_map(
+        data = updated_platemap$label,
+        well = updated_platemap$well_id,
+        plate = 384, # number of wells in plate apriori known
+        size = 14 # size of the wells displayed
+        )
+    + theme_dark()
+        + ggplot2::geom_point(
+        aes(shape = updated_platemap$Metadata_cell_type),
+        size = 5
+        )
+        + labs(fill = "Data Split", shape = "Cell Type")
+    # change legend text size for fill
+
+    + guides(shape = guide_legend(override.aes = list(size = 12), nrow = 1))
+    + guides(fill = guide_legend(override.aes = list(size = 12),ncol = 2))
+    + theme(
+        legend.title = element_text(size = 18,hjust = 0.5),
+        legend.text = element_text(size = 16),
+    )
+    # cell type legend
+    + scale_shape_manual(
+        values = c(
+            'Blank' = 0,
+            'PBMC' = 19,
+            'SH-SY5Y' = 8
+        )
+    )
+    # data split legend
+    + scale_fill_manual(
+    values = c(
+        'Blank' = "grey",
+        'Pool' = viridis_pal_custom[3],
+        'Holdout well' = viridis_pal_custom[4],
+        'Treatment holdout' = viridis_pal_custom[5]
+
+    )
+    )
+    + theme(
+        axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16)
+    )
+
+)
+data_split_plate_map_full
+ggsave(
+    filename = "../figures/data_split_plate_map_full.png",
+    plot = data_split_plate_map_full,
+    width = width,
+    height = height,
+    units = "in",
+    dpi = 600
+)
+
+
+# remove SHSY5Y from the platemap
+updated_platemap <- updated_platemap[updated_platemap$Metadata_cell_type != "SH-SY5Y",]
+head(updated_platemap)
 
 width <- 14
 height <- 14
@@ -259,8 +325,8 @@ data_split_plate_map <- (
     values = c(
         'Blank' = "grey",
         'Pool' = viridis_pal_custom[3],
-        'Holdout' = viridis_pal_custom[4],
-        'Treatment Holdout' = viridis_pal_custom[5]
+        'Holdout well' = viridis_pal_custom[4],
+        'Treatment holdout' = viridis_pal_custom[5]
 
     )
     )

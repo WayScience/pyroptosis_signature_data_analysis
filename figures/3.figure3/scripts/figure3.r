@@ -268,7 +268,7 @@ unique_feature_plot_function <- function(df, list_of_unique_features){
         + scale_fill_manual(values = c("Nuclei" = DAPI, "Mito" = Mito, "ER" = ER, "GasderminD" = Gasdermin, "AGP" = PM, "Other" = Other))
         + labs(
             x = "Channel",
-            y = "Number of Features",
+            y = "Feature count",
         )
         # legend title change
 
@@ -283,7 +283,7 @@ unique_feature_plot_function <- function(df, list_of_unique_features){
         + geom_text(
             aes(label=n),
             vjust=-0.5,
-            size=8
+            size=6
         )
         + ylim(0, 150)
 
@@ -1129,8 +1129,8 @@ layout <- c(
 # patch work the plots together
 # set plot size
 width <- 17
-height <- 23
-options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
+height <- 20
+options(repr.plot.width=width, repr.plot.height=height, units = "in", dpi = 600)
 
 fig3 <- (
     wrap_elements(full = montage)

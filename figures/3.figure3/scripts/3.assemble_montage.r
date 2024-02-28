@@ -211,62 +211,6 @@ apoptosis_control__pyroptosis <- apoptosis_control %>% filter(group == "Pyroptos
 apoptosis_control__apoptosis <- apoptosis_control %>% filter(group == "Apoptosis")
 
 
-# apoptosis_pyroptosis__control$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[6]
-# apoptosis_pyroptosis__apoptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[6]
-# apoptosis_pyroptosis__pyroptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[3]
-
-# control_pyroptosis__control$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[5]
-# control_pyroptosis__apoptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[6]
-# control_pyroptosis__pyroptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[1]
-
-# apoptosis_control__control$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[5]
-# apoptosis_control__apoptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[6]
-# apoptosis_control__pyroptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[1]
-
-
-# # make a df of the values
-# df_values <- data.frame(
-#     comparison = c(
-#         "Pyroptosis vs. Apoptosis",
-#         "Pyroptosis vs. Apoptosis",
-#         "Pyroptosis vs. Apoptosis",
-#         "Control vs. Pyroptosis",
-#         "Control vs. Pyroptosis",
-#         "Control vs. Pyroptosis",
-#         "Control vs. Apoptosis",
-#         "Control vs. Apoptosis",
-#         "Control vs. Apoptosis"
-#         ),
-#     group = c(
-#         "Control",
-#         "Apoptosis",
-#         "Pyroptosis",
-#         "Control",
-#         "Apoptosis",
-#         "Pyroptosis",
-#         "Control",
-#         "Apoptosis",
-#         "Pyroptosis"
-#     ),
-#     value = c(
-#         apoptosis_pyroptosis__control$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[6],
-#         apoptosis_pyroptosis__apoptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[6],
-#         apoptosis_pyroptosis__pyroptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[3],
-
-#         control_pyroptosis__control$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[5],
-#         control_pyroptosis__apoptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[6],
-#         control_pyroptosis__pyroptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[1],
-
-#         apoptosis_control__control$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[5],
-#         apoptosis_control__apoptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[6],
-#         apoptosis_control__pyroptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[1]
-#     )
-# )
-
-# # save the df
-# write.csv(df_values, "../results/features_values.csv", row.names = FALSE)
-# head(df_values)
-
 list_of_plots_apoptosis_pyroptosis <- c()
 for (i in 1:nrow(apoptosis_pyroptosis)){
     list_of_plots_apoptosis_pyroptosis[[i]] <- get_image(apoptosis_pyroptosis, i)
@@ -587,7 +531,7 @@ apotosis_images <- (
 )
 pyroptosis_images <- (
     # plot image with
-    control_text
+    pyroptosis_text
     + list_of_images[[13]]
     + list_of_images[[14]]
     + list_of_images[[15]]

@@ -281,7 +281,7 @@ umap_plot_all <- (
 umap_plot_all
 # save plot
 ggsave(
-    filename = file.path("..","figures", "umap_plot_all.png"),
+    filename = file.path("..","figures", "S6.png"),
     plot = umap_plot_all,
     width = width,
     height = height,

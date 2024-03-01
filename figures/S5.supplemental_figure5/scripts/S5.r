@@ -194,18 +194,19 @@ cytokine_predictions1 <- (
     + labs(color="Model", hjust=0.5)
     # change legend title
     # make kegend key background white
-    + guides(color = guide_legend(override.aes = list(fill = NA)),
+    + guides(color = guide_legend(override.aes = list(fill = NA, size = 5), ncol = 2),
         linetype = guide_legend(override.aes = list(fill = NA)))
     + theme(legend.key = element_rect(fill = "white"))
     + facet_wrap(.~cytokine, ncol=3)
         # x tick marks
     + scale_x_continuous(breaks = seq(0, 1, 0.5))
-    # legend dot size
-    + guides(colour = guide_legend(override.aes = list(size=5), ncol = 2))
     # legend position
     + theme(legend.position = "bottom", legend.box = "horizontal")
     # rotate x axis text
     + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    # make the legend background white instead of grey
+    + theme(legend.key=element_blank(), legend.background = element_blank())
+
 
     )
 cytokine_predictions1
@@ -225,18 +226,15 @@ cytokine_predictions2 <- (
     + labs(color="Model", hjust=0.5)
     # change legend title
     # make kegend key background white
-    + guides(color = guide_legend(override.aes = list(fill = NA)),
+    + guides(color = guide_legend(override.aes = list(fill = NA, size = 5), ncol = 2),
         linetype = guide_legend(override.aes = list(fill = NA)))
     + theme(legend.key = element_rect(fill = "white"))
     + facet_wrap(.~cytokine, ncol=3)
         # x tick marks
     + scale_x_continuous(breaks = seq(0, 1, 0.5))
-    # legend dot size
-    + guides(colour = guide_legend(override.aes = list(size=5), ncol = 2))
     # legend position
     + theme(legend.position = "bottom", legend.box = "horizontal")
     # rotate x axis text
-    + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
     )
 cytokine_predictions2

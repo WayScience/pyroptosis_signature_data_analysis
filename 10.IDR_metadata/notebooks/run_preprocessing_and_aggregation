@@ -16,7 +16,8 @@ aggragates=( True False )
 nomics=( True False )
 
 for cell_type in $cell_types; do
-    papermill 0.preprocess_profiles.ipynb 10.preprocess_profiles.ipynb -p cell_type $cell_type
+    echo $cell_type
+    papermill 0.preprocess_profiles.ipynb 0.preprocess_profiles.ipynb -p cell_type $cell_type
     for aggragate in $aggragates; do
         for nomic in $nomics; do
             echo $cell_type $aggragate $nomic

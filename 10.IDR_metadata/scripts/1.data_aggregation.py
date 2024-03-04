@@ -11,6 +11,7 @@ import pathlib
 import numpy as np
 import pandas as pd
 
+
 # In[2]:
 
 
@@ -130,10 +131,6 @@ if aggregation and nomic:
     # drop all metadata columns
     labeled_data = data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
     data_x = data_df.drop(metadata.columns, axis=1)
-    # set path to save the data
-    aggregated_data_path = pathlib.Path(
-        f"../../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
-    )
 
 
 elif aggregation and not nomic:
@@ -150,9 +147,6 @@ elif aggregation and not nomic:
     metadata = metadata.drop_duplicates(subset=["Metadata_Well"])
     # # get the metadata for each well
     # # set path to save the data
-    aggregated_data_path = pathlib.Path(
-        f"../../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
-    )
     # reset the index
     data_df = data_df.reset_index()
 
@@ -164,14 +158,10 @@ elif not aggregation and nomic:
         right_on=["position_x", "oneb_Treatment_Dose_Inhibitor_Dose"],
     )
     data_df = data_df.drop(columns=["position_x"])
-    # set path to save the data
-    aggregated_data_path = pathlib.Path(
-        f"../../data/{cell_type}_preprocessed_sc_norm_with_nomic.parquet"
-    )
 elif aggregation == False and nomic == False:
     pass
 else:
-    raise ValueError("Wrong parameters nomica and/or aggregation not defined")
+    raise ValueError("Wrong parameters nomic and/or aggregation not defined")
 
 
 # In[8]:
@@ -179,3 +169,4 @@ else:
 
 # save the data
 data_df.to_parquet(aggregated_data_path)
+

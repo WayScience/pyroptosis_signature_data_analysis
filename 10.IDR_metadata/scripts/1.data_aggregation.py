@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# <span style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">An Exception was encountered at '<a href="#papermill-error-cell">In [4]</a>'.</span>
-
 # This noteboook aggregates the data from the previous notebooks and creates the final dataset for the analysis barring the data are aggregated in the analysis.
 
 # In[1]:
@@ -27,15 +25,15 @@ nomic = True
 
 if aggregation and nomic:
     aggregated_data_path = pathlib.Path(
-        f"../data/{cell_type}_preprocess_sc_norm_no_fs_aggregated_nomic.parquet"
+        f"../../data/{cell_type}_preprocess_sc_norm_no_fs_aggregated_nomic.parquet"
     )
 elif not aggregation and nomic:
     aggregated_data_path = pathlib.Path(
-        f"../data/{cell_type}_preprocess_sc_norm_no_fs_nomic.parquet"
+        f"../../data/{cell_type}_preprocess_sc_norm_no_fs_nomic.parquet"
     )
 elif aggregation and not nomic:
     aggregated_data_path = pathlib.Path(
-        f"../data/{cell_type}_preprocess_sc_norm_no_fs_aggregated.parquet"
+        f"../../data/{cell_type}_preprocess_sc_norm_no_fs_aggregated.parquet"
     )
 elif not aggregation and not nomic:
     pass
@@ -43,12 +41,10 @@ else:
     raise ValueError("Wrong parameters")
 
 
-# <span id="papermill-error-cell" style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">Execution using papermill encountered an exception here and stopped:</span>
-
 # In[4]:
 
 
-path = pathlib.Path(f"../data/{cell_type}_preprocess_sc_norm_no_fs.parquet")
+path = pathlib.Path(f"../../data/{cell_type}_preprocess_sc_norm_no_fs.parquet")
 
 data_df = pd.read_parquet(path)
 
@@ -57,7 +53,7 @@ data_df.head()
 if nomic:
     # import nomic data
     nomic_df_path = pathlib.Path(
-        f"../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_clean.parquet"
+        f"../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_clean.parquet"
     )
     df_nomic = pd.read_parquet(nomic_df_path)
 
@@ -74,7 +70,7 @@ else:
     raise ValueError("Nomic data not imported")
 
 
-# In[ ]:
+# In[5]:
 
 
 # subset each column that contains metadata
@@ -91,7 +87,7 @@ metadata_well = metadata[
 data_df = pd.merge(data, metadata_well, left_index=True, right_index=True)
 
 
-# In[ ]:
+# In[6]:
 
 
 if nomic:
@@ -107,7 +103,7 @@ if nomic:
     )
 
 
-# In[ ]:
+# In[7]:
 
 
 if aggregation and nomic:
@@ -136,7 +132,7 @@ if aggregation and nomic:
     data_x = data_df.drop(metadata.columns, axis=1)
     # set path to save the data
     aggregated_data_path = pathlib.Path(
-        f"../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
+        f"../../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
     )
 
 
@@ -155,7 +151,7 @@ elif aggregation and not nomic:
     # # get the metadata for each well
     # # set path to save the data
     aggregated_data_path = pathlib.Path(
-        f"../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
+        f"../../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
     )
     # reset the index
     data_df = data_df.reset_index()
@@ -170,7 +166,7 @@ elif not aggregation and nomic:
     data_df = data_df.drop(columns=["position_x"])
     # set path to save the data
     aggregated_data_path = pathlib.Path(
-        f"../data/{cell_type}_preprocessed_sc_norm_with_nomic.parquet"
+        f"../../data/{cell_type}_preprocessed_sc_norm_with_nomic.parquet"
     )
 elif aggregation == False and nomic == False:
     pass
@@ -178,7 +174,7 @@ else:
     raise ValueError("Wrong parameters nomica and/or aggregation not defined")
 
 
-# In[ ]:
+# In[8]:
 
 
 # save the data

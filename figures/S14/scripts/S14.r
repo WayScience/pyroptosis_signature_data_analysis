@@ -54,7 +54,6 @@ f1_scores$group <- gsub("train", "Training", f1_scores$group)
 f1_scores$group <- gsub("test", "Testing", f1_scores$group)
 f1_scores$group <- gsub("validation", "Validation", f1_scores$group)
 f1_scores$group <- gsub("treatment_holdout", "Treatment holdout", f1_scores$group)
-# f1_scores$group <- gsub("holdout", "Holdout", f1_scores$group)
 # factorize the group column
 f1_scores$group <- factor(f1_scores$group, levels = c(
     "Training", "Validation", "Testing","Treatment holdout", "Holdout"
@@ -66,7 +65,7 @@ f1_scores$shuffle <- gsub("FALSE", "Not Shuffled", f1_scores$shuffle)
 f1_scores <- cbind(f1_scores, support$value)
 # rename the support column
 colnames(f1_scores)[colnames(f1_scores) == "support$value"] <- "support"
-# dived the support by 10,000 to get the number of cells
+# divide the support by 10,000 to get the number of cells
 f1_scores$support <- f1_scores$support / 10000
 # round the support column to 2 decimal places
 f1_scores$support <- round(f1_scores$support, 2)
@@ -361,7 +360,7 @@ layout <- c(
 width <- 17
 height <- 10
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
-figs10 <- (
+figsS14 <- (
     f1_score_plot
     + wrap_elements(full = ridge_plot_pyroptosis)
     + wrap_elements(full = pyroptosis_correct_treatment_holdout_image)
@@ -369,9 +368,9 @@ figs10 <- (
     # make bottom plot not align
     + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
 )
-figs10
+figsS14
 
 # save the plot
 
-ggsave("../figures/S14.png", figs10, width = width, height = height, dpi = 600)
+ggsave("../figures/S14.png", figsS14, width = width, height = height, dpi = 600)
 

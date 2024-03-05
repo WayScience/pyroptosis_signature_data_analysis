@@ -104,109 +104,6 @@ ridge_plot_control <- (
     + facet_grid(shuffle~data_split, scales = "free_y")
     + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
     + scale_x_continuous(breaks = seq(0, 1, 0.5))
-    + labs(title = "Control prediction probability", y = "Predicted class",fill = "True class")
-    + labs()
-    + theme_bw()
-    + figure_theme
-    # no legend
-    + theme(legend.position = "none")
-    + theme(plot.title = element_text(size = 20, hjust = 0.5))
-    # facet text size
-    + theme(strip.text = element_text(size = 20))
-    # remove x axis label
-    + theme(axis.title.x = element_blank())
-    + theme(axis.title.y = element_text(size = 20))
-
-)
-ridge_plot_control
-
-
-ridge_plot_apoptosis <- (
-    ggplot(probabilities, aes(x = apoptosis_prob, y = label_pred, fill = label_true, group = label_pred))
-    + geom_density_ridges(
-        aes(fill = label_pred), alpha = 0.7, scale = 3, rel_min_height = 0.01
-    )
-    + scale_fill_manual(values = c(
-        "Control" = brewer.pal(3, "Dark2")[2],
-        "Apoptosis" = brewer.pal(3, "Dark2")[1],
-        "Pyroptosis" = brewer.pal(3, "Dark2")[3]
-    ))
-    + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
-    + facet_grid(shuffle~data_split, scales = "free_y")
-    + scale_x_continuous(breaks = seq(0, 1, 0.5))
-    + labs(title = "Apoptosis prediction probability", y = "Predicted class",fill = "True class")
-    + labs()
-    + theme_bw()
-    + figure_theme
-    # remove legend
-    + theme(legend.position = "none")
-    + theme(plot.title = element_text(size = 20, hjust = 0.5))
-    # facet text size
-    + theme(strip.text = element_text(size = 20))
-    # remove x axis label
-    + theme(axis.title.x = element_blank())
-    + theme(axis.title.y = element_text(size = 20))
-
-)
-ridge_plot_apoptosis
-
-ridge_plot_pyroptosis <- (
-    ggplot(probabilities, aes(x = pyroptosis_prob, y = label_pred, fill = label_true, group = label_pred))
-    + geom_density_ridges(
-        aes(fill = label_pred), alpha = 0.7, scale = 3, rel_min_height = 0.01
-    )
-    + scale_fill_manual(values = c(
-        "Control" = brewer.pal(3, "Dark2")[2],
-        "Apoptosis" = brewer.pal(3, "Dark2")[1],
-        "Pyroptosis" = brewer.pal(3, "Dark2")[3]
-    ))
-    + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
-    + facet_grid(shuffle~data_split, scales = "free_y")+ scale_x_continuous(breaks = seq(0, 1, 0.5))
-    + scale_x_continuous(breaks = seq(0, 1, 0.5))
-    + labs(title = "Pyroptosis prediction probability", y = "Predicted class",fill = "True class")
-    + labs()
-    + theme_bw()
-    + figure_theme
-    # make title larger
-    + theme(plot.title = element_text(size = 20, hjust = 0.5))
-    # facet text size
-    + theme(strip.text = element_text(size = 20))
-    + theme(legend.position = "bottom", legend.direction = "horizontal")
-    # remove x axis label
-    + theme(axis.title.x = element_blank())
-    # add vertical line at 1
-    # make legend bigger
-    + theme(legend.text = element_text(size = 20))
-    + theme(legend.title = element_text(size = 20))
-    + theme(axis.title.y = element_text(size = 20))
-
-    + theme(legend.key.size = unit(1, "cm"))
-    # reorder the legend
-    + guides(fill = guide_legend(reverse = TRUE))
-
-)
-ridge_plot_pyroptosis
-
-
-height <- 5
-width <- 15
-options(repr.plot.width = width, repr.plot.height = height)
-ridge_plot_control <- (
-    ggplot(probabilities, aes(x = control_prob, y = label_pred, fill = label_true, group = label_pred))
-    + geom_density_ridges(
-        aes(fill = label_pred), alpha = 0.7, scale = 3, rel_min_height = 0.01
-    )
-    # change color of the density ridges
-    + scale_fill_manual(values = c(
-        "Control" = brewer.pal(3, "Dark2")[2],
-        "Apoptosis" = brewer.pal(3, "Dark2")[1],
-        "Pyroptosis" = brewer.pal(3, "Dark2")[3]
-    ))
-
-
-    + facet_grid(shuffle~data_split, scales = "free_y")
-    + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
-    + scale_x_continuous(breaks = seq(0, 1, 0.5))
     + labs(title = "Control Prediction Probability", y = "Predicted Class",fill = "True Class")
     + labs()
     + theme_bw()
@@ -284,19 +181,18 @@ layout <- c(
 width <- 17
 height <- 17
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
-fig5_probabilities <- (
+figS13 <- (
     ridge_plot_control
     + ridge_plot_apoptosis
     + ridge_plot_pyroptosis
     + plot_layout(design = layout)
     + plot_annotation(tag_levels = "A") &  theme(plot.tag = element_text(size = 20))
 )
-fig5_probabilities
-
+figS13
 # save the plot
 ggsave(
     filename = paste0("../figures/","S13",".png"),
-    plot = fig5_probabilities,
+    plot = figS13,
     width = width,
     height = height,
     units = "in",

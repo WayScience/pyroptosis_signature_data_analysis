@@ -5,7 +5,7 @@
 
 
 # Parameters
-cell_type = "PBMC"
+cell_type = "SHSY5Y"
 
 
 # In[2]:
@@ -18,7 +18,6 @@ import pandas as pd
 import papermill as pm
 import pyarrow as pa
 import pyarrow.parquet as pq
-
 
 # In[3]:
 
@@ -161,7 +160,7 @@ feature_df["Metadata_Dose"] = np.select(condlist=conditions, choicelist=results)
 
 
 # ## N Beta Column condition generation
-# columns generated to used for linear modeling where terms separated by '__' will be a beta coefficient 
+# columns generated to used for linear modeling where terms separated by '__' will be a beta coefficient
 
 # In[15]:
 
@@ -258,4 +257,3 @@ for column in feature_df.columns:
 
 # write to parquet file
 feature_df.to_parquet(feature_df_out_path)
-

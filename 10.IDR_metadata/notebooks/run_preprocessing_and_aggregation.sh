@@ -15,7 +15,7 @@ cell_types=( PBMC SHSY5Y )
 aggragates=( True False )
 nomics=( True False )
 
-for cell_type in $c{ell_types[@]}; do
+for cell_type in ${cell_types[@]}; do
     echo $cell_type
     papermill 0.preprocess_profiles.ipynb 0.preprocess_profiles.ipynb -p cell_type $cell_type
     for aggragate in ${aggragates[@]}; do

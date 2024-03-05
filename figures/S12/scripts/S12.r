@@ -121,13 +121,13 @@ f1_score_plot
 width <- 10
 height <- 10
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
-fig5 <- (
+fig12 <- (
     f1_score_plot
     + theme(plot.tag = element_text(size = 20))
 )
-fig5
+fig12
 
 # save the plot
 
-ggsave("../figures/S12.png", fig5, width = width, height = height, dpi = 600)
+ggsave("../figures/S12.png", fig12, width = width, height = height, dpi = 600)
 

@@ -1,12 +1,12 @@
-suppressWarnings(suppressPackageStartupMessages(library(ggplot2)))
-suppressWarnings(suppressPackageStartupMessages(library(platetools)))
-suppressWarnings(suppressPackageStartupMessages(library(gridExtra)))
-suppressWarnings(suppressPackageStartupMessages(library(cowplot)))
-suppressWarnings(suppressPackageStartupMessages(library(viridis)))
-suppressWarnings(suppressPackageStartupMessages(library(argparse)))
-suppressWarnings(suppressPackageStartupMessages(library(patchwork)))
-suppressWarnings(suppressPackageStartupMessages(library(arrow)))
-suppressWarnings(suppressPackageStartupMessages(library(dplyr)))
+suppressWarnings(suppressPackageStartupMessages(library(ggplot2))) # plotting
+suppressWarnings(suppressPackageStartupMessages(library(platetools))) # plotting
+suppressWarnings(suppressPackageStartupMessages(library(gridExtra))) # plot assembly
+suppressWarnings(suppressPackageStartupMessages(library(cowplot))) # plot assembly
+suppressWarnings(suppressPackageStartupMessages(library(viridis))) # color palettes
+suppressWarnings(suppressPackageStartupMessages(library(argparse))) # command line arguments
+suppressWarnings(suppressPackageStartupMessages(library(patchwork))) # plot assembly
+suppressWarnings(suppressPackageStartupMessages(library(arrow))) # reading parquet files
+suppressWarnings(suppressPackageStartupMessages(library(dplyr))) # data manipulation
 
 # define the base directory
 base_dir <- file.path(
@@ -56,15 +56,13 @@ head(index_file_SHSY5Y,2)
 
 
 # set path to the PBMC metadata file
-metadata_file_path_PBMC <-file.path(
+metadata_file_path_PBMC <- file.path(
     "..",
     "..",
     "..",
     "data",
     "PBMC_preprocessed_sc_norm.parquet"
 )
-# load the metadata file via arrow
-# metadata_file <- arrow::read_parquet(metadata_file_path)
 
 # load via arrow with certain columns
 metadata_file_PBMC <- arrow::read_parquet(
@@ -79,7 +77,7 @@ head(metadata_file_PBMC)
 
 # SHSY5Y
 # set path to the SHSY5Y metadata file
-metadata_file_path_SHSY5Y <-file.path(
+metadata_file_path_SHSY5Y <- file.path(
     "..",
     "..",
     "..",
@@ -117,7 +115,7 @@ metadata_file_PBMC$label <- gsub(
     replacement = "pool",
     x = metadata_file_PBMC$label
 )
-# aggreagate the metadata via Metadata_Well
+# aggregate the metadata via Metadata_Well
 metadata_file_PBMC <- metadata_file_PBMC %>%
     group_by(Metadata_Well, Metadata_cell_type, label) %>%
     summarize(
@@ -144,7 +142,7 @@ metadata_file_SHSY5Y$label <- gsub(
     replacement = "pool",
     x = metadata_file_SHSY5Y$label
 )
-# aggreagate the metadata via Metadata_Well
+# aggregate the metadata via Metadata_Well
 metadata_file_SHSY5Y <- metadata_file_SHSY5Y %>%
     group_by(Metadata_Well, Metadata_cell_type, label) %>%
     summarize(

@@ -186,54 +186,6 @@ all_df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor
 
 unique(all_df_secretome_class$shuffled)
 
-# boxplot functin
-boxplot_function_class <- function(df, x, title, y_label, x_label, legend_title){
-    boxplot <- (
-        ggplot(df, aes(x=Metadata_labels, y=average_precision, fill=shuffled))
-        + geom_boxplot(stat = "boxplot", position = "dodge")
-        + labs(x=x_label, y=y_label)
-        # legend title
-        + scale_fill_discrete(name=legend_title)
-        + theme_bw()
-        + ggtitle(title)
-        + figure_theme
-    )
-    return(boxplot)
-}
-
-boxplot_function_treatment <- function(df, x, title, y_label, x_label, legend_title){
-    boxplot <- (
-        ggplot(df, aes(x=oneb_Metadata_Treatment_Dose_Inhibitor_Dose, y=average_precision, fill=shuffled))
-        + geom_boxplot(stat = "boxplot", position = "dodge")
-        + labs(x=x_label, y=y_label)
-        # legend title
-        + scale_fill_discrete(name=legend_title)
-        + theme_bw()
-        + ggtitle(title)
-        + figure_theme
-        # rotate the x labels
-        + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-        + facet_grid(.~shuffled)
-    )
-    return(boxplot)
-}
-
-all_boxplot_morphology_class <- boxplot_function_class(all_df_morphology_class, "Metadata_labels","Morphology class", "average precision", "Class", "Shuffle type")
-all_boxplot_secretome_class <- boxplot_function_class(all_df_secretome_class, "Metadata_labels","Secretome class", "average precision", "Class", "Shuffle type")
-
-all_boxplot_morphology_class
-all_boxplot_secretome_class
-
-
-
-all_boxplot_morphology_treatment <- boxplot_function_treatment(all_df_morphology_treatment, "oneb_Metadata_Treatment_Dose_Inhibitor_Dose","Morphology treatment", "average precision", "Treatment", "Shuffle type")
-all_boxplot_secretome_treatment <- boxplot_function_treatment(all_df_secretome_treatment, "oneb_Metadata_Treatment_Dose_Inhibitor_Dose","Secretome treatment", "average precision", "Treatment", "Shuffle type")
-width <- 17
-height <- 20
-options(repr.plot.width=width, repr.plot.height=height)
-all_boxplot_morphology_treatment
-all_boxplot_secretome_treatment
-
 head(all_df_morphology_class)
 
 # cobine the dfs

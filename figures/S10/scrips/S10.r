@@ -1,32 +1,35 @@
 suppressPackageStartupMessages(suppressWarnings(library(ggplot2)))
-suppressPackageStartupMessages(suppressWarnings(library(RColorBrewer)))
+suppressPackageStartupMessages(suppressWarnings(library(argparse)))
 suppressPackageStartupMessages(suppressWarnings(library(dplyr)))
+suppressPackageStartupMessages(suppressWarnings(library(cowplot)))
+suppressPackageStartupMessages(suppressWarnings(library(RColorBrewer)))
+suppressPackageStartupMessages(suppressWarnings(library(patchwork)))
 suppressPackageStartupMessages(suppressWarnings(library(tidyr)))
-source("../../figures/utils/figure_themes.r")
 
-width <- 8
-height <- 6
-options(repr.plot.width=width, repr.plot.height=height)
+# load in theme
+source("../../utils/figure_themes.r")
+
+cell_type <- "PBMC"
 
 # set path to the data morphology
 # class
-df_morphology_class_path <- file.path("..","data","processed","aggregate_mAPs","morphology","mAP_scores_class.csv")
-reg_df_morphology_class_path <- file.path("..","data","processed","mAP_scores","morphology","mAP_scores_regular_class.csv")
-shuffled_morphology_class_path <- file.path("..","data","processed","mAP_scores","morphology","mAP_scores_shuffled_feature_space_class.csv")
+df_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","morphology","mAP_scores_class.csv")
+reg_df_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_regular_class.csv")
+shuffled_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_shuffled_feature_space_class.csv")
 # treatment
-treatment_df_morphology_treatment_path <- file.path("..","data","processed","aggregate_mAPs","morphology","mAP_scores_treatment.csv")
-reg_df_morphology_treatment_path <- file.path("..","data","processed","mAP_scores","morphology","mAP_scores_regular_treatment.csv")
-shuffled_morphology_treatment_path <- file.path("..","data","processed","mAP_scores","morphology","mAP_scores_shuffled_feature_space_treatment.csv")
+treatment_df_morphology_treatment_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","morphology","mAP_scores_treatment.csv")
+reg_df_morphology_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_regular_treatment.csv")
+shuffled_morphology_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_shuffled_feature_space_treatment.csv")
 
 # set path to the secretome data
 # class
-df_secretome_class_path <- file.path("..","data","processed","aggregate_mAPs","secretome","mAP_scores_class.csv")
-reg_df_secretome_class_path <- file.path("..","data","processed","mAP_scores","secretome","mAP_scores_regular_class.csv")
-shuffled_secretome_class_path <- file.path("..","data","processed","mAP_scores","secretome","mAP_scores_shuffled_feature_space_class.csv")
+df_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","secretome","mAP_scores_class.csv")
+reg_df_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_regular_class.csv")
+shuffled_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_shuffled_feature_space_class.csv")
 # treatment
-treatment_df_secretome_treatment_path <- file.path("..","data","processed","aggregate_mAPs","secretome","mAP_scores_treatment.csv")
-reg_df_secretome_treatment_path <- file.path("..","data","processed","mAP_scores","secretome","mAP_scores_regular_treatment.csv")
-shuffled_secretome_treatment_path <- file.path("..","data","processed","mAP_scores","secretome","mAP_scores_shuffled_feature_space_treatment.csv")
+treatment_df_secretome_treatment_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","secretome","mAP_scores_treatment.csv")
+reg_df_secretome_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_regular_treatment.csv")
+shuffled_secretome_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_shuffled_feature_space_treatment.csv")
 
 # read in the data
 df_morphology_class <- read.csv(df_morphology_class_path)
@@ -44,11 +47,6 @@ shuffled_secretome_class <- read.csv(shuffled_secretome_class_path)
 df_secretome_treatment <- read.csv(treatment_df_secretome_treatment_path)
 reg_df_secretome_treatment <- read.csv(reg_df_secretome_treatment_path)
 shuffled_secretome_treatment <- read.csv(shuffled_secretome_treatment_path)
-
-unique(df_morphology_class$shuffled)
-unique(df_morphology_treatment$shuffled)
-unique(df_secretome_class$shuffled)
-unique(df_secretome_treatment$shuffled)
 
 levels_list <- c(
     'Media',
@@ -123,42 +121,6 @@ df_secretome_treatment$shuffled <- factor(df_secretome_treatment$shuffled, level
 df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, levels = levels_list)
 
 
-unique(df_morphology_class$shuffled)
-unique(df_morphology_treatment$shuffled)
-unique(df_secretome_class$shuffled)
-unique(df_secretome_treatment$shuffled)
-
-width <- 10
-height <- 5
-options(repr.plot.width=width, repr.plot.height=height)
-# define the barplot function
-barplot_function <- function(df, x,title, y_label, x_label, legend_title){
-    x <- sym(x)
-    barplot <- (
-        ggplot(df, aes(x=!!x, y=mean_average_precision, fill=shuffled))
-        + geom_bar(stat="identity", position="dodge")
-        + labs(x=x_label, y=y_label)
-        # legend title
-        + scale_fill_discrete(name=legend_title)
-        + theme_bw()
-        + ylim(0,1)
-        + ggtitle(title)
-        + figure_theme
-    )
-    return(barplot)
-}
-
-barplot_morphology_class <- barplot_function(df_morphology_class, "Metadata_labels","Morphology class", "Mean average precision", "Class", "Shuffle type")
-barplot_morphology_treatment <- barplot_function(df_morphology_treatment, "oneb_Metadata_Treatment_Dose_Inhibitor_Dose","Morphology treatment", "Mean average precision", "Treatment", "Shuffle type")
-barplot_secretome_class <- barplot_function(df_secretome_class, "Metadata_labels","Secretome class", "Mean average precision", "Class", "Shuffle type")
-barplot_secretome_treatment <- barplot_function(df_secretome_treatment, "oneb_Metadata_Treatment_Dose_Inhibitor_Dose","Secretome treatment", "Mean average precision", "Treatment", "Shuffle type")
-
-barplot_morphology_class
-barplot_morphology_treatment
-barplot_secretome_class
-barplot_secretome_treatment
-
-
 # combine the dataframes
 all_df_morphology_class <- rbind(reg_df_morphology_class, shuffled_morphology_class)
 all_df_morphology_treatment <- rbind(reg_df_morphology_treatment, shuffled_morphology_treatment)
@@ -183,58 +145,6 @@ all_df_secretome_treatment$shuffled <- gsub("shuffled", "Shuffled", all_df_secre
 all_df_secretome_treatment$shuffled <- gsub("non-Shuffled", "Non-shuffled", all_df_secretome_treatment$shuffled)
 all_df_secretome_treatment$shuffled <- factor(all_df_secretome_treatment$shuffled, levels = c( "Non-shuffled", "Shuffled"))
 all_df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(all_df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, levels = levels_list)
-
-unique(all_df_secretome_class$shuffled)
-
-# boxplot functin
-boxplot_function_class <- function(df, x, title, y_label, x_label, legend_title){
-    boxplot <- (
-        ggplot(df, aes(x=Metadata_labels, y=average_precision, fill=shuffled))
-        + geom_boxplot(stat = "boxplot", position = "dodge")
-        + labs(x=x_label, y=y_label)
-        # legend title
-        + scale_fill_discrete(name=legend_title)
-        + theme_bw()
-        + ggtitle(title)
-        + figure_theme
-    )
-    return(boxplot)
-}
-
-boxplot_function_treatment <- function(df, x, title, y_label, x_label, legend_title){
-    boxplot <- (
-        ggplot(df, aes(x=oneb_Metadata_Treatment_Dose_Inhibitor_Dose, y=average_precision, fill=shuffled))
-        + geom_boxplot(stat = "boxplot", position = "dodge")
-        + labs(x=x_label, y=y_label)
-        # legend title
-        + scale_fill_discrete(name=legend_title)
-        + theme_bw()
-        + ggtitle(title)
-        + figure_theme
-        # rotate the x labels
-        + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-        + facet_grid(.~shuffled)
-    )
-    return(boxplot)
-}
-
-all_boxplot_morphology_class <- boxplot_function_class(all_df_morphology_class, "Metadata_labels","Morphology class", "average precision", "Class", "Shuffle type")
-all_boxplot_secretome_class <- boxplot_function_class(all_df_secretome_class, "Metadata_labels","Secretome class", "average precision", "Class", "Shuffle type")
-
-all_boxplot_morphology_class
-all_boxplot_secretome_class
-
-
-
-all_boxplot_morphology_treatment <- boxplot_function_treatment(all_df_morphology_treatment, "oneb_Metadata_Treatment_Dose_Inhibitor_Dose","Morphology treatment", "average precision", "Treatment", "Shuffle type")
-all_boxplot_secretome_treatment <- boxplot_function_treatment(all_df_secretome_treatment, "oneb_Metadata_Treatment_Dose_Inhibitor_Dose","Secretome treatment", "average precision", "Treatment", "Shuffle type")
-width <- 17
-height <- 20
-options(repr.plot.width=width, repr.plot.height=height)
-all_boxplot_morphology_treatment
-all_boxplot_secretome_treatment
-
-head(all_df_morphology_class)
 
 # cobine the dfs
 # get the average precision, shuffled, and Metadata_labels columns by name
@@ -339,10 +249,6 @@ colnames(subset_secretome_treatment)[colnames(subset_secretome_treatment)=="aver
 merged_df <- merge(subset_morphology_treatment, subset_secretome_treatment, by=c("shuffled", "Metadata_labels", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"))
 head(merged_df)
 
-# get the number of points that are morphology = 1 and secretome = 1
-counts <- table(merged_df$morphology_ap == 1 & merged_df$secretome_ap == 1)
-counts
-
 # aggregate the data by shuffled and oneb_Metadata_Treatment_Dose_Inhibitor_Dose and shuffled
 merged_agg <- aggregate(. ~ shuffled + oneb_Metadata_Treatment_Dose_Inhibitor_Dose + Metadata_labels, data=merged_df, FUN=mean)
 # scatter plot
@@ -381,6 +287,9 @@ scatter_compare_treatment <- (
     + figure_theme
     # add y = x line
     + geom_abline(intercept = 0, slope = 1, linetype="dashed", color = "black")
+    # fix coordiantes
+    + ggplot2::coord_fixed()
+
 )
 scatter_compare_treatment
 
@@ -503,18 +412,15 @@ head(merged_df)
 merged_df <- aggregate(. ~ shuffled + oneb_Metadata_Treatment_Dose_Inhibitor_Dose + Metadata_labels + inducer + inhibitor, data=merged_df, FUN=mean)
 head(merged_df)
 
-
-
-width <- 15
+width <- 17
 height <- 15
 options(repr.plot.width=width, repr.plot.height=height)
 # scatter plot with fill being the treatment dose
 scatter_by_treatment <- (
     ggplot(merged_df, aes(x=morphology_ap, y=secretome_ap, col = inducer, shape=inhibitor))
-    + geom_point(size=3, alpha=1)
+    + geom_point(size=5, alpha=1)
     + labs(x="Morphology mAP score", y="Secretome mAP score")
     + theme_bw()
-    + ggtitle("Comparison of mAP scores")
     + ylim(0,1)
     + xlim(0,1)
     + figure_theme
@@ -578,8 +484,43 @@ scatter_by_treatment <- (
     # make the legend 1 column
     + guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
     + ggplot2::coord_fixed()
-    + facet_grid(shuffled~.)
+    + facet_grid(.~shuffled)
     # add y = x line
     + geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black")
+    # move legend to bottom
+    + theme(legend.position = "bottom")
+    # make legend multi rows
+    + guides(col = guide_legend(ncol = 2), shape = guide_legend(ncol = 1))
+    # shift the legend to the left slightly
+
 )
 scatter_by_treatment
+
+width <- 17
+height <- 14
+options(repr.plot.width = width, repr.plot.height = height)
+
+layout <- c(
+    area(t=1, b=2, l=1, r=2) # A
+)
+
+
+figure <- (
+    # move the plot left a bit
+    wrap_elements(scatter_by_treatment)
+    + plot_layout(design = layout, heights = c(1, 0.5, 3))
+    + plot_annotation(tag_levels = "A")  & theme(plot.tag = element_text(size = 20))
+
+)
+png(filename = file.path(paste0(
+    "../",
+    "figures/",
+    cell_type,
+    "S10.png")), width = width, height = height, units = "in", res = 600
+)
+figure
+dev.off()
+figure
+
+
+

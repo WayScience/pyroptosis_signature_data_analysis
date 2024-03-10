@@ -255,5 +255,11 @@ for column in feature_df.columns:
 # In[19]:
 
 
+print(cell_type, len(feature_df["Metadata_Well"].unique()))
+
+
+# In[20]:
+
+
 # write to parquet file
 feature_df.to_parquet(feature_df_out_path)

@@ -250,7 +250,8 @@ height <- 11
 options(repr.plot.width = width, repr.plot.height = height)
 pr_plot <- (
     ggplot(PR_curves, aes(x = recall, y = precision, color = label, linetype = label))
-    + geom_line(aes(linetype = shuffle), linewidth = 1.1)
+    + geom_step(aes(linetype = shuffle), linewidth = 1.1)
+    # + geom_line(aes(linetype = shuffle), linewidth = 1.1)
     + facet_wrap(~data_split, ncol = 2)
     + theme_bw()
     + labs(color = "Predicted Class", linetype = "Data Shuffle", x = "Recall", y = "Precision")
@@ -858,3 +859,4 @@ fig5 <- (
 png(filename = "../figures/figure5.png", width = width, height = height, units = "in", res = 600)
 fig5
 dev.off()
+fig5

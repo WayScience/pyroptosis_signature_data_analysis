@@ -12,9 +12,9 @@ module load anaconda
 
 conda activate Interstellar_python
 
-cell_types=( PBMC SHSY5Y )
-aggragates=( True False )
-nomics=( True False )
+cell_types=( SHSY5Y )
+aggragates=( True )
+nomics=( True )
 
 for cell_type in ${cell_types[@]}; do
     echo $cell_type

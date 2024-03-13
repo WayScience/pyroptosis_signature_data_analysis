@@ -165,10 +165,6 @@ ridge_plot_pyroptosis <- (
     # remove x axis label
     + theme(axis.title.x = element_blank())
     # add vertical line at 1
-<<<<<<< HEAD:figures/S13/scripts/S13.r
-    # change legend label order
-    + guides(fill = guide_legend(reverse = TRUE))
-=======
     # make legend bigger
     + theme(legend.text = element_text(size = 20))
     + theme(legend.title = element_text(size = 20))
@@ -178,7 +174,6 @@ ridge_plot_pyroptosis <- (
     # reorder the legend
     + guides(fill = guide_legend(reverse = TRUE))
 
->>>>>>> 8aaed9cfb (update tables):figures/S9.supplemental_figure9/scripts/S9.r
 )
 ridge_plot_pyroptosis
 
@@ -263,6 +258,7 @@ ridge_plot_pyroptosis <- (
     # remove x axis label
     + theme(axis.title.x = element_blank())
     # add vertical line at 1
+
     # change legend label order
     + guides(fill = guide_legend(reverse = TRUE))
 )

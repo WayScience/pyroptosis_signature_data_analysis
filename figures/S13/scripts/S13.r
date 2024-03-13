@@ -165,6 +165,7 @@ ridge_plot_pyroptosis <- (
     # remove x axis label
     + theme(axis.title.x = element_blank())
     # add vertical line at 1
+
     # change legend label order
     + guides(fill = guide_legend(reverse = TRUE))
 )

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# This file generates a csv and markdown table for the features of the dataset.
+
 # In[1]:
 
 
@@ -61,18 +63,16 @@ pyroptosis_vs_healthy = df[df["group"] == "healthy_pyroptosis"]
 pyroptosis_vs_apoptosis = df[df["group"] == "apoptosis_pyroptosis"]
 
 # get thee list of genes that are significant from each comparision
-A = apoptosis_vs_healthy["features"].tolist()  # apoptosis_vs_healthy_list
-B = pyroptosis_vs_apoptosis["features"].tolist()  # pyroptosis_vs_apoptosis_list
-C = pyroptosis_vs_healthy["features"].tolist()  # pyroptosis_vs_healthy_list
+# define the sets
+A = set(apoptosis_vs_healthy["features"].tolist())  # apoptosis_vs_healthy_list
+B = set(pyroptosis_vs_apoptosis["features"].tolist())  # pyroptosis_vs_apoptosis_list
+C = set(pyroptosis_vs_healthy["features"].tolist())  # pyroptosis_vs_healthy_list
 
 
 # In[7]:
 
 
 # get the the intersections and union of the genes
-A = set(A)
-B = set(B)
-C = set(C)
 U = set(df["features"].tolist())
 
 # get the union of the genes

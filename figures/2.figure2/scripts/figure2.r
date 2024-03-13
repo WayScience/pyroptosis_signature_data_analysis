@@ -102,24 +102,24 @@ cytokine_values$oneb_Treatment_Dose_Inhibitor_Dose <- factor(cytokine_values$one
 # create grouping of treatment and group
 cytokine_values$group_treatment <- paste(cytokine_values$oneb_Treatment_Dose_Inhibitor_Dose, cytokine_values$group,  sep = ", ")
 # make the group_treatment column a factor
-cytokine_values$group_treatment <- factor(
-    cytokine_values$group_treatment,
+cytokine_values$oneb_Treatment_Dose_Inhibitor_Dose <- factor(
+    cytokine_values$oneb_Treatment_Dose_Inhibitor_Dose,
     levels = c(
-        'DMSO 0.1%, Control',
-        'Flagellin 0.1 ug/ml, Control',
-        'Flagellin 1.0 ug/ml, Pyroptosis',
-        'LPS 0.01 ug/ml, Pyroptosis',
-        'LPS 0.1 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml, Pyroptosis',
-        'LPS 10.0 ug/ml, Pyroptosis',
-        'LPS 100.0 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 1.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 3.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 10.0 uM, Pyroptosis',
-        'H2O2 100.0 nM, Control',
-        'H2O2 100.0 uM, Control',
-        'Thapsigargin 1.0 uM, Apoptosis',
-        'Thapsigargin 10.0 uM, Apoptosis'
+        'DMSO 0.1%',
+        'Flagellin 0.1 ug/ml',
+        'Flagellin 1.0 ug/ml',
+        'LPS 0.01 ug/ml',
+        'LPS 0.1 ug/ml',
+        'LPS 1.0 ug/ml',
+        'LPS 10.0 ug/ml',
+        'LPS 100.0 ug/ml',
+        'LPS 1.0 ug/ml + Nigericin 1.0 uM',
+        'LPS 1.0 ug/ml + Nigericin 3.0 uM',
+        'LPS 1.0 ug/ml + Nigericin 10.0 uM',
+        'H2O2 100.0 nM',
+        'H2O2 100.0 uM',
+        'Thapsigargin 1.0 uM',
+        'Thapsigargin 10.0 uM'
     )
 )
 
@@ -137,9 +137,7 @@ cytokine_scatter_plot <- (
         aes(
             x = `IL-1 beta [NSU]`,
             y = `TNF alpha [NSU]`,
-            color = group_treatment,
-            shape = group_treatment
-            # group = group_treatment
+            color = oneb_Treatment_Dose_Inhibitor_Dose,
         )
     )
     + geom_point(size = 5, alpha = 0.7)
@@ -168,49 +166,23 @@ cytokine_scatter_plot <- (
     + scale_color_manual(
         name = "Treatment",
         labels = c(
-        'DMSO 0.1%, Control',
-        'Flagellin 0.1 ug/ml, Control',
-        'Flagellin 1.0 ug/ml, Pyroptosis',
-        'LPS 0.01 ug/ml, Pyroptosis',
-        'LPS 0.1 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml, Pyroptosis',
-        'LPS 10.0 ug/ml, Pyroptosis',
-        'LPS 100.0 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 1.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 3.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 10.0 uM, Pyroptosis',
-        'H2O2 100.0 nM, Control',
-        'H2O2 100.0 uM, Control',
-        'Thapsigargin 1.0 uM, Apoptosis',
-        'Thapsigargin 10.0 uM, Apoptosis'
+        'DMSO 0.1%',
+        'Flagellin 0.1 ug/ml',
+        'Flagellin 1.0 ug/ml',
+        'LPS 0.01 ug/ml',
+        'LPS 0.1 ug/ml',
+        'LPS 1.0 ug/ml',
+        'LPS 10.0 ug/ml',
+        'LPS 100.0 ug/ml',
+        'LPS 1.0 ug/ml + Nigericin 1.0 uM',
+        'LPS 1.0 ug/ml + Nigericin 3.0 uM',
+        'LPS 1.0 ug/ml + Nigericin 10.0 uM',
+        'H2O2 100.0 nM',
+        'H2O2 100.0 uM',
+        'Thapsigargin 1.0 uM',
+        'Thapsigargin 10.0 uM'
         ),
-        values = colors_2)
-    + scale_shape_manual(
-        name = "Treatment",
-        labels = c(
-        'DMSO 0.1%, Control',
-        'Flagellin 0.1 ug/ml, Control',
-        'Flagellin 1.0 ug/ml, Pyroptosis',
-        'LPS 0.01 ug/ml, Pyroptosis',
-        'LPS 0.1 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml, Pyroptosis',
-        'LPS 10.0 ug/ml, Pyroptosis',
-        'LPS 100.0 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 1.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 3.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 10.0 uM, Pyroptosis',
-        'H2O2 100.0 nM, Control',
-        'H2O2 100.0 uM, Control',
-        'Thapsigargin 1.0 uM, Apoptosis',
-        'Thapsigargin 10.0 uM, Apoptosis'
-        ),
-        values = c(
-            16, 16, 16, 16, 16,
-            16, 16, 16, 16, 16,
-            16, 16, 16, 16, 16
-        )
-
-        )
+        values = colors_3)
 )
 
 cytokine_scatter_plot
@@ -268,41 +240,41 @@ cytokine_scatter_plot1 <- (
     + scale_color_manual(
         name = "Treatment",
         labels = c(
-        'DMSO 0.1%, Control',
-        'Flagellin 0.1 ug/ml, Control',
-        'Flagellin 1.0 ug/ml, Pyroptosis',
-        'LPS 0.01 ug/ml, Pyroptosis',
-        'LPS 0.1 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml, Pyroptosis',
-        'LPS 10.0 ug/ml, Pyroptosis',
-        'LPS 100.0 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 1.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 3.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 10.0 uM, Pyroptosis',
-        'H2O2 100.0 nM, Control',
-        'H2O2 100.0 uM, Control',
-        'Thapsigargin 1.0 uM, Apoptosis',
-        'Thapsigargin 10.0 uM, Apoptosis'
+        'DMSO 0.1%',
+        'Flagellin 0.1 ug/ml',
+        'Flagellin 1.0 ug/ml',
+        'LPS 0.01 ug/ml',
+        'LPS 0.1 ug/ml',
+        'LPS 1.0 ug/ml',
+        'LPS 10.0 ug/ml',
+        'LPS 100.0 ug/ml',
+        'LPS 1.0 ug/ml + Nigericin 1.0 uM',
+        'LPS 1.0 ug/ml + Nigericin 3.0 uM',
+        'LPS 1.0 ug/ml + Nigericin 10.0 uM',
+        'H2O2 100.0 nM',
+        'H2O2 100.0 uM',
+        'Thapsigargin 1.0 uM',
+        'Thapsigargin 10.0 uM'
         ),
-        values = colors_2)
+        values = colors_3)
     + scale_shape_manual(
         name = "Treatment",
         labels = c(
-        'DMSO 0.1%, Control',
-        'Flagellin 0.1 ug/ml, Control',
-        'Flagellin 1.0 ug/ml, Pyroptosis',
-        'LPS 0.01 ug/ml, Pyroptosis',
-        'LPS 0.1 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml, Pyroptosis',
-        'LPS 10.0 ug/ml, Pyroptosis',
-        'LPS 100.0 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 1.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 3.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 10.0 uM, Pyroptosis',
-        'H2O2 100.0 nM, Control',
-        'H2O2 100.0 uM, Control',
-        'Thapsigargin 1.0 uM, Apoptosis',
-        'Thapsigargin 10.0 uM, Apoptosis'
+        'DMSO 0.1%',
+        'Flagellin 0.1 ug/ml',
+        'Flagellin 1.0 ug/ml',
+        'LPS 0.01 ug/ml',
+        'LPS 0.1 ug/ml',
+        'LPS 1.0 ug/ml',
+        'LPS 10.0 ug/ml',
+        'LPS 100.0 ug/ml',
+        'LPS 1.0 ug/ml + Nigericin 1.0 uM',
+        'LPS 1.0 ug/ml + Nigericin 3.0 uM',
+        'LPS 1.0 ug/ml + Nigericin 10.0 uM',
+        'H2O2 100.0 nM',
+        'H2O2 100.0 uM',
+        'Thapsigargin 1.0 uM',
+        'Thapsigargin 10.0 uM'
         ),
         values = c(
             16, 16, 16, 16, 16,
@@ -1216,24 +1188,24 @@ umap_results_selected_treatments$group_treatment <- paste(
     sep = ", "
     )
 # make the group_treatment column a factor
-umap_results_selected_treatments$group_treatment <- factor(
-    umap_results_selected_treatments$group_treatment,
+umap_results_selected_treatments$oneb_Treatment_Dose_Inhibitor_Dose <- factor(
+    umap_results_selected_treatments$oneb_Treatment_Dose_Inhibitor_Dose,
     levels = c(
-        'DMSO 0.1%, Control',
-        'Flagellin 0.1 ug/ml, Control',
-        'Flagellin 1.0 ug/ml, Pyroptosis',
-        'LPS 0.01 ug/ml, Pyroptosis',
-        'LPS 0.1 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml, Pyroptosis',
-        'LPS 10.0 ug/ml, Pyroptosis',
-        'LPS 100.0 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 1.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 3.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 10.0 uM, Pyroptosis',
-        'H2O2 100.0 nM, Control',
-        'H2O2 100.0 uM, Control',
-        'Thapsigargin 1.0 uM, Apoptosis',
-        'Thapsigargin 10.0 uM, Apoptosis'
+        'DMSO 0.1%',
+        'Flagellin 0.1 ug/ml',
+        'Flagellin 1.0 ug/ml',
+        'LPS 0.01 ug/ml',
+        'LPS 0.1 ug/ml',
+        'LPS 1.0 ug/ml',
+        'LPS 10.0 ug/ml',
+        'LPS 100.0 ug/ml',
+        'LPS 1.0 ug/ml + Nigericin 1.0 uM',
+        'LPS 1.0 ug/ml + Nigericin 3.0 uM',
+        'LPS 1.0 ug/ml + Nigericin 10.0 uM',
+        'H2O2 100.0 nM',
+        'H2O2 100.0 uM',
+        'Thapsigargin 1.0 uM',
+        'Thapsigargin 10.0 uM'
     )
 )
 
@@ -1246,8 +1218,8 @@ umap_plot_selected_treatments <- (
         aes(
             x = umap_1,
             y = umap_2,
-            color = group_treatment,
-            shape = group_treatment
+            color = oneb_Treatment_Dose_Inhibitor_Dose,
+            fill = oneb_Treatment_Dose_Inhibitor_Dose
         )
     )
     + geom_point(size = 5, alpha = 0.7)
@@ -1264,120 +1236,23 @@ umap_plot_selected_treatments <- (
     + scale_color_manual(
         name = "Treatment",
         labels = c(
-        'DMSO 0.1%, Control',
-        'Flagellin 0.1 ug/ml, Control',
-        'Flagellin 1.0 ug/ml, Pyroptosis',
-        'LPS 0.01 ug/ml, Pyroptosis',
-        'LPS 0.1 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml, Pyroptosis',
-        'LPS 10.0 ug/ml, Pyroptosis',
-        'LPS 100.0 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 1.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 3.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 10.0 uM, Pyroptosis',
-        'H2O2 100.0 nM, Control',
-        'H2O2 100.0 uM, Control',
-        'Thapsigargin 1.0 uM, Apoptosis',
-        'Thapsigargin 10.0 uM, Apoptosis'
+        'DMSO 0.1%',
+        'Flagellin 0.1 ug/ml',
+        'Flagellin 1.0 ug/ml',
+        'LPS 0.01 ug/ml',
+        'LPS 0.1 ug/ml',
+        'LPS 1.0 ug/ml',
+        'LPS 10.0 ug/ml',
+        'LPS 100.0 ug/ml',
+        'LPS 1.0 ug/ml + Nigericin 1.0 uM',
+        'LPS 1.0 ug/ml + Nigericin 3.0 uM,',
+        'LPS 1.0 ug/ml + Nigericin 10.0 uM',
+        'H2O2 100.0 nM',
+        'H2O2 100.0 uM',
+        'Thapsigargin 1.0 uM',
+        'Thapsigargin 10.0 uM'
         ),
-        values = colors_2)
-    + scale_shape_manual(
-        name = "Treatment",
-        labels = c(
-        'DMSO 0.1%, Control',
-        'Flagellin 0.1 ug/ml, Control',
-        'Flagellin 1.0 ug/ml, Pyroptosis',
-        'LPS 0.01 ug/ml, Pyroptosis',
-        'LPS 0.1 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml, Pyroptosis',
-        'LPS 10.0 ug/ml, Pyroptosis',
-        'LPS 100.0 ug/ml, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 1.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 3.0 uM, Pyroptosis',
-        'LPS 1.0 ug/ml + Nigericin 10.0 uM, Pyroptosis',
-        'H2O2 100.0 nM, Control',
-        'H2O2 100.0 uM, Control',
-        'Thapsigargin 1.0 uM, Apoptosis',
-        'Thapsigargin 10.0 uM, Apoptosis'
-        ),
-        values  = c(
-            16, 16, 16, 16, 16,
-            16, 16, 16, 16, 16,
-            16, 16, 16, 16, 16
-        ))
-        # add box around points
-        + geom_rect(
-            aes(
-                xmin = -7,
-                xmax = -4,
-                ymin = 10,
-                ymax = 15
-            ),
-            fill = NA,
-            color = "black",
-            size = 1
-        )
-        + geom_rect(
-            aes(
-                xmin = 1,
-                xmax = 7,
-                ymin = 0,
-                ymax = 6
-            ),
-            fill = NA,
-            color = "black",
-            size = 1
-        )
-        + geom_rect(
-            aes(
-                xmin = 8.5,
-                xmax = 13,
-                ymin = 15,
-                ymax = 24
-            ),
-            fill = NA,
-            color = "black",
-            size = 1
-        )
-        + geom_rect(
-            aes(
-                xmin = -4,
-                xmax = 0,
-                ymin = -8,
-                ymax = -14
-            ),
-            fill = NA,
-            color = "black",
-            size = 1
-        )
-            + annotate(
-            geom = "text",
-            x = 4,
-            y = 8,
-            label = "Control",
-            size = 7
-        )
-        + annotate(
-            geom = "text",
-            x = 10.5,
-            y = 12,
-            label = "Pyroptosis",
-            size = 7
-        )
-        + annotate(
-            geom = "text",
-            x = -2,
-            y = -5,
-            label = "Pyroptosis ",
-            size = 7
-        )
-        + annotate(
-            geom = "text",
-            x = -4.5,
-            y = 17.5,
-            label = "Apoptosis",
-            size = 7
-        )
+        values = colors_3)
     )
 umap_plot_selected_treatments
 # remove the legend
@@ -1416,7 +1291,7 @@ layout <- c(
 
 # set plot size
 width <- 17
-height <- 17
+height <- 18
 options(repr.plot.width=width, repr.plot.height=height, units = "in", dpi = 600)
 fig2 <- (
     cytokine_scatter_plot

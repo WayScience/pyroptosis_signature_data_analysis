@@ -4,6 +4,7 @@
 # In[1]:
 
 
+import itertools
 import logging
 import pathlib
 import sys
@@ -92,8 +93,7 @@ def shuffle_features(feature_vals: np.array, seed: Optional[int] = 0) -> np.arra
     np.array
         Returns shuffled values within the feature space
 
-    Raises
-    ------
+    Raisespairs(sameby=pos_s
     TypeError
         Raised if a numpy array is not provided
     """
@@ -113,8 +113,8 @@ def shuffle_features(feature_vals: np.array, seed: Optional[int] = 0) -> np.arra
     n_cols = feature_vals.shape[1]
     for col_idx in range(0, n_cols):
         # selecting column, shuffle, and update:
-        feature_vals[:, col_idx] = np.random.permutation(feature_vals[:, col_idx])
-
+        # feature_vals[:, col_idx] = np.random.permutation(feature_vals[:, col_idx])
+        np.random.shuffle(feature_vals[:, col_idx])
     return feature_vals
 
 
@@ -240,149 +240,144 @@ neg_diffby = ["Metadata_labels"]
 null_size = Pyroptosis_count
 batch_size = 1
 
-# number of resampling
-n_resamples = 10
-
 
 # ### mAP analysis for non-shuffled data
 
-# In[10]:
+# In[ ]:
 
 
-# This will generated 100 values [0..100] as seed values
-# This will occur per phenotype
-
-# spliting metadata and raw feature values
-logging.info("splitting data set into metadata and raw feature values")
-df_meta, df_feats = utils.split_data(df)
-df_feats = np.array(df_feats)
-
-# execute pipeline on negative control with training dataset with cp features
-try:
-    # execute pipeline on negative control with trianing dataset with cp features
-
-    logging.info(f"Running pipeline on CP features using phenotype")
-    result = run_pipeline(
-        meta=df_meta,
-        feats=df_feats,
-        pos_sameby=pos_sameby,
-        pos_diffby=pos_diffby,
-        neg_sameby=neg_sameby,
-        neg_diffby=neg_diffby,
-        batch_size=batch_size,
-        null_size=null_size,
-    )
-
-    # adding columns
-    result["shuffled"] = "non-shuffled"
+# generate the permutations of cell death labels via itertools
+pos_samby_permutations = list(itertools.combinations(df["Metadata_labels"].unique(), 2))
 
 
-except ZeroDivisionError as e:
-    logging.warning(f"{e} captured on phenotye:. Skipping")
-# concatenating all datasets
-result.to_csv(regular_feat_map_path, index=False)
-result.head()
+# In[ ]:
 
 
-# ### mAP analysis for shuffled data (Phenotype)
-
-# In[11]:
-
-
-logging.info("Running mAP pipeline with shuffled phenotype labeled data")
-seed = 0
-# running process
-# for loop selects one single phenotype
-# then splits the data into metadata and raw feature values
-# two different groups that contains 3 splits caused by the types of features
-
-# This will generated 100 values [0..100] as seed values
-# splitting metadata labeled shuffled data
-logging.info("splitting shuffled data set into metadata and raw feature values")
-df = shuffle_meta_labels(dataset=df, target_col="Metadata_labels", seed=seed)
-(
-    df_meta,
-    df_feats,
-) = utils.split_data(df)
+results_df = pd.DataFrame(
+    columns=[
+        "Metadata_Well",
+        "Metadata_labels",
+        "average_precision",
+        "p_value",
+        "n_pos_pairs",
+        "n_total_pairs",
+        "shuffled",
+        "comparison",
+    ]
+)
 
 
-df_feats = np.array(df_feats)
-
-try:
-    # execute pipeline on negative control with trianing dataset with cp features
-    logging.info(
-        f"Running pipeline on CP features using  phenotype, data is shuffled by phenoptype labels"
-    )
-    shuffled_result = run_pipeline(
-        meta=df_meta,
-        feats=df_feats,
-        pos_sameby=pos_sameby,
-        pos_diffby=pos_diffby,
-        neg_sameby=neg_sameby,
-        neg_diffby=neg_diffby,
-        batch_size=batch_size,
-        null_size=null_size,
-    )
-
-    # adding shuffle label column
-    shuffled_result["shuffled"] = "phenotype_shuffled"
+# In[ ]:
 
 
-except ZeroDivisionError as e:
-    logging.warning(f"{e} captured on phenotye: Skipping")
+for i in pos_samby_permutations:
+    # print(i)
+    tmp = df.copy()
+    # get only the rows with the current permutation
+    tmp = tmp[tmp["Metadata_labels"].isin(i)]
+    # This will generated 100 values [0..100] as seed values
+    # This will occur per phenotype
 
-# saving to csv
-shuffled_result.to_csv(shuffled_feat_map_path, index=False)
-shuffled_result
+    # spliting metadata and raw feature values
+    logging.info("splitting data set into metadata and raw feature values")
+    df_meta, df_feats = utils.split_data(tmp)
+    df_feats = np.array(df_feats)
+
+    # execute pipeline on negative control with training dataset with cp features
+    try:
+        # execute pipeline on negative control with trianing dataset with cp features
+
+        logging.info(f"Running pipeline on CP features using phenotype")
+        result = run_pipeline(
+            meta=df_meta,
+            feats=df_feats,
+            pos_sameby=pos_sameby,
+            pos_diffby=pos_diffby,
+            neg_sameby=neg_sameby,
+            neg_diffby=neg_diffby,
+            batch_size=batch_size,
+            null_size=null_size,
+        )
+
+        # adding columns
+        result["shuffled"] = "non-shuffled"
+        result["comparison"] = "_vs_".join(i)
+
+    except ZeroDivisionError as e:
+        logging.warning(f"{e} captured on phenotye:. Skipping")
+
+    # concatenating all datasets
+    results_df = pd.concat([results_df, result], ignore_index=True)
+results_df.to_csv(regular_feat_map_path, index=False)
 
 
 # ### mAP analysis for shuffled data (Feature space)
 
-# In[12]:
+# In[ ]:
 
 
-seed = 0
+results_df = pd.DataFrame(
+    columns=[
+        "Metadata_Well",
+        "Metadata_labels",
+        "average_precision",
+        "p_value",
+        "n_pos_pairs",
+        "n_total_pairs",
+        "shuffled",
+        "comparison",
+    ]
+)
 
 
-# split the shuffled dataset
-# spliting metadata and raw feature values
-logging.info("splitting shuffled data set into metadata and raw feature values")
-(
-    df_meta,
-    df_feats,
-) = utils.split_data(df)
-
-df_feats = np.array(df_feats)
+# In[ ]:
 
 
-# shuffling the features, this will overwrite the generated feature space from above with the shuffled one
-df_feats = shuffle_features(feature_vals=df_feats, seed=seed)
+for i in pos_samby_permutations:
+    # print(i)
+    tmp = df.copy()
+    # get only the rows with the current permutation
+    tmp = tmp[tmp["Metadata_labels"].isin(i)]
+    # This will generated 100 values [0..100] as seed values
+    seed = np.random.randint(0, 100)
 
+    # split the shuffled dataset
+    # spliting metadata and raw feature values
+    logging.info("splitting shuffled data set into metadata and raw feature values")
+    (
+        df_meta,
+        df_feats,
+    ) = utils.split_data(tmp)
 
-try:
-    # execute pipeline on negative control with trianing dataset with cp features
-    logging.info(
-        f"Running pipeline on CP features using phenotype, feature space is shuffled"
-    )
-    shuffled_feat_map = run_pipeline(
-        meta=df_meta,
-        feats=df_feats,
-        pos_sameby=pos_sameby,
-        pos_diffby=pos_diffby,
-        neg_sameby=neg_sameby,
-        neg_diffby=neg_diffby,
-        batch_size=batch_size,
-        null_size=null_size,
-    )
+    df_feats = np.array(df_feats)
 
-    # adding shuffle label column
-    shuffled_feat_map["shuffled"] = "features_shuffled"
+    # shuffling the features, this will overwrite the generated feature space from above with the shuffled one
+    df_feats = shuffle_features(feature_vals=df_feats, seed=seed)
 
+    try:
+        # execute pipeline on negative control with trianing dataset with cp features
+        logging.info(
+            f"Running pipeline on CP features using phenotype, feature space is shuffled"
+        )
+        shuffled_feat_map = run_pipeline(
+            meta=df_meta,
+            feats=df_feats,
+            pos_sameby=pos_sameby,
+            pos_diffby=pos_diffby,
+            neg_sameby=neg_sameby,
+            neg_diffby=neg_diffby,
+            batch_size=batch_size,
+            null_size=null_size,
+        )
 
-except ZeroDivisionError as e:
-    logging.warning(f"{e} captured on phenotype:  Skipping")
+        # adding shuffle label column
+        shuffled_feat_map["shuffled"] = "shuffled"
+        shuffled_feat_map["comparison"] = "_vs_".join(i)
 
+    except ZeroDivisionError as e:
+        logging.warning(f"{e} captured on phenotype:  Skipping")
 
-# saving to csv
-shuffled_feat_map.to_csv(shuffled_feat_space_map_path, index=False)
-shuffled_feat_map
+    # concatenating all datasets
+    results_df = pd.concat([results_df, shuffled_feat_map], ignore_index=True)
+    # saving to csv
+results_df.to_csv(shuffled_feat_space_map_path, index=False)

@@ -4,6 +4,7 @@
 # In[1]:
 
 
+import itertools
 import logging
 import pathlib
 import sys
@@ -72,7 +73,10 @@ def shuffle_meta_labels(
         raise TypeError("'dataset' must be a pandas dataframe")
 
     # selecting column, shuffle values within column, add to dataframe
-    dataset[target_col] = np.random.permutation(dataset[target_col].values)
+    # dataset[target_col] = np.random.permutation(dataset[target_col].values)
+    for column in dataset.columns:
+        if column == target_col:
+            np.random.shuffle(dataset[column].values)
     return dataset
 
 
@@ -170,35 +174,6 @@ shuffled_feat_space_map_path = pathlib.Path(
 # In[6]:
 
 
-# add apoptosis, pyroptosis and healthy columns to dataframe
-df["Apoptosis"] = df.apply(
-    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    in apoptosis_ground_truth,
-    axis=1,
-)
-df["Pyroptosis"] = df.apply(
-    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    in pyroptosis_ground_truth,
-    axis=1,
-)
-df["Control"] = df.apply(
-    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    in control_ground_truth,
-    axis=1,
-)
-
-# merge apoptosis, pyroptosis, and healthy columns into one column
-df["Metadata_labels"] = df.apply(
-    lambda row: "Apoptosis"
-    if row["Apoptosis"]
-    else "Pyroptosis"
-    if row["Pyroptosis"]
-    else "Control",
-    axis=1,
-)
-# # drop apoptosis, pyroptosis, and healthy columns
-df.drop(columns=["Apoptosis", "Pyroptosis", "Control"], inplace=True)
-
 df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()
 # replace values in the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column
 df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
@@ -227,6 +202,35 @@ df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df[
     "Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM",
 )
 len(df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique())
+# add apoptosis, pyroptosis and healthy columns to dataframe
+df["Apoptosis"] = df.apply(
+    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
+    in apoptosis_ground_truth,
+    axis=1,
+)
+df["Pyroptosis"] = df.apply(
+    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
+    in pyroptosis_ground_truth,
+    axis=1,
+)
+df["Control"] = df.apply(
+    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
+    in control_ground_truth,
+    axis=1,
+)
+
+# merge apoptosis, pyroptosis, and healthy columns into one column
+df["Metadata_labels"] = df.apply(
+    lambda row: "Apoptosis"
+    if row["Apoptosis"]
+    else "Pyroptosis"
+    if row["Pyroptosis"]
+    else "Control",
+    axis=1,
+)
+
+# # drop apoptosis, pyroptosis, and healthy columns
+df.drop(columns=["Apoptosis", "Pyroptosis", "Control"], inplace=True)
 
 
 # In[7]:
@@ -237,11 +241,22 @@ map_out_dir = pathlib.Path("../data/processed/mAP_scores/")
 map_out_dir.mkdir(parents=True, exist_ok=True)
 
 
+# ## Define the control df
+
+# In[8]:
+
+
+control_df = df[
+    df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] == "DMSO_0.100_%_DMSO_0.025_%"
+]
+control_df
+
+
 # ### mAP Pipeline Parameters
 
 # The null size needs to be determined for the mAP pipeline. This is the size of the null class that is used to determine the mAP score.
 
-# In[8]:
+# In[9]:
 
 
 tmp = (
@@ -254,164 +269,206 @@ min_count = tmp["Metadata_Well"].min()
 print(min_count)
 
 
-# In[9]:
+# Positive pairs: profiles in the same group
+# Negative pairs: profiles in different groups
+#
+#
+# pos_sameby = Treatment group: All profiles that have the same treatment group
+# pos_diffby = Treatment replicates: In this case - wells
+#
+#
+
+# In[10]:
 
 
-pos_sameby = [
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
-]
+pos_sameby = ["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 pos_diffby = ["Metadata_Well"]
 
 neg_sameby = []
 neg_diffby = ["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 
-null_size = min_count
+# null_size = min_count
+null_size = 100000
 batch_size = 1
-
-# number of resampling
-n_resamples = 10
 
 
 # ### mAP analysis for non-shuffled data
 
-# In[10]:
-
-
-# This will generated 100 values [0..100] as seed values
-# This will occur per phenotype
-
-# spliting metadata and raw feature values
-logging.info("splitting data set into metadata and raw feature values")
-df_meta, df_feats = utils.split_data(df)
-df_feats = np.array(df_feats)
-
-# execute pipeline on negative control with training dataset with cp features
-try:
-    # execute pipeline on negative control with trianing dataset with cp features
-    logging.info(f"Running pipeline on CP features using phenotype")
-    result = run_pipeline(
-        meta=df_meta,
-        feats=df_feats,
-        pos_sameby=pos_sameby,
-        pos_diffby=pos_diffby,
-        neg_sameby=neg_sameby,
-        neg_diffby=neg_diffby,
-        batch_size=batch_size,
-        null_size=null_size,
-    )
-
-    # adding columns
-    result["shuffled"] = "non-shuffled"
-
-
-except ZeroDivisionError as e:
-    logging.warning(f"{e} captured on phenotye:. Skipping")
-# concatenating all datasets
-result.to_csv(regular_feat_map_path, index=False)
-result.head()
-
-
-# ### mAP analysis for shuffled data (Phenotype)
+# Loop through the data and determine the mAP score for each treatment in a class compared to a whole other class
+# Ex. Pyroptosis treatment 1 (LPS 1.0 ug/mL) vs. All Apoptosis treatments
+# Ex. Pyroptosis treatment 1 (LPS 1.0 ug/mL) vs. All Control treatments
 
 # In[11]:
 
 
-logging.info("Running mAP pipeline with shuffled phenotype labeled data")
-seed = 0
-# running process
-# for loop selects one single phenotype
-# then splits the data into metadata and raw feature values
-# two different groups that contains 3 splits caused by the types of features
-
-# This will generated 100 values [0..100] as seed values
-# splitting metadata labeled shuffled data
-logging.info("splitting shuffled data set into metadata and raw feature values")
-df = shuffle_meta_labels(
-    dataset=df, target_col="oneb_Metadata_Treatment_Dose_Inhibitor_Dose", seed=seed
+results_df = pd.DataFrame(
+    columns=[
+        "Metadata_Well",
+        "Metadata_labels",
+        "average_precision",
+        "p_value",
+        "n_pos_pairs",
+        "n_total_pairs",
+        "shuffled",
+        "comparison",
+    ]
 )
-(
-    df_meta,
-    df_feats,
-) = utils.split_data(df)
 
-
-df_feats = np.array(df_feats)
-
-try:
-    # execute pipeline on negative control with trianing dataset with cp features
-    logging.info(
-        f"Running pipeline on CP features using  phenotype, data is shuffled by phenoptype labels"
-    )
-    shuffled_result = run_pipeline(
-        meta=df_meta,
-        feats=df_feats,
-        pos_sameby=pos_sameby,
-        pos_diffby=pos_diffby,
-        neg_sameby=neg_sameby,
-        neg_diffby=neg_diffby,
-        batch_size=batch_size,
-        null_size=null_size,
-    )
-
-    # adding shuffle label column
-    shuffled_result["shuffled"] = "phenotype_shuffled"
-
-
-except ZeroDivisionError as e:
-    logging.warning(f"{e} captured on phenotye: Skipping")
-
-# saving to csv
-shuffled_result.to_csv(shuffled_feat_map_path, index=False)
-shuffled_result
-
-
-# ### mAP analysis for shuffled data (Feature space)
 
 # In[12]:
 
 
-seed = 0
+# remove the control group from the dataframe
+df = df[
+    df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] != "DMSO_0.100_%_DMSO_0.025_%"
+]
 
 
-# split the shuffled dataset
-# spliting metadata and raw feature values
-logging.info("splitting shuffled data set into metadata and raw feature values")
-(
-    df_meta,
-    df_feats,
-) = utils.split_data(df)
-
-df_feats = np.array(df_feats)
+# In[13]:
 
 
-# shuffling the features, this will overwrite the generated feature space from above with the shuffled one
-df_feats = shuffle_features(feature_vals=df_feats, seed=seed)
+for i in df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique():
+    # manually get treatment
+    tmp = df[df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].str.contains(i)]
 
-
-try:
-    # execute pipeline on negative control with trianing dataset with cp features
-    logging.info(
-        f"Running pipeline on CP features using phenotype, feature space is shuffled"
-    )
-    shuffled_feat_map = run_pipeline(
-        meta=df_meta,
-        feats=df_feats,
-        pos_sameby=pos_sameby,
-        pos_diffby=pos_diffby,
-        neg_sameby=neg_sameby,
-        neg_diffby=neg_diffby,
-        batch_size=batch_size,
-        null_size=null_size,
+    # concat tmp and concrol_df
+    tmp1 = pd.concat([tmp, control_df])
+    print(tmp1["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique())
+    # order the oneb_Metadata_Treatment_Dose_Inhibitor_Dose column so that the control group is at the beginning
+    tmp1["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = pd.Categorical(
+        tmp1["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+        categories=["DMSO_0.100_%_DMSO_0.025_%", i],
+        ordered=True,
     )
 
-    # adding shuffle label column
-    shuffled_feat_map["shuffled"] = "features_shuffled"
+    # spliting metadata and raw feature values
+    logging.info("splitting data set into metadata and raw feature values")
+    df_meta, df_feats = utils.split_data(tmp1)
+    df_feats = np.array(df_feats)
+    try:
+        # execute pipeline on negative control with trianing dataset with cp features
+
+        logging.info(f"Running pipeline on CP features using phenotype")
+        result = run_pipeline(
+            meta=df_meta,
+            feats=df_feats,
+            pos_sameby=pos_sameby,
+            pos_diffby=pos_diffby,
+            neg_sameby=neg_sameby,
+            neg_diffby=neg_diffby,
+            batch_size=batch_size,
+            null_size=null_size,
+        )
+
+        result["shuffled"] = "non-shuffled"
+        result["comparison"] = i
+
+    except ZeroDivisionError as e:
+        logging.warning(f"{e} captured on phenotye:. Skipping")
+
+    # concatenating all datasets
+    results_df = pd.concat([results_df, result], axis=0)
+results_df.to_csv(regular_feat_map_path, index=False)
 
 
-except ZeroDivisionError as e:
-    logging.warning(f"{e} captured on phenotype:  Skipping")
+# In[14]:
 
 
+result
+
+
+# In[ ]:
+
+
+# In[15]:
+
+
+import matplotlib.pyplot as plt
+
+# plot the average precision scores on a number line
+import seaborn as sns
+
+# plot the average precision scores
+sns.set(style="whitegrid")
+plt.figure(figsize=(10, 5))
+ax = sns.barplot(
+    x="comparison", y="average_precision", hue="Metadata_Well", data=result
+)
+plt.title("Average Precision Scores")
+# legend on the right
+plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
+plt.show()
+
+
+# In[16]:
+
+
+results_df.head(15)
+
+
+# ### mAP analysis for shuffled data (Feature space)
+
+# In[17]:
+
+
+results_df = pd.DataFrame(
+    columns=[
+        "Metadata_Well",
+        "Metadata_labels",
+        "average_precision",
+        "p_value",
+        "n_pos_pairs",
+        "n_total_pairs",
+        "shuffled",
+        "comparison",
+    ]
+)
+
+
+# In[18]:
+
+
+for i in df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique():
+    # manually get treatment
+    tmp = df[
+        df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].str.contains(i)
+    ].reset_index(drop=True)
+
+    # concat tmp and concrol_df
+    tmp1 = pd.concat([tmp, control_df]).reset_index(drop=True)
+
+    # spliting metadata and raw feature values
+    logging.info("splitting data set into metadata and raw feature values")
+    df_meta, df_feats = utils.split_data(tmp1)
+    df_feats = np.array(df_feats)
+    seed = np.random.randint(0, 100)
+
+    # shuffling the features, this will overwrite the generated feature space from above with the shuffled one
+    df_feats = shuffle_features(feature_vals=df_feats, seed=seed)
+
+    try:
+        # execute pipeline on negative control with trianing dataset with cp features
+
+        logging.info(f"Running pipeline on CP features using phenotype")
+        result = run_pipeline(
+            meta=df_meta,
+            feats=df_feats,
+            pos_sameby=pos_sameby,
+            pos_diffby=pos_diffby,
+            neg_sameby=neg_sameby,
+            neg_diffby=neg_diffby,
+            batch_size=batch_size,
+            null_size=null_size,
+        )
+
+        result["shuffled"] = "shuffled"
+        result["comparison"] = i
+
+    except ZeroDivisionError as e:
+        logging.warning(f"{e} captured on phenotye:. Skipping")
+
+        # concatenating all datasets
+    results_df = pd.concat([results_df, result], ignore_index=True)
 # saving to csv
-shuffled_feat_map.to_csv(shuffled_feat_space_map_path, index=False)
-shuffled_feat_map
+results_df.to_csv(shuffled_feat_space_map_path, index=False)
+results_df.head(10)

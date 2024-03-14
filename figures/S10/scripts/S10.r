@@ -11,212 +11,42 @@ source("../../utils/figure_themes.r")
 
 cell_type <- "PBMC"
 
-# make the figures directory if it doesn't exist
-if (!dir.exists("../figures")) {
-    dir.create("../figures")
-}
-redundancy_index_plot_not_shuffled_path <- file.path(paste0(
-    "../",
-    "figures/",
-    cell_type,
-    "_redundancy_index_not_shuffled_plot.png"))
-
-redundancy_index_plot_shuffled_path <- file.path(paste0(
-    "../",
-    "figures/",
-    cell_type,
-    "_redundancy_index_shuffled_plot.png"))
-
-# import data
-redundancy_file_path <- file.path(paste0(
-    "../",
-    "../",
-    "../",
-    "7.redundancy_analysis/",
-    "results/",
-    cell_type,
-    "_redundancy_analysis.csv"))
-
-redundancy_df <- read.csv(redundancy_file_path)
-head(redundancy_df)
-
-unique(redundancy_df$Shuffle)
-
-# change True to Shuffled data via mutate
-redundancy_df <- redundancy_df %>% mutate(Shuffle = ifelse(Shuffle == "True", "Shuffled", "Not Shuffled"))
-minimum_value <- min(redundancy_df$RI_u, redundancy_df$RI_v)
-maximum_value <- max(redundancy_df$RI_u, redundancy_df$RI_v)
-# shuffle = True df
-shuffle_df <- redundancy_df[redundancy_df$Shuffle == "Shuffled",]
-shuffle_min <- min(shuffle_df$RI_u, shuffle_df$RI_v)
-shuffle_max <- max(shuffle_df$RI_u, shuffle_df$RI_v)
-# shuffle = False df
-no_shuffle_df <- redundancy_df[redundancy_df$Shuffle == "Not Shuffled",]
-no_shuffle_min <- min(no_shuffle_df$RI_u, no_shuffle_df$RI_v)
-no_shuffle_max <- max(no_shuffle_df$RI_u, no_shuffle_df$RI_v)
-
-
-# linear model the shuffled and not shuffled data
-non_shuffled_lm <- lm(RI_v ~ RI_u, data = no_shuffle_df)
-non_shuffled_lm_summary <- summary(non_shuffled_lm)
-non_shuffled_slope <- as.data.frame(non_shuffled_lm_summary$coefficients)$Estimate[2]
-non_shuffled_intercept <- as.data.frame(non_shuffled_lm_summary$coefficients)$Estimate[1]
-
-shuffled_lm <- lm(RI_v ~ RI_u, data = shuffle_df)
-shuffled_lm_summary <- summary(shuffled_lm)
-shuffled_slope <- as.data.frame(shuffled_lm_summary$coefficients)$Estimate[2]
-shuffled_intercept <- as.data.frame(shuffled_lm_summary$coefficients)$Estimate[1]
-
-# set cutoff for axis break
-yticks_shuffle <- c(-1000,-100,-50,-10)
-# function to transform data to y position
-trans <- function(x){pmin(x,40) + 0.05*pmax(x-40,0)}
-
-RI_plot_inset_shuffle <- (
-    ggplot(shuffle_df, aes(x=RI_u, y=RI_v, color=Shuffle))
-    + geom_point()
-    + theme_bw()
-    + xlim(shuffle_min, shuffle_max)
-    + ylim(shuffle_min, shuffle_max)
-    + ggtitle("Shuffled Data")
-    + xlab("Morphology RI")
-    + ylab("nELISA RI")
-    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
-    + figure_theme
-
-    + theme(
-        plot.title = element_text(size = 20, hjust = 0.5)
-    )
-
-)
-
-RI_plot_w_inset <- (
-    ggplot(shuffle_df, aes(x=RI_u, y=RI_v, color=Shuffle))
-    + geom_point()
-    + theme_bw()
-    + xlim(-50, shuffle_max)
-    + ylim(-600, shuffle_max)
-    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
-    + figure_theme
-
-    + theme(
-        plot.title = element_text(size = 20, hjust = 0.5)
-    )
-)
-# drop legend
-RI_plot_inset_shuffle <- RI_plot_inset_shuffle + theme(legend.position = "none")+ ggplot2::coord_fixed()
-# drop axis labels
-RI_plot_w_inset <- RI_plot_w_inset + theme(axis.title.x = element_blank(), axis.title.y = element_blank())
-RI_plot_w_inset <- RI_plot_w_inset + theme(legend.position = "none")+ ggplot2::coord_fixed()
-# shuffle_inset_full <- (
-#   ggdraw()
-#   + draw_plot(RI_plot_inset_shuffle)
-#   + draw_plot(RI_plot_w_inset, x = 0.12, y = 0.57, width = 0.3, height = 0.3)
-#   + ggplot2::coord_fixed()
-# )
-
-ggsave(redundancy_index_plot_shuffled_path, width = 8, height = 8)
-
-
-RI_plot_no_shuffle <- (
-    ggplot(no_shuffle_df, aes(x=RI_u, y=RI_v, color=Shuffle))
-    + geom_point()
-    + theme_bw()
-    + xlim(no_shuffle_min, no_shuffle_max)
-    + ylim(no_shuffle_min, no_shuffle_max)
-    + ggtitle("Non-Shuffled Data")
-    + xlab("Morphology RI")
-    + ylab("nELISA RI")
-    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
-    # change color of points to blue
-    + scale_color_manual(values = c("blue"))
-    + figure_theme
-    + theme(
-        plot.title = element_text(size = 20, hjust = 0.5)
-    )
-)
-
-RI_plot_inset_no_shuffle <- (
-    ggplot(no_shuffle_df, aes(x=RI_u, y=RI_v, color=Shuffle))
-    + geom_point()
-    + theme_bw()
-    + xlim(-0.1, no_shuffle_max)
-    + ylim(-0.1, no_shuffle_max)
-    + xlab("Morphology RI")
-    + ylab("nELISA RI")
-    + geom_abline(intercept = 0, slope = 1)
-    # change color of points to blue
-    + scale_color_manual(values = c("blue"))
-    + figure_theme
-    + theme(
-        plot.title = element_text(size = 20, hjust = 0.5)
-    )
-)
-
-# drop legend
-RI_plot_no_shuffle <- RI_plot_no_shuffle + theme(legend.position = "none" ) + ggplot2::coord_fixed()
-# drop axis labels
-RI_plot_inset_no_shuffle <- RI_plot_inset_no_shuffle + theme(axis.title.x = element_blank(), axis.title.y = element_blank())
-RI_plot_inset_no_shuffle <- RI_plot_inset_no_shuffle + theme(legend.position = "none")
-# no_shuffle_inset_full <- (
-#   ggdraw()
-#   + draw_plot(RI_plot_no_shuffle)
-#   + draw_plot(RI_plot_inset_no_shuffle, x = 0.12, y = 0.57, width = 0.3, height = 0.3)
-
-# )
-ggsave(redundancy_index_plot_not_shuffled_path, width = 8, height = 8)
-
-width <- 8
-height <- 4
-options(repr.plot.width = width, repr.plot.height = height)
-# combine the two plots
-RI_plots <- plot_grid(RI_plot_no_shuffle,  RI_plot_inset_shuffle,  label_size = 20, ncol = 2, align = "hv", rel_widths = c(1, 1))
-RI_plots
-
 # set path to the data morphology
 # class
 df_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","morphology","mAP_scores_class.csv")
 reg_df_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_regular_class.csv")
-shuffled_df_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_shuffled_class.csv")
-shuffled_feature_space_df_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_shuffled_feature_space_class.csv")
+shuffled_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_shuffled_feature_space_class.csv")
 # treatment
 treatment_df_morphology_treatment_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","morphology","mAP_scores_treatment.csv")
 reg_df_morphology_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_regular_treatment.csv")
-shuffled_df_morphology_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_shuffled_class_treatment.csv")
-shuffled_feature_space_df_morphology_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_shuffled_feature_space_treatment.csv")
+shuffled_morphology_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_shuffled_feature_space_treatment.csv")
 
 # set path to the secretome data
 # class
 df_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","secretome","mAP_scores_class.csv")
 reg_df_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_regular_class.csv")
-shuffled_df_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_shuffled_class.csv")
-shuffled_feature_space_df_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_shuffled_feature_space_class.csv")
+shuffled_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_shuffled_feature_space_class.csv")
 # treatment
 treatment_df_secretome_treatment_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","secretome","mAP_scores_treatment.csv")
 reg_df_secretome_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_regular_treatment.csv")
-shuffled_df_secretome_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_shuffled_treatment.csv")
-shuffled_feature_space_df_secretome_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_shuffled_feature_space_treatment.csv")
+shuffled_secretome_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_shuffled_feature_space_treatment.csv")
 
 # read in the data
 df_morphology_class <- read.csv(df_morphology_class_path)
 reg_df_morphology_class <- read.csv(reg_df_morphology_class_path)
-shuffled_df_morphology_class <- read.csv(shuffled_df_morphology_class_path)
-shuffled_feature_space_df_morphology_class <- read.csv(shuffled_feature_space_df_morphology_class_path)
+shuffled_morphology_class <- read.csv(shuffled_morphology_class_path)
 
 df_morphology_treatment <- read.csv(treatment_df_morphology_treatment_path)
 reg_df_morphology_treatment <- read.csv(reg_df_morphology_treatment_path)
-shuffled_df_morphology_treatment <- read.csv(shuffled_df_morphology_treatment_path)
-shuffled_feature_space_df_morphology_treatment <- read.csv(shuffled_feature_space_df_morphology_treatment_path)
+shuffled_morphology_treatment <- read.csv(shuffled_morphology_treatment_path)
 
 df_secretome_class <- read.csv(df_secretome_class_path)
 reg_df_secretome_class <- read.csv(reg_df_secretome_class_path)
-shuffled_df_secretome_class <- read.csv(shuffled_df_secretome_class_path)
-shuffled_feature_space_df_secretome_class <- read.csv(shuffled_feature_space_df_secretome_class_path)
+shuffled_secretome_class <- read.csv(shuffled_secretome_class_path)
 
 df_secretome_treatment <- read.csv(treatment_df_secretome_treatment_path)
 reg_df_secretome_treatment <- read.csv(reg_df_secretome_treatment_path)
-shuffled_df_secretome_treatment <- read.csv(shuffled_df_secretome_treatment_path)
-shuffled_feature_space_df_secretome_treatment <- read.csv(shuffled_feature_space_df_secretome_treatment_path)
+shuffled_secretome_treatment <- read.csv(shuffled_secretome_treatment_path)
 
 levels_list <- c(
     'Media',
@@ -270,58 +100,50 @@ levels_list <- c(
 # replace the values in the shuffled column
 # declare the shuffled column as a factor
 # replace the values in the shuffled column
-df_morphology_class$shuffled <- gsub("features_shuffled", "Shuffled features", df_morphology_class$shuffled)
-df_morphology_class$shuffled <- gsub("phenotype_shuffled", "Shuffled phenotypes", df_morphology_class$shuffled)
-df_morphology_class$shuffled <- gsub("non-shuffled", "Non-shuffled", df_morphology_class$shuffled)
-df_morphology_class$shuffled <- factor(df_morphology_class$shuffled, levels = c( "Non-shuffled", "Shuffled features", "Shuffled phenotypes"))
+df_morphology_class$shuffled <- gsub("shuffled", "Shuffled", df_morphology_class$shuffled)
+df_morphology_class$shuffled <- gsub("non-Shuffled", "Non-shuffled", df_morphology_class$shuffled)
+df_morphology_class$shuffled <- factor(df_morphology_class$shuffled, levels = c( "Non-shuffled", "Shuffled"))
 df_morphology_class$Metadata_labels <- factor(df_morphology_class$Metadata_labels, levels = c("Control", "Apoptosis", "Pyroptosis"))
 
-df_secretome_class$shuffled <- gsub("features_shuffled", "Shuffled features", df_secretome_class$shuffled)
-df_secretome_class$shuffled <- gsub("phenotype_shuffled", "Shuffled phenotypes", df_secretome_class$shuffled)
-df_secretome_class$shuffled <- gsub("non-shuffled", "Non-shuffled", df_secretome_class$shuffled)
-df_secretome_class$shuffled <- factor(df_secretome_class$shuffled, levels = c( "Non-shuffled", "Shuffled features", "Shuffled phenotypes"))
+df_secretome_class$shuffled <- gsub("shuffled", "Shuffled", df_secretome_class$shuffled)
+df_secretome_class$shuffled <- gsub("non-Shuffled", "Non-shuffled", df_secretome_class$shuffled)
+df_secretome_class$shuffled <- factor(df_secretome_class$shuffled, levels = c( "Non-shuffled", "Shuffled"))
 df_secretome_class$Metadata_labels <- factor(df_secretome_class$Metadata_labels, levels = c("Control", "Apoptosis", "Pyroptosis"))
 
-df_morphology_treatment$shuffled <- gsub("features_shuffled", "Shuffled features", df_morphology_treatment$shuffled)
-df_morphology_treatment$shuffled <- gsub("phenotype_shuffled", "Shuffled phenotypes", df_morphology_treatment$shuffled)
-df_morphology_treatment$shuffled <- gsub("non-shuffled", "Non-shuffled", df_morphology_treatment$shuffled)
-df_morphology_treatment$shuffled <- factor(df_morphology_treatment$shuffled, levels = c( "Non-shuffled", "Shuffled features", "Shuffled phenotypes"))
+df_morphology_treatment$shuffled <- gsub("shuffled", "Shuffled", df_morphology_treatment$shuffled)
+df_morphology_treatment$shuffled <- gsub("non-Shuffled", "Non-shuffled", df_morphology_treatment$shuffled)
+df_morphology_treatment$shuffled <- factor(df_morphology_treatment$shuffled, levels = c( "Non-shuffled", "Shuffled"))
 df_morphology_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(df_morphology_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, levels = levels_list)
 
-df_secretome_treatment$shuffled <- gsub("features_shuffled", "Shuffled features", df_secretome_treatment$shuffled)
-df_secretome_treatment$shuffled <- gsub("phenotype_shuffled", "Shuffled phenotypes", df_secretome_treatment$shuffled)
-df_secretome_treatment$shuffled <- gsub("non-shuffled", "Non-shuffled", df_secretome_treatment$shuffled)
-df_secretome_treatment$shuffled <- factor(df_secretome_treatment$shuffled, levels = c( "Non-shuffled", "Shuffled features", "Shuffled phenotypes"))
+df_secretome_treatment$shuffled <- gsub("shuffled", "Shuffled", df_secretome_treatment$shuffled)
+df_secretome_treatment$shuffled <- gsub("non-Shuffled", "Non-shuffled", df_secretome_treatment$shuffled)
+df_secretome_treatment$shuffled <- factor(df_secretome_treatment$shuffled, levels = c("Non-shuffled", "Shuffled"))
 df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, levels = levels_list)
 
 
 # combine the dataframes
-all_df_morphology_class <- rbind(reg_df_morphology_class, shuffled_df_morphology_class, shuffled_feature_space_df_morphology_class)
-all_df_morphology_treatment <- rbind(reg_df_morphology_treatment, shuffled_df_morphology_treatment, shuffled_feature_space_df_morphology_treatment)
-all_df_secretome_class <- rbind(reg_df_secretome_class, shuffled_df_secretome_class, shuffled_feature_space_df_secretome_class)
-all_df_secretome_treatment <- rbind(reg_df_secretome_treatment, shuffled_df_secretome_treatment, shuffled_feature_space_df_secretome_treatment)
+all_df_morphology_class <- rbind(reg_df_morphology_class, shuffled_morphology_class)
+all_df_morphology_treatment <- rbind(reg_df_morphology_treatment, shuffled_morphology_treatment)
+all_df_secretome_class <- rbind(reg_df_secretome_class, shuffled_secretome_class)
+all_df_secretome_treatment <- rbind(reg_df_secretome_treatment, shuffled_secretome_treatment)
 
-all_df_morphology_class$shuffled <- gsub("features_shuffled", "Shuffled features", all_df_morphology_class$shuffled)
-all_df_morphology_class$shuffled <- gsub("phenotype_shuffled", "Shuffled phenotypes", all_df_morphology_class$shuffled)
-all_df_morphology_class$shuffled <- gsub("non-shuffled", "Non-shuffled", all_df_morphology_class$shuffled)
-all_df_morphology_class$shuffled <- factor(all_df_morphology_class$shuffled, levels = c( "Non-shuffled", "Shuffled features", "Shuffled phenotypes"))
+all_df_morphology_class$shuffled <- gsub("shuffled", "Shuffled", all_df_morphology_class$shuffled)
+all_df_morphology_class$shuffled <- gsub("non-Shuffled", "Non-shuffled", all_df_morphology_class$shuffled)
+all_df_morphology_class$shuffled <- factor(all_df_morphology_class$shuffled, levels = c( "Non-shuffled", "Shuffled"))
 all_df_morphology_class$Metadata_labels <- factor(all_df_morphology_class$Metadata_labels, levels = c("Control", "Apoptosis", "Pyroptosis"))
 
-all_df_secretome_class$shuffled <- gsub("features_shuffled", "Shuffled features", all_df_secretome_class$shuffled)
-all_df_secretome_class$shuffled <- gsub("phenotype_shuffled", "Shuffled phenotypes", all_df_secretome_class$shuffled)
-all_df_secretome_class$shuffled <- gsub("non-shuffled", "Non-shuffled", all_df_secretome_class$shuffled)
-all_df_secretome_class$shuffled <- factor(all_df_secretome_class$shuffled, levels = c( "Non-shuffled", "Shuffled features", "Shuffled phenotypes"))
+all_df_secretome_class$shuffled <- gsub("shuffled", "Shuffled", all_df_secretome_class$shuffled)
+all_df_secretome_class$shuffled <- gsub("non-Shuffled", "Non-shuffled", all_df_secretome_class$shuffled)
+all_df_secretome_class$shuffled <- factor(all_df_secretome_class$shuffled, levels = c( "Non-shuffled", "Shuffled"))
 
-all_df_morphology_treatment$shuffled <- gsub("features_shuffled", "Shuffled features", all_df_morphology_treatment$shuffled)
-all_df_morphology_treatment$shuffled <- gsub("phenotype_shuffled", "Shuffled phenotypes", all_df_morphology_treatment$shuffled)
-all_df_morphology_treatment$shuffled <- gsub("non-shuffled", "Non-shuffled", all_df_morphology_treatment$shuffled)
-all_df_morphology_treatment$shuffled <- factor(all_df_morphology_treatment$shuffled, levels = c( "Non-shuffled", "Shuffled features", "Shuffled phenotypes"))
+all_df_morphology_treatment$shuffled <- gsub("shuffled", "Shuffled", all_df_morphology_treatment$shuffled)
+all_df_morphology_treatment$shuffled <- gsub("non-Shuffled", "Non-shuffled", all_df_morphology_treatment$shuffled)
+all_df_morphology_treatment$shuffled <- factor(all_df_morphology_treatment$shuffled, levels = c( "Non-shuffled", "Shuffled"))
 all_df_morphology_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(all_df_morphology_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, levels = levels_list)
 
-all_df_secretome_treatment$shuffled <- gsub("features_shuffled", "Shuffled features", all_df_secretome_treatment$shuffled)
-all_df_secretome_treatment$shuffled <- gsub("phenotype_shuffled", "Shuffled phenotypes", all_df_secretome_treatment$shuffled)
-all_df_secretome_treatment$shuffled <- gsub("non-shuffled", "Non-shuffled", all_df_secretome_treatment$shuffled)
-all_df_secretome_treatment$shuffled <- factor(all_df_secretome_treatment$shuffled, levels = c( "Non-shuffled", "Shuffled features", "Shuffled phenotypes"))
+all_df_secretome_treatment$shuffled <- gsub("shuffled", "Shuffled", all_df_secretome_treatment$shuffled)
+all_df_secretome_treatment$shuffled <- gsub("non-Shuffled", "Non-shuffled", all_df_secretome_treatment$shuffled)
+all_df_secretome_treatment$shuffled <- factor(all_df_secretome_treatment$shuffled, levels = c( "Non-shuffled", "Shuffled"))
 all_df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(all_df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, levels = levels_list)
 
 # cobine the dfs
@@ -340,21 +162,17 @@ merged_df <- merge(subset_morphology_class, subset_secretome_class, by=c("shuffl
 head(merged_df)
 
 
-
 # aggregate the data by shuffled and Metadata_labels
 merged_agg <- aggregate(. ~ shuffled + Metadata_labels, data=merged_df, FUN=mean)
 # combine the shuffled and Metadata_labels columns
 merged_agg$group <- paste(merged_agg$shuffled, merged_agg$Metadata_labels, sep="_")
 # change the text in the group column
-merged_agg$group <- gsub("Non-shuffled_Control", "Non-shuffled\nControl", merged_agg$group)
-merged_agg$group <- gsub("Shuffled features_Control", "Shuffled features\nControl", merged_agg$group)
-merged_agg$group <- gsub("Shuffled phenotypes_Control", "Shuffled phenotypes\nControl", merged_agg$group)
+merged_agg$group <- gsub("Non-shuffled Control", "Non-shuffled\nControl", merged_agg$group)
+merged_agg$group <- gsub("Shuffled Control", "Shuffled\nControl", merged_agg$group)
 merged_agg$group <- gsub("Non-shuffled_Apoptosis", "Non-shuffled\nApoptosis", merged_agg$group)
-merged_agg$group <- gsub("Shuffled features_Apoptosis", "Shuffled features\nApoptosis", merged_agg$group)
-merged_agg$group <- gsub("Shuffled phenotypes_Apoptosis", "Shuffled phenotypes\nApoptosis", merged_agg$group)
-merged_agg$group <- gsub("Non-shuffled_Pyroptosis", "Non-shuffled\nPyroptosis", merged_agg$group)
-merged_agg$group <- gsub("Shuffled features_Pyroptosis", "Shuffled features\nPyroptosis", merged_agg$group)
-merged_agg$group <- gsub("Shuffled phenotypes_Pyroptosis", "Shuffled phenotypes\nPyroptosis", merged_agg$group)
+merged_agg$group <- gsub("Shuffled Apoptosis", "Shuffled\nApoptosis", merged_agg$group)
+merged_agg$group <- gsub("Non-shuffled Pyroptosis", "Non-shuffled\nPyroptosis", merged_agg$group)
+merged_agg$group <- gsub("Shuffled Pyroptosis", "Shuffled\nPyroptosis", merged_agg$group)
 # make the group column a factor
 merged_agg$group <- factor(
     merged_agg$group,
@@ -410,6 +228,8 @@ scatter_compare <- (
     )
 )
     + figure_theme
+    # add y = x line
+    + geom_abline(intercept = 0, slope = 1, linetype="dashed")
 
 )
 scatter_compare
@@ -429,23 +249,17 @@ colnames(subset_secretome_treatment)[colnames(subset_secretome_treatment)=="aver
 merged_df <- merge(subset_morphology_treatment, subset_secretome_treatment, by=c("shuffled", "Metadata_labels", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"))
 head(merged_df)
 
-
-
-height <- 6
-width <- 6
-options(repr.plot.width=width, repr.plot.height=height)
 # aggregate the data by shuffled and oneb_Metadata_Treatment_Dose_Inhibitor_Dose and shuffled
 merged_agg <- aggregate(. ~ shuffled + oneb_Metadata_Treatment_Dose_Inhibitor_Dose + Metadata_labels, data=merged_df, FUN=mean)
 # scatter plot
 scatter_compare_treatment <- (
     ggplot(merged_agg, aes(x=morphology_ap, y=secretome_ap, col = Metadata_labels, shape=shuffled))
     + geom_point(size=3, alpha=0.5)
-    + labs(x="Morphology mAP", y="Secretome mAP")
+    + labs(x="Morphology mAP score", y="Secretome mAP score")
     + theme_bw()
+    + ggtitle("Comparison of mAP scores")
     + ylim(0,1)
     + xlim(0,1)
-    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
-    + figure_theme
     # Change the legend title
     # change the legend shape
     + scale_shape_manual(
@@ -471,6 +285,9 @@ scatter_compare_treatment <- (
     )
 )
     + figure_theme
+    # add y = x line
+    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color = "black")
+    # fix coordiantes
     + ggplot2::coord_fixed()
 
 )
@@ -591,20 +408,22 @@ merged_df$inhibitor <- factor(
 )
 head(merged_df)
 
+# aggregate the data by shuffled and oneb_Metadata_Treatment_Dose_Inhibitor_Dose and shuffled
+merged_df <- aggregate(. ~ shuffled + oneb_Metadata_Treatment_Dose_Inhibitor_Dose + Metadata_labels + inducer + inhibitor, data=merged_df, FUN=mean)
+head(merged_df)
+
 width <- 17
 height <- 15
 options(repr.plot.width=width, repr.plot.height=height)
 # scatter plot with fill being the treatment dose
 scatter_by_treatment <- (
     ggplot(merged_df, aes(x=morphology_ap, y=secretome_ap, col = inducer, shape=inhibitor))
-    + geom_point(size=3, alpha=0.5)
+    + geom_point(size=5, alpha=1)
     + labs(x="Morphology mAP score", y="Secretome mAP score")
     + theme_bw()
     + ylim(0,1)
     + xlim(0,1)
     + figure_theme
-    # add line
-    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
     # Change the legend title
     # change the legend shape
     + scale_color_manual(
@@ -663,48 +482,32 @@ scatter_by_treatment <- (
         values = shapes
     )
     # make the legend 1 column
-
+    + guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
     + ggplot2::coord_fixed()
     + facet_grid(.~shuffled)
-    # set spacing between the facets
-    + theme(panel.spacing = unit(2, "lines"))
-    # move legend to the bottom
+    # add y = x line
+    + geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black")
+    # move legend to bottom
     + theme(legend.position = "bottom")
-    + guides(color = guide_legend(ncol = 2), shape = guide_legend(ncol = 1))
-    # make legend title larger
-    + theme(legend.title = element_text(size=20))
-
-
+    # make legend multi rows
+    + guides(col = guide_legend(ncol = 2), shape = guide_legend(ncol = 1))
+    # shift the legend to the left slightly
 
 )
 scatter_by_treatment
-
-RI <- (
-    RI_plot_no_shuffle
-    + RI_plot_inset_shuffle
-)
-# as ggplot object
-library(ggplotify)
-RI <- as.ggplot(RI)
 
 width <- 17
 height <- 14
 options(repr.plot.width = width, repr.plot.height = height)
 
 layout <- c(
-    area(t=1, b=2, l=1, r=2), # A
-    area(t=1, b=2, l=3, r=4), # B
-    area(t=1, b=2, l=5, r=6), # C
-    area(t=3, b=5, l=1, r=6) # D
+    area(t=1, b=2, l=1, r=2) # A
 )
 
 
 figure <- (
-    RI_plot_no_shuffle
-    + RI_plot_inset_shuffle
-    + scatter_compare_treatment
     # move the plot left a bit
-    + wrap_elements(scatter_by_treatment)
+    wrap_elements(scatter_by_treatment)
     + plot_layout(design = layout, heights = c(1, 0.5, 3))
     + plot_annotation(tag_levels = "A")  & theme(plot.tag = element_text(size = 20))
 
@@ -720,18 +523,4 @@ dev.off()
 figure
 
 
-print(paste0(
-    "non-shuffled: f(x) = ",
-    round(non_shuffled_slope, 2),
-    "x + ",
-    round(non_shuffled_intercept, 2),
-    " + epsilon"
-))
 
-print(paste0(
-    "shuffled: f(x) = ",
-    round(shuffled_slope, 2),
-    "x + ",
-    round(shuffled_intercept, 2),
-    " + epsilon"
-))

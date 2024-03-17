@@ -12,7 +12,7 @@ module load anaconda
 
 conda activate Interstellar_python
 
-cell_types=( SHSY5Y )
+cell_types=( SHSY5Y PBMC )
 aggragates=( True )
 nomics=( True )
 

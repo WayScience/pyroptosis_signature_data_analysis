@@ -1,11 +1,18 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# <span style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">An Exception was encountered at '<a href="#papermill-error-cell">In [8]</a>'.</span>
+# In[1]:
+
+
+# Parameters
+cell_type = "SHSY5Y"
+aggregation = True
+nomic = True
+
 
 # This noteboook aggregates the data from the previous notebooks and creates the final dataset for the analysis barring the data are aggregated in the analysis.
 
-# In[1]:
+# In[2]:
 
 
 import pathlib
@@ -13,16 +20,7 @@ import pathlib
 import numpy as np
 import pandas as pd
 
-# In[2]:
-
-
-# Parameters
-cell_type = "SHSY5Y"
-aggregation = False
-nomic = False
-
-
-# In[3]:
+# In[4]:
 
 
 if aggregation and nomic:
@@ -43,7 +41,7 @@ else:
     raise ValueError("Wrong parameters")
 
 
-# In[4]:
+# In[5]:
 
 
 path = pathlib.Path(f"../../data/{cell_type}_preprocess_sc_norm_no_fs.parquet")
@@ -72,7 +70,7 @@ else:
     raise ValueError("Nomic data not imported")
 
 
-# In[5]:
+# In[6]:
 
 
 # subset each column that contains metadata
@@ -89,7 +87,7 @@ metadata_well = metadata[
 data_df = pd.merge(data, metadata_well, left_index=True, right_index=True)
 
 
-# In[6]:
+# In[7]:
 
 
 if nomic:
@@ -105,7 +103,7 @@ if nomic:
     )
 
 
-# In[7]:
+# In[8]:
 
 
 if aggregation and nomic:
@@ -122,16 +120,19 @@ if aggregation and nomic:
     data_df = pd.merge(
         data_df, metadata, left_on="Metadata_Well", right_on="Metadata_Well"
     )
-    data_df = pd.merge(
+    data_df_merge = pd.merge(
         data_df,
         df_nomic,
-        left_on=["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-        right_on=["position_x", "oneb_Treatment_Dose_Inhibitor_Dose"],
+        left_on=["Metadata_Well"],
+        right_on=["position_x"],
     )
-    data_df = data_df.drop(columns=["position_x"])
+    data_df_merge["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = data_df[
+        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+    ]
+    data_df_merge = data_df_merge.drop(columns=["position_x"])
     # drop all metadata columns
-    labeled_data = data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    data_x = data_df.drop(metadata.columns, axis=1)
+    labeled_data = data_df_merge["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
+    data_x = data_df_merge.drop(metadata.columns, axis=1)
 
 
 elif aggregation and not nomic:
@@ -155,8 +156,12 @@ elif not aggregation and nomic:
     data_df = pd.merge(
         data_df,
         df_nomic,
-        left_on=["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
-        right_on=["position_x", "oneb_Treatment_Dose_Inhibitor_Dose"],
+        left_on=[
+            "Metadata_Well",
+        ],
+        right_on=[
+            "position_x",
+        ],
     )
     data_df = data_df.drop(columns=["position_x"])
 elif aggregation == False and nomic == False:
@@ -165,9 +170,13 @@ else:
     raise ValueError("Wrong parameters nomic and/or aggregation not defined")
 
 
-# <span id="papermill-error-cell" style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">Execution using papermill encountered an exception here and stopped:</span>
+# In[ ]:
 
-# In[8]:
+
+len(data_df["Metadata_Well"].unique())
+
+
+# In[ ]:
 
 
 # save the data

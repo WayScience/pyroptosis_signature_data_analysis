@@ -22,19 +22,32 @@ import pyarrow.parquet as pq
 # In[3]:
 
 
+# Parameters
+cell_type = "SHSY5Y"
+
+
+# In[4]:
+
+
 # Define inputs
 feature_file = pathlib.Path(f"../../data/{cell_type}_sc_norm.parquet")
 feature_df = pd.read_parquet(feature_file)
 
 
-# In[4]:
+# In[ ]:
+
+
+len(feature_df["Metadata_Well"].unique())
+
+
+# In[ ]:
 
 
 # replace all " " with "_" in all values of the dataframe
 feature_df = feature_df.replace(to_replace=" ", value="_", regex=True)
 
 
-# In[5]:
+# In[ ]:
 
 
 # remove uM in each row of the Metadata_inducer1_concentration column
@@ -43,13 +56,13 @@ feature_df["Metadata_inducer1_concentration"] = feature_df[
 ].str.replace("µM", "")
 
 
-# In[6]:
+# In[ ]:
 
 
 feature_df["Metadata_inducer1_concentration"].unique()
 
 
-# In[7]:
+# In[ ]:
 
 
 # define output file path
@@ -58,14 +71,14 @@ feature_df_out_path = pathlib.Path(
 )
 
 
-# In[8]:
+# In[ ]:
 
 
 print(feature_df.shape)
 feature_df.head()
 
 
-# In[9]:
+# In[ ]:
 
 
 # removing costes features as they behave with great variance across all data
@@ -74,14 +87,14 @@ print(feature_df.shape)
 feature_df.head()
 
 
-# In[10]:
+# In[ ]:
 
 
 # replacing '/' in treatment dosage column to avoid errors in file interpolation including such strings
 feature_df = feature_df.replace(to_replace="/", value="_per_", regex=True)
 
 
-# In[11]:
+# In[ ]:
 
 
 # replace nan values with 0
@@ -94,14 +107,14 @@ columns_to_fill = [
 feature_df[columns_to_fill].fillna(0, inplace=True)
 
 
-# In[12]:
+# In[ ]:
 
 
 # replace all None values with 0
 feature_df["Metadata_inducer1_concentration"].fillna(0, inplace=True)
 
 
-# In[13]:
+# In[ ]:
 
 
 # create a list of columns to be converted to float
@@ -117,9 +130,15 @@ for i in col_list:
     )
 
 
+# In[ ]:
+
+
+len(feature_df["Metadata_Well"].unique())
+
+
 # #### Combine Inducer1 and Inducer2 into one column
 
-# In[14]:
+# In[ ]:
 
 
 # treatment column merge
@@ -162,7 +181,7 @@ feature_df["Metadata_Dose"] = np.select(condlist=conditions, choicelist=results)
 # ## N Beta Column condition generation
 # columns generated to used for linear modeling where terms separated by '__' will be a beta coefficient
 
-# In[15]:
+# In[ ]:
 
 
 # one beta of inudcer1, inducer1 concentration, inhibitor, and inhibitor concentration all as 1 beta term
@@ -219,7 +238,7 @@ feature_df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
 ).astype(str)
 
 
-# In[16]:
+# In[ ]:
 
 
 replacement_dict = {
@@ -234,7 +253,7 @@ for pattern, replacement in replacement_dict.items():
     ].replace(to_replace=str(pattern), value=str(replacement), regex=True)
 
 
-# In[17]:
+# In[ ]:
 
 
 feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
@@ -242,7 +261,7 @@ feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
 ].str.replace("media_ctr_0.0_0_Media_ctr_0_0", "media_ctr_0.0_0_Media_ctr_0.0_0")
 
 
-# In[18]:
+# In[ ]:
 
 
 # need to convert to strings to save as parquet
@@ -252,13 +271,13 @@ for column in feature_df.columns:
         feature_df[column] = feature_df[column].astype(str)
 
 
-# In[19]:
+# In[ ]:
 
 
 print(cell_type, len(feature_df["Metadata_Well"].unique()))
 
 
-# In[20]:
+# In[ ]:
 
 
 # write to parquet file

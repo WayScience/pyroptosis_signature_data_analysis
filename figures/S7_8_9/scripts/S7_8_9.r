@@ -292,14 +292,16 @@ process_subset_data <- function(df){
 plot_coeffs <- function(df, cytokine, shuffle){
     # replace "[NSU]" with ""
     cytokine <- gsub("\\[NSU\\]", "", cytokine)
+    r2 <- unique(df$r2)
     # plot the data
     coef_gg <- (
         ggplot(df, aes(x = channel_learned, y = feature_group))
-        + geom_point(aes(fill = abs(coefficients)), pch = 22, size = 5.75)
+        + geom_point(aes(fill = abs(coefficients)), pch = 22, size = 8.5)
         + facet_wrap("~compartment", ncol = 3)
         + theme_bw()
+        + ggtitle(paste0("R2: ", round(r2,2)))
         + scale_fill_continuous(
-            name=paste0(cytokine,"\ntop Abs. val\ntreatment\nlinear model\ncoefficient"),
+            name=paste0(cytokine,"\ntop Abs. val\ntreatment\n model\ncoefficient"),
             low = "darkblue",
             high = "yellow",
         )
@@ -308,10 +310,12 @@ plot_coeffs <- function(df, cytokine, shuffle){
 
         + figure_theme
         + theme(
-            axis.text.x = element_text(angle = 45, hjust = 1, size = 14),
+            axis.text.x = element_text(angle = 90, hjust = 1, size = 20),
+            # title size
+            plot.title = element_text(size = 20)
         )
+
         # rotate x axis labels
-        + theme(axis.text.x = element_text(angle = 45, hjust = 1))
         + theme(plot.title = element_text(hjust = 0.5))
         )
         return(coef_gg)
@@ -1100,6 +1104,16 @@ df <- df %>%
 df <- df %>% filter(shuffle == "final")
 
 
+# get all secreted_proteins and the corresponding r2 value
+tmp_df <- df %>% select(secreted_proteins, r2)
+# remove duplicates
+tmp_df <- tmp_df[!duplicated(tmp_df),]
+# sort by r2 value
+tmp_df <- tmp_df[order(tmp_df$r2),]
+head(tmp_df)
+# set order of secreted_proteins (columns)
+column_order <- tmp_df$secreted_proteins
+
 # get the feature names for color bar visualization
 features <- df %>% select(feature_names)
 # drop duplicate features from the feature names
@@ -1137,8 +1151,16 @@ features$channel_learned <- factor(features$channel_learned, levels = c("Nuclei"
 legend_title_size <- 28
 legend_text_size <- 24
 
-r2_df <- df %>% select(r2)
-r2_df <- unique(r2_df)
+r2_df <- tmp_df
+head(r2_df)
+# alphabetically reorder the df by secreted_proteins
+
+r2_df <- r2_df[order(r2_df$secreted_proteins),]
+rownames(r2_df) <- NULL
+head(r2_df)
+
+
+
 column_ha <- HeatmapAnnotation(
     R2 = r2_df$r2,
     show_legend = TRUE,
@@ -1151,7 +1173,8 @@ column_ha <- HeatmapAnnotation(
     ),
     annotation_name_gp = gpar(fontsize = 20),
     # set color bar for r2 continuous value with brewer palette
-    col = list(R2 = colorRamp2(c(0, 0.5, 1), spectral_palette <- c(
+    col = list(R2 = colorRamp2(c(0, 0.5, 1),
+    spectral_palette <- c(
         # white
         "#FFFFFF",
         # light blue
@@ -1165,11 +1188,15 @@ column_ha <- HeatmapAnnotation(
 
 # make the df into a matrix for heatmap
 mat <- dcast(df, feature_names ~ secreted_proteins, value.var = "coefficients")
+
+
 row.names(mat) <- mat$feature_names
 mat <- mat %>% select(-feature_names)
 mat <- as.matrix(mat)
 # na to 0
 mat[is.na(mat)] <- 0
+
+head(mat)
 
 legend_height <- unit(4, "cm")
 legend_width <- unit(10, "cm")
@@ -1292,6 +1319,7 @@ row_ha_3 <- rowAnnotation(
     )
 )
 
+head(mat)
 # # drop the feature names column
 mat <- mat %>% select(-feature_names)
 mat <- as.matrix(mat)
@@ -1299,6 +1327,7 @@ mat <- as.matrix(mat)
 # plot size
 width <- 23
 height <- 23
+
 options(repr.plot.width=width, repr.plot.height=height)
 # change margins
 # par(mar = c(1, 1, 1, 1))
@@ -1307,13 +1336,17 @@ model_heatmap <- (
         Heatmap(
         (mat),
         cluster_rows = TRUE,    # Cluster rows
-        cluster_columns = TRUE, # Cluster columns
+        cluster_columns = FALSE, # Cluster columns
+        # order columns
+
+        column_order = column_order,
         show_row_names = FALSE,  # Show row names
         show_column_names = FALSE, # Show column names
         column_names_gp = gpar(fontsize = 16), # Column name label formatting
         row_names_gp = gpar(fontsize = 14),    # Row name label formatting
         right_annotation = c(row_ha_1,row_ha_2,row_ha_3),
         bottom_annotation = column_ha,
+
         # rename fill legend
         heatmap_legend_param = list(
                 title = "Coef",
@@ -1392,9 +1425,6 @@ il6_final_plot <- remove_y(il6_final_plot)
 CCL4_final_plot <- remove_y(CCL4_final_plot)
 
 
-height <- 15
-width <- 17
-options(repr.plot.width=width, repr.plot.height=height)
 
 pt3 <- (
     il1beta_final_plot
@@ -1422,7 +1452,7 @@ ggsave(
     dpi = 600
 )
 width <- 23
-height <- 15
+height <- 18
 options(repr.plot.width=width, repr.plot.height=height)
 ggsave(
     filename = paste0(figure_path, "S8.png"),

@@ -961,7 +961,7 @@ h_p_unique_plot <- h_p_unique_plot + theme(
     axis.title.x = element_blank()
 )
 a_h__a_p__h_p_common_plot <- a_h__a_p__h_p_common_plot + ggtitle(
-    "All Common Features"
+    "All Different Features"
 ) + theme(
     plot.title = element_text(
         color="black",

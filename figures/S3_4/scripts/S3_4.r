@@ -1212,8 +1212,8 @@ sfig_pt1
 
 # sfig_pt2
 sfig_pt2 <- (
-    wrap_elements(full = cytokine_scatter_plot1)
-    + wrap_elements(full = cytokine_scatter_plot2)
+    wrap_elements(full = cytokine_scatter_plot2)
+    + wrap_elements(full = cytokine_scatter_plot1)
 
     + wrap_elements(full = UMAP_plot)
     + plot_layout(design = design, widths = c(0.3,15), heights = c())

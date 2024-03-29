@@ -1,5 +1,12 @@
-# Parquet File Merge
+# Preprocess Data
 
-This processing run was broken up into two separate runs as there was as power failure during the first half.
+Here we preprocess the data to be used in the model. The data is stored in the `data` folder.
+The data is preprocessed in the following steps:
 
-The first and second run still need to be added together.
+1. Morphology preprocessing
+    Here we clean the morphoplogical data and metadata.
+2. nELISA (Secretome) preprocessing
+    Here we clean the nELISA data and metadata.
+3. Aggregation and Merging
+    Here we aggregate the moprhology data to the well level and merge it with the nELISA data.
+

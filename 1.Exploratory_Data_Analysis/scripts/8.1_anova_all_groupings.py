@@ -53,13 +53,33 @@ feature = args.feature
 # In[ ]:
 
 
-# Import Data
-# set data file path under pathlib path for multi-system use
-file_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
-df = pd.read_parquet(file_path)
+cell_type = "PBMC"
+feature = "Nuclei_Texture_SumEntropy_CorrPM_3_01_256"
 
 
 # In[ ]:
+
+
+Metadata_columns = [
+    "Metadata_cell_type",
+    "Metadata_Well",
+    "Metadata_number_of_singlecells",
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
+]
+Metadata_columns = Metadata_columns + [feature]
+
+
+# In[ ]:
+
+
+# Import Data
+# set data file path under pathlib path for multi-system use
+file_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
+# df = pd.read_parquet(file_path, columns=Metadata_columns)
+df = pd.read_parquet(file_path)
+
+
+# In[6]:
 
 
 # toml file path
@@ -158,12 +178,6 @@ tukey_df["p-adj_abs"] = abs(tukey_df["p-adj"])
 # make new column that states if the relationship is positive or negative
 tukey_df["pos_neg"] = np.where(tukey_df["p-adj"] > 0, "positive", "negative")
 # order the features by p-adj value
-
-
-# In[ ]:
-
-
-tukey_df.head()
 
 
 # In[ ]:

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# <span style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">An Exception was encountered at '<a href="#papermill-error-cell">In [6]</a>'.</span>
+
 # In[1]:
 
 
@@ -54,6 +56,8 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
+# <span id="papermill-error-cell" style="color:red; font-family:Helvetica Neue, Helvetica, Arial, sans-serif; font-size:2em;">Execution using papermill encountered an exception here and stopped:</span>
+
 # In[6]:
 
 
@@ -63,7 +67,13 @@ anova_results = pd.read_parquet(anova_path)
 anova_results.head()
 
 
-# In[7]:
+# Where
+# a_h = apoptosis vs healthy
+# a_p = apoptosis vs pyroptosis
+# h_p = healthy vs pyroptosis
+#
+
+# In[ ]:
 
 
 # create a column that adds group1 and group2 together
@@ -93,7 +103,7 @@ a_h__h_p = np.union1d(a_h_list, h_p_list)
 a_p__h_p = np.union1d(a_p_list, h_p_list)
 
 
-# In[8]:
+# In[ ]:
 
 
 # get the unique features for each set
@@ -125,7 +135,7 @@ a_h__a_p__h_p_common = np.intersect1d(a_h__a_p__h_p_common, h_p_list)
 print(len(a_h__a_p__h_p_common))
 
 
-# In[9]:
+# In[ ]:
 
 
 # create a list of each list of features
@@ -139,7 +149,7 @@ dict_of_feature_lists["a_p__h_p_common"] = list(a_p__h_p_common)
 dict_of_feature_lists["a_h__a_p__h_p_common"] = list(a_h__a_p__h_p_common)
 
 
-# In[10]:
+# In[ ]:
 
 
 # set umap parameters
@@ -154,7 +164,7 @@ umap_params = umap.UMAP(
 )
 
 
-# In[11]:
+# In[ ]:
 
 
 final_df_dict = {}
@@ -172,7 +182,7 @@ for key, value in tqdm(dict_of_feature_lists.items()):
 final_df = pd.concat(final_df_dict.values(), ignore_index=True)
 
 
-# In[12]:
+# In[ ]:
 
 
 # write out the results

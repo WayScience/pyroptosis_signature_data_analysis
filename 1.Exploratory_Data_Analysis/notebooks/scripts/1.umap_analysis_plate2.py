@@ -112,11 +112,11 @@ df_values = df_values.sample(frac=1, random_state=0)
 
 if sample:
     df_values_path = pathlib.Path(
-        f"./results/{cell_type}_umap_values_morphology_sample_{n}.parquet"
+        f"../results/{cell_type}_umap_values_morphology_sample_{n}.parquet"
     )
 else:
     df_values_path = pathlib.Path(
-        f"./results/{cell_type}_umap_values_morphology_all_cells.parquet"
+        f"../results/{cell_type}_umap_values_morphology_all_cells.parquet"
     )
 # if path does not exist create it
 df_values_path.parent.mkdir(parents=True, exist_ok=True)

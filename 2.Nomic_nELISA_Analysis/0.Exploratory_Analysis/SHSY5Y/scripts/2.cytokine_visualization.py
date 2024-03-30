@@ -29,12 +29,10 @@ from plotnine import (
 
 
 # set paths and load data
-path = pathlib.Path(
-    "../../Data/clean/Plate2/nELISA_plate_430420_SHSY5Y_cleanup4correlation.csv"
-)
+path = pathlib.Path("../../Data/clean/Plate2/nELISA_plate_430420_SHSY5Y_clean.parquet")
 toml_path = pathlib.Path("../../../1.Exploratory_Data_Analysis/utils/params.toml")
 
-df = pd.read_csv(path)
+df = pd.read_parquet(path)
 params = toml.load(toml_path)
 list_of_treatments = params["list_of_treatments"]["treatments"]
 
@@ -55,7 +53,13 @@ output_path = pathlib.Path(
 df.to_csv(output_path, index=False)
 
 
-# In[12]:
+# In[5]:
+
+
+df
+
+
+# In[6]:
 
 
 # plot scatter plot of all the treatment groups for IL-1 beta
@@ -66,7 +70,7 @@ p = (
         aes(
             x="TNF alpha [NSU]",
             y="IL-1 beta [NSU]",
-            color="oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
+            color="oneb_Treatment_Dose_Inhibitor_Dose",
         ),
     )
     + geom_point(size=3)
@@ -87,21 +91,19 @@ p = p + theme(figure_size=(16, 8))
 p
 
 
-# In[6]:
+# In[7]:
 
 
-df_treatment = df.drop(
-    columns=["Metadata_position_x", "fourb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-)
+df_treatment = df.drop(columns=["position_x", "fourb_Treatment_Dose_Inhibitor_Dose"])
 df_treatment = df_treatment.melt(
-    id_vars=["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"],
+    id_vars=["oneb_Treatment_Dose_Inhibitor_Dose"],
     value_vars=df_treatment.columns.to_list()[1:],
     var_name="Cytokine",
     value_name="Cytokine_Value",
 )
 
 
-# In[7]:
+# In[8]:
 
 
 # outpath for the melted df
@@ -111,24 +113,7 @@ output_path = pathlib.Path(
 df_treatment.to_csv(output_path, index=False)
 
 
-# In[8]:
+# In[9]:
 
 
-# facet grid of treatment and dose with TNF alpha
-p = (
-    ggplot(
-        df_treatment,
-        aes(
-            x="oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
-            y="Cytokine_Value",
-            fill="Cytokine",
-        ),
-    )
-    + geom_bar(stat="identity", position="dodge")
-    + facet_grid(". ~ Cytokine")
-    + theme_bw()
-    + theme(axis_text_x=element_text(angle=90, hjust=1))
-)
-
-p = p + theme(figure_size=(16, 8))
-p
+df_treatment

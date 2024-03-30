@@ -3,7 +3,9 @@ library(gridExtra)
 library(cowplot)
 library(styler)
 
+
 cell_type <- "PBMC"
+
 
 # import paths
 
@@ -66,6 +68,7 @@ plot_legend_path <- file.path(paste0(figure_output_path,"umap_by_all_treatment_l
 ggsave(plot_path, nomic_data_plot, width = 8.5, height = 5.5, dpi = 500)
 ggsave(plot_legend_path, legend,dpi = 500, scale = 2)
 
+
 ## plot the data
 # set the plot size
 nomic_data_selected_treatments_plot <- (
@@ -111,3 +114,4 @@ plot_legend_path <- file.path(paste0(figure_output_path,"umap_by_selected_treatm
 # save the plot
 ggsave(plot_path, nomic_data_selected_treatments_plot, width = 8.5, height = 5.5, dpi = 500)
 ggsave(plot_legend_path, nomic_data_selected_treatments_plot_legend, dpi = 500, scale = 2)
+

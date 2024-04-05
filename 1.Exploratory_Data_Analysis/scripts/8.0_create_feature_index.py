@@ -4,7 +4,6 @@
 # In[1]:
 
 
-import argparse
 import pathlib
 import warnings
 
@@ -27,12 +26,18 @@ from statsmodels.stats.multicomp import pairwise_tukeyhsd
 # In[ ]:
 
 
-# parse command line arguments
-parser = argparse.ArgumentParser()
-parser.add_argument("--cell_type", help="cell type to analyze", type=str, default="all")
+cell_type = "SHSY5Y"
 
-args = parser.parse_args()
-cell_type = args.cell_type
+
+# In[ ]:
+
+
+# # parse command line arguments
+# parser = argparse.ArgumentParser()
+# parser.add_argument("--cell_type", help="cell type to analyze", type=str, default="all")
+
+# args = parser.parse_args()
+# cell_type = args.cell_type
 
 
 # In[4]:

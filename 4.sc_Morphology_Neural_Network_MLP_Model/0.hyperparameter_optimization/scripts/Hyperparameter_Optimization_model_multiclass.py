@@ -6,7 +6,7 @@
 # ### Being a binary model this notebook will be limited to predicting one class 1 or 0, yes or no.
 # ### Here I will be predicting if a cell received a treatment or not
 
-# In[ ]:
+# In[1]:
 
 
 import pathlib
@@ -41,7 +41,7 @@ from sklearn.model_selection import train_test_split
 sys.path.append("../../..")
 from utils.utils import df_stats
 
-# In[ ]:
+# In[2]:
 
 
 # # set up the parser
@@ -66,14 +66,14 @@ from utils.utils import df_stats
 # MODEL_NAME = args.model_name
 
 
-# In[ ]:
+# In[3]:
 
 
 CELL_TYPE = "PBMC"
 MODEL_NAME = "MultiClass_MLP"
 
 
-# In[ ]:
+# In[4]:
 
 
 ml_configs_file = pathlib.Path("../../MLP_utils/multi_class_config.toml").resolve(
@@ -90,7 +90,7 @@ MODEL_TYPE = mlp_params.MODEL_TYPE
 HYPERPARAMETER_BATCH_SIZE = mlp_params.HYPERPARAMETER_BATCH_SIZE
 
 
-# In[ ]:
+# In[5]:
 
 
 # Import Data
@@ -103,7 +103,7 @@ file_path = pathlib.Path(
 df1 = pd.read_parquet(file_path)
 
 
-# In[ ]:
+# In[6]:
 
 
 # get paths for toml files
@@ -118,7 +118,7 @@ ground_truth = toml.load(ground_truth_file_path)
 treatment_splits = toml.load(treatment_splits_file_path)
 
 
-# In[ ]:
+# In[7]:
 
 
 # get information from toml files
@@ -129,10 +129,11 @@ test_split_100 = treatment_splits["splits"]["data_splits_100"]
 test_split_75 = treatment_splits["splits"]["data_splits_75"]
 
 
-# In[ ]:
+# In[8]:
 
 
 np.random.seed(0)
+print(df1.shape)
 if mlp_params.DATA_SUBSET_OPTION == "True":
     df1 = df1.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose").apply(
         lambda x: x.sample(n=mlp_params.DATA_SUBSET_NUMBER, random_state=0)
@@ -180,7 +181,7 @@ df1.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 # ### Split said data
 
-# In[ ]:
+# In[10]:
 
 
 # randomly select wells to hold out for testing one per treatment group
@@ -201,7 +202,7 @@ print(
 )
 
 
-# In[ ]:
+# In[11]:
 
 
 # variable test and train set splits
@@ -224,7 +225,7 @@ test_set_50 = df[
 print(treatment_holdout.shape, test_set_75.shape, test_set_50.shape)
 
 
-# In[ ]:
+# In[12]:
 
 
 # get the train test splits from each group
@@ -262,7 +263,7 @@ print(
 print(f"Shape for the holdout set: {df_holdout.shape}")
 
 
-# In[ ]:
+# In[13]:
 
 
 treatment_holdout
@@ -291,7 +292,7 @@ print(
 )
 
 
-# In[ ]:
+# In[14]:
 
 
 # get the indexes for the training and testing sets
@@ -303,7 +304,7 @@ treatment_holdout_index = treatment_holdout.index
 df_holdout_index = df_holdout.index
 
 
-# In[ ]:
+# In[15]:
 
 
 print(
@@ -322,7 +323,7 @@ print(
 )
 
 
-# In[ ]:
+# In[16]:
 
 
 # create pandas dataframe with all indexes and their respective labels, stratified by phenotypic class
@@ -343,13 +344,13 @@ index_data = pd.DataFrame(index_data)
 index_data
 
 
-# In[ ]:
+# In[17]:
 
 
 index_data["label"].unique()
 
 
-# In[ ]:
+# In[18]:
 
 
 save_path = pathlib.Path(f"../indexes/{CELL_TYPE}/multi_class/")
@@ -359,7 +360,7 @@ print(save_path)
 save_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[ ]:
+# In[19]:
 
 
 # save indexes as tsv file
@@ -373,7 +374,7 @@ index_data.to_csv(
 # ##### Classification Models:
 # Comment out code if using regression
 
-# In[ ]:
+# In[20]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -384,7 +385,7 @@ df_descriptive = df1[df_metadata]
 df_values = df1.drop(columns=df_metadata)
 
 
-# In[ ]:
+# In[21]:
 
 
 # get the class weights for the loss function to account for class imbalance
@@ -408,7 +409,7 @@ with open(f"{class_weights_file}/class_weights.txt", "w") as filehandle:
         filehandle.write("%s\n" % listitem)
 
 
-# In[ ]:
+# In[22]:
 
 
 # Creating label encoder
@@ -428,7 +429,7 @@ df_values_Y.unique()
 
 # #### Split Data - All Models can proceed through this point
 
-# In[ ]:
+# In[23]:
 
 
 # split into train and test sets from indexes previously defined
@@ -446,14 +447,14 @@ Y_holdout = df_values_Y.loc[df_holdout_index]
 Y_treatment_holdout = df_values_Y.loc[treatment_holdout_index]
 
 
-# In[ ]:
+# In[24]:
 
 
 mlp_params.OUT_FEATURES = len(df_values_Y.unique())
 mlp_params.OUT_FEATURES
 
 
-# In[ ]:
+# In[25]:
 
 
 Y_train = torch.tensor(Y_train.values)
@@ -487,7 +488,7 @@ X_holdout = torch.tensor(X_holdout.values)
 X_treatment_holdout = torch.tensor(X_treatment_holdout.values)
 
 
-# In[ ]:
+# In[26]:
 
 
 # produce data objects for train, val and test datasets
@@ -496,7 +497,7 @@ val_data = torch.utils.data.TensorDataset(X_val, Y_val)
 test_data = torch.utils.data.TensorDataset(X_test, Y_test)
 
 
-# In[ ]:
+# In[27]:
 
 
 mlp_params.IN_FEATURES = X_train.shape[1]
@@ -520,7 +521,7 @@ else:
 print(mlp_params.MODEL_TYPE)
 
 
-# In[ ]:
+# In[28]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
@@ -532,20 +533,20 @@ valid_loader = torch.utils.data.DataLoader(
 )
 
 
-# In[ ]:
+# In[29]:
 
 
 mlp_params.OUT_FEATURES
 
 
-# In[ ]:
+# In[30]:
 
 
 # check device
 print(mlp_params.DEVICE)
 
 
-# In[ ]:
+# In[31]:
 
 
 # no accuracy function must be loss for regression
@@ -582,7 +583,7 @@ objective_model_optimizer(
 )
 
 
-# In[ ]:
+# In[32]:
 
 
 # create graph directory for this model
@@ -600,7 +601,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[ ]:
+# In[33]:
 
 
 # create graph directory for this model
@@ -617,7 +618,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[ ]:
+# In[34]:
 
 
 param_dict = extract_best_trial_params(

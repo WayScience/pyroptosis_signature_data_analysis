@@ -4,7 +4,7 @@ conda activate Interstellar_python
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=scripts/ notebooks/*.ipynb
 
-CELL_TYPE="PBMC"
+CELL_TYPE="SHSY5Y"
 
 filename="features/${CELL_TYPE}_feature_index.txt"
 # read all lines of the file to an array

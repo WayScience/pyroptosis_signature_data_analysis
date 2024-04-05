@@ -14,7 +14,7 @@ module load anaconda
 
 conda activate Interstellar_python
 
-cell_types=( SHSY5Y PBMC )
+cell_types=( PBMC )
 model_names=( MultiClass_MLP )
 shuffles=( True False )
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb

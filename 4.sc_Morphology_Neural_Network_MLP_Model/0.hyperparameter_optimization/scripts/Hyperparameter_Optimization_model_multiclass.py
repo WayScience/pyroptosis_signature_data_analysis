@@ -22,7 +22,6 @@ from sklearn import preprocessing
 
 sys.path.append("../..")
 
-import argparse
 
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
@@ -45,26 +44,33 @@ from utils.utils import df_stats
 # In[2]:
 
 
-# set up the parser
-parser = argparse.ArgumentParser(description="Run hyperparameter optimization")
-parser.add_argument(
-    "--cell_type",
-    type=str,
-    default="all",
-    help="Cell type to run hyperparameter optimization for",
-)
-parser.add_argument(
-    "--model_name",
-    type=str,
-    default="all",
-    help="Model name to run hyperparameter optimization for",
-)
+# # set up the parser
+# parser = argparse.ArgumentParser(description="Run hyperparameter optimization")
+# parser.add_argument(
+#     "--cell_type",
+#     type=str,
+#     default="all",
+#     help="Cell type to run hyperparameter optimization for",
+# )
+# parser.add_argument(
+#     "--model_name",
+#     type=str,
+#     default="all",
+#     help="Model name to run hyperparameter optimization for",
+# )
 
-# parse arguments
-args = parser.parse_args()
+# # parse arguments
+# args = parser.parse_args()
 
-CELL_TYPE = args.cell_type
-MODEL_NAME = args.model_name
+# CELL_TYPE = args.cell_type
+# MODEL_NAME = args.model_name
+
+
+# In[3]:
+
+
+CELL_TYPE = "PBMC"
+MODEL_NAME = "MultiClass_MLP"
 
 
 # In[4]:
@@ -127,6 +133,7 @@ test_split_75 = treatment_splits["splits"]["data_splits_75"]
 
 
 np.random.seed(0)
+print(df1.shape)
 if mlp_params.DATA_SUBSET_OPTION == "True":
     df1 = df1.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose").apply(
         lambda x: x.sample(n=mlp_params.DATA_SUBSET_NUMBER, random_state=0)
@@ -545,7 +552,6 @@ print(mlp_params.DEVICE)
 # no accuracy function must be loss for regression
 if mlp_params.MODEL_TYPE == "Regression":
     mlp_params.METRIC = "loss"
-    pass
 
 
 # wrap the objective function inside of a lambda function to pass args...

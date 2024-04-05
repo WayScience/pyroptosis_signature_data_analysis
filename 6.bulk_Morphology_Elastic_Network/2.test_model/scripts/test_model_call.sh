@@ -4,12 +4,13 @@
 #SBATCH --partition=amilan
 #SBATCH --qos=normal
 #SBATCH --output=sample-%j.out
-#SBATCH --array=1-375%100
+#SBATCH --array=1-750%100
 #SBATCH --time=24:00:00
+#SBATCH --mem-per-cpu=200G
 
 module load anaconda
 
-conda activate Interstellar_python
+conda activate Interstellar
 
 # get the array of cytokiens
 filename="../../0.split_data/cytokine_list/cytokine_list.txt"
@@ -18,7 +19,7 @@ readarray -t cytokine_array < $filename
 
 
 shuffles=( "True" "False" )
-cell_types=( PBMC )
+cell_types=( SHSY5Y PBMC )
 
 # calculate the number of jobs
 job_id=$((SLURM_ARRAY_TASK_ID - 1))

@@ -2,16 +2,16 @@
 # This script is used to train the regression models for the elastic network
 
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --partition=amilan
-#SBATCH --qos=normal
-#SBATCH --time=12:00:00
+#SBATCH --ntasks=20
+#SBATCH --partition=amem
+#SBATCH --qos=mem
+#SBATCH --time=48:00:00
 #SBATCH --output=sample-%j.out
-#SBATCH --array=1-375%100
+#SBATCH --array=1-750%20
 
 module load anaconda
 
-conda activate Interstellar_python
+conda activate Interstellar
 
 # get the array of cytokiens
 filename="../../0.split_data/cytokine_list/cytokine_list.txt"
@@ -21,7 +21,7 @@ readarray -t cytokine_array < $filename
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
 
 shuffles=( True False )
-cell_types=( PBMC )
+cell_types=( SHSY5Y PBMC )
 # calculate the number of jobs
 # calculate the number of jobs
 job_id=$((SLURM_ARRAY_TASK_ID - 1))

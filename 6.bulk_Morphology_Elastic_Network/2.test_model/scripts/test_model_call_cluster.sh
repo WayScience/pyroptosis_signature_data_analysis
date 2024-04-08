@@ -4,7 +4,7 @@
 #SBATCH --partition=amilan
 #SBATCH --qos=normal
 #SBATCH --output=sample-%j.out
-#SBATCH --array=1-750%100
+#SBATCH --array=1-375%150
 #SBATCH --time=24:00:00
 #SBATCH --mem-per-cpu=200G
 
@@ -19,7 +19,7 @@ readarray -t cytokine_array < $filename
 
 
 shuffles=( "True" "False" )
-cell_types=( SHSY5Y PBMC )
+cell_types=( PBMC )
 
 # calculate the number of jobs
 job_id=$((SLURM_ARRAY_TASK_ID - 1))

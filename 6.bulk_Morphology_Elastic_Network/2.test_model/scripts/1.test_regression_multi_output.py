@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import argparse
@@ -36,7 +36,7 @@ from sklearn.model_selection import (
 )
 from sklearn.utils import parallel_backend
 
-# In[ ]:
+# In[2]:
 
 
 argparser = argparse.ArgumentParser()
@@ -52,7 +52,7 @@ cytokine = args.cytokine
 print(cell_type, shuffle, cytokine)
 
 
-# In[ ]:
+# In[4]:
 
 
 # Parameters
@@ -60,7 +60,7 @@ aggregation = True
 nomic = True
 
 
-# In[ ]:
+# In[5]:
 
 
 # set shuffle value
@@ -70,13 +70,13 @@ else:
     shuffle = "final"
 
 
-# In[ ]:
+# In[6]:
 
 
 MODEL_TYPE = "regression"
 
 
-# In[ ]:
+# In[7]:
 
 
 # load training data from indexes and features dataframe
@@ -93,7 +93,7 @@ data_df = pd.read_parquet(data_path)
 data_split_indexes = pd.read_csv(data_split_path, sep="\t")
 
 
-# In[ ]:
+# In[8]:
 
 
 # rename column that contain the treatment dose to be a metadata column
@@ -105,7 +105,14 @@ data_df.rename(
 )
 
 
-# In[ ]:
+# In[9]:
+
+
+# remove duplicate columns
+data_df = data_df.loc[:, ~data_df.columns.duplicated()]
+
+
+# In[10]:
 
 
 # select tht indexes for the training and test set
@@ -113,7 +120,7 @@ train_indexes = data_split_indexes.loc[data_split_indexes["label"] == "train"]
 test_indexes = data_split_indexes.loc[data_split_indexes["label"] == "test"]
 
 
-# In[ ]:
+# In[11]:
 
 
 # subset data_df by indexes in data_split_indexes
@@ -121,7 +128,7 @@ training_data = data_df.loc[train_indexes["labeled_data_index"]]
 testing_data = data_df.loc[test_indexes["labeled_data_index"]]
 
 
-# In[ ]:
+# In[12]:
 
 
 # define metadata columns
@@ -148,13 +155,13 @@ test_data_y = testing_data[test_data_y_cols]
 test_data_x = test_data_x.drop(test_data_y_cols, axis=1)
 
 
-# In[ ]:
+# In[13]:
 
 
 print(train_data_x.shape, train_data_y.shape, test_data_x.shape, test_data_y.shape)
 
 
-# In[ ]:
+# In[14]:
 
 
 # set model path from parameters
@@ -170,7 +177,7 @@ else:
     print("Error")
 
 
-# In[ ]:
+# In[15]:
 
 
 data_dict = {
@@ -189,7 +196,7 @@ data_dict = {
 }
 
 
-# In[ ]:
+# In[16]:
 
 
 # cross validation method
@@ -200,7 +207,7 @@ metrics = ["explained_variance", "neg_mean_absolute_error", "neg_mean_squared_er
 output_metric_scores = {}
 
 
-# In[ ]:
+# In[17]:
 
 
 # blank df for concatenated results
@@ -224,7 +231,7 @@ results_df = pd.DataFrame(
 )
 
 
-# In[ ]:
+# In[18]:
 
 
 for data_split in data_dict:
@@ -264,7 +271,7 @@ for data_split in data_dict:
     output_metric_scores["treatment"] = metadata[
         "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
     ]
-    output_metric_scores["well"] = metadata["Metadata_Well"]
+    output_metric_scores["well"] = metadata["Metadata_Well"].values
     df = pd.DataFrame.from_dict(output_metric_scores)
     df["r2"] = r2
     df["cytokine"] = cytokine
@@ -284,13 +291,13 @@ for data_split in data_dict:
     results_df = pd.concat([results_df, df], axis=0)
 
 
-# In[ ]:
+# In[19]:
 
 
-results_df
+results_df.head()
 
 
-# In[ ]:
+# In[20]:
 
 
 var_df = results_df.drop(
@@ -318,7 +325,7 @@ var_df.reset_index(inplace=True)
 var_df.head()
 
 
-# In[ ]:
+# In[21]:
 
 
 # set model path from parameters
@@ -337,7 +344,7 @@ else:
 pathlib.Path(results_path).mkdir(parents=True, exist_ok=True)
 
 
-# In[ ]:
+# In[22]:
 
 
 # check if the model training metrics file exists

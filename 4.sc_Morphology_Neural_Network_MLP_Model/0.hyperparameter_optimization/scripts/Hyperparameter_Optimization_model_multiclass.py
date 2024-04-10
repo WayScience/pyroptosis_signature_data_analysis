@@ -22,6 +22,7 @@ from sklearn import preprocessing
 
 sys.path.append("../..")
 
+import argparse
 
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
@@ -44,33 +45,26 @@ from utils.utils import df_stats
 # In[2]:
 
 
-# # set up the parser
-# parser = argparse.ArgumentParser(description="Run hyperparameter optimization")
-# parser.add_argument(
-#     "--cell_type",
-#     type=str,
-#     default="all",
-#     help="Cell type to run hyperparameter optimization for",
-# )
-# parser.add_argument(
-#     "--model_name",
-#     type=str,
-#     default="all",
-#     help="Model name to run hyperparameter optimization for",
-# )
+# set up the parser
+parser = argparse.ArgumentParser(description="Run hyperparameter optimization")
+parser.add_argument(
+    "--cell_type",
+    type=str,
+    default="all",
+    help="Cell type to run hyperparameter optimization for",
+)
+parser.add_argument(
+    "--model_name",
+    type=str,
+    default="all",
+    help="Model name to run hyperparameter optimization for",
+)
 
-# # parse arguments
-# args = parser.parse_args()
+# parse arguments
+args = parser.parse_args()
 
-# CELL_TYPE = args.cell_type
-# MODEL_NAME = args.model_name
-
-
-# In[3]:
-
-
-CELL_TYPE = "PBMC"
-MODEL_NAME = "MultiClass_MLP"
+CELL_TYPE = args.cell_type
+MODEL_NAME = args.model_name
 
 
 # In[4]:
@@ -99,6 +93,11 @@ HYPERPARAMETER_BATCH_SIZE = mlp_params.HYPERPARAMETER_BATCH_SIZE
 file_path = pathlib.Path(
     f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm.parquet"
 ).resolve(strict=True)
+
+# output file path for labeled data
+output_file_path = pathlib.Path(
+    f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm_labeled.parquet"
+).resolve()
 
 df1 = pd.read_parquet(file_path)
 
@@ -177,6 +176,9 @@ df1["labels"] = df1.apply(
 )
 # drop apoptosis, pyroptosis, and healthy columns
 df1.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
+
+# save labeled data
+df1.to_parquet(output_file_path)
 
 
 # ### Split said data
@@ -552,6 +554,7 @@ print(mlp_params.DEVICE)
 # no accuracy function must be loss for regression
 if mlp_params.MODEL_TYPE == "Regression":
     mlp_params.METRIC = "loss"
+    pass
 
 
 # wrap the objective function inside of a lambda function to pass args...

@@ -1,0 +1,46 @@
+
+EnvironmentNameNotFound: Could not find conda environment: Interstellar
+You can list all discoverable environments with `conda info --envs`.
+
+
+Cell type: PBMC Shuffle: True Cytokine: BMP2 [NSU]
+/curc/sw/anaconda3/2023.09/lib/python3.11/site-packages/sklearn/base.py:347: InconsistentVersionWarning: Trying to unpickle estimator ElasticNetCV from version 1.3.2 when using version 1.3.0. This might lead to breaking code or invalid results. Use at your own risk. For more info please refer to:
+https://scikit-learn.org/stable/model_persistence.html#security-maintainability-limitations
+  warnings.warn(
+PBMC True BMP2 [NSU]
+(71, 1199) (71, 187) (83, 1199) (83, 187)
+train_data
+data_x
+data_y
+col_names
+metadata
+Traceback (most recent call last):
+  File "/gpfs/alpine1/scratch/mlippincott@xsede.org/Interstellar_Analysis/6.bulk_Morphology_Elastic_Network/2.test_model/scripts/1.test_regression_multi_output.py", line 268, in <module>
+    df = pd.DataFrame.from_dict(output_metric_scores)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/curc/sw/anaconda3/2023.09/lib/python3.11/site-packages/pandas/core/frame.py", line 1760, in from_dict
+    return cls(data, index=index, columns=columns, dtype=dtype)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/curc/sw/anaconda3/2023.09/lib/python3.11/site-packages/pandas/core/frame.py", line 709, in __init__
+    mgr = dict_to_mgr(data, index, columns, dtype=dtype, copy=copy, typ=manager)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/curc/sw/anaconda3/2023.09/lib/python3.11/site-packages/pandas/core/internals/construction.py", line 481, in dict_to_mgr
+    return arrays_to_mgr(arrays, columns, index, dtype=dtype, typ=typ, consolidate=copy)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/curc/sw/anaconda3/2023.09/lib/python3.11/site-packages/pandas/core/internals/construction.py", line 120, in arrays_to_mgr
+    arrays, refs = _homogenize(arrays, index, dtype)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/curc/sw/anaconda3/2023.09/lib/python3.11/site-packages/pandas/core/internals/construction.py", line 607, in _homogenize
+    val = sanitize_array(val, index, dtype=dtype, copy=False)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/curc/sw/anaconda3/2023.09/lib/python3.11/site-packages/pandas/core/construction.py", line 581, in sanitize_array
+    return sanitize_array(
+           ^^^^^^^^^^^^^^^
+  File "/curc/sw/anaconda3/2023.09/lib/python3.11/site-packages/pandas/core/construction.py", line 569, in sanitize_array
+    subarr = maybe_infer_to_datetimelike(data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/curc/sw/anaconda3/2023.09/lib/python3.11/site-packages/pandas/core/dtypes/cast.py", line 1196, in maybe_infer_to_datetimelike
+    raise ValueError(value.ndim)  # pragma: no cover
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: 2
+Done

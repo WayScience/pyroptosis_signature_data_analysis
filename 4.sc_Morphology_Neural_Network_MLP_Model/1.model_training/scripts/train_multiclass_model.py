@@ -33,51 +33,44 @@ from MLP_utils.utils import (
 from sklearn.metrics import precision_recall_curve
 
 sys.path.append("../../..")
+import argparse
 
 # In[2]:
 
 
-# # set up the parser
-# parser = argparse.ArgumentParser(description="Train MLP model")
+# set up the parser
+parser = argparse.ArgumentParser(description="Train MLP model")
 
-# # add arguments to parser
-# parser.add_argument(
-#     "--CELL_TYPE",
-#     type=str,
-#     default="all",
-#     help="Cell type to train model on. Default is all",
-# )
+# add arguments to parser
+parser.add_argument(
+    "--CELL_TYPE",
+    type=str,
+    default="all",
+    help="Cell type to train model on. Default is all",
+)
 
-# parser.add_argument(
-#     "--MODEL_NAME",
-#     type=str,
-#     default="MLP",
-#     help="Model name to train. Default is MLP",
-# )
+parser.add_argument(
+    "--MODEL_NAME",
+    type=str,
+    default="MLP",
+    help="Model name to train. Default is MLP",
+)
 
-# parser.add_argument(
-#     "--SHUFFLE",
-#     type=str,
-#     default="False",
-#     help="Shuffle data before training. Default is False",
-# )
+parser.add_argument(
+    "--SHUFFLE",
+    type=str,
+    default="False",
+    help="Shuffle data before training. Default is False",
+)
 
-# # parse the arguments
-# args = parser.parse_args()
+# parse the arguments
+args = parser.parse_args()
 
-# CELL_TYPE = args.CELL_TYPE
-# MODEL_NAME = args.MODEL_NAME
-# SHUFFLE = args.SHUFFLE
-# SHUFFLE = ast.literal_eval(SHUFFLE)
-# print(CELL_TYPE, MODEL_NAME, SHUFFLE)
-
-
-# In[3]:
-
-
-CELL_TYPE = "PBMC"
-MODEL_NAME = "MultiClass_MLP"
-SHUFFLE = False
+CELL_TYPE = args.CELL_TYPE
+MODEL_NAME = args.MODEL_NAME
+SHUFFLE = args.SHUFFLE
+SHUFFLE = ast.literal_eval(SHUFFLE)
+print(CELL_TYPE, MODEL_NAME, SHUFFLE)
 
 
 # In[4]:
@@ -117,10 +110,13 @@ print(class_weights)
 # set data file path under pathlib path for multi-system use
 
 file_path = pathlib.Path(
-    f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm.parquet"
-).resolve(strict=True)
-
+    f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm_labeled.parquet"
+).resolve()
 df1 = pd.read_parquet(file_path)
+
+
+# In[6]:
+
 
 # columns to load in - only need the metadata
 columns = [
@@ -128,7 +124,7 @@ columns = [
     "Nuclei_Location_Center_Y",
     "Cytoplasm_AreaShape_BoundingBoxMaximum_X",
     "Cytoplasm_AreaShape_BoundingBoxMaximum_Y",
-    "Cytoplasm_AreaShape_BoundinrgBoxMinimum_X",
+    "Cytoplasm_AreaShape_BoundingBoxMinimum_X",
     "Cytoplasm_AreaShape_BoundingBoxMinimum_Y",
     "Image_Metadata_Site",
     "Metadata_Well",
@@ -139,9 +135,10 @@ df_no_fs_path = pathlib.Path(
 df_no_fs = pd.read_parquet(df_no_fs_path, columns=columns)
 
 
-# In[6]:
+# In[7]:
 
 
+print(df1.shape)
 df1["Metadata_Nuclei_Location_Center_X"] = df_no_fs["Nuclei_Location_Center_X"]
 df1["Metadata_Nuclei_Location_Center_Y"] = df_no_fs["Nuclei_Location_Center_Y"]
 df1["Metadata_Cytoplasm_AreaShape_BoundingBoxMaximum_X"] = df_no_fs[
@@ -162,30 +159,17 @@ df1["Metadata_Site"] = df_no_fs["Image_Metadata_Site"]
 # delete the frame from memory and collect the garbage to free up memory
 del df_no_fs
 gc.collect()
-
-
-# In[7]:
-
-
-# get paths for toml files
-ground_truth_file_path = pathlib.Path(f"../../MLP_utils/ground_truth.toml").resolve(
-    strict=True
-)
-treatment_splits_file_path = pathlib.Path(f"../../MLP_utils/splits.toml").resolve(
-    strict=True
-)
-# read toml files
-ground_truth = toml.load(ground_truth_file_path)
-treatment_splits = toml.load(treatment_splits_file_path)
+print(df1.shape)
 
 
 # In[8]:
 
 
-# get information from toml files
-apoptosis_groups_list = ground_truth["Apoptosis"]["apoptosis_groups_list"]
-pyroptosis_groups_list = ground_truth["Pyroptosis"]["pyroptosis_groups_list"]
-healthy_groups_list = ground_truth["Healthy"]["healthy_groups_list"]
+treatment_splits_file_path = pathlib.Path(f"../../MLP_utils/splits.toml").resolve(
+    strict=True
+)
+# read toml file
+treatment_splits = toml.load(treatment_splits_file_path)
 
 
 # #### Set up Data to be compatible with model
@@ -212,39 +196,6 @@ else:
 # In[10]:
 
 
-# add apoptosis, pyroptosis and healthy columns to dataframe
-df1["apoptosis"] = df1.apply(
-    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    in apoptosis_groups_list,
-    axis=1,
-)
-df1["pyroptosis"] = df1.apply(
-    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    in pyroptosis_groups_list,
-    axis=1,
-)
-df1["healthy"] = df1.apply(
-    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    in healthy_groups_list,
-    axis=1,
-)
-
-# merge apoptosis, pyroptosis, and healthy columns into one column
-df1["labels"] = df1.apply(
-    lambda row: "apoptosis"
-    if row["apoptosis"]
-    else "pyroptosis"
-    if row["pyroptosis"]
-    else "healthy",
-    axis=1,
-)
-# # drop apoptosis, pyroptosis, and healthy columns
-df1.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
-
-
-# In[ ]:
-
-
 # set path for index file
 index_file_path = pathlib.Path(
     f"../../0.hyperparameter_optimization/indexes/{params.CELL_TYPE}/multi_class/{params.MODEL_NAME}_data_split_indexes.tsv"
@@ -255,7 +206,7 @@ index_df = pd.read_csv(index_file_path, sep="\t")
 index_df.head()
 
 
-# In[ ]:
+# In[11]:
 
 
 # get train, validation, test, and holdout indexes
@@ -283,7 +234,7 @@ assert (
 ) == index_df.shape[0]
 
 
-# In[ ]:
+# In[12]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -295,7 +246,7 @@ df_descriptive["labels"] = df1["labels"]
 df_values = df1.drop(columns=df_metadata)
 
 
-# In[ ]:
+# In[13]:
 
 
 # Creating label encoder
@@ -320,10 +271,10 @@ df_values_Y = df_values["new_labels"]
 df_values_Y.unique()
 df_labels.drop_duplicates(inplace=True)
 # pandas chaining to reset index and drop old index
-df_labels.reset_index(drop=True, inplace=True)
+# df_labels.reset_index(drop=True, inplace=True)
 
 
-# In[ ]:
+# In[14]:
 
 
 print(
@@ -334,38 +285,38 @@ print(
     holdout_indexes.shape,
 )
 print(
-    train_indexes.shape[0]
-    + val_indexes.shape[0]
-    + test_indexes.shape[0]
-    + treatment_holdout.shape[0]
-    + holdout_indexes.shape[0]
+    train_indexes.shape[0],
+    +val_indexes.shape[0],
+    +test_indexes.shape[0],
+    +treatment_holdout.shape[0],
+    +holdout_indexes.shape[0],
 )
 
 
-# In[ ]:
+# In[15]:
 
 
 # get the train, validation, test, and holdout dataframes from the indexes
-X_train = df_values_X.iloc[train_indexes.values]
-X_val = df_values_X.iloc[val_indexes.values]
-X_test = df_values_X.iloc[test_indexes.values]
-X_treatment_holdout = df_values_X.iloc[treatment_holdout.values]
-X_holdout = df_values_X.iloc[holdout_indexes.values]
+X_train = df_values_X.loc[train_indexes.values]
+X_val = df_values_X.loc[val_indexes.values]
+X_test = df_values_X.loc[test_indexes.values]
+X_treatment_holdout = df_values_X.loc[treatment_holdout.values]
+X_holdout = df_values_X.loc[holdout_indexes.values]
 
-Y_train = df_values_Y.iloc[train_indexes.values]
-Y_val = df_values_Y.iloc[val_indexes.values]
-Y_test = df_values_Y.iloc[test_indexes.values]
-Y_treatment_holdout = df_values_Y.iloc[treatment_holdout.values]
-Y_holdout = df_values_Y.iloc[holdout_indexes.values]
+Y_train = df_values_Y.loc[train_indexes.values]
+Y_val = df_values_Y.loc[val_indexes.values]
+Y_test = df_values_Y.loc[test_indexes.values]
+Y_treatment_holdout = df_values_Y.loc[treatment_holdout.values]
+Y_holdout = df_values_Y.loc[holdout_indexes.values]
 
-metadata_train = df_descriptive.iloc[train_indexes.values]
-metadata_val = df_descriptive.iloc[val_indexes.values]
-metadata_test = df_descriptive.iloc[test_indexes.values]
-metadata_treatment_holdout = df_descriptive.iloc[treatment_holdout.values]
-metadata_holdout = df_descriptive.iloc[holdout_indexes.values]
+metadata_train = df_descriptive.loc[train_indexes.values]
+metadata_val = df_descriptive.loc[val_indexes.values]
+metadata_test = df_descriptive.loc[test_indexes.values]
+metadata_treatment_holdout = df_descriptive.loc[treatment_holdout.values]
+metadata_holdout = df_descriptive.loc[holdout_indexes.values]
 
 
-# In[ ]:
+# In[16]:
 
 
 print(
@@ -387,7 +338,7 @@ print(
 )
 
 
-# In[ ]:
+# In[17]:
 
 
 # reset indexes for all dataframes
@@ -404,7 +355,7 @@ Y_treatment_holdout.reset_index(drop=True, inplace=True)
 Y_holdout.reset_index(drop=True, inplace=True)
 
 
-# In[ ]:
+# In[18]:
 
 
 print(
@@ -418,7 +369,7 @@ print(
 # #### Shuffle Data
 #
 
-# In[ ]:
+# In[19]:
 
 
 np.random.seed(0)
@@ -431,14 +382,14 @@ if SHUFFLE:
 
 # #### Split Data - All Models can proceed through this point
 
-# In[ ]:
+# In[20]:
 
 
 mlp_params.OUT_FEATURES = Y_train.unique().shape[0]
 print(mlp_params.OUT_FEATURES)
 
 
-# In[ ]:
+# In[21]:
 
 
 Y_train = torch.tensor(Y_train.values)
@@ -472,7 +423,7 @@ X_holdout = torch.tensor(X_holdout.values)
 X_treatment_holdout = torch.tensor(X_treatment_holdout.values)
 
 
-# In[ ]:
+# In[22]:
 
 
 # produce data objects for train, val and test datasets
@@ -481,7 +432,7 @@ val_data = torch.utils.data.TensorDataset(X_val, Y_val)
 test_data = torch.utils.data.TensorDataset(X_test, Y_test)
 
 
-# In[ ]:
+# In[23]:
 
 
 mlp_params.IN_FEATURES = X_train.shape[1]
@@ -505,7 +456,7 @@ else:
 print(mlp_params.MODEL_TYPE)
 
 
-# In[ ]:
+# In[24]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
@@ -520,7 +471,7 @@ test_loader = torch.utils.data.DataLoader(
 )
 
 
-# In[ ]:
+# In[25]:
 
 
 # call the optimized training model
@@ -553,7 +504,7 @@ else:
     )
 
 
-# In[ ]:
+# In[26]:
 
 
 # create a dataframe to store the model stats
@@ -570,7 +521,7 @@ model_stats_df = pd.DataFrame(
 model_stats_df
 
 
-# In[ ]:
+# In[27]:
 
 
 if mlp_params.MODEL_TYPE == "Regression":
@@ -590,7 +541,7 @@ else:
     )
 
 
-# In[ ]:
+# In[28]:
 
 
 plot_metric_vs_epoch(
@@ -609,7 +560,7 @@ plot_metric_vs_epoch(
 
 # ### Test Models on training data
 
-# In[ ]:
+# In[29]:
 
 
 # test the model on training data
@@ -644,7 +595,7 @@ else:
     pass
 
 
-# In[ ]:
+# In[30]:
 
 
 # convert output tensors into arrays
@@ -668,7 +619,7 @@ y_pred_prob_list = np.array(new_prob_list)
 Y_test = np.array(new_y_test_list)
 
 
-# In[ ]:
+# In[31]:
 
 
 # get the PR curve for each class
@@ -677,7 +628,7 @@ pr_curve_1 = precision_recall_curve(Y_test[:, 1], y_pred_prob_list[:, 1])
 pr_curve_2 = precision_recall_curve(Y_test[:, 2], y_pred_prob_list[:, 2])
 
 
-# In[ ]:
+# In[32]:
 
 
 # make a dataframe of the precision-recall curves for each class
@@ -717,7 +668,7 @@ pr_curve_df["data_split"] = "train"
 pr_curve_df["shuffle"] = mlp_params.SHUFFLE
 
 
-# In[ ]:
+# In[33]:
 
 
 main_prob_df = pd.DataFrame(
@@ -734,7 +685,7 @@ main_prob_df = pd.DataFrame(
 )
 
 
-# In[ ]:
+# In[34]:
 
 
 class_0_prob = []
@@ -765,7 +716,7 @@ prob_df = pd.concat([prob_df, metadata_train], axis=1)
 main_prob_df = pd.concat([main_prob_df, prob_df])
 
 
-# In[ ]:
+# In[35]:
 
 
 # create a master dataframe to store all the model stats
@@ -776,13 +727,13 @@ pr_curve_df_all = pd.DataFrame(
 pr_curve_df_all = pd.concat([pr_curve_df_all, pr_curve_df], axis=0)
 
 
-# In[ ]:
+# In[36]:
 
 
 pr_curve_df_all["data_split"].unique()
 
 
-# In[ ]:
+# In[37]:
 
 
 # prior to using the output_stats function, the y_pred_list and Y_test_list must be converted to a single list each
@@ -790,7 +741,7 @@ pr_curve_df_all["data_split"].unique()
 Y_test_list = [np.argmax(i) for i in Y_test]
 
 
-# In[ ]:
+# In[38]:
 
 
 stats_df = output_stats(
@@ -818,7 +769,7 @@ decoder["weighted avg"] = "weighted avg"
 stats_df["label"] = stats_df["label"].map(decoder)
 
 
-# In[ ]:
+# In[39]:
 
 
 stats_df["group"] = "train"
@@ -827,14 +778,14 @@ stats_df
 model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
 
-# In[ ]:
+# In[40]:
 
 
 # define a final dataframe to store the predictions
 final_predictions_df = pd.DataFrame()
 
 
-# In[ ]:
+# In[41]:
 
 
 # make a df of the predictions and the true labels
@@ -845,7 +796,7 @@ y_true_df = pd.DataFrame(Y_test_list, columns=["true_label"])
 y_pred_df = pd.concat([y_true_df, y_pred_df], axis=1)
 
 
-# In[ ]:
+# In[42]:
 
 
 # merge y_pred_df with metadata_holdout whiile keeping the index of metadata_holdout
@@ -855,14 +806,14 @@ y_pred_df = pd.concat([y_pred_df, metadata_train], axis=1)
 y_pred_df.set_index("index", inplace=True, drop=True)
 
 
-# In[ ]:
+# In[43]:
 
 
 y_pred_df["data_split"] = "train"
 y_pred_df["shuffle"] = mlp_params.SHUFFLE
 
 
-# In[ ]:
+# In[44]:
 
 
 # set path for the model confusion matrices
@@ -883,7 +834,7 @@ else:
     y_pred_df.to_parquet(y_pred_df_path, index=False)
 
 
-# In[ ]:
+# In[45]:
 
 
 final_predictions_df = pd.concat([final_predictions_df, y_pred_df], axis=0)
@@ -891,7 +842,7 @@ final_predictions_df = pd.concat([final_predictions_df, y_pred_df], axis=0)
 
 # ## Test models on Validation data
 
-# In[ ]:
+# In[46]:
 
 
 # test the model on training data
@@ -926,7 +877,7 @@ else:
     pass
 
 
-# In[ ]:
+# In[47]:
 
 
 # convert output tensors into arrays
@@ -950,7 +901,7 @@ y_pred_prob_list = np.array(new_prob_list)
 Y_test = np.array(new_y_test_list)
 
 
-# In[ ]:
+# In[48]:
 
 
 # get the PR curve for each class
@@ -959,7 +910,7 @@ pr_curve_1 = precision_recall_curve(Y_test[:, 1], y_pred_prob_list[:, 1])
 pr_curve_2 = precision_recall_curve(Y_test[:, 2], y_pred_prob_list[:, 2])
 
 
-# In[ ]:
+# In[49]:
 
 
 # make a dataframe of the precision-recall curves for each class
@@ -999,7 +950,7 @@ pr_curve_df["data_split"] = "validation"
 pr_curve_df["shuffle"] = mlp_params.SHUFFLE
 
 
-# In[ ]:
+# In[50]:
 
 
 # create a master dataframe to store all the model stats
@@ -1007,13 +958,13 @@ pr_curve_df["shuffle"] = mlp_params.SHUFFLE
 pr_curve_df_all = pd.concat([pr_curve_df_all, pr_curve_df], axis=0)
 
 
-# In[ ]:
+# In[51]:
 
 
 pr_curve_df_all["data_split"].unique()
 
 
-# In[ ]:
+# In[52]:
 
 
 class_0_prob = []
@@ -1043,13 +994,13 @@ prob_df = pd.concat([prob_df, metadata_val], axis=1)
 main_prob_df = pd.concat([main_prob_df, prob_df])
 
 
-# In[ ]:
+# In[53]:
 
 
 Y_test_list = [np.argmax(i) for i in Y_test]
 
 
-# In[ ]:
+# In[54]:
 
 
 stats_df = output_stats(
@@ -1077,7 +1028,7 @@ decoder["weighted avg"] = "weighted avg"
 stats_df["label"] = stats_df["label"].map(decoder)
 
 
-# In[ ]:
+# In[55]:
 
 
 stats_df["group"] = "validation"
@@ -1086,7 +1037,7 @@ stats_df["shuffle"] = mlp_params.SHUFFLE
 model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
 
-# In[ ]:
+# In[56]:
 
 
 # make a df of the predictions and the true labels
@@ -1097,7 +1048,7 @@ y_true_df = pd.DataFrame(Y_test_list, columns=["true_label"])
 y_pred_df = pd.concat([y_true_df, y_pred_df], axis=1)
 
 
-# In[ ]:
+# In[57]:
 
 
 # merge y_pred_df with metadata_holdout whiile keeping the index of metadata_holdout
@@ -1107,14 +1058,14 @@ y_pred_df = pd.concat([y_pred_df, metadata_val], axis=1)
 y_pred_df.set_index("index", inplace=True, drop=True)
 
 
-# In[ ]:
+# In[58]:
 
 
 y_pred_df["data_split"] = "validation"
 y_pred_df["shuffle"] = mlp_params.SHUFFLE
 
 
-# In[ ]:
+# In[59]:
 
 
 # set path for the model confusion matrices
@@ -1135,7 +1086,7 @@ else:
     y_pred_df.to_parquet(y_pred_df_path, index=False)
 
 
-# In[ ]:
+# In[60]:
 
 
 final_predictions_df = pd.concat([final_predictions_df, y_pred_df], axis=0)
@@ -1143,7 +1094,7 @@ final_predictions_df = pd.concat([final_predictions_df, y_pred_df], axis=0)
 
 # ## Testing on the test data
 
-# In[ ]:
+# In[61]:
 
 
 # create a dataframe to store the model confusion matrix
@@ -1152,7 +1103,7 @@ data_split_conf_mat_df_all = pd.DataFrame(
 )
 
 
-# In[ ]:
+# In[62]:
 
 
 # calling the testing function and outputting list values of tested model
@@ -1178,7 +1129,7 @@ else:
     raise Exception("Model type must be specified for proper model testing")
 
 
-# In[ ]:
+# In[63]:
 
 
 # convert output tensors into arrays
@@ -1202,7 +1153,7 @@ y_pred_prob_list = np.array(new_prob_list)
 Y_test = np.array(new_y_test_list)
 
 
-# In[ ]:
+# In[64]:
 
 
 # get the PR curve for each class
@@ -1211,7 +1162,7 @@ pr_curve_1 = precision_recall_curve(Y_test[:, 1], y_pred_prob_list[:, 1])
 pr_curve_2 = precision_recall_curve(Y_test[:, 2], y_pred_prob_list[:, 2])
 
 
-# In[ ]:
+# In[65]:
 
 
 # make a dataframe of the precision-recall curves for each class
@@ -1251,7 +1202,7 @@ pr_curve_df["data_split"] = "testing"
 pr_curve_df["shuffle"] = mlp_params.SHUFFLE
 
 
-# In[ ]:
+# In[66]:
 
 
 # create a master dataframe to store all the model stats
@@ -1260,13 +1211,13 @@ pr_curve_df["shuffle"] = mlp_params.SHUFFLE
 pr_curve_df_all = pd.concat([pr_curve_df_all, pr_curve_df], axis=0)
 
 
-# In[ ]:
+# In[67]:
 
 
 pr_curve_df_all["data_split"].unique()
 
 
-# In[ ]:
+# In[68]:
 
 
 class_0_prob = []
@@ -1296,13 +1247,13 @@ prob_df = pd.concat([prob_df, metadata_test], axis=1)
 main_prob_df = pd.concat([main_prob_df, prob_df])
 
 
-# In[ ]:
+# In[69]:
 
 
 Y_test_list = [np.argmax(i) for i in Y_test]
 
 
-# In[ ]:
+# In[70]:
 
 
 # Call visualization function
@@ -1334,14 +1285,14 @@ else:
     raise Exception("Model type must be specified for proper model testing")
 
 
-# In[ ]:
+# In[71]:
 
 
 # # define a final dataframe to store the predictions
 # final_predictions_df = pd.DataFrame()
 
 
-# In[ ]:
+# In[72]:
 
 
 # make a df of the predictions and the true labels
@@ -1352,7 +1303,7 @@ y_true_df = pd.DataFrame(Y_test_list, columns=["true_label"])
 y_pred_df = pd.concat([y_true_df, y_pred_df], axis=1)
 
 
-# In[ ]:
+# In[73]:
 
 
 # merge y_pred_df with metadata_holdout while keeping the index of metadata_holdout
@@ -1362,14 +1313,14 @@ y_pred_df = pd.concat([y_pred_df, metadata_test], axis=1)
 y_pred_df.set_index("index", inplace=True, drop=True)
 
 
-# In[ ]:
+# In[74]:
 
 
 y_pred_df["data_split"] = "test"
 y_pred_df["shuffle"] = mlp_params.SHUFFLE
 
 
-# In[ ]:
+# In[75]:
 
 
 # set path for the model confusion matrices
@@ -1390,13 +1341,13 @@ else:
     y_pred_df.to_parquet(y_pred_df_path, index=False)
 
 
-# In[ ]:
+# In[76]:
 
 
 final_predictions_df = pd.concat([final_predictions_df, y_pred_df], axis=0)
 
 
-# In[ ]:
+# In[77]:
 
 
 # rename columns from the decoder dictionary
@@ -1408,7 +1359,7 @@ confusion_matrix_df.rename(
 )
 
 
-# In[ ]:
+# In[78]:
 
 
 confusion_matrices = confusion_matrix_df.reset_index()
@@ -1426,7 +1377,7 @@ confusion_matrices["data_split"] = "testing"
 sum_of_columns = confusion_matrix_df.sum(axis=0)
 
 
-# In[ ]:
+# In[79]:
 
 
 # normalize confusion matrix
@@ -1442,7 +1393,7 @@ confusion_matrix_df["pyroptosis"] = (
 )
 
 
-# In[ ]:
+# In[80]:
 
 
 confusion_matrices_recall = confusion_matrix_df.reset_index()
@@ -1468,7 +1419,7 @@ data_split_conf_mat_df_all = pd.concat(
 )
 
 
-# In[ ]:
+# In[81]:
 
 
 ax = sns.heatmap(confusion_matrix_df, annot=True)
@@ -1479,7 +1430,7 @@ plt.ylabel("Predicted Values", size=15)
 plt.show()
 
 
-# In[ ]:
+# In[82]:
 
 
 stats_df = output_stats(
@@ -1507,7 +1458,7 @@ decoder["weighted avg"] = "weighted avg"
 stats_df["label"] = stats_df["label"].map(decoder)
 
 
-# In[ ]:
+# In[83]:
 
 
 stats_df["group"] = "test"
@@ -1518,7 +1469,7 @@ model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
 # ## Test the treatment holdout data on the model
 
-# In[ ]:
+# In[84]:
 
 
 treatment_holdout_data = Dataset_formatter(
@@ -1562,7 +1513,7 @@ else:
     pass
 
 
-# In[ ]:
+# In[85]:
 
 
 # convert output tensors into arrays
@@ -1586,7 +1537,7 @@ y_pred_prob_list = np.array(new_prob_list)
 Y_test = np.array(new_y_test_list)
 
 
-# In[ ]:
+# In[86]:
 
 
 # get the PR curve for each class
@@ -1595,7 +1546,7 @@ pr_curve_1 = precision_recall_curve(Y_test[:, 1], y_pred_prob_list[:, 1])
 pr_curve_2 = precision_recall_curve(Y_test[:, 2], y_pred_prob_list[:, 2])
 
 
-# In[ ]:
+# In[87]:
 
 
 # make a dataframe of the precision-recall curves for each class
@@ -1635,7 +1586,7 @@ pr_curve_df["data_split"] = "treatment_holdout"
 pr_curve_df["shuffle"] = mlp_params.SHUFFLE
 
 
-# In[ ]:
+# In[88]:
 
 
 # create a master dataframe to store all the model stats
@@ -1643,7 +1594,7 @@ pr_curve_df["shuffle"] = mlp_params.SHUFFLE
 pr_curve_df_all = pd.concat([pr_curve_df_all, pr_curve_df], axis=0)
 
 
-# In[ ]:
+# In[89]:
 
 
 # plot the precision-recall curves
@@ -1661,13 +1612,13 @@ plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
 plt.show()
 
 
-# In[ ]:
+# In[90]:
 
 
 pr_curve_df_all["data_split"].unique()
 
 
-# In[ ]:
+# In[91]:
 
 
 class_0_prob = []
@@ -1689,7 +1640,7 @@ label_true = [np.argmax(i) for i in Y_test]
 prob_df["label_true"] = label_true
 
 
-# In[ ]:
+# In[92]:
 
 
 prob_df["label_pred"] = y_pred_list
@@ -1702,13 +1653,13 @@ prob_df = pd.concat([prob_df, metadata_treatment_holdout], axis=1)
 main_prob_df = pd.concat([main_prob_df, prob_df])
 
 
-# In[ ]:
+# In[93]:
 
 
 Y_test_list = [np.argmax(i) for i in Y_test]
 
 
-# In[ ]:
+# In[94]:
 
 
 # Call visualization function
@@ -1740,7 +1691,7 @@ else:
     raise Exception("Model type must be specified for proper model testing")
 
 
-# In[ ]:
+# In[95]:
 
 
 ax = sns.heatmap(confusion_matrix_df, annot=True, fmt="d")
@@ -1754,7 +1705,7 @@ plt.tight_layout()
 plt.show()
 
 
-# In[ ]:
+# In[96]:
 
 
 # make a df of the predictions and the true labels
@@ -1764,7 +1715,7 @@ y_true_df = pd.DataFrame(Y_test_list, columns=["true_label"])
 y_pred_df = pd.concat([y_true_df, y_pred_df], axis=1)
 
 
-# In[ ]:
+# In[97]:
 
 
 # merge y_pred_df with metadata_holdout whiile keeping the index of metadata_holdout
@@ -1774,14 +1725,14 @@ y_pred_df = pd.concat([y_pred_df, metadata_treatment_holdout], axis=1)
 y_pred_df.set_index("index", inplace=True, drop=True)
 
 
-# In[ ]:
+# In[98]:
 
 
 y_pred_df["data_split"] = "treatment_holdout"
 y_pred_df["shuffle"] = mlp_params.SHUFFLE
 
 
-# In[ ]:
+# In[99]:
 
 
 # set path for the model training metrics
@@ -1806,7 +1757,7 @@ else:
     y_pred_df.to_parquet(y_pred_file, index=False)
 
 
-# In[ ]:
+# In[100]:
 
 
 final_predictions_df = pd.concat([final_predictions_df, y_pred_df], axis=0)
@@ -1814,7 +1765,7 @@ final_predictions_df = pd.concat([final_predictions_df, y_pred_df], axis=0)
 
 # Do not do confusion matrix for this data as it is one class
 
-# In[ ]:
+# In[101]:
 
 
 stats_df = output_stats(
@@ -1842,7 +1793,7 @@ decoder["weighted avg"] = "weighted avg"
 stats_df["label"] = stats_df["label"].map(decoder)
 
 
-# In[ ]:
+# In[102]:
 
 
 stats_df["group"] = "treatment_holdout"
@@ -1853,7 +1804,7 @@ model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
 # ## Test the hold out wells
 
-# In[ ]:
+# In[103]:
 
 
 holdout_data = Dataset_formatter(X_holdout, Y_holdout)
@@ -1894,7 +1845,7 @@ else:
     pass
 
 
-# In[ ]:
+# In[104]:
 
 
 # convert output tensors into arrays
@@ -1918,7 +1869,7 @@ y_pred_prob_list = np.array(new_prob_list)
 Y_test = np.array(new_y_test_list)
 
 
-# In[ ]:
+# In[105]:
 
 
 # get the PR curve for each class
@@ -1927,7 +1878,7 @@ pr_curve_1 = precision_recall_curve(Y_test[:, 1], y_pred_prob_list[:, 1])
 pr_curve_2 = precision_recall_curve(Y_test[:, 2], y_pred_prob_list[:, 2])
 
 
-# In[ ]:
+# In[106]:
 
 
 # make a dataframe of the precision-recall curves for each class
@@ -1968,7 +1919,7 @@ pr_curve_df["data_split"] = "holdout"
 pr_curve_df["shuffle"] = mlp_params.SHUFFLE
 
 
-# In[ ]:
+# In[107]:
 
 
 # create a master dataframe to store all the model stats
@@ -1976,13 +1927,13 @@ pr_curve_df["shuffle"] = mlp_params.SHUFFLE
 pr_curve_df_all = pd.concat([pr_curve_df_all, pr_curve_df], axis=0)
 
 
-# In[ ]:
+# In[108]:
 
 
 pr_curve_df_all["data_split"].unique()
 
 
-# In[ ]:
+# In[109]:
 
 
 class_0_prob = []
@@ -2014,13 +1965,13 @@ prob_df = pd.concat([prob_df, metadata_holdout], axis=1)
 main_prob_df = pd.concat([main_prob_df, prob_df])
 
 
-# In[ ]:
+# In[110]:
 
 
 Y_test_list = [np.argmax(i) for i in Y_test]
 
 
-# In[ ]:
+# In[111]:
 
 
 # Call visualization function
@@ -2052,7 +2003,7 @@ else:
     raise Exception("Model type must be specified for proper model testing")
 
 
-# In[ ]:
+# In[112]:
 
 
 # make a df of the predictions and the true labels
@@ -2062,7 +2013,7 @@ y_true_df = pd.DataFrame(Y_test_list, columns=["true_label"])
 y_pred_df = pd.concat([y_true_df, y_pred_df], axis=1)
 
 
-# In[ ]:
+# In[113]:
 
 
 # merge y_pred_df with metadata_holdout whiile keeping the index of metadata_holdout
@@ -2072,14 +2023,14 @@ y_pred_df = pd.concat([y_pred_df, metadata_holdout], axis=1)
 y_pred_df.set_index("index", inplace=True, drop=True)
 
 
-# In[ ]:
+# In[114]:
 
 
 y_pred_df["data_split"] = "holdout"
 y_pred_df["shuffle"] = mlp_params.SHUFFLE
 
 
-# In[ ]:
+# In[115]:
 
 
 # set path for the model training metrics
@@ -2104,13 +2055,13 @@ else:
     y_pred_df.to_parquet(y_pred_df_file, index=False)
 
 
-# In[ ]:
+# In[116]:
 
 
 final_predictions_df = pd.concat([final_predictions_df, y_pred_df], axis=0)
 
 
-# In[ ]:
+# In[117]:
 
 
 # rename columns from the decoder dictionary
@@ -2123,7 +2074,7 @@ confusion_matrix_df.rename(
 )
 
 
-# In[ ]:
+# In[118]:
 
 
 confusion_matrices = confusion_matrix_df.reset_index()
@@ -2141,7 +2092,7 @@ confusion_matrices["data_split"] = "holdout"
 sum_of_columns = confusion_matrix_df.sum(axis=0)
 
 
-# In[ ]:
+# In[119]:
 
 
 # normalize confusion matrix
@@ -2157,7 +2108,7 @@ confusion_matrix_df["pyroptosis"] = (
 )
 
 
-# In[ ]:
+# In[120]:
 
 
 # change the order of the columns
@@ -2168,7 +2119,7 @@ confusion_matrix_df = confusion_matrix_df.reindex(
 )
 
 
-# In[ ]:
+# In[121]:
 
 
 confusion_matrices_recall = confusion_matrix_df.reset_index()
@@ -2194,7 +2145,7 @@ data_split_conf_mat_df_all = pd.concat(
 )
 
 
-# In[ ]:
+# In[122]:
 
 
 ax = sns.heatmap(confusion_matrix_df, annot=True)
@@ -2204,7 +2155,7 @@ plt.ylabel("Predicted Values", size=15)
 plt.show()
 
 
-# In[ ]:
+# In[123]:
 
 
 stats_df = output_stats(
@@ -2232,7 +2183,7 @@ decoder["weighted avg"] = "weighted avg"
 stats_df["label"] = stats_df["label"].map(decoder)
 
 
-# In[ ]:
+# In[124]:
 
 
 stats_df["group"] = "holdout"
@@ -2243,7 +2194,7 @@ model_stats_df = pd.concat([model_stats_df, stats_df], axis=0)
 
 # ### Save Files
 
-# In[ ]:
+# In[125]:
 
 
 # set path for the model confusion matrices
@@ -2266,7 +2217,7 @@ else:
     final_predictions_df.to_parquet(predictions_file, index=False)
 
 
-# In[ ]:
+# In[126]:
 
 
 # set path for the model confusion matrices
@@ -2289,7 +2240,7 @@ else:
     data_split_conf_mat_df_all.to_parquet(matrix_file, index=False)
 
 
-# In[ ]:
+# In[127]:
 
 
 # set path for the model training metrics
@@ -2312,7 +2263,7 @@ else:
     model_stats_df.to_parquet(metrics_file, index=False)
 
 
-# In[ ]:
+# In[128]:
 
 
 # set path for the model training metrics
@@ -2335,7 +2286,7 @@ else:
     pr_curve_df_all.to_parquet(pr_curve_file, index=False)
 
 
-# In[ ]:
+# In[129]:
 
 
 # set path for the model training metrics
@@ -2358,7 +2309,7 @@ else:
     main_prob_df.to_parquet(probabilties_df_file, index=False)
 
 
-# In[ ]:
+# In[130]:
 
 
 main_prob_df["data_split"].unique()

@@ -4,7 +4,8 @@
 conda activate Interstellar_python
 
 # get the array of cytokiens
-filename="../../0.split_data/cytokine_list/cytokine_list.txt"
+# filename="../../0.split_data/cytokine_list/cytokine_list.txt"
+filename="../../0.split_data/cytokine_list/cytokine_list_rerun.txt"
 # read all lines of the file to an array
 readarray -t cytokine_array < $filename
 

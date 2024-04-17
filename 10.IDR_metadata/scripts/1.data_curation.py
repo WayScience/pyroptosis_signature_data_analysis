@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# This noteboook aggregates the data from the previous notebooks and creates the final aggregated dataset.
+# Here we curate the data for IDR
+
 # In[1]:
 
 
 # Parameters
-cell_type = "SHSY5Y"
+cell_type = "PBMC"
 aggregation = True
 nomic = True
 
-
-# This noteboook aggregates the data from the previous notebooks and creates the final dataset for the analysis barring the data are aggregated in the analysis.
 
 # In[2]:
 
@@ -20,7 +21,7 @@ import pathlib
 import numpy as np
 import pandas as pd
 
-# In[4]:
+# In[3]:
 
 
 if aggregation and nomic:
@@ -41,7 +42,7 @@ else:
     raise ValueError("Wrong parameters")
 
 
-# In[5]:
+# In[4]:
 
 
 path = pathlib.Path(f"../../data/{cell_type}_preprocess_sc_norm_no_fs.parquet")
@@ -70,7 +71,7 @@ else:
     raise ValueError("Nomic data not imported")
 
 
-# In[6]:
+# In[5]:
 
 
 # subset each column that contains metadata
@@ -80,14 +81,12 @@ metadata = data_df.filter(regex="Metadata")
 data = data_df.drop(metadata.columns, axis=1)
 
 # get the metadata_Well column
-metadata_well = metadata[
-    ["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-]
+metadata_well = metadata[["Metadata_Well"]]
 
 data_df = pd.merge(data, metadata_well, left_index=True, right_index=True)
 
 
-# In[7]:
+# In[6]:
 
 
 if nomic:
@@ -95,15 +94,12 @@ if nomic:
         columns=[
             "Treatment",
             "Dose",
-            "twob_Treatment_Dose_Inhibitor_Dose",
-            "threeb_Treatment_Dose_Inhibitor_Dose",
-            "fourb_Treatment_Dose_Inhibitor_Dose",
         ],
         inplace=True,
     )
 
 
-# In[8]:
+# In[7]:
 
 
 if aggregation and nomic:
@@ -126,12 +122,9 @@ if aggregation and nomic:
         left_on=["Metadata_Well"],
         right_on=["position_x"],
     )
-    data_df_merge["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = data_df[
-        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-    ]
+
     data_df_merge = data_df_merge.drop(columns=["position_x"])
     # drop all metadata columns
-    labeled_data = data_df_merge["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
     data_x = data_df_merge.drop(metadata.columns, axis=1)
 
 
@@ -143,7 +136,9 @@ elif aggregation and not nomic:
     data_df = pd.concat([data_df, metadata], axis=1)
     # groupby well and take mean of each well
     data_df = data_df.groupby(
-        ["Metadata_Well", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
+        [
+            "Metadata_Well",
+        ]
     ).mean()
     # # drop duplicate rows in the metadata_well column
     metadata = metadata.drop_duplicates(subset=["Metadata_Well"])
@@ -170,13 +165,14 @@ else:
     raise ValueError("Wrong parameters nomic and/or aggregation not defined")
 
 
-# In[ ]:
+# In[8]:
 
 
+# Check if the number of wells is the correct (154)
 len(data_df["Metadata_Well"].unique())
 
 
-# In[ ]:
+# In[9]:
 
 
 # save the data

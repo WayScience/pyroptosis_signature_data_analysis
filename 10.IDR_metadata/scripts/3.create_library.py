@@ -1,21 +1,23 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[2]:
+# This notebook creats the `library` metadata file needed fop IDR upload.
+
+# In[1]:
 
 
 import pathlib
 
 import pandas as pd
 
-# In[3]:
+# In[2]:
 
 
 # set the ouput path for the library file
 output_path = pathlib.Path("../IDR_metadata/screenA/idr0000-screenA-library.txt")
 
 
-# In[5]:
+# In[3]:
 
 
 # set path to the metadata file
@@ -40,11 +42,13 @@ df[
 df.head()
 
 
-# In[6]:
+# Each of the compound dictionary values were manually curated using [PubChem](https://pubchem.ncbi.nlm.nih.gov/).
+
+# In[ ]:
 
 
 # create a dictionary to map the compound names to the compound IDs
-compund_dicts = {
+compounds_dicts = {
     "IUPAC_names": {
         "DMSO": "methylsulfinylmethane",
         "Disulfiram": "diethylcarbamothioylsulfanyl N,N-diethylcarbamodithioate",
@@ -93,30 +97,30 @@ compund_dicts = {
 }
 
 
-# In[7]:
+# In[ ]:
 
 
 # add a column with values mapped from the compound_dict
-df["Compound1"] = df["inducer1"].map(compund_dicts["IUPAC_names"])
-df["Compound1_InChIKey"] = df["inducer1"].map(compund_dicts["InCHI_keys"])
-df["Compound1_SMILES"] = df["inducer1"].map(compund_dicts["SMILES"])
-df["Compound1_PubChem_URL"] = df["inducer1"].map(compund_dicts["PubChem_urls"])
-df["Compound1_Control_type"] = df["inducer1"].map(compund_dicts["Control_type"])
+df["Compound1"] = df["inducer1"].map(compounds_dicts["IUPAC_names"])
+df["Compound1_InChIKey"] = df["inducer1"].map(compounds_dicts["InCHI_keys"])
+df["Compound1_SMILES"] = df["inducer1"].map(compounds_dicts["SMILES"])
+df["Compound1_PubChem_URL"] = df["inducer1"].map(compounds_dicts["PubChem_urls"])
+df["Compound1_Control_type"] = df["inducer1"].map(compounds_dicts["Control_type"])
 
-df["Compound2"] = df["inducer2"].map(compund_dicts["IUPAC_names"])
-df["Compound2_InChIKey"] = df["inducer2"].map(compund_dicts["InCHI_keys"])
-df["Compound2_SMILES"] = df["inducer2"].map(compund_dicts["SMILES"])
-df["Compound2_PubChem_URL"] = df["inducer2"].map(compund_dicts["PubChem_urls"])
-df["Compound2_Control_type"] = df["inducer2"].map(compund_dicts["Control_type"])
+df["Compound2"] = df["inducer2"].map(compounds_dicts["IUPAC_names"])
+df["Compound2_InChIKey"] = df["inducer2"].map(compounds_dicts["InCHI_keys"])
+df["Compound2_SMILES"] = df["inducer2"].map(compounds_dicts["SMILES"])
+df["Compound2_PubChem_URL"] = df["inducer2"].map(compounds_dicts["PubChem_urls"])
+df["Compound2_Control_type"] = df["inducer2"].map(compounds_dicts["Control_type"])
 
-df["Compound3"] = df["inhibitor"].map(compund_dicts["IUPAC_names"])
-df["Compound3_InChIKey"] = df["inhibitor"].map(compund_dicts["InCHI_keys"])
-df["Compound3_SMILES"] = df["inhibitor"].map(compund_dicts["SMILES"])
-df["Compound3_PubChem_URL"] = df["inhibitor"].map(compund_dicts["PubChem_urls"])
-df["Compound3_Control_type"] = df["inhibitor"].map(compund_dicts["Control_type"])
+df["Compound3"] = df["inhibitor"].map(compounds_dicts["IUPAC_names"])
+df["Compound3_InChIKey"] = df["inhibitor"].map(compounds_dicts["InCHI_keys"])
+df["Compound3_SMILES"] = df["inhibitor"].map(compounds_dicts["SMILES"])
+df["Compound3_PubChem_URL"] = df["inhibitor"].map(compounds_dicts["PubChem_urls"])
+df["Compound3_Control_type"] = df["inhibitor"].map(compounds_dicts["Control_type"])
 
 
-# In[8]:
+# In[ ]:
 
 
 # replace all NaN values with an empty string
@@ -124,7 +128,7 @@ df = df.fillna("")
 df.head()
 
 
-# In[9]:
+# In[ ]:
 
 
 # save the dataframe to a tab-delimited file

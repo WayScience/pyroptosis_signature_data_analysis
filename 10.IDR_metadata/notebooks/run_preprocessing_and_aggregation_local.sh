@@ -1,15 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --mem=700G
-#SBATCH --partition=amem
-#SBATCH --qos=mem
-#SBATCH --account=amc-general
-#SBATCH --time=24:00:00
-#SBATCH --output=sample-%j.out
-
-module load anaconda
-
+# this is the script that should be run if using a local machine
 conda activate Interstellar_python
 
 cell_types=( SHSY5Y PBMC )

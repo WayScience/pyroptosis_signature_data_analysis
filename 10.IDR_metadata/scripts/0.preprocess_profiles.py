@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# This notebooks curates and preprocesses the data for IDR.
+# Specifically, it preprocesses the normalized, non-feature selected data.
+
 # In[1]:
 
 
 # Parameters
-cell_type = "SHSY5Y"
+cell_type = "PBMC"
 
 
 # In[2]:
@@ -22,32 +25,25 @@ import pyarrow.parquet as pq
 # In[3]:
 
 
-# Parameters
-cell_type = "SHSY5Y"
-
-
-# In[4]:
-
-
 # Define inputs
 feature_file = pathlib.Path(f"../../data/{cell_type}_sc_norm.parquet")
 feature_df = pd.read_parquet(feature_file)
 
 
-# In[ ]:
+# In[4]:
 
 
 len(feature_df["Metadata_Well"].unique())
 
 
-# In[ ]:
+# In[5]:
 
 
 # replace all " " with "_" in all values of the dataframe
 feature_df = feature_df.replace(to_replace=" ", value="_", regex=True)
 
 
-# In[ ]:
+# In[6]:
 
 
 # remove uM in each row of the Metadata_inducer1_concentration column
@@ -56,13 +52,13 @@ feature_df["Metadata_inducer1_concentration"] = feature_df[
 ].str.replace("µM", "")
 
 
-# In[ ]:
+# In[7]:
 
 
 feature_df["Metadata_inducer1_concentration"].unique()
 
 
-# In[ ]:
+# In[8]:
 
 
 # define output file path
@@ -71,14 +67,14 @@ feature_df_out_path = pathlib.Path(
 )
 
 
-# In[ ]:
+# In[9]:
 
 
 print(feature_df.shape)
 feature_df.head()
 
 
-# In[ ]:
+# In[10]:
 
 
 # removing costes features as they behave with great variance across all data
@@ -87,14 +83,14 @@ print(feature_df.shape)
 feature_df.head()
 
 
-# In[ ]:
+# In[11]:
 
 
 # replacing '/' in treatment dosage column to avoid errors in file interpolation including such strings
 feature_df = feature_df.replace(to_replace="/", value="_per_", regex=True)
 
 
-# In[ ]:
+# In[12]:
 
 
 # replace nan values with 0
@@ -107,14 +103,14 @@ columns_to_fill = [
 feature_df[columns_to_fill].fillna(0, inplace=True)
 
 
-# In[ ]:
+# In[13]:
 
 
 # replace all None values with 0
 feature_df["Metadata_inducer1_concentration"].fillna(0, inplace=True)
 
 
-# In[ ]:
+# In[14]:
 
 
 # create a list of columns to be converted to float
@@ -130,7 +126,7 @@ for i in col_list:
     )
 
 
-# In[ ]:
+# In[15]:
 
 
 len(feature_df["Metadata_Well"].unique())
@@ -138,7 +134,7 @@ len(feature_df["Metadata_Well"].unique())
 
 # #### Combine Inducer1 and Inducer2 into one column
 
-# In[ ]:
+# In[16]:
 
 
 # treatment column merge
@@ -178,10 +174,10 @@ results = [
 feature_df["Metadata_Dose"] = np.select(condlist=conditions, choicelist=results)
 
 
-# ## N Beta Column condition generation
-# columns generated to used for linear modeling where terms separated by '__' will be a beta coefficient
+# ## Create a unique treatment column
+# This columnd will be used later to annotate data into cell death groups
 
-# In[ ]:
+# In[17]:
 
 
 # one beta of inudcer1, inducer1 concentration, inhibitor, and inhibitor concentration all as 1 beta term
@@ -200,45 +196,7 @@ feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
 ).astype(str)
 
 
-# two beta of inducer1, inhibitor, and inhibitor concentration all as 1 beta term + inducer1 concentration as 2nd beta term
-feature_df["twob_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
-    feature_df["Metadata_Treatment"]
-    + "_"
-    + feature_df["Metadata_inhibitor"].astype(str)
-    + "_"
-    + feature_df["Metadata_inhibitor_concentration"].astype(str)
-    + "__"
-    + feature_df["Metadata_Dose"].astype(str)
-).astype(str)
-
-# three beta of inducer 1 as 1 beta term, inducer1 concentration as 2nd beta term, inhibitor and inhibitor concentration as 3rd beta term
-feature_df["threeb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
-    feature_df["Metadata_Treatment"]
-    + "__"
-    + feature_df["Metadata_Dose"].astype(str)
-    + "__"
-    + feature_df["Metadata_inducer1_concentration_unit"].astype(str)
-    + "_"
-    + feature_df["Metadata_inhibitor"].astype(str)
-    + "_"
-    + feature_df["Metadata_inhibitor_concentration"].astype(str)
-).astype(str)
-
-# four beta of inducer 1 as 1 beta term, inducer1 concentration as 2nd beta term, inhibitor as 3rd beta term, and inhibitor concentration as 4th beta term
-feature_df["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = (
-    feature_df["Metadata_Treatment"]
-    + "__"
-    + feature_df["Metadata_Dose"].astype(str)
-    + "__"
-    + feature_df["Metadata_inducer1_concentration_unit"].astype(str)
-    + "_"
-    + feature_df["Metadata_inhibitor"].astype(str)
-    + "__"
-    + feature_df["Metadata_inhibitor_concentration"].astype(str)
-).astype(str)
-
-
-# In[ ]:
+# In[18]:
 
 
 replacement_dict = {
@@ -253,7 +211,7 @@ for pattern, replacement in replacement_dict.items():
     ].replace(to_replace=str(pattern), value=str(replacement), regex=True)
 
 
-# In[ ]:
+# In[19]:
 
 
 feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
@@ -261,7 +219,7 @@ feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
 ].str.replace("media_ctr_0.0_0_Media_ctr_0_0", "media_ctr_0.0_0_Media_ctr_0.0_0")
 
 
-# In[ ]:
+# In[20]:
 
 
 # need to convert to strings to save as parquet
@@ -271,13 +229,13 @@ for column in feature_df.columns:
         feature_df[column] = feature_df[column].astype(str)
 
 
-# In[ ]:
+# In[21]:
 
 
 print(cell_type, len(feature_df["Metadata_Well"].unique()))
 
 
-# In[ ]:
+# In[22]:
 
 
 # write to parquet file

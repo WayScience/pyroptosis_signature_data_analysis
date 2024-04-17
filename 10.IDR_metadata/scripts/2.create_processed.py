@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# This notebook creates the `processed` metadata file for IDR.
+# This file will include the aggregated Image-based profiles, the nELISA profiles, and the metadata for the samples.
+
 # In[1]:
 
 
@@ -46,14 +49,14 @@ PBMC = pd.read_parquet(PBMC_path)
 SHSY5Y = pd.read_parquet(SHSY5Y_path)
 
 
-# In[5]:
+# In[ ]:
 
 
 print(SHSY5Y.shape, PBMC.shape)
 SHSY5Y["Metadata_Well"].unique()
 
 
-# In[6]:
+# In[ ]:
 
 
 PBMC["ground_truth"] = "other"
@@ -118,7 +121,7 @@ data.reset_index(drop=True, inplace=True)
 data
 
 
-# In[7]:
+# In[ ]:
 
 
 # write the data to a txt file

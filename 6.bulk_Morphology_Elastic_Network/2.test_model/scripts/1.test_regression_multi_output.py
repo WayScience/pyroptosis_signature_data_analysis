@@ -1,42 +1,22 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import argparse
 import ast
-import itertools
 import pathlib
 
 import joblib
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pyarrow.parquet as pq
-
-# plot the predictions
-import seaborn as sns
-import toml
-from joblib import dump
-from sklearn.exceptions import ConvergenceWarning
-from sklearn.linear_model import ElasticNetCV, LogisticRegression, MultiTaskElasticNetCV
 
 # import mse
-from sklearn.metrics import mean_squared_error, r2_score
-
-# import RepeatedKFold
-from sklearn.model_selection import (
-    GridSearchCV,
-    LeaveOneOut,
-    RepeatedKFold,
-    StratifiedKFold,
-    cross_val_score,
-    train_test_split,
-)
+from sklearn.metrics import explained_variance_score, mean_squared_error, r2_score
 from sklearn.utils import parallel_backend
 
-# In[2]:
+# In[ ]:
 
 
 argparser = argparse.ArgumentParser()
@@ -52,7 +32,7 @@ cytokine = args.cytokine
 print(cell_type, shuffle, cytokine)
 
 
-# In[4]:
+# In[ ]:
 
 
 # Parameters
@@ -60,7 +40,7 @@ aggregation = True
 nomic = True
 
 
-# In[5]:
+# In[ ]:
 
 
 # set shuffle value
@@ -70,13 +50,13 @@ else:
     shuffle = "final"
 
 
-# In[6]:
+# In[ ]:
 
 
 MODEL_TYPE = "regression"
 
 
-# In[7]:
+# In[ ]:
 
 
 # load training data from indexes and features dataframe
@@ -93,7 +73,7 @@ data_df = pd.read_parquet(data_path)
 data_split_indexes = pd.read_csv(data_split_path, sep="\t")
 
 
-# In[8]:
+# In[ ]:
 
 
 # rename column that contain the treatment dose to be a metadata column
@@ -105,14 +85,14 @@ data_df.rename(
 )
 
 
-# In[9]:
+# In[ ]:
 
 
 # remove duplicate columns
 data_df = data_df.loc[:, ~data_df.columns.duplicated()]
 
 
-# In[10]:
+# In[ ]:
 
 
 # select tht indexes for the training and test set
@@ -120,7 +100,7 @@ train_indexes = data_split_indexes.loc[data_split_indexes["label"] == "train"]
 test_indexes = data_split_indexes.loc[data_split_indexes["label"] == "test"]
 
 
-# In[11]:
+# In[ ]:
 
 
 # subset data_df by indexes in data_split_indexes
@@ -128,7 +108,7 @@ training_data = data_df.loc[train_indexes["labeled_data_index"]]
 testing_data = data_df.loc[test_indexes["labeled_data_index"]]
 
 
-# In[12]:
+# In[ ]:
 
 
 # define metadata columns
@@ -155,13 +135,13 @@ test_data_y = testing_data[test_data_y_cols]
 test_data_x = test_data_x.drop(test_data_y_cols, axis=1)
 
 
-# In[13]:
+# In[ ]:
 
 
 print(train_data_x.shape, train_data_y.shape, test_data_x.shape, test_data_y.shape)
 
 
-# In[14]:
+# In[ ]:
 
 
 # set model path from parameters
@@ -177,7 +157,7 @@ else:
     print("Error")
 
 
-# In[15]:
+# In[ ]:
 
 
 data_dict = {
@@ -196,18 +176,14 @@ data_dict = {
 }
 
 
-# In[16]:
+# In[ ]:
 
 
-# cross validation method
-loo = LeaveOneOut()
-
-# lsit of metrics to use
-metrics = ["explained_variance", "neg_mean_absolute_error", "neg_mean_squared_error"]
+# list of metrics to use
 output_metric_scores = {}
 
 
-# In[17]:
+# In[ ]:
 
 
 # blank df for concatenated results
@@ -231,73 +207,71 @@ results_df = pd.DataFrame(
 )
 
 
-# In[18]:
+# In[ ]:
 
 
-for data_split in data_dict:
-    print(data_split)
-    for i in data_dict[data_split]:
-        print(i)
-        data_x = data_dict[data_split]["data_x"]
-        data_y = data_dict[data_split]["data_y"]
-        col_names = data_dict[data_split]["col_names"]
-        metadata = data_dict[data_split]["metadata"]
-    if shuffle == "shuffled_baseline":
-        model = joblib.load(
-            f"../../1.train_models/{model_path}/{cytokine}_shuffled_baseline__all_nomic.joblib"
-        )
-    elif shuffle == "final":
-        model = joblib.load(
-            f"../../1.train_models/{model_path}/{cytokine}_final__all_nomic.joblib"
-        )
-    else:
-        print("Error")
+data_x = test_data_x
+data_y = test_data_y
+metadata = metadata_test
+data_split = "test"
+if shuffle == "shuffled_baseline":
+    model = joblib.load(
+        f"../../1.train_models/{model_path}/{cytokine}_shuffled_baseline__all_nomic.joblib"
+    )
+elif shuffle == "final":
+    model = joblib.load(
+        f"../../1.train_models/{model_path}/{cytokine}_final__all_nomic.joblib"
+    )
+else:
+    print("Error")
 
-    # get the cytokine column of choice
-    y_selected = data_y[cytokine]
+# get the cytokine column of choice
+y_selected = data_y[cytokine]
 
-    if shuffle == "shuffled_baseline":
-        for column in data_x:
-            np.random.shuffle(data_x[column].values)
+if shuffle == "shuffled_baseline":
+    for column in data_x:
+        np.random.shuffle(data_x[column].values)
 
-    # get predictions
-    predictions = model.predict(data_x)
-    for metric in metrics:
-        scores = cross_val_score(
-            model, data_x, y_selected, scoring=metric, cv=loo, n_jobs=-1
-        )
-        output_metric_scores[metric] = scores
-    r2 = r2_score(y_selected, predictions)
-    output_metric_scores["treatment"] = metadata[
-        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-    ]
-    output_metric_scores["well"] = metadata["Metadata_Well"].values
-    df = pd.DataFrame.from_dict(output_metric_scores)
-    df["r2"] = r2
-    df["cytokine"] = cytokine
-    df["data_split"] = data_split
-    df["shuffle"] = shuffle
-    df["predicted_value"] = predictions
-    df["actual_value"] = y_selected
-    df["log10_neg_mean_absolute_error"] = -np.log10(-df["neg_mean_absolute_error"])
-    df["log10_neg_mean_squared_error"] = -np.log10(-df["neg_mean_squared_error"])
-    df["log10_explained_variance"] = -np.log10(df["explained_variance"])
+# get predictions
+predictions = model.predict(data_x)
 
-    # replace "[NSU]" with """
-    df["cytokine"] = df["cytokine"].replace("[ \[\]NSU]", "", regex=True)
-    df["cytokine"] = df["cytokine"].replace(" ", "_", regex=True)
+explained_variance = explained_variance_score(y_selected, predictions)
+output_metric_scores["explained_variance"] = explained_variance
+neg_mean_absolute_error = -mean_squared_error(y_selected, predictions)
+output_metric_scores["neg_mean_absolute_error"] = neg_mean_absolute_error
+neg_mean_squared_error = -mean_squared_error(y_selected, predictions)
+output_metric_scores["neg_mean_squared_error"] = neg_mean_squared_error
+r2 = r2_score(y_selected, predictions)
+output_metric_scores["treatment"] = metadata[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+]
+output_metric_scores["well"] = metadata["Metadata_Well"].values
+df = pd.DataFrame.from_dict(output_metric_scores)
+df["r2"] = r2
+df["cytokine"] = cytokine
+df["data_split"] = data_split
+df["shuffle"] = shuffle
+df["predicted_value"] = predictions
+df["actual_value"] = y_selected
+df["log10_neg_mean_absolute_error"] = -np.log10(-df["neg_mean_absolute_error"])
+df["log10_neg_mean_squared_error"] = -np.log10(-df["neg_mean_squared_error"])
+df["log10_explained_variance"] = -np.log10(df["explained_variance"])
 
-    # concat the dataframes
-    results_df = pd.concat([results_df, df], axis=0)
+# replace "[NSU]" with """
+df["cytokine"] = df["cytokine"].replace("[ \[\]NSU]", "", regex=True)
+df["cytokine"] = df["cytokine"].replace(" ", "_", regex=True)
+
+# concat the dataframes
+results_df = pd.concat([results_df, df], axis=0)
 
 
-# In[19]:
+# In[ ]:
 
 
 results_df.head()
 
 
-# In[20]:
+# In[ ]:
 
 
 var_df = results_df.drop(
@@ -325,7 +299,7 @@ var_df.reset_index(inplace=True)
 var_df.head()
 
 
-# In[21]:
+# In[ ]:
 
 
 # set model path from parameters
@@ -344,7 +318,7 @@ else:
 pathlib.Path(results_path).mkdir(parents=True, exist_ok=True)
 
 
-# In[22]:
+# In[ ]:
 
 
 # check if the model training metrics file exists

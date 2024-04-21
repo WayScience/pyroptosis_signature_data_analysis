@@ -16,13 +16,12 @@ Each of these notebooks can be run via the [run_preprocessing_and_aggregation_lo
 Note that there are two versions of the script.
 One for a local machine and another for a slurm based cluster.
 This can be accomplished by running the following command in the terminal:
-For a local machine:
 ```bash
+# For a local machine:
 cd notebooks
 bash run_preprocessing_and_aggregation_local.sh
-```
-For a slurm based cluster:
-```bash
+
+# For a slurm based cluster:
 cd notebooks
 bash run_preprocessing_and_aggregation_cluster.sh
 ```

@@ -1208,7 +1208,7 @@ options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
 # sfig_pt1
 sfig_pt1 <- (
     wrap_elements(full = heatmap_cytokines)
-    + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
+    + theme(plot.tag = element_text(size = 20))
 )
 sfig_pt1
 

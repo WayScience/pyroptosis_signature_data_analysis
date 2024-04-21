@@ -7,7 +7,7 @@ These data will be uploaded to IDR with the raw image data.
 There are four main notebooks in this module:
 1. `0.preprocess_profiles.ipynb`: This notebooks curates and preprocesses the data for IDR.
 Specifically, it gets the normalized, non-feature selected data ready for IDR upload.
-2. `1.data_curation.ipynb`: This noteboook aggregates the data from the previous notebooks and creates the final aggregated dataset.
+2. `1.data_curation.ipynb`: This noteboook aggregates the data from the previous notebooks and creates the final aggregated dataset, which includes concatenated image-based profiles and nELISA data per well.
 Here we curate the data for IDR.
 3. `2.create_processed.ipynb`: This notebook creates the [processed](IDR_metadata/screenA/idr0000-screenA-processed.txt) metadata file for IDR.
 This file will include the aggregated Image-based profiles, the nELISA profiles, and the metadata for the samples.

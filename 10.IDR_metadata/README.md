@@ -1,6 +1,6 @@
 # Image Data Resource (IDR) Data Curation
 
-This module contains the necessary scripts to adequately curate aggregated image-based profiles, nELISA secreted profiles, and Metadata.
+This module contains the necessary scripts to adequately curate aggregated image-based profiles, nELISA secreted profiles, and metadata.
 These data will be uploaded to IDR with the raw image data.
 
 ## Usage

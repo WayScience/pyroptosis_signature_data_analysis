@@ -10,7 +10,7 @@ Specifically, it gets the normalized, non-feature selected data ready for IDR up
 2. `1.data_curation.ipynb`: This noteboook aggregates the data from the previous notebooks and creates the final aggregated dataset, which includes concatenated image-based profiles and nELISA data per well.
 3. `2.create_processed.ipynb`: This notebook creates the [processed](IDR_metadata/screenA/idr0000-screenA-processed.txt) metadata file for IDR.
 This file will include the aggregated Image-based profiles, the nELISA profiles, and the metadata for the samples.
-3. `3.create_library.ipynb`: This notebook creats the [library](IDR_metadata/screenA/idr0000-screenA-library.txt) metadata file needed fop IDR upload.
+3. `3.create_library.ipynb`: This notebook creates the [library](IDR_metadata/screenA/idr0000-screenA-library.txt) metadata file needed for IDR upload.
 
 Each of these notebooks can be run via the [run_preprocessing_and_aggregation_local.sh](notebooks/run_preprocessing_and_aggregation_local.sh) script.
 Note that there are two versions of the script.

@@ -9,5 +9,5 @@ The data is preprocessed in the following steps:
 2. nELISA (Secretome) preprocessing
     Here we clean the nELISA data and metadata.
 3. Aggregation and Merging
-    Here we aggregate the moprhology data to the well level and merge it with the nELISA data.
+    Here we aggregate the morphology data to the well level and merge it with the nELISA data.
 

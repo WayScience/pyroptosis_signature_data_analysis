@@ -1,6 +1,7 @@
 # Preprocess Data
 
-Here we preprocess the data to be used in the model. The data is stored in the `data` folder.
+Here we preprocess the data to be used in the model. 
+The data is stored in the `data` folder.
 The data is preprocessed in the following steps:
 
 1. Morphology preprocessing

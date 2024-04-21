@@ -15,8 +15,8 @@ import pandas as pd
 
 
 # Parameters
-cell_type = "SHSY5Y"
-aggregation = False
+cell_type = "PBMC"
+aggregation = True
 nomic = True
 
 

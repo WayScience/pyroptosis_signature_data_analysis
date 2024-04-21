@@ -18,7 +18,7 @@ import pyarrow.parquet as pq
 
 
 # Parameters
-cell_type = "PBMC"
+cell_type = "SHSY5Y"
 
 
 # In[3]:
@@ -239,10 +239,64 @@ for pattern, replacement in replacement_dict.items():
 
 feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
     "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-].str.replace("media_ctr_0.0_0_Media_ctr_0_0", "media_ctr_0.0_0_Media_ctr_0.0_0")
+].str.replace("media_ctr_0.0_0_Media_ctr_0_0", "Media", regex=False)
+
+feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].str.replace("media_ctr_0.0_0_Media_0_0", "Media", regex=False)
+
+feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].str.replace("media_ctr_0.0_0_Media_ctr_0.0_0", "Media", regex=False)
+
+feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].str.replace(
+    "Flagellin_1.000_0_Disulfiram_1.000_uM",
+    "Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM",
+    regex=False,
+)
+
+feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].str.replace(
+    "Flagellin_1.000_0_DMSO_0.025_%",
+    "Flagellin_1.000_ug_per_ml_DMSO_0.025_%",
+    regex=False,
+)
+
+feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].str.replace(
+    "Flagellin_0.100_ug_per_ml_DMSO_0.000_%",
+    "Flagellin_0.100_ug_per_ml_DMSO_0.025_%",
+    regex=False,
+)
+
+feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].str.replace(
+    "Flagellin_1.000_ug_per_ml_DMSO_0.000_%",
+    "Flagellin_1.000_ug_per_ml_DMSO_0.025_%",
+    regex=False,
+)
+
+feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].str.replace("media_ctr_Media_ctr_nan__0.0_µg_per_ml", "Media", regex=False)
+
+feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = feature_df[
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+].str.replace("media_ctr_0.0_ug_per_ml_Media_ctr_0_0", "Media", regex=False)
 
 
 # In[18]:
+
+
+print(len(feature_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()))
+
+
+# In[19]:
 
 
 # need to convert to strings to save as parquet
@@ -252,27 +306,8 @@ for column in feature_df.columns:
         feature_df[column] = feature_df[column].astype(str)
 
 
-# In[19]:
+# In[ ]:
 
 
 # write to parquet file
 feature_df.to_parquet(feature_df_out_path)
-
-
-# In[20]:
-
-
-del feature_df
-import gc
-
-gc.collect()
-
-
-# In[21]:
-
-
-# Define inputs
-feature_file = pathlib.Path(f"../data/{cell_type}_sc.parquet")
-feature_df = pd.read_parquet(feature_file)
-# quick check for site
-print(feature_df["Metadata_Site"])

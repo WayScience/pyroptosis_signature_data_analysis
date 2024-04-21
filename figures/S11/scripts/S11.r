@@ -1,346 +1,133 @@
-suppressWarnings(suppressPackageStartupMessages(library(ggplot2))) # plotting
-suppressWarnings(suppressPackageStartupMessages(library(platetools))) # plotting
-suppressWarnings(suppressPackageStartupMessages(library(gridExtra))) # plot assembly
-suppressWarnings(suppressPackageStartupMessages(library(cowplot))) # plot assembly
-suppressWarnings(suppressPackageStartupMessages(library(viridis))) # color palettes
-suppressWarnings(suppressPackageStartupMessages(library(argparse))) # command line arguments
-suppressWarnings(suppressPackageStartupMessages(library(patchwork))) # plot assembly
-suppressWarnings(suppressPackageStartupMessages(library(arrow))) # reading parquet files
-suppressWarnings(suppressPackageStartupMessages(library(dplyr))) # data manipulation
+suppressPackageStartupMessages(suppressWarnings(library(ggplot2))) # plotting
+suppressPackageStartupMessages(suppressWarnings(library(dplyr))) # data manipulation
+suppressPackageStartupMessages(suppressWarnings(library(argparser))) # command line arguments
+suppressPackageStartupMessages(suppressWarnings(library(patchwork))) # plot patchwork
+suppressPackageStartupMessages(suppressWarnings(library(reshape2))) # data manipulation
+suppressPackageStartupMessages(suppressWarnings(library(ggridges))) # ridgeline plots
+suppressPackageStartupMessages(suppressWarnings(library(RColorBrewer))) # color palettes
+suppressPackageStartupMessages(suppressWarnings(library(cowplot))) # ggplot2 drawing
+suppressPackageStartupMessages(suppressWarnings(library(ggplotify))) # ggplot2 drawing
 
-# define the base directory
-base_dir <- file.path(
-    "..",
-    "..",
-    ".."
-)
-
-# Set the path to the index file
-index_file_path_PBMC <- file.path(
-    base_dir,
-    "4.sc_Morphology_Neural_Network_MLP_Model/0.hyperparameter_optimization/indexes/PBMC/multi_class/MultiClass_MLP_data_split_indexes.tsv"
-)
-index_file_path_SHSY5Y <- file.path(
-    base_dir,
-    "4.sc_Morphology_Neural_Network_MLP_Model/0.hyperparameter_optimization/indexes/SHSY5Y/multi_class/MultiClass_MLP_data_split_indexes.tsv"
-)
-# load the index file
-index_file_PBMC <- read.table(
-    file = index_file_path_PBMC,
-    sep = "\t",
-    header = TRUE,
-    stringsAsFactors = FALSE
-)
-index_file_SHSY5Y <- read.table(
-    file = index_file_path_SHSY5Y,
-    sep = "\t",
-    header = TRUE,
-    stringsAsFactors = FALSE
-)
+source("../../utils/figure_themes.r")
 
 
-# create the figure directory if it does not exist
-figure_dir <- file.path(
-    "../",
-    "figures"
-)
-if (!dir.exists(figure_dir)) {
-    dir.create(figure_dir)
-}
+cell_type <- "PBMC"
+model_name <- "MultiClass_MLP"
 
-# sort the index file by labeled_data_index
-index_file_PBMC <- index_file_PBMC[order(index_file_PBMC$labeled_data_index),]
-head(index_file_PBMC,2)
-index_file_SHSY5Y <- index_file_SHSY5Y[order(index_file_SHSY5Y$labeled_data_index),]
-head(index_file_SHSY5Y,2)
+# set file path for importing the data
+training_metrics_file <- file.path(paste0(
+    "../../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/training_metrics.parquet"
+))
 
 
-# set path to the PBMC metadata file
-metadata_file_path_PBMC <- file.path(
-    "..",
-    "..",
-    "..",
-    "data",
-    "PBMC_preprocessed_sc_norm.parquet"
-)
-
-# load via arrow with certain columns
-metadata_file_PBMC <- arrow::read_parquet(
-    metadata_file_path_PBMC,
-    col_select = c(
-        'Metadata_cell_type',
-        'Metadata_Well'	,
-        'Metadata_number_of_singlecells',
-    )
-)
-head(metadata_file_PBMC)
-
-# SHSY5Y
-# set path to the SHSY5Y metadata file
-metadata_file_path_SHSY5Y <- file.path(
-    "..",
-    "..",
-    "..",
-    "data",
-    "SHSY5Y_preprocessed_sc_norm.parquet"
-)
-# load the metadata file via arrow
-metadata_file_SHSY5Y <- arrow::read_parquet(
-    metadata_file_path_SHSY5Y,
-    col_select = c(
-        'Metadata_cell_type',
-        'Metadata_Well'	,
-        'Metadata_number_of_singlecells',
-    )
-)
-head(metadata_file_SHSY5Y)
-
-## PBMC
-
-# add column to metadata file with the labeled_data_index
-metadata_file_PBMC$label <- index_file_PBMC$label
-# replace test, train, or validation with "pool" in label column
-metadata_file_PBMC$label <- gsub(
-    pattern = "test",
-    replacement = "pool",
-    x = metadata_file_PBMC$label
-)
-metadata_file_PBMC$label <- gsub(
-    pattern = "train",
-    replacement = "pool",
-    x = metadata_file_PBMC$label
-)
-metadata_file_PBMC$label <- gsub(
-    pattern = "val",
-    replacement = "pool",
-    x = metadata_file_PBMC$label
-)
-# aggregate the metadata via Metadata_Well
-metadata_file_PBMC <- metadata_file_PBMC %>%
-    group_by(Metadata_Well, Metadata_cell_type, label) %>%
-    summarize(
-        n = n()
-    )
-head(metadata_file_PBMC)
-
-# SHSY5Y
-# add column to metadata file with the labeled_data_index
-metadata_file_SHSY5Y$label <- index_file_SHSY5Y$label
-# replace test, train, or validation with "pool" in label column
-metadata_file_SHSY5Y$label <- gsub(
-    pattern = "test",
-    replacement = "pool",
-    x = metadata_file_SHSY5Y$label
-)
-metadata_file_SHSY5Y$label <- gsub(
-    pattern = "train",
-    replacement = "pool",
-    x = metadata_file_SHSY5Y$label
-)
-metadata_file_SHSY5Y$label <- gsub(
-    pattern = "val",
-    replacement = "pool",
-    x = metadata_file_SHSY5Y$label
-)
-# aggregate the metadata via Metadata_Well
-metadata_file_SHSY5Y <- metadata_file_SHSY5Y %>%
-    group_by(Metadata_Well, Metadata_cell_type, label) %>%
-    summarize(
-        n = n()
-    )
-head(metadata_file_SHSY5Y)
+# set output file path for graphs
+f1_plot_path <- file.path(paste0(
+    "../figures","/f1_score.png"
+))
 
 
-# combine the SHSY5Y and PBMC metadata files
-combined_metadata <- rbind(
-    metadata_file_PBMC,
-    metadata_file_SHSY5Y
-)
-head(combined_metadata)
-unique(combined_metadata$Metadata_cell_type)
-unique(combined_metadata$label)
+# make the output directory if it doesn't exist
+dir.create(file.path(paste0(
+    "../figures/"
+)), showWarnings = FALSE, recursive = TRUE)
 
-# load in the platemap
-platemap_file_path <- file.path(
-    base_dir,
-    "data/",
-    "Interstellar_plate2_platemap.csv"
-)
-# read in the platemap
-platemap_file <- read.csv(
-    file = platemap_file_path,
-    header = TRUE,
-    stringsAsFactors = FALSE
-)
-head(platemap_file)
 
-# merge the combined metadata file with plate map on Metadata_Well
-updated_platemap <- merge(
-    x = platemap_file,
-    y = combined_metadata,
-    by.x = "well_id",
-    by.y = "Metadata_Well",
-    all.x = TRUE
-)
-head(updated_platemap)
-unique(updated_platemap$Metadata_cell_type)
-# replace "" in cell_type with "Blank" in label
-updated_platemap$Metadata_cell_type[is.na(updated_platemap$Metadata_cell_type)] <- "Blank"
-# replace NA with "Blank" in label
-updated_platemap$label[is.na(updated_platemap$label)] <- "Blank"
-# replace pool with Pool in label
-updated_platemap$label[updated_platemap$label == "pool"] <- "Pool"
-# replace holdout with Holdout in label
-updated_platemap$label[updated_platemap$label == "holdout"] <- "Holdout well"
-# replace treatment_holdout with Treatment Holdout in label
-updated_platemap$label[updated_platemap$label == "treatment_holdout"] <- "Treatment holdout"
-unique(updated_platemap$Metadata_cell_type)
-unique(updated_platemap$label)
 
-# Make the cell type factor ordered
-updated_platemap$Metadata_cell_type <- factor(
-    x = updated_platemap$Metadata_cell_type,
-    levels = c(
-        "Blank",
-        "PBMC",
-        "SH-SY5Y"
-    )
-)
-# make the label factor ordered
-updated_platemap$label <- factor(
-    x = updated_platemap$label,
-    levels = c(
-        'Blank',
-        'Pool',
-        'Holdout well',
-        'Treatment holdout'
-    )
-)
+# read in the data
+training_metrics <- arrow::read_parquet(training_metrics_file)
 
-width <- 14
-height <- 14
-options(repr.plot.width = width, repr.plot.height = height, units = "cm")
-# set pallette
-viridis_pal_custom <- viridis::viridis_pal(option = "C")(5)
 
-data_split_plate_map_full <- (
-    raw_map(
-        data = updated_platemap$label,
-        well = updated_platemap$well_id,
-        plate = 384, # number of wells in plate apriori known
-        size = 14 # size of the wells displayed
-        )
-    + theme_dark()
-        + ggplot2::geom_point(
-        aes(shape = updated_platemap$Metadata_cell_type),
-        size = 5
-        )
-        + labs(fill = "Data Split", shape = "Cell Type")
-    # change legend text size for fill
+support <- training_metrics[training_metrics$metric == "support",]
+# get apoptosis, healthy, and pyroptosis support rows in one df
+support <- support[support$label %in% c("apoptosis", "healthy", "pyroptosis"),]
 
-    + guides(shape = guide_legend(override.aes = list(size = 12), nrow = 1))
-    + guides(fill = guide_legend(override.aes = list(size = 12),ncol = 2))
-    + theme(
-        legend.title = element_text(size = 18,hjust = 0.5),
-        legend.text = element_text(size = 16),
-    )
-    # cell type legend
-    + scale_shape_manual(
-        values = c(
-            'Blank' = 0,
-            'PBMC' = 19,
-            'SH-SY5Y' = 8
+
+# get the rows that contain the F1 scores
+f1_scores <- training_metrics[training_metrics$metric == "f1-score",]
+# remove the rows that contain the macro and weighted averages
+f1_scores <- f1_scores[!grepl("macro avg", f1_scores$label),]
+f1_scores <- f1_scores[!grepl("weighted avg", f1_scores$label),]
+# muatate the label column for multiple cases
+f1_scores$label <- gsub("healthy", "Control", f1_scores$label)
+f1_scores$label <- gsub("apoptosis", "Apoptosis", f1_scores$label)
+f1_scores$label <- gsub("pyroptosis", "Pyroptosis", f1_scores$label)
+# mutate the data type column
+f1_scores$group <- gsub("train", "Training", f1_scores$group)
+f1_scores$group <- gsub("test", "Testing", f1_scores$group)
+f1_scores$group <- gsub("validation", "Validation", f1_scores$group)
+f1_scores$group <- gsub("treatment_holdout", "Treatment Holdout", f1_scores$group)
+f1_scores$group <- gsub("holdout", "Holdout", f1_scores$group)
+# factorize the group column
+f1_scores$group <- factor(f1_scores$group, levels = c(
+    "Training", "Validation", "Testing","Treatment Holdout", "Holdout"
+))
+# mutate the shuffled_data column
+f1_scores$shuffle <- gsub("TRUE", "Shuffled", f1_scores$shuffle)
+f1_scores$shuffle <- gsub("FALSE", "Not Shuffled", f1_scores$shuffle)
+# cbind the support column to the f1_scores df
+f1_scores <- cbind(f1_scores, support$value)
+# rename the support column
+colnames(f1_scores)[colnames(f1_scores) == "support$value"] <- "support"
+# dived the support by 10,000 to get the number of cells
+f1_scores$support <- f1_scores$support / 10000
+# round the support column to 2 decimal places
+f1_scores$support <- round(f1_scores$support, 2)
+
+
+# make the label a factor so that the order is preserved
+f1_scores$label <- factor(
+    f1_scores$label, levels = c(
+        "Control", "Apoptosis", "Pyroptosis"
         )
     )
-    # data split legend
-    + scale_fill_manual(
-    values = c(
-        'Blank' = "grey",
-        'Pool' = viridis_pal_custom[3],
-        'Holdout well' = viridis_pal_custom[4],
-        'Treatment holdout' = viridis_pal_custom[5]
-
-    )
-    )
-    + theme(
-        axis.text.x = element_text(size = 16),
-        axis.text.y = element_text(size = 16)
-    )
-
-)
-data_split_plate_map_full
-ggsave(
-    filename = "../figures/data_split_plate_map_full.png",
-    plot = data_split_plate_map_full,
-    width = width,
-    height = height,
-    units = "in",
-    dpi = 600
-)
 
 
-# remove SHSY5Y from the platemap
-updated_platemap <- updated_platemap[updated_platemap$Metadata_cell_type != "SH-SY5Y",]
-head(updated_platemap)
+head(f1_scores, 1)
 
-width <- 14
-height <- 14
-options(repr.plot.width = width, repr.plot.height = height, units = "cm")
-# set pallette
-viridis_pal_custom <- viridis::viridis_pal(option = "C")(5)
+# remove the treatment holdout rows
+f1_scores <- f1_scores[!grepl("Treatment Holdout", f1_scores$group),]
 
-data_split_plate_map <- (
-    raw_map(
-        data = updated_platemap$label,
-        well = updated_platemap$well_id,
-        plate = 384, # number of wells in plate apriori known
-        size = 14 # size of the wells displayed
-        )
-    + theme_dark()
-        + ggplot2::geom_point(
-        aes(shape = updated_platemap$Metadata_cell_type),
-        size = 5
-        )
-        + labs(fill = "Data Split", shape = "Cell Type")
-    # change legend text size for fill
+# set plot size
+width <- 10
+height <- 5
+options(repr.plot.width = width, repr.plot.height = height)
+# bar plot of the F1 scores
+f1_score_plot <- (
+    ggplot(f1_scores, aes(x = shuffle, y = value, fill = group))
+    + geom_bar(stat = "identity", position = "dodge")
 
-    + guides(shape = guide_legend(override.aes = list(size = 12), nrow = 1))
-    + guides(fill = guide_legend(override.aes = list(size = 12),ncol = 2))
-    + theme(
-        legend.title = element_text(size = 18,hjust = 0.5),
-        legend.text = element_text(size = 16),
-    )
-    # cell type legend
-    + scale_shape_manual(
-        values = c(
-            'Blank' = 0,
-            'PBMC' = 19,
-            'SH-SY5Y' = 8
-        )
-    )
-    # data split legend
-    + scale_fill_manual(
-    values = c(
-        'Blank' = "grey",
-        'Pool' = viridis_pal_custom[3],
-        'Holdout well' = viridis_pal_custom[4],
-        'Treatment holdout' = viridis_pal_custom[5]
-
-    )
-    )
-    + theme(
-        axis.text.x = element_text(size = 16),
-        axis.text.y = element_text(size = 16)
-    )
+    + ylim(0, 1)
+    + facet_wrap(~label)
+    + ylab("F1 Score")
+    + xlab("Data Split")
+    # change the legend title
+    + labs(fill = "Predicted Class")
+    # change the colours
+    + scale_fill_manual(values = c(
+        "Training" = "#88F2F2",
+        "Validation" = "#056CF2",
+        "Testing" = "#A6382E",
+        "Holdout" = "#F2A900"
+    ))
+    + figure_theme_wide
 
 )
-data_split_plate_map
-ggsave(
-    filename = "../figures/data_split_plate_map.png",
-    plot = data_split_plate_map,
-    width = width,
-    height = height,
-    units = "in",
-    dpi = 600
+ggsave(f1_plot_path, f1_score_plot, width = width, height = height, dpi = 600)
+f1_score_plot
+
+
+
+# set plot size
+width <- 10
+height <- 10
+options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
+fig12 <- (
+    f1_score_plot
+    + theme(plot.tag = element_text(size = 20))
 )
+fig12
+
+# save the plot
+
+ggsave("../figures/S11.png", fig12, width = width, height = height, dpi = 600)
 

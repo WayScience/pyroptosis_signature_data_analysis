@@ -9,7 +9,7 @@ suppressPackageStartupMessages(suppressWarnings(library("RColorBrewer")))
 suppressPackageStartupMessages(suppressWarnings(library(gplots)))
 suppressPackageStartupMessages(suppressWarnings(library(ComplexHeatmap)))
 suppressPackageStartupMessages(suppressWarnings(library(ggplotify)))
-suppressPackageStartupMessages(suppressWarnings(library(arrow)))
+suppressPackageStartupMessages(suppressWarnings(library("arrow")))
 suppressPackageStartupMessages(suppressWarnings(library(scales)))
 suppressPackageStartupMessages(suppressWarnings(library(circlize)))
 suppressPackageStartupMessages(suppressWarnings(library(RcppTOML)))
@@ -18,11 +18,11 @@ suppressPackageStartupMessages(suppressWarnings(library(RcppTOML)))
 install.packages("ggmagnify", repos = c("https://hughjonesd.r-universe.dev",
                  "https://cloud.r-project.org"))
 suppressPackageStartupMessages(suppressWarnings(library(ggmagnify)))
-source("../utils/figure_themes.r")
+source("../../utils/figure_themes.r")
 
 
 # Load in the treatment list
-toml_path <- file.path("..","..","1.Exploratory_Data_Analysis/utils/params.toml")
+toml_path <- file.path("..","..","..","1.Exploratory_Data_Analysis/utils/params.toml")
 p <- parseTOML(toml_path)
 # get the list that is in the toml file under the key "treatments"
 # define that list as a variable called list_of_treatments and print the list to verify
@@ -33,13 +33,13 @@ list_of_treatments
 # Figure 2A
 
 # Load data
-data_path_cytokine_values <- file.path("../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_PBMC_clean.parquet")
+data_path_cytokine_values <- file.path("../../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_PBMC_clean.parquet")
 cytokine_values <- arrow::read_parquet(data_path_cytokine_values)
 # filter out the treatments that are not in the list
 cytokine_values <- cytokine_values[cytokine_values$oneb_Treatment_Dose_Inhibitor_Dose %in% list_of_treatments,]
 
 # read in the ground truth data
-data_path_ground_truth <- file.path("../../4.sc_Morphology_Neural_Network_MLP_Model/MLP_utils/ground_truth.toml")
+data_path_ground_truth <- file.path("../../../4.sc_Morphology_Neural_Network_MLP_Model/MLP_utils/ground_truth.toml")
 ground_truth <- parseTOML(data_path_ground_truth)
 # make a a list of the treatments that are in the ground truth data
 apoptosis_ground_truth_list <- c(ground_truth$Apoptosis$apoptosis_groups_list)
@@ -202,7 +202,7 @@ cytokine_scatter_plot
 # cytokine_scatter_plot add gates
 cytokine_scatter_plot <- (
     cytokine_scatter_plot
-    + geom_vline(xintercept = 0.5, linetype = "dashed", color = "black", size = 1)
+    + geom_vline(xintercept = 0.4, linetype = "dashed", color = "black", size = 1)
     + geom_hline(yintercept = 0.5, linetype = "dashed", color = "black", size = 1)
 )
 # fix the coordinates
@@ -299,7 +299,7 @@ cytokine_scatter_plot1
 # cytokine_scatter_plot add gates
 cytokine_scatter_plot1 <- (
     cytokine_scatter_plot1
-    + geom_vline(xintercept = 0.5, linetype = "dashed", color = "black", size = 1)
+    + geom_vline(xintercept = 0.4, linetype = "dashed", color = "black", size = 1)
     + geom_hline(yintercept = 0.5, linetype = "dashed", color = "black", size = 1)
 )
 # fix the coordinates
@@ -313,7 +313,7 @@ cytokine_scatter_plot1
 # Figure 2A
 
 # Load data
-data_path_cytokine_values_melted <- file.path("..","..","2.Nomic_nELISA_Analysis/0.Exploratory_Analysis/PBMC/results/PBMC_all_cytokine_values_per_treatment_per_well_melted.parquet")
+data_path_cytokine_values_melted <- file.path("..","..","..","2.Nomic_nELISA_Analysis/0.Exploratory_Analysis/PBMC/results/PBMC_all_cytokine_values_per_treatment_per_well_melted.parquet")
 cytokine_values_melted <- arrow::read_parquet(data_path_cytokine_values_melted)
 # filter out the treatments that are not in the list
 cytokine_values_melted <- cytokine_values_melted[cytokine_values_melted$oneb_Treatment_Dose_Inhibitor_Dose %in% list_of_treatments,]
@@ -477,7 +477,7 @@ cytokine_bar_plot
 # Figure 2A
 
 # Load data
-data_path_cytokine_values_melted <- file.path("..","..","2.Nomic_nELISA_Analysis/0.Exploratory_Analysis/PBMC/results/PBMC_all_cytokine_values_per_treatment_per_well_melted.parquet")
+data_path_cytokine_values_melted <- file.path("..","..","..","2.Nomic_nELISA_Analysis/0.Exploratory_Analysis/PBMC/results/PBMC_all_cytokine_values_per_treatment_per_well_melted.parquet")
 cytokine_values_melted <- arrow::read_parquet(data_path_cytokine_values_melted)
 # filter out the treatments that are not in the list
 cytokine_values_melted <- subset(cytokine_values_melted, select = -Metadata_position_x)
@@ -489,6 +489,8 @@ cytokine_values_agg <- cytokine_values_melted %>%
     group_by(cytokine,oneb_Treatment_Dose_Inhibitor_Dose) %>%
     summarise_all(mean)
 
+
+unique(cytokine_values_agg$oneb_Treatment_Dose_Inhibitor_Dose)
 
 length(unique(cytokine_values_agg$oneb_Treatment_Dose_Inhibitor_Dose))
 # mutate the names of each treatment
@@ -532,11 +534,12 @@ cytokine_values_agg <- cytokine_values_agg %>%
         oneb_Treatment_Dose_Inhibitor_Dose == 'Topotecan_10.000_nM_DMSO_0.025_%' ~ "Topotecan 10.0 nM + DMSO 0.025%",
         oneb_Treatment_Dose_Inhibitor_Dose == 'Topotecan_20.000_nM_DMSO_0.025_%' ~ "Topotecan 20.0 nM + DMSO 0.025%",
         oneb_Treatment_Dose_Inhibitor_Dose == 'Topotecan_5.000_nM_DMSO_0.025_%' ~ "Topotecan 5.0 nM + DMSO 0.025%",
-        oneb_Treatment_Dose_Inhibitor_Dose == 'media_ctr_0.0_0_Media_0.0_0' ~ "Media",
-        oneb_Treatment_Dose_Inhibitor_Dose == 'media_ctr_0.0_0_Media_ctr_0.0_0' ~ "Media"
+        oneb_Treatment_Dose_Inhibitor_Dose == 'Media' ~ "Media"
     )
 )
 length(unique(cytokine_values_agg$oneb_Treatment_Dose_Inhibitor_Dose))
+unique(cytokine_values_agg$oneb_Treatment_Dose_Inhibitor_Dose)
+
 
 length(unique(cytokine_values_agg$cytokine))
 # gsub out '[NSU]' from the cytokine names
@@ -607,21 +610,21 @@ heatmap_plot_all <- draw(
 )
 
 
-png(file.path("figures","all_cytokines_heatmap.png"), width = width, height = height, units = "in", res = 600)
+png(file.path("../figures","all_cytokines_heatmap.png"), width = width, height = height, units = "in", res = 600)
 # make path if it does not exist
-dir.create(file.path("figures"), showWarnings = FALSE)
+dir.create(file.path("../figures"), showWarnings = FALSE)
 heatmap_plot_all
 dev.off()
 heatmap_plot_all
 
 
 # import the tukey test results
-tukey_results_path <- file.path("..","..","2.Nomic_nELISA_Analysis/0.Exploratory_Analysis/PBMC/results/tukey_test_results.csv")
+tukey_results_path <- file.path("..","..","..","2.Nomic_nELISA_Analysis/0.Exploratory_Analysis/PBMC/results/tukey_test_results.csv")
 # read in the data
 tukey_results <- read.csv(tukey_results_path, header = TRUE, sep = ",")
 
 # reload in the cytokine values
-data_path_cytokine_values_melted <- file.path("..","..","2.Nomic_nELISA_Analysis/0.Exploratory_Analysis/PBMC/results/PBMC_all_cytokine_values_per_treatment_per_well_melted.parquet")
+data_path_cytokine_values_melted <- file.path("..","..","..","2.Nomic_nELISA_Analysis/0.Exploratory_Analysis/PBMC/results/PBMC_all_cytokine_values_per_treatment_per_well_melted.parquet")
 cytokine_values_melted <- arrow::read_parquet(data_path_cytokine_values_melted)
 # filter out the treatments that are not in the list
 cytokine_values_melted <- cytokine_values_melted[cytokine_values_melted$oneb_Treatment_Dose_Inhibitor_Dose %in% list_of_treatments,]
@@ -636,7 +639,7 @@ cytokine_values_melted_agg <- cytokine_values_melted %>%
 
 # read in the ground truth
 ground_truth_path <- file.path(
-    "../../4.sc_Morphology_Neural_Network_MLP_Model/MLP_utils/ground_truth.toml"
+    "../../../4.sc_Morphology_Neural_Network_MLP_Model/MLP_utils/ground_truth.toml"
 )
 ground_truth <- parseTOML(ground_truth_path)
 apoptosis_ground_truth_list <- ground_truth$Apoptosis$apoptosis_groups_list
@@ -1025,15 +1028,15 @@ heatmap <- draw(
     padding = unit(c(5, 5, 5, 15), "mm"),
 )
 # save the heatmap as png using device
-png(file.path("figures","selected_cytokines_heatmap.png"), width = width, height = height, units = "in", res = 600)
+png(file.path("../figures","selected_cytokines_heatmap.png"), width = width, height = height, units = "in", res = 600)
 # make path if it does not exist
-dir.create(file.path("figures"), showWarnings = FALSE)
+dir.create(file.path("../figures"), showWarnings = FALSE)
 heatmap
 dev.off()
 
 
 # load in the png to a grob object
-heatmap_grob <- png::readPNG(file.path("figures","selected_cytokines_heatmap.png"))
+heatmap_grob <- png::readPNG(file.path("../figures","selected_cytokines_heatmap.png"))
 # convert the grob object to a raster grob
 # heatmap_anova_cytokines <- rasterGrob(heatmap_grob, interpolate = TRUE, height = unit(1, "npc"), width = unit(1, "npc"))
 heatmap_anova_cytokines <- rasterGrob(heatmap_grob, interpolate = TRUE)
@@ -1050,12 +1053,12 @@ heatmap_anova_cytokines
 
 
 # read in the UMAP results
-umap_results_path <- file.path("..","..","2.Nomic_nELISA_Analysis/1.umap/PBMC/results/nELISA_plate_430420_umap_PBMC.csv")
+umap_results_path <- file.path("..","..","..","2.Nomic_nELISA_Analysis/1.umap/PBMC/results/nELISA_plate_430420_umap_PBMC.csv")
 # read in the data
 umap_results <- read.csv(umap_results_path, header = TRUE, sep = ",")
 
 
-umap_results_selected_treatments_path <- file.path("..","..","2.Nomic_nELISA_Analysis/1.umap/PBMC/results/nELISA_plate_430420_umap_PBMC_selected_treatments.csv")
+umap_results_selected_treatments_path <- file.path("..","..","..","2.Nomic_nELISA_Analysis/1.umap/PBMC/results/nELISA_plate_430420_umap_PBMC_selected_treatments.csv")
 # read in the data
 umap_results_selected_treatments <- read.csv(umap_results_selected_treatments_path, header = TRUE, sep = ",")
 
@@ -1274,12 +1277,7 @@ cytokine_scatter_plot <- cytokine_scatter_plot + theme(plot.margin = unit(c(1,0,
 # each row represents a proportion of the total plot size
 # some plots may be on multiple rows or columns
 # plots can be proportioned by adding more letters to the row or column
-# layout <- c(
-#     area(t=1, b=2, l=0, r=3), # A
-#     area(t=1, b=2, l=4, r=5), # B
-#     area(t=3, b=5, l=0, r=5), # C
-#     area(t=6.5, b=8, l=0, r=5) # D
-# )
+
 
 layout <- c(
     area(t=1, b=2, l=0, r=3), # A
@@ -1306,7 +1304,7 @@ fig2 <- (
     + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
 )
 # save the figure as png using device
-png(file.path("figures","figure2.png"), width = width, height = height, units = "in", res = 600)
+png(file.path("../figures","figure2.png"), width = width, height = height, units = "in", res = 600)
 fig2
 dev.off()
 fig2

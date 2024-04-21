@@ -178,8 +178,8 @@ options(repr.plot.width = width, repr.plot.height = height)
 confusion_matrix_plot <- (
     ggplot(confusion_matrix, aes(x = True_Label, y = Predicted_Label))
     + facet_grid(data_split~shuffle)
-    + geom_point(aes(color = Recall), size = 25, shape = 15)
-    + geom_text(aes(label = Count), size = 5)
+    + geom_point(aes(color = Recall), size = 25.5, shape = 15)
+    + geom_text(aes(label = Count), size = 4)
     + scale_color_gradient("Recall", low = "white", high = "red",limits = c(0, 1))
     + theme_bw()
     + ylab("True Class")
@@ -196,7 +196,7 @@ confusion_matrix_plot <- (
     # make the facet labels larger
     + theme(strip.text = element_text(size = 18))
     # x tick labels 45 degrees
-    + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    + theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
 
 )
@@ -615,7 +615,7 @@ get_image <- function(df, i){
 pyroptosis_correct_train_image <- get_image(pyroptosis_correct_train, 4)
 pyroptosis_correct_validation_image <- get_image(pyroptosis_correct_validation, 4)
 pyroptosis_correct_test_image <- get_image(pyroptosis_correct_test, 4)
-pyroptosis_correct_holdout_image <- get_image(pyroptosis_correct_holdout, 2)
+pyroptosis_correct_holdout_image <- get_image(pyroptosis_correct_holdout, 3)
 
 control_correct_train_image <- get_image(control_correct_train, 2)
 control_correct_validation_image <- get_image(control_correct_validation, 4)

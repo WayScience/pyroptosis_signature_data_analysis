@@ -2,7 +2,8 @@
 
 This folder contains notebooks that demonstrate how to perform exploratory data analysis (EDA) on a dataset.
 EDA is an essential step in the data analysis process.
-It allows you to summarize the main characteristics of the data, often with visual methods. This helps you understand the data and the relationships between the variables.
+It allows you to summarize the main characteristics of the data, often with visual methods.
+This helps you understand the data and the relationships between the variables.
 
 Due to the exploratory nature of the analysis, some analysis are secondary and were not included in the manuscript that this repository is for.
 However, they are still useful for understanding the data and the relationships between the variables.

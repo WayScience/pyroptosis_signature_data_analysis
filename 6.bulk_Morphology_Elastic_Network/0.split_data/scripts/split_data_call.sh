@@ -15,7 +15,7 @@ module load anaconda
 conda activate Interstellar
 
 # define the search parameters
-cell_types=( "PBMC" )
+cell_types=( "PBMC" "SHSY5Y" )
 
 # calculate the number of jobs
 job_id=$((SLURM_ARRAY_TASK_ID - 1))

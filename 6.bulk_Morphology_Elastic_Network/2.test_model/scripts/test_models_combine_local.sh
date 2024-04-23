@@ -3,7 +3,7 @@
 
 conda activate Interstellar
 
-cell_types=( PBMC )
+cell_types=( PBMC SHSY5Y )
 
 for cell_type in "${cell_types[@]}"; do
     echo "Cell type: $cell_type"

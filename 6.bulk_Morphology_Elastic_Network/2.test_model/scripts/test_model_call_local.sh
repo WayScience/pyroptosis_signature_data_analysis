@@ -12,7 +12,7 @@ readarray -t cytokine_array < $filename
 
 
 shuffles=( "True" "False" )
-cell_types=( PBMC )
+cell_types=( PBMC SHSY5Y )
 
 # calculate total iterations
 total_iterations=$((${#cytokine_array[@]} * ${#shuffles[@]} * ${#cell_types[@]}))

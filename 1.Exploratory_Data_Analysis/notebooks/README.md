@@ -12,6 +12,7 @@ The main analysis that are needed for the manuscript are:
 
 1. [UMAP](1.umap_analysis_plate2.ipynb)
     This notebook extracts the UMAP embeddings of the plate 2 data and visualizes the embeddings.
+    - Note: Plate 2 data and platemaps can be found in the repo: [pyroptosis_signature_image_profiling](https://github.com/WayScience/pyroptosis_signature_image_profiling)
 2. [Cell Counts](4.cell_count_analysis.ipynb)
     This notebook extracts the cell counts of the plate 2 data and visualizes the cell counts.
 3. [Feature index](8.0_create_feature_index.ipynb)
@@ -21,4 +22,4 @@ The main analysis that are needed for the manuscript are:
 5. [Combine ANOVA](8.2_combine_files.ipynb)
     This notebook combines the ANOVA results from the previous notebook.
 6. [Subset ANOVA](9.subset_umap.ipynb)
-    This notebook subsets the UMAP embeddings based on the ANOVA results.
+    This notebook subsets the data space across treatments and generates UMAP embeddings based on the ANOVA results.

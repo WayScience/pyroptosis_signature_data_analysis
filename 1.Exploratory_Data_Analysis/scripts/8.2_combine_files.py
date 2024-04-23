@@ -13,7 +13,7 @@ import pandas as pd
 # In[2]:
 
 
-cell_type = "SHSY5Y"
+cell_type = "PBMC"
 
 
 # In[3]:

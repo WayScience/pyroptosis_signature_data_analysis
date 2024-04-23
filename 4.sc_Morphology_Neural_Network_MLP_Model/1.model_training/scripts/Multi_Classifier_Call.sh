@@ -14,9 +14,9 @@ module load anaconda
 
 conda activate Interstellar_python
 
-cell_types=( PBMC )
+cell_types=( PBMC SHSY5Y )
 model_names=( MultiClass_MLP )
-shuffles=( True )
+shuffles=( True False )
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
 
 # calculate the number of jobs

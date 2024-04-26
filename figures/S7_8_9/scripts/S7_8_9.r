@@ -146,9 +146,12 @@ global_prediction_trend_scatter <- (
 ggsave(global_prediction_trend_path, global_prediction_trend_scatter, width=5, height=5, dpi=500)
 global_prediction_trend_scatter
 
+head(df_stats)
 
+# get only the final models
+df_stats_final <- df_stats %>% filter(grepl("final", shuffle))
 #  aggregate the data by the cytokine
-df_stats_agg <- df_stats %>%
+df_stats_agg <- df_stats_final %>%
     group_by(cytokine) %>%
     summarise(
         mean_r2 = mean(r2),
@@ -158,8 +161,9 @@ df_stats_agg <- df_stats %>%
         mean_predicted_value = mean(predicted_value)
     )
 # sort the data by the log10_neg_mean_squared_error descending
-df_stats_agg <- df_stats_agg[order(df_stats_agg$mean_log10_neg_mean_squared_error),]
+df_stats_agg <- df_stats_agg[order(df_stats_agg$mean_neg_mean_squared_error),]
 poor_performance_cytokines <- df_stats_agg$cytokine[1:9]
+poor_performance_cytokines
 
 # df_stats factor levels
 df_stats$shuffle_plus_data_split <- factor(
@@ -1375,7 +1379,7 @@ model_heatmap
 dev.off()
 
 width <- 17
-height <- 23
+height <- 20
 options(repr.plot.width=width, repr.plot.height=height)
 
 design2 <- "

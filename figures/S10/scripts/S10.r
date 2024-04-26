@@ -1,526 +1,345 @@
-suppressPackageStartupMessages(suppressWarnings(library(ggplot2)))
-suppressPackageStartupMessages(suppressWarnings(library(argparse)))
-suppressPackageStartupMessages(suppressWarnings(library(dplyr)))
-suppressPackageStartupMessages(suppressWarnings(library(cowplot)))
-suppressPackageStartupMessages(suppressWarnings(library(RColorBrewer)))
-suppressPackageStartupMessages(suppressWarnings(library(patchwork)))
-suppressPackageStartupMessages(suppressWarnings(library(tidyr)))
+suppressWarnings(suppressPackageStartupMessages(library(ggplot2))) # plotting
+suppressWarnings(suppressPackageStartupMessages(library(platetools))) # plotting
+suppressWarnings(suppressPackageStartupMessages(library(gridExtra))) # plot assembly
+suppressWarnings(suppressPackageStartupMessages(library(cowplot))) # plot assembly
+suppressWarnings(suppressPackageStartupMessages(library(viridis))) # color palettes
+suppressWarnings(suppressPackageStartupMessages(library(patchwork))) # plot assembly
+suppressWarnings(suppressPackageStartupMessages(library(arrow))) # reading parquet files
+suppressWarnings(suppressPackageStartupMessages(library(dplyr))) # data manipulation
 
-# load in theme
-source("../../utils/figure_themes.r")
-
-cell_type <- "PBMC"
-
-# set path to the data morphology
-# class
-df_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","morphology","mAP_scores_class.csv")
-reg_df_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_regular_class.csv")
-shuffled_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_shuffled_feature_space_class.csv")
-# treatment
-treatment_df_morphology_treatment_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","morphology","mAP_scores_treatment.csv")
-reg_df_morphology_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_regular_treatment.csv")
-shuffled_morphology_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_shuffled_feature_space_treatment.csv")
-
-# set path to the secretome data
-# class
-df_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","secretome","mAP_scores_class.csv")
-reg_df_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_regular_class.csv")
-shuffled_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_shuffled_feature_space_class.csv")
-# treatment
-treatment_df_secretome_treatment_path <- file.path("..","..","..","9.mAP","data","processed","aggregate_mAPs","secretome","mAP_scores_treatment.csv")
-reg_df_secretome_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_regular_treatment.csv")
-shuffled_secretome_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_shuffled_feature_space_treatment.csv")
-
-# read in the data
-df_morphology_class <- read.csv(df_morphology_class_path)
-reg_df_morphology_class <- read.csv(reg_df_morphology_class_path)
-shuffled_morphology_class <- read.csv(shuffled_morphology_class_path)
-
-df_morphology_treatment <- read.csv(treatment_df_morphology_treatment_path)
-reg_df_morphology_treatment <- read.csv(reg_df_morphology_treatment_path)
-shuffled_morphology_treatment <- read.csv(shuffled_morphology_treatment_path)
-
-df_secretome_class <- read.csv(df_secretome_class_path)
-reg_df_secretome_class <- read.csv(reg_df_secretome_class_path)
-shuffled_secretome_class <- read.csv(shuffled_secretome_class_path)
-
-df_secretome_treatment <- read.csv(treatment_df_secretome_treatment_path)
-reg_df_secretome_treatment <- read.csv(reg_df_secretome_treatment_path)
-shuffled_secretome_treatment <- read.csv(shuffled_secretome_treatment_path)
-
-levels_list <- c(
-    'Media',
-    'DMSO_0.100_%_DMSO_0.025_%',
-    'DMSO_0.100_%_DMSO_1.000_%',
-    'DMSO_0.100_%_Z-VAD-FMK_30.000_uM',
-    'DMSO_0.100_%_Z-VAD-FMK_100.000_uM',
-
-    'Disulfiram_0.100_uM_DMSO_0.025_%',
-    'Disulfiram_1.000_uM_DMSO_0.025_%',
-    'Disulfiram_2.500_uM_DMSO_0.025_%',
-
-    'Flagellin_0.100_ug_per_ml_DMSO_0.025_%',
-    'Flagellin_1.000_ug_per_ml_DMSO_0.025_%',
-    'Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM',
-
-    'LPS_0.010_ug_per_ml_DMSO_0.025_%',
-    'LPS_0.100_ug_per_ml_DMSO_0.025_%',
-    'LPS_1.000_ug_per_ml_DMSO_0.025_%',
-
-    'LPS_Nigericin_1.000_ug_per_ml_1.000_uM_DMSO_0.025_%',
-    'LPS_Nigericin_1.000_ug_per_ml_3.000_uM_DMSO_0.025_%',
-    'LPS_Nigericin_1.000_ug_per_ml_10.000_uM_DMSO_0.025_%',
-    'LPS_Nigericin_1.000_ug_per_ml_10.000_uM_Disulfiram_1.000_uM',
-    'LPS_Nigericin_1.000_ug_per_ml_10.000_uM_Z-VAD-FMK_100.000_uM',
-
-    'LPS_10.000_ug_per_ml_DMSO_0.025_%',
-    'LPS_10.000_ug_per_ml_Disulfiram_0.100_uM',
-    'LPS_10.000_ug_per_ml_Disulfiram_1.000_uM',
-    'LPS_10.000_ug_per_ml_Disulfiram_2.500_uM',
-    'LPS_10.000_ug_per_ml_Z-VAD-FMK_100.000_uM',
-
-    'LPS_100.000_ug_per_ml_DMSO_0.025_%',
-    'LPS_Nigericin_100.000_ug_per_ml_1.000_uM_DMSO_0.025_%',
-    'LPS_Nigericin_100.000_ug_per_ml_3.000_uM_DMSO_0.025_%',
-    'LPS_Nigericin_100.000_ug_per_ml_10.000_uM_DMSO_0.025_%',
-
-    'H2O2_100.000_nM_DMSO_0.025_%',
-    'H2O2_100.000_uM_DMSO_0.025_%',
-    'H2O2_100.000_uM_Disulfiram_1.000_uM',
-    'H2O2_100.000_uM_Z-VAD-FMK_100.000_uM',
-    'Thapsigargin_1.000_uM_DMSO_0.025_%',
-    'Thapsigargin_10.000_uM_DMSO_0.025_%',
-
-    'Topotecan_5.000_nM_DMSO_0.025_%',
-    'Topotecan_10.000_nM_DMSO_0.025_%',
-    'Topotecan_20.000_nM_DMSO_0.025_%'
+# define the base directory
+base_dir <- file.path(
+    "..",
+    "..",
+    ".."
 )
 
-# declare the shuffled column as a factor
-# replace the values in the shuffled column
-# declare the shuffled column as a factor
-# replace the values in the shuffled column
-df_morphology_class$shuffled <- gsub("shuffled", "Shuffled", df_morphology_class$shuffled)
-df_morphology_class$shuffled <- gsub("non-Shuffled", "Non-shuffled", df_morphology_class$shuffled)
-df_morphology_class$shuffled <- factor(df_morphology_class$shuffled, levels = c( "Non-shuffled", "Shuffled"))
-df_morphology_class$Metadata_labels <- factor(df_morphology_class$Metadata_labels, levels = c("Control", "Apoptosis", "Pyroptosis"))
-
-df_secretome_class$shuffled <- gsub("shuffled", "Shuffled", df_secretome_class$shuffled)
-df_secretome_class$shuffled <- gsub("non-Shuffled", "Non-shuffled", df_secretome_class$shuffled)
-df_secretome_class$shuffled <- factor(df_secretome_class$shuffled, levels = c( "Non-shuffled", "Shuffled"))
-df_secretome_class$Metadata_labels <- factor(df_secretome_class$Metadata_labels, levels = c("Control", "Apoptosis", "Pyroptosis"))
-
-df_morphology_treatment$shuffled <- gsub("shuffled", "Shuffled", df_morphology_treatment$shuffled)
-df_morphology_treatment$shuffled <- gsub("non-Shuffled", "Non-shuffled", df_morphology_treatment$shuffled)
-df_morphology_treatment$shuffled <- factor(df_morphology_treatment$shuffled, levels = c( "Non-shuffled", "Shuffled"))
-df_morphology_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(df_morphology_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, levels = levels_list)
-
-df_secretome_treatment$shuffled <- gsub("shuffled", "Shuffled", df_secretome_treatment$shuffled)
-df_secretome_treatment$shuffled <- gsub("non-Shuffled", "Non-shuffled", df_secretome_treatment$shuffled)
-df_secretome_treatment$shuffled <- factor(df_secretome_treatment$shuffled, levels = c("Non-shuffled", "Shuffled"))
-df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, levels = levels_list)
-
-
-# combine the dataframes
-all_df_morphology_class <- rbind(reg_df_morphology_class, shuffled_morphology_class)
-all_df_morphology_treatment <- rbind(reg_df_morphology_treatment, shuffled_morphology_treatment)
-all_df_secretome_class <- rbind(reg_df_secretome_class, shuffled_secretome_class)
-all_df_secretome_treatment <- rbind(reg_df_secretome_treatment, shuffled_secretome_treatment)
-
-all_df_morphology_class$shuffled <- gsub("shuffled", "Shuffled", all_df_morphology_class$shuffled)
-all_df_morphology_class$shuffled <- gsub("non-Shuffled", "Non-shuffled", all_df_morphology_class$shuffled)
-all_df_morphology_class$shuffled <- factor(all_df_morphology_class$shuffled, levels = c( "Non-shuffled", "Shuffled"))
-all_df_morphology_class$Metadata_labels <- factor(all_df_morphology_class$Metadata_labels, levels = c("Control", "Apoptosis", "Pyroptosis"))
-
-all_df_secretome_class$shuffled <- gsub("shuffled", "Shuffled", all_df_secretome_class$shuffled)
-all_df_secretome_class$shuffled <- gsub("non-Shuffled", "Non-shuffled", all_df_secretome_class$shuffled)
-all_df_secretome_class$shuffled <- factor(all_df_secretome_class$shuffled, levels = c( "Non-shuffled", "Shuffled"))
-
-all_df_morphology_treatment$shuffled <- gsub("shuffled", "Shuffled", all_df_morphology_treatment$shuffled)
-all_df_morphology_treatment$shuffled <- gsub("non-Shuffled", "Non-shuffled", all_df_morphology_treatment$shuffled)
-all_df_morphology_treatment$shuffled <- factor(all_df_morphology_treatment$shuffled, levels = c( "Non-shuffled", "Shuffled"))
-all_df_morphology_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(all_df_morphology_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, levels = levels_list)
-
-all_df_secretome_treatment$shuffled <- gsub("shuffled", "Shuffled", all_df_secretome_treatment$shuffled)
-all_df_secretome_treatment$shuffled <- gsub("non-Shuffled", "Non-shuffled", all_df_secretome_treatment$shuffled)
-all_df_secretome_treatment$shuffled <- factor(all_df_secretome_treatment$shuffled, levels = c( "Non-shuffled", "Shuffled"))
-all_df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(all_df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, levels = levels_list)
-
-# cobine the dfs
-# get the average precision, shuffled, and Metadata_labels columns by name
-subset_morphology_class <- all_df_morphology_class[,c("average_precision", "shuffled", "Metadata_labels")]
-# rename the average_precision column to moprhology_ap
-colnames(subset_morphology_class)[colnames(subset_morphology_class)=="average_precision"] <- "morphology_ap"
-
-# get the average precision, shuffled, and Metadata_labels columns by name
-subset_secretome_class <- all_df_secretome_class[,c("average_precision", "shuffled", "Metadata_labels")]
-# rename the average_precision column to secretome_ap
-colnames(subset_secretome_class)[colnames(subset_secretome_class)=="average_precision"] <- "secretome_ap"
-
-# merge the dataframes
-merged_df <- merge(subset_morphology_class, subset_secretome_class, by=c("shuffled", "Metadata_labels"))
-head(merged_df)
-
-
-# aggregate the data by shuffled and Metadata_labels
-merged_agg <- aggregate(. ~ shuffled + Metadata_labels, data=merged_df, FUN=mean)
-# combine the shuffled and Metadata_labels columns
-merged_agg$group <- paste(merged_agg$shuffled, merged_agg$Metadata_labels, sep="_")
-# change the text in the group column
-merged_agg$group <- gsub("Non-shuffled Control", "Non-shuffled\nControl", merged_agg$group)
-merged_agg$group <- gsub("Shuffled Control", "Shuffled\nControl", merged_agg$group)
-merged_agg$group <- gsub("Non-shuffled_Apoptosis", "Non-shuffled\nApoptosis", merged_agg$group)
-merged_agg$group <- gsub("Shuffled Apoptosis", "Shuffled\nApoptosis", merged_agg$group)
-merged_agg$group <- gsub("Non-shuffled Pyroptosis", "Non-shuffled\nPyroptosis", merged_agg$group)
-merged_agg$group <- gsub("Shuffled Pyroptosis", "Shuffled\nPyroptosis", merged_agg$group)
-# make the group column a factor
-merged_agg$group <- factor(
-    merged_agg$group,
-    levels = c(
-        "Non-shuffled\nControl",
-        "Shuffled features\nControl",
-        "Shuffled phenotypes\nControl",
-
-        "Non-shuffled\nApoptosis",
-        "Shuffled features\nApoptosis",
-        "Shuffled phenotypes\nApoptosis",
-
-        "Non-shuffled\nPyroptosis",
-        "Shuffled features\nPyroptosis",
-        "Shuffled phenotypes\nPyroptosis"))
-
-merged_agg
-
-width <- 8
-height <- 6
-options(repr.plot.width=width, repr.plot.height=height)
-# plot the data
-scatter_compare <- (
-    ggplot(merged_agg, aes(x=morphology_ap, y=secretome_ap, col = Metadata_labels, shape=shuffled))
-    + geom_point(size=3, alpha=1)
-    + labs(x="Morphology mAP score", y="Secretome mAP score")
-    + theme_bw()
-    + ggtitle("Comparison of mAP scores")
-    + ylim(0,1)
-    + xlim(0,1)
-    # Change the legend title
-    # change the legend shape
-    + scale_shape_manual(
-        name="Shuffle type",
-        labels=c(
-            "Non-shuffled",
-            "Shuffled features",
-            "Shuffled phenotypes"
-        ),
-        values=c(19, 17, 15)
-    )
-    + scale_color_manual(
-        name="Class",
-        labels=c(
-            "Control",
-            "Apoptosis",
-            "Pyroptosis"
-        ),
-        values=c(
-            brewer.pal(3, "Dark2")[2],
-            brewer.pal(3, "Dark2")[1],
-            brewer.pal(3, "Dark2")[3]
-    )
+# Set the path to the index file
+index_file_path_PBMC <- file.path(
+    base_dir,
+    "4.sc_Morphology_Neural_Network_MLP_Model/0.hyperparameter_optimization/indexes/PBMC/multi_class/MultiClass_MLP_data_split_indexes.tsv"
 )
-    + figure_theme
-    # add y = x line
-    + geom_abline(intercept = 0, slope = 1, linetype="dashed")
-
+index_file_path_SHSY5Y <- file.path(
+    base_dir,
+    "4.sc_Morphology_Neural_Network_MLP_Model/0.hyperparameter_optimization/indexes/SHSY5Y/multi_class/MultiClass_MLP_data_split_indexes.tsv"
 )
-scatter_compare
-
-# cobine the dfs
-# get the average precision, shuffled, and Metadata_labels columns by name
-subset_morphology_treatment <- all_df_morphology_treatment[,c("average_precision", "shuffled", "Metadata_labels","oneb_Metadata_Treatment_Dose_Inhibitor_Dose")]
-# rename the average_precision column to moprhology_ap
-colnames(subset_morphology_treatment)[colnames(subset_morphology_treatment)=="average_precision"] <- "morphology_ap"
-
-# get the average precision, shuffled, and Metadata_labels columns by name
-subset_secretome_treatment <- all_df_secretome_treatment[,c("average_precision", "shuffled", "Metadata_labels","oneb_Metadata_Treatment_Dose_Inhibitor_Dose")]
-# rename the average_precision column to secretome_ap
-colnames(subset_secretome_treatment)[colnames(subset_secretome_treatment)=="average_precision"] <- "secretome_ap"
-
-# merge the dataframes
-merged_df <- merge(subset_morphology_treatment, subset_secretome_treatment, by=c("shuffled", "Metadata_labels", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"))
-head(merged_df)
-
-# aggregate the data by shuffled and oneb_Metadata_Treatment_Dose_Inhibitor_Dose and shuffled
-merged_agg <- aggregate(. ~ shuffled + oneb_Metadata_Treatment_Dose_Inhibitor_Dose + Metadata_labels, data=merged_df, FUN=mean)
-# scatter plot
-scatter_compare_treatment <- (
-    ggplot(merged_agg, aes(x=morphology_ap, y=secretome_ap, col = Metadata_labels, shape=shuffled))
-    + geom_point(size=3, alpha=0.5)
-    + labs(x="Morphology mAP score", y="Secretome mAP score")
-    + theme_bw()
-    + ggtitle("Comparison of mAP scores")
-    + ylim(0,1)
-    + xlim(0,1)
-    # Change the legend title
-    # change the legend shape
-    + scale_shape_manual(
-        name="Shuffle type",
-        labels=c(
-            "Non-shuffled",
-            "Shuffled features",
-            "Shuffled phenotypes"
-        ),
-        values=c(19, 17, 15)
-    )
-    + scale_color_manual(
-        name="Class",
-        labels=c(
-            "Control",
-            "Apoptosis",
-            "Pyroptosis"
-        ),
-        values=c(
-            brewer.pal(3, "Dark2")[2],
-            brewer.pal(3, "Dark2")[1],
-            brewer.pal(3, "Dark2")[3]
-    )
+# load the index file
+index_file_PBMC <- read.table(
+    file = index_file_path_PBMC,
+    sep = "\t",
+    header = TRUE,
+    stringsAsFactors = FALSE
 )
-    + figure_theme
-    # add y = x line
-    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color = "black")
-    # fix coordiantes
-    + ggplot2::coord_fixed()
-
-)
-scatter_compare_treatment
-
-head(merged_agg)
-
-merged_df <- merged_df %>%
-    mutate(oneb_Metadata_Treatment_Dose_Inhibitor_Dose = case_when(
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_DMSO_0.025_%' ~ "DMSO 0.1% - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_DMSO_1.000_%' ~ "DMSO 0.1% - DMSO 1.0%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_Z-VAD-FMK_100.000_uM' ~ "DMSO 0.1% - Z-VAD-FMK 100.0 uM",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_Z-VAD-FMK_30.000_uM' ~ "DMSO 0.1% - Z-VAD-FMK 30.0 uM",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Flagellin_1.000_ug_per_ml_DMSO_0.025_%' ~ "Flagellin 1.0 ug/ml - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM' ~ "Flagellin 1.0 ug/ml - Disulfiram 1.0 uM",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_0.010_ug_per_ml_DMSO_0.025_%' ~ "LPS 0.01 ug/ml - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_0.100_ug_per_ml_DMSO_0.025_%' ~ "LPS 0.1 ug/ml - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Flagellin_0.100_ug_per_ml_DMSO_0.0_%' ~ "Flagellin 0.1 ug/ml - DMSO 0.0%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Flagellin_0.100_ug_per_ml_DMSO_0.025_%' ~ "Flagellin 0.1 ug/ml - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Disulfiram_0.100_uM_DMSO_0.025_%' ~ "Disulfiram 0.1 uM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_1.000_uM_DMSO_0.025_%' ~ "LPS 1.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_10.000_uM_DMSO_0.025_%' ~ "LPS 1.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_10.000_uM_Disulfiram_1.000_uM' ~ "LPS 1.0 ug/ml + Nigericin 10.0 uM - Disulfiram 1.0 uM",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_10.000_uM_Z-VAD-FMK_100.000_uM' ~ "LPS 1.0 ug/ml + Nigericin 10.0 uM - Z-VAD-FMK 100.0 uM",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_3.000_uM_DMSO_0.025_%' ~ "LPS 1.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_1.000_ug_per_ml_DMSO_0.025_%' ~ "LPS 1.0 ug/ml - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Flagellin_1.000_ug_per_ml_DMSO_0.0_%' ~ "Flagellin 1.0 ug/ml - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Disulfiram_1.000_uM_DMSO_0.025_%' ~ "Disulfiram 1.0 uM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Thapsigargin_1.000_uM_DMSO_0.025_%' ~ "Thapsigargin 1.0 uM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Topotecan_10.000_nM_DMSO_0.025_%' ~ "Topotecan 10.0 nM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_DMSO_0.025_%' ~ "LPS 10.0 ug/ml - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_Disulfiram_0.100_uM' ~ "LPS 10.0 ug/ml - Disulfiram 0.1 uM",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_Disulfiram_1.000_uM' ~ "LPS 10.0 ug/ml - Disulfiram 1.0 uM",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_Disulfiram_2.500_uM' ~ "LPS 10.0 ug/ml - Disulfiram 2.5 uM",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_Z-VAD-FMK_100.000_uM' ~ "LPS 10.0 ug/ml - Z-VAD-FMK 100.0 uM",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Thapsigargin_10.000_uM_DMSO_0.025_%' ~ "Thapsigargin 10.0 uM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_nM_DMSO_0.025_%' ~ "H2O2 100.0 nM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_100.000_ug_per_ml_1.000_uM_DMSO_0.025_%' ~ "LPS 100.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_100.000_ug_per_ml_10.000_uM_DMSO_0.025_%' ~ "LPS 100.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_100.000_ug_per_ml_3.000_uM_DMSO_0.025_%' ~ "LPS 100.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_100.000_ug_per_ml_DMSO_0.025_%' ~ "LPS 100.0 ug/ml - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_uM_DMSO_0.025_%' ~ "H2O2 100.0 uM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_uM_Disulfiram_1.000_uM' ~ "H2O2 100.0 uM - Disulfiram 1.0 uM",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_uM_Z-VAD-FMK_100.000_uM' ~ "H2O2 100.0 uM - Z-VAD-FMK 100.0 uM",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Disulfiram_2.500_uM_DMSO_0.025_%' ~ "Disulfiram 2.5 uM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Topotecan_20.000_nM_DMSO_0.025_%' ~ "Topotecan 20.0 nM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Topotecan_5.000_nM_DMSO_0.025_%' ~ "Topotecan 5.0 nM - DMSO 0.025%",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='media_ctr_0.0_0_Media_ctr_0.0_0' ~ "Media ctr 0.0 0",
-        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='media_ctr_0.0_0_Media_0.0_0' ~ "Media ctr 0.0 0"
-    ))
-    # replace Media ctr 0.0 0 with Media
-merged_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- gsub("Media ctr 0.0 0", "Media", merged_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
-
-# split the oneb_Metadata_Treatment_Dose_Inhibitor_Dose into two columns by the " - " delimiter
-merged_df <- merged_df %>%
-    separate(oneb_Metadata_Treatment_Dose_Inhibitor_Dose, c("inducer", "inhibitor"), sep = " - ", remove = FALSE)
-
-unique(merged_df$inducer)
-# replace the inhibitor NA with Media
-merged_df$inhibitor <- ifelse(is.na(merged_df$inhibitor), "Media", merged_df$inhibitor)
-unique(merged_df$inhibitor)
-
-# make the group_treatment column a factor
-merged_df$inducer <- factor(
-    merged_df$inducer,
-    levels = c(
-        'Media',
-        'DMSO 0.1%',
-
-        'Flagellin 0.1 ug/ml',
-        'Flagellin 1.0 ug/ml',
-
-        'LPS 0.01 ug/ml',
-        'LPS 0.1 ug/ml',
-        'LPS 1.0 ug/ml',
-        'LPS 10.0 ug/ml',
-        'LPS 100.0 ug/ml',
-
-        'LPS 1.0 ug/ml + Nigericin 1.0 uM',
-        'LPS 1.0 ug/ml + Nigericin 3.0 uM',
-        'LPS 1.0 ug/ml + Nigericin 10.0 uM',
-
-        'LPS 100.0 ug/ml + Nigericin 1.0 uM',
-        'LPS 100.0 ug/ml + Nigericin 3.0 uM',
-        'LPS 100.0 ug/ml + Nigericin 10.0 uM',
-
-        'H2O2 100.0 nM',
-        'H2O2 100.0 uM',
-
-        'Disulfiram 0.1 uM',
-        'Disulfiram 1.0 uM',
-        'Disulfiram 2.5 uM',
-
-        'Thapsigargin 1.0 uM',
-        'Thapsigargin 10.0 uM',
-
-        'Topotecan 5.0 nM',
-        'Topotecan 10.0 nM',
-        'Topotecan 20.0 nM'
-    )
-)
-
-# make the group_treatment column a factor
-merged_df$inhibitor <- factor(
-    merged_df$inhibitor,
-    levels = c(
-        'Media',
-        'DMSO 0.025%',
-        'DMSO 1.0%',
-
-        'Disulfiram 0.1 uM',
-        'Disulfiram 1.0 uM',
-        'Disulfiram 2.5 uM',
-
-        'Z-VAD-FMK 30.0 uM',
-        'Z-VAD-FMK 100.0 uM'
-    )
-)
-head(merged_df)
-
-# aggregate the data by shuffled and oneb_Metadata_Treatment_Dose_Inhibitor_Dose and shuffled
-merged_df <- aggregate(. ~ shuffled + oneb_Metadata_Treatment_Dose_Inhibitor_Dose + Metadata_labels + inducer + inhibitor, data=merged_df, FUN=mean)
-head(merged_df)
-
-width <- 17
-height <- 15
-options(repr.plot.width=width, repr.plot.height=height)
-# scatter plot with fill being the treatment dose
-scatter_by_treatment <- (
-    ggplot(merged_df, aes(x=morphology_ap, y=secretome_ap, col = inducer, shape=inhibitor))
-    + geom_point(size=5, alpha=1)
-    + labs(x="Morphology mAP score", y="Secretome mAP score")
-    + theme_bw()
-    + ylim(0,1)
-    + xlim(0,1)
-    + figure_theme
-    # Change the legend title
-    # change the legend shape
-    + scale_color_manual(
-        name = "Inducer",
-        labels = c(
-            'Media',
-            'DMSO 0.1%',
-
-            'Flagellin 0.1 ug/ml',
-            'Flagellin 1.0 ug/ml',
-
-            'LPS 0.01 ug/ml',
-            'LPS 0.1 ug/ml',
-            'LPS 1.0 ug/ml',
-            'LPS 10.0 ug/ml',
-            'LPS 100.0 ug/ml',
-
-            'LPS 1.0 ug/ml + Nigericin 1.0 uM',
-            'LPS 1.0 ug/ml + Nigericin 3.0 uM',
-            'LPS 1.0 ug/ml + Nigericin 10.0 uM',
-
-            'LPS 100.0 ug/ml + Nigericin 1.0 uM',
-            'LPS 100.0 ug/ml + Nigericin 3.0 uM',
-            'LPS 100.0 ug/ml + Nigericin 10.0 uM',
-
-            'H2O2 100.0 nM',
-            'H2O2 100.0 uM',
-
-            'Disulfiram 0.1 uM',
-            'Disulfiram 1.0 uM',
-            'Disulfiram 2.5 uM',
-
-            'Thapsigargin 1.0 uM',
-            'Thapsigargin 10.0 uM',
-
-            'Topotecan 5.0 nM',
-            'Topotecan 10.0 nM',
-            'Topotecan 20.0 nM'
-        ),
-        values = colors)
-    + scale_shape_manual(
-        name = "Inhibitor",
-        labels = c(
-            'Media',
-            'DMSO 0.025%',
-            'DMSO 1.0%',
-
-            'Disulfiram 0.1 uM',
-            'Disulfiram 1.0 uM',
-            'Disulfiram 2.5 uM',
-
-            'Z-VAD-FMK 30.0 uM',
-            'Z-VAD-FMK 100.0 uM'
-
-        ),
-        values = shapes
-    )
-    # make the legend 1 column
-    + guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
-    + ggplot2::coord_fixed()
-    + facet_grid(.~shuffled)
-    # add y = x line
-    + geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black")
-    # move legend to bottom
-    + theme(legend.position = "bottom")
-    # make legend multi rows
-    + guides(col = guide_legend(ncol = 2), shape = guide_legend(ncol = 1))
-    # shift the legend to the left slightly
-
-)
-scatter_by_treatment
-
-width <- 17
-height <- 14
-options(repr.plot.width = width, repr.plot.height = height)
-
-layout <- c(
-    area(t=1, b=2, l=1, r=2) # A
+index_file_SHSY5Y <- read.table(
+    file = index_file_path_SHSY5Y,
+    sep = "\t",
+    header = TRUE,
+    stringsAsFactors = FALSE
 )
 
 
-figure <- (
-    # move the plot left a bit
-    wrap_elements(scatter_by_treatment)
-    + plot_layout(design = layout, heights = c(1, 0.5, 3))
-    + plot_annotation(tag_levels = "A")  & theme(plot.tag = element_text(size = 20))
-
-)
-png(filename = file.path(paste0(
+# create the figure directory if it does not exist
+figure_dir <- file.path(
     "../",
-    "figures/",
-    cell_type,
-    "S10.png")), width = width, height = height, units = "in", res = 600
+    "figures"
 )
-figure
-dev.off()
-figure
+if (!dir.exists(figure_dir)) {
+    dir.create(figure_dir)
+}
+
+# sort the index file by labeled_data_index
+index_file_PBMC <- index_file_PBMC[order(index_file_PBMC$labeled_data_index),]
+head(index_file_PBMC,2)
+index_file_SHSY5Y <- index_file_SHSY5Y[order(index_file_SHSY5Y$labeled_data_index),]
+head(index_file_SHSY5Y,2)
 
 
+# set path to the PBMC metadata file
+metadata_file_path_PBMC <- file.path(
+    "..",
+    "..",
+    "..",
+    "data",
+    "PBMC_preprocessed_sc_norm.parquet"
+)
+
+# load via arrow with certain columns
+metadata_file_PBMC <- arrow::read_parquet(
+    metadata_file_path_PBMC,
+    col_select = c(
+        'Metadata_cell_type',
+        'Metadata_Well'	,
+        'Metadata_number_of_singlecells',
+    )
+)
+head(metadata_file_PBMC)
+
+# SHSY5Y
+# set path to the SHSY5Y metadata file
+metadata_file_path_SHSY5Y <- file.path(
+    "..",
+    "..",
+    "..",
+    "data",
+    "SHSY5Y_preprocessed_sc_norm.parquet"
+)
+# load the metadata file via arrow
+metadata_file_SHSY5Y <- arrow::read_parquet(
+    metadata_file_path_SHSY5Y,
+    col_select = c(
+        'Metadata_cell_type',
+        'Metadata_Well'	,
+        'Metadata_number_of_singlecells',
+    )
+)
+head(metadata_file_SHSY5Y)
+
+## PBMC
+
+# add column to metadata file with the labeled_data_index
+metadata_file_PBMC$label <- index_file_PBMC$label
+# replace test, train, or validation with "pool" in label column
+metadata_file_PBMC$label <- gsub(
+    pattern = "test",
+    replacement = "pool",
+    x = metadata_file_PBMC$label
+)
+metadata_file_PBMC$label <- gsub(
+    pattern = "train",
+    replacement = "pool",
+    x = metadata_file_PBMC$label
+)
+metadata_file_PBMC$label <- gsub(
+    pattern = "val",
+    replacement = "pool",
+    x = metadata_file_PBMC$label
+)
+# aggregate the metadata via Metadata_Well
+metadata_file_PBMC <- metadata_file_PBMC %>%
+    group_by(Metadata_Well, Metadata_cell_type, label) %>%
+    summarize(
+        n = n()
+    )
+head(metadata_file_PBMC)
+
+# SHSY5Y
+# add column to metadata file with the labeled_data_index
+metadata_file_SHSY5Y$label <- index_file_SHSY5Y$label
+# replace test, train, or validation with "pool" in label column
+metadata_file_SHSY5Y$label <- gsub(
+    pattern = "test",
+    replacement = "pool",
+    x = metadata_file_SHSY5Y$label
+)
+metadata_file_SHSY5Y$label <- gsub(
+    pattern = "train",
+    replacement = "pool",
+    x = metadata_file_SHSY5Y$label
+)
+metadata_file_SHSY5Y$label <- gsub(
+    pattern = "val",
+    replacement = "pool",
+    x = metadata_file_SHSY5Y$label
+)
+# aggregate the metadata via Metadata_Well
+metadata_file_SHSY5Y <- metadata_file_SHSY5Y %>%
+    group_by(Metadata_Well, Metadata_cell_type, label) %>%
+    summarize(
+        n = n()
+    )
+head(metadata_file_SHSY5Y)
+
+
+# combine the SHSY5Y and PBMC metadata files
+combined_metadata <- rbind(
+    metadata_file_PBMC,
+    metadata_file_SHSY5Y
+)
+head(combined_metadata)
+unique(combined_metadata$Metadata_cell_type)
+unique(combined_metadata$label)
+
+# load in the platemap
+platemap_file_path <- file.path(
+    base_dir,
+    "data/",
+    "Interstellar_plate2_platemap.csv"
+)
+# read in the platemap
+platemap_file <- read.csv(
+    file = platemap_file_path,
+    header = TRUE,
+    stringsAsFactors = FALSE
+)
+head(platemap_file)
+
+# merge the combined metadata file with plate map on Metadata_Well
+updated_platemap <- merge(
+    x = platemap_file,
+    y = combined_metadata,
+    by.x = "well_id",
+    by.y = "Metadata_Well",
+    all.x = TRUE
+)
+head(updated_platemap)
+unique(updated_platemap$Metadata_cell_type)
+# replace "" in cell_type with "Blank" in label
+updated_platemap$Metadata_cell_type[is.na(updated_platemap$Metadata_cell_type)] <- "Blank"
+# replace NA with "Blank" in label
+updated_platemap$label[is.na(updated_platemap$label)] <- "Blank"
+# replace pool with Pool in label
+updated_platemap$label[updated_platemap$label == "pool"] <- "Pool"
+# replace holdout with Holdout in label
+updated_platemap$label[updated_platemap$label == "holdout"] <- "Holdout well"
+# replace treatment_holdout with Treatment Holdout in label
+updated_platemap$label[updated_platemap$label == "treatment_holdout"] <- "Treatment holdout"
+unique(updated_platemap$Metadata_cell_type)
+unique(updated_platemap$label)
+
+# Make the cell type factor ordered
+updated_platemap$Metadata_cell_type <- factor(
+    x = updated_platemap$Metadata_cell_type,
+    levels = c(
+        "Blank",
+        "PBMC",
+        "SH-SY5Y"
+    )
+)
+# make the label factor ordered
+updated_platemap$label <- factor(
+    x = updated_platemap$label,
+    levels = c(
+        'Blank',
+        'Pool',
+        'Holdout well',
+        'Treatment holdout'
+    )
+)
+
+width <- 14
+height <- 14
+options(repr.plot.width = width, repr.plot.height = height, units = "cm")
+# set pallette
+viridis_pal_custom <- viridis::viridis_pal(option = "C")(5)
+
+data_split_plate_map_full <- (
+    raw_map(
+        data = updated_platemap$label,
+        well = updated_platemap$well_id,
+        plate = 384, # number of wells in plate apriori known
+        size = 14 # size of the wells displayed
+        )
+    + theme_dark()
+        + ggplot2::geom_point(
+        aes(shape = updated_platemap$Metadata_cell_type),
+        size = 5
+        )
+        + labs(fill = "Data Split", shape = "Cell Type")
+    # change legend text size for fill
+
+    + guides(shape = guide_legend(override.aes = list(size = 12), nrow = 1))
+    + guides(fill = guide_legend(override.aes = list(size = 12),ncol = 2))
+    + theme(
+        legend.title = element_text(size = 18,hjust = 0.5),
+        legend.text = element_text(size = 16),
+    )
+    # cell type legend
+    + scale_shape_manual(
+        values = c(
+            'Blank' = 0,
+            'PBMC' = 19,
+            'SH-SY5Y' = 8
+        )
+    )
+    # data split legend
+    + scale_fill_manual(
+    values = c(
+        'Blank' = "grey",
+        'Pool' = viridis_pal_custom[3],
+        'Holdout well' = viridis_pal_custom[4],
+        'Treatment holdout' = viridis_pal_custom[5]
+
+    )
+    )
+    + theme(
+        axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16)
+    )
+
+)
+data_split_plate_map_full
+ggsave(
+    filename = "../figures/data_split_plate_map_full.png",
+    plot = data_split_plate_map_full,
+    width = width,
+    height = height,
+    units = "in",
+    dpi = 600
+)
+
+
+# remove SHSY5Y from the platemap
+updated_platemap <- updated_platemap[updated_platemap$Metadata_cell_type != "SH-SY5Y",]
+head(updated_platemap)
+
+width <- 14
+height <- 14
+options(repr.plot.width = width, repr.plot.height = height, units = "cm")
+# set pallette
+viridis_pal_custom <- viridis::viridis_pal(option = "C")(5)
+
+data_split_plate_map <- (
+    raw_map(
+        data = updated_platemap$label,
+        well = updated_platemap$well_id,
+        plate = 384, # number of wells in plate apriori known
+        size = 14 # size of the wells displayed
+        )
+    + theme_dark()
+        + ggplot2::geom_point(
+        aes(shape = updated_platemap$Metadata_cell_type),
+        size = 5
+        )
+        + labs(fill = "Data Split", shape = "Cell Type")
+    # change legend text size for fill
+
+    + guides(shape = guide_legend(override.aes = list(size = 12), nrow = 1))
+    + guides(fill = guide_legend(override.aes = list(size = 12),ncol = 2))
+    + theme(
+        legend.title = element_text(size = 18,hjust = 0.5),
+        legend.text = element_text(size = 16),
+    )
+    # cell type legend
+    + scale_shape_manual(
+        values = c(
+            'Blank' = 0,
+            'PBMC' = 19,
+            'SH-SY5Y' = 8
+        )
+    )
+    # data split legend
+    + scale_fill_manual(
+    values = c(
+        'Blank' = "grey",
+        'Pool' = viridis_pal_custom[3],
+        'Holdout well' = viridis_pal_custom[4],
+        'Treatment holdout' = viridis_pal_custom[5]
+
+    )
+    )
+    + theme(
+        axis.text.x = element_text(size = 16),
+        axis.text.y = element_text(size = 16)
+    )
+
+)
+data_split_plate_map
+ggsave(
+    filename = "../figures/data_split_plate_map.png",
+    plot = data_split_plate_map,
+    width = width,
+    height = height,
+    units = "in",
+    dpi = 600
+)
 

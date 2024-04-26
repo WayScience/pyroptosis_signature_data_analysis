@@ -33,5 +33,4 @@ command="python train_multiclass_model.py"
 
 $command --CELL_TYPE "$cell_type" --MODEL_NAME "$model_name" --SHUFFLE "$shuffle"
 
-
 echo "Done"

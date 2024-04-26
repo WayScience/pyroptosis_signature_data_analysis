@@ -36,6 +36,7 @@ sc_cell_df = pd.read_parquet(
 columns_to_load = [
     "Nuclei_Location_Center_Y",
     "Nuclei_Location_Center_X",
+    "Image_Metadata_Site",
 ]
 # get the unfeature selected data
 unselected_df_path = pathlib.Path(
@@ -52,7 +53,10 @@ unselected_df.head()
 
 # add the cell df to the unselected df
 sc_cell_df = pd.concat([sc_cell_df, unselected_df], axis="columns")
-sc_cell_df
+print(sc_cell_df.shape)
+# drop the NaN values
+sc_cell_df = sc_cell_df.dropna()
+sc_cell_df.shape
 
 
 # In[5]:
@@ -103,7 +107,7 @@ composite_image_out_dir_path.mkdir(parents=True, exist_ok=True)
 #####
 
 image_dir_path = pathlib.Path(
-    "/media/lippincm/18T/interstellar_data/70117_20230210MM1_Gasdermin514_CP_BC430856__2023-03-22T15_42_38-Measurement1/2.IC/"
+    "/home/lippincm/Desktop/18T/interstellar_data/70117_20230210MM1_Gasdermin514_CP_BC430856__2023-03-22T15_42_38-Measurement1/2.IC/"
 ).resolve(strict=True)
 
 
@@ -258,7 +262,7 @@ top_features
 # add columns
 top_features = top_features + [
     "Metadata_Well",
-    "Metadata_Site",
+    # "Image_Metadata_Site",
     "Metadata_ImageNumber",
     "Metadata_Cells_Number_Object_Number",
 ]
@@ -272,12 +276,18 @@ top_features_df = pd.read_parquet(
     sc_cell_path,
     columns=top_features,
 )
-top_features_df
+sc_cell_df["Metadata_Site"] = unselected_df["Metadata_Image_Metadata_Site"]
 # merge the top features df with the sc_cell_df
 sc_cell_df = pd.concat([sc_cell_df, top_features_df], axis="columns")
 
 
 # In[14]:
+
+
+sc_cell_df
+
+
+# In[15]:
 
 
 # seperate the data into the different groups
@@ -286,26 +296,26 @@ apoptosis_df = sc_cell_df[sc_cell_df["group"] == "Apoptosis"]
 pyroptosis_df = sc_cell_df[sc_cell_df["group"] == "Pyroptosis"]
 
 
-# In[15]:
+# In[16]:
 
 
 # define empty dictionary
 final_dict = {}
 
 
-# In[16]:
+# In[17]:
 
 
 control_df.head()
 # sort the control df by Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1
 control_df = control_df.sort_values(
-    by="Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1", ascending=False
+    by="Cells_RadialDistribution_ZernikeMagnitude_CorrPM_6_4", ascending=False
 )
 apoptosis_df = apoptosis_df.sort_values(
-    by="Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1", ascending=False
+    by="Cells_RadialDistribution_ZernikeMagnitude_CorrPM_6_4", ascending=False
 )
 pyroptosis_df = pyroptosis_df.sort_values(
-    by="Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1", ascending=False
+    by="Cells_RadialDistribution_ZernikeMagnitude_CorrPM_6_4", ascending=False
 )
 
 control_df.reset_index(drop=True, inplace=True)
@@ -313,13 +323,13 @@ apoptosis_df.reset_index(drop=True, inplace=True)
 pyroptosis_df.reset_index(drop=True, inplace=True)
 
 print(
-    control_df["Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1"][
+    control_df["Cells_RadialDistribution_ZernikeMagnitude_CorrPM_6_4"][
         control_df.last_valid_index()
     ],
-    apoptosis_df["Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1"][
+    apoptosis_df["Cells_RadialDistribution_ZernikeMagnitude_CorrPM_6_4"][
         apoptosis_df.last_valid_index()
     ],
-    pyroptosis_df["Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1"][0],
+    pyroptosis_df["Cells_RadialDistribution_ZernikeMagnitude_CorrPM_6_4"][0],
 )
 # get the last item in the control df
 
@@ -329,7 +339,7 @@ dict_of_dfs["apoptosis"] = apoptosis_df
 dict_of_dfs["pyroptosis"] = pyroptosis_df
 
 
-# In[17]:
+# In[18]:
 
 
 for group in tqdm(dict_of_top_all):
@@ -351,7 +361,7 @@ for group in tqdm(dict_of_top_all):
 
 # ## Get the images
 
-# In[18]:
+# In[19]:
 
 
 # define a dictionary for coding the wells and FOVs correctly
@@ -419,7 +429,7 @@ fov_dict = {
 }
 
 
-# In[19]:
+# In[20]:
 
 
 image_basename_1 = "p04-ch1sk1fk1fl1_IC.tiff"
@@ -429,7 +439,7 @@ image_basename_4 = "p04-ch4sk1fk1fl1_IC.tiff"
 image_basename_5 = "p04-ch5sk1fk1fl1_IC.tiff"
 
 
-# In[20]:
+# In[21]:
 
 
 # set constants for the loop
@@ -438,14 +448,14 @@ radius = 50
 n = 5
 
 
-# In[21]:
+# In[22]:
 
 
 # define an empty df
 main_df = apoptosis_df.drop(apoptosis_df.index)
 
 
-# In[22]:
+# In[23]:
 
 
 for i in tqdm(final_dict):
@@ -737,7 +747,7 @@ for i in tqdm(final_dict):
         main_df = pd.concat([main_df, tmp_df], ignore_index=True)
 
 
-# In[23]:
+# In[24]:
 
 
 # define main_df_path
@@ -748,7 +758,7 @@ main_df_path.mkdir(parents=True, exist_ok=True)
 main_df.to_parquet(f"{main_df_path}/single_cell_predictions.parquet")
 
 
-# In[24]:
+# In[25]:
 
 
 # print the number of rows in the df

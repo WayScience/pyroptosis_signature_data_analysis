@@ -94,11 +94,6 @@ file_path = pathlib.Path(
     f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm.parquet"
 ).resolve(strict=True)
 
-# output file path for labeled data
-output_file_path = pathlib.Path(
-    f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm_labeled.parquet"
-).resolve()
-
 df1 = pd.read_parquet(file_path)
 
 
@@ -132,7 +127,6 @@ test_split_75 = treatment_splits["splits"]["data_splits_75"]
 
 
 np.random.seed(0)
-print(df1.shape)
 if mlp_params.DATA_SUBSET_OPTION == "True":
     df1 = df1.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose").apply(
         lambda x: x.sample(n=mlp_params.DATA_SUBSET_NUMBER, random_state=0)
@@ -149,36 +143,27 @@ else:
 
 
 # add apoptosis, pyroptosis and healthy columns to dataframe
-df1["apoptosis"] = df1.apply(
-    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    in apoptosis_groups_list,
-    axis=1,
+df1["apoptosis"] = df1["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
+    apoptosis_groups_list
 )
-df1["pyroptosis"] = df1.apply(
-    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    in pyroptosis_groups_list,
-    axis=1,
+df1["pyroptosis"] = df1["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
+    pyroptosis_groups_list
 )
-df1["healthy"] = df1.apply(
-    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    in healthy_groups_list,
-    axis=1,
+df1["healthy"] = df1["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
+    healthy_groups_list
 )
 
 # merge apoptosis, pyroptosis, and healthy columns into one column
-df1["labels"] = df1.apply(
-    lambda row: "apoptosis"
-    if row["apoptosis"]
-    else "pyroptosis"
-    if row["pyroptosis"]
-    else "healthy",
-    axis=1,
-)
+conditions = [
+    (df1["apoptosis"] == True),
+    (df1["pyroptosis"] == True),
+    (df1["healthy"] == True),
+]
+choices = ["apoptosis", "pyroptosis", "healthy"]
+df1["labels"] = np.select(conditions, choices, default="healthy")
+
 # drop apoptosis, pyroptosis, and healthy columns
 df1.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
-
-# save labeled data
-df1.to_parquet(output_file_path)
 
 
 # ### Split said data

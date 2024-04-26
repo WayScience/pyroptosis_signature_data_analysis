@@ -1,6 +1,5 @@
 suppressPackageStartupMessages(suppressWarnings(library(ggplot2))) # plotting
 suppressPackageStartupMessages(suppressWarnings(library(dplyr))) # data manipulation
-suppressPackageStartupMessages(suppressWarnings(library(argparser))) # command line arguments
 suppressPackageStartupMessages(suppressWarnings(library(patchwork))) # plot patchwork
 suppressPackageStartupMessages(suppressWarnings(library(reshape2))) # data manipulation
 suppressPackageStartupMessages(suppressWarnings(library(ggridges))) # ridgeline plots
@@ -21,7 +20,6 @@ main_df_path = paste0("../results/", CELL_TYPE, "/","single_cell_predictions.par
 
 # read in data
 main_df = arrow::read_parquet(main_df_path)
-main_df
 unique(main_df$comparison)
 
 # split the df by comparison
@@ -31,8 +29,6 @@ apoptosis_pyroptosis <- main_df %>% filter(comparison == "apoptosis_pyroptosis")
 length((control_pyroptosis$comparison))
 length((apoptosis_control$comparison))
 length((apoptosis_pyroptosis$comparison))
-
-main_df
 
 # define empty dictionary
 dict_of_features = {}
@@ -238,9 +234,9 @@ options(repr.plot.width = width, repr.plot.height = height)
 # stich the images together
 control_pyroptosis_images <- (
     # plot image with
-    ggplot_objects_apoptosis_pyroptosis[[6]]
-    + ggplot_objects_apoptosis_pyroptosis[[10]]
-    + ggplot_objects_apoptosis_pyroptosis[[15]]
+    ggplot_objects_apoptosis_pyroptosis[[3]]
+    + ggplot_objects_apoptosis_pyroptosis[[11]]
+    + ggplot_objects_apoptosis_pyroptosis[[17]]
 
     + plot_layout(ncol = 3)
 )
@@ -256,10 +252,10 @@ ggsave(
 )
 
 # select rows to keep in the df by index
-rows_to_keep = c(6,10,15)
+rows_to_keep = c(3,10,15)
 apoptosis_pyroptosis <- apoptosis_pyroptosis[rows_to_keep,]
 
-# # save the df
+# save the df
 write.csv(apoptosis_pyroptosis, "../results/features_values.csv", row.names = FALSE)
 head(apoptosis_pyroptosis)
 
@@ -275,6 +271,8 @@ load_image <- function(path){
     return(p)
 }
 
+
+apoptosis_pyroptosis
 
 control_dapi_image_path <- apoptosis_pyroptosis$image_DAPI_crop_path[1]
 control_er_path <- apoptosis_pyroptosis$image_ER_crop_path[1]
@@ -348,7 +346,7 @@ list_of_images <- list(
 
 
 # import morphology data
-columns_to_import <- c("oneb_Metadata_Treatment_Dose_Inhibitor_Dose", "Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1")
+columns_to_import <- c("oneb_Metadata_Treatment_Dose_Inhibitor_Dose", "Cytoplasm_RadialDistribution_ZernikeMagnitude_CorrER_9_9")
 # path to the parquet file
 morphology_path <- file.path(
     "..","..","..","data","PBMC_preprocessed_sc_norm.parquet"
@@ -357,9 +355,9 @@ morphology_path <- file.path(
 # read in the parquet file with certain columns
 morphology_df <- arrow::read_parquet(morphology_path, col_select = all_of(columns_to_import))
 
-control_value <- apoptosis_pyroptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[1]
-apoptosis_value <- apoptosis_pyroptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[2]
-pyroptosis_value <- apoptosis_pyroptosis$Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1[3]
+control_value <- apoptosis_pyroptosis$Cells_RadialDistribution_ZernikeMagnitude_CorrPM_6_4[1]
+apoptosis_value <- apoptosis_pyroptosis$Cells_RadialDistribution_ZernikeMagnitude_CorrPM_6_4[2]
+pyroptosis_value <- apoptosis_pyroptosis$Cells_RadialDistribution_ZernikeMagnitude_CorrPM_6_4[3]
 
 
 morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- ifelse(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose == "Flagellin_0.100_ug_per_ml_DMSO_0.000_%", "Flagellin_0.100_ug_per_ml_DMSO_0.025_%", morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
@@ -381,8 +379,11 @@ apoptosis_ground_truth_list <- c(ground_truth$Apoptosis$apoptosis_groups_list)
 pyroptosis_ground_truth_list <- c(ground_truth$Pyroptosis$pyroptosis_groups_list)
 control_ground_truth_list <- c(ground_truth$Healthy$healthy_groups_list)
 
-pyroptosis_ground_truth_list
 control_ground_truth_list
+apoptosis_ground_truth_list
+pyroptosis_ground_truth_list
+# replace
+
 # make a new column that is the treatment group based on the ground truth data
 morphology_df$group <- ifelse(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% apoptosis_ground_truth_list, "Apoptosis",
                                 ifelse(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% pyroptosis_ground_truth_list, "Pyroptosis",
@@ -404,7 +405,7 @@ height <- 5
 options(repr.plot.width = width, repr.plot.height = height)
 # histogram of the zernike phase correlation of gasdermin 9_1
 hist_plot_control <- (
-    ggplot(control_df, aes(x = Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1))
+    ggplot(control_df, aes(x = Cytoplasm_RadialDistribution_ZernikeMagnitude_CorrER_9_9))
     + geom_density(aes(fill = group), alpha = 0.5)
     # change color of the fill
     + scale_fill_manual(values = brewer.pal(3, "Dark2")[2])
@@ -423,7 +424,7 @@ hist_plot_control <- (
 )
 
 hist_plot_apoptosis <- (
-    ggplot(apoptosis_df, aes(x = Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1))
+    ggplot(apoptosis_df, aes(x = Cytoplasm_RadialDistribution_ZernikeMagnitude_CorrER_9_9))
     + geom_density(aes(fill = group), alpha = 0.5)
     # change color of the fill
     + scale_fill_manual(values = brewer.pal(3, "Dark2")[1])
@@ -442,7 +443,7 @@ hist_plot_apoptosis <- (
 )
 
 hist_plot_pyroptosis <- (
-    ggplot(pyroptosis_df, aes(x = Cytoplasm_RadialDistribution_ZernikePhase_CorrGasdermin_9_1))
+    ggplot(pyroptosis_df, aes(x = Cytoplasm_RadialDistribution_ZernikeMagnitude_CorrER_9_9))
     + geom_density(aes(fill = group), alpha = 0.5)
     # change color of the fill
     + scale_fill_manual(values = brewer.pal(3, "Dark2")[3])

@@ -3,6 +3,8 @@
 
 # Use papermill to run the notebooks with different cell types
 
+cd notebooks/
+
 # preprocess the data
 papermill 0.nomic_cleanup.ipynb 0.nomic_cleanup.ipynb -p cell_type "SHSY5Y"
 papermill 0.nomic_cleanup.ipynb 0.nomic_cleanup.ipynb -p cell_type "PBMC"
@@ -35,3 +37,5 @@ for celltype in "${celltypes[@]}"; do
         done
     done
 done
+
+cd ../

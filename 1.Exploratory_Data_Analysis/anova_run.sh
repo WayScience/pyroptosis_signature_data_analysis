@@ -16,6 +16,8 @@ treatment2s=( 'LPS_100.000_ug_per_ml_DMSO_0.025_%' 'LPS_10.000_ug_per_ml_DMSO_0.
 treatment3s=( 'Thapsigargin_10.000_uM_DMSO_0.025_%' 'Thapsigargin_1.000_uM_DMSO_0.025_%' 'H2O2_100.000_uM_DMSO_0.025_%' 'H2O2_100.000_nM_DMSO_0.025_%' )
 cell_types=( SHSY5Y PBMC )
 
+cd notebooks/
+
 for treatment1 in ${treatment1s[@]}; do
     for treatment2 in ${treatment2s[@]}; do
         for treatment3 in ${treatment3s[@]}; do

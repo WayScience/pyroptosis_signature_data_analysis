@@ -11,6 +11,8 @@ module load anaconda
 
 conda activate Interstellar
 
+cd notebooks/
+
 cell_types=( SHSY5Y PBMC )
 
 for cell_type in ${cell_types[@]}; do

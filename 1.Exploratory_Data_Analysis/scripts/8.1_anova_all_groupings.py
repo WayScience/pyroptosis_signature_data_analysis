@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import pathlib
@@ -50,16 +50,41 @@ cell_type = args.cell_type
 feature = args.feature
 
 
-# In[ ]:
+# In[3]:
+
+
+Metadata_columns = [
+    "Metadata_cell_type",
+    "Metadata_Well",
+    "Metadata_number_of_singlecells",
+    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
+]
+Metadata_columns = Metadata_columns + [feature]
+
+
+# In[4]:
 
 
 # Import Data
 # set data file path under pathlib path for multi-system use
 file_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
-df = pd.read_parquet(file_path)
+# df = pd.read_parquet(file_path, columns=Metadata_columns)
+df = pd.read_parquet(file_path, columns=Metadata_columns)
 
 
-# In[ ]:
+# In[5]:
+
+
+# get 10% of the data from each well.
+df = (
+    df.groupby("Metadata_Well")
+    .apply(lambda x: x.sample(frac=0.1, random_state=0))
+    .reset_index(drop=True)
+)
+print(df.shape)
+
+
+# In[6]:
 
 
 # toml file path
@@ -102,7 +127,7 @@ df["labels"] = df.apply(
 df.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 
-# In[ ]:
+# In[7]:
 
 
 df_metadata = df.filter(regex="Metadata")
@@ -112,7 +137,7 @@ df_data["Metadata_number_of_singlecells"] = df_metadata[
 ]
 
 
-# In[ ]:
+# In[8]:
 
 
 # anova for each feature in the dataframe with posthoc tukey test to determine which groups are different from each other
@@ -158,12 +183,6 @@ tukey_df["p-adj_abs"] = abs(tukey_df["p-adj"])
 # make new column that states if the relationship is positive or negative
 tukey_df["pos_neg"] = np.where(tukey_df["p-adj"] > 0, "positive", "negative")
 # order the features by p-adj value
-
-
-# In[ ]:
-
-
-tukey_df.head()
 
 
 # In[ ]:

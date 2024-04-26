@@ -243,14 +243,14 @@ batch_size = 1
 
 # ### mAP analysis for non-shuffled data
 
-# In[ ]:
+# In[10]:
 
 
 # generate the permutations of cell death labels via itertools
 pos_samby_permutations = list(itertools.combinations(df["Metadata_labels"].unique(), 2))
 
 
-# In[ ]:
+# In[11]:
 
 
 results_df = pd.DataFrame(
@@ -267,11 +267,10 @@ results_df = pd.DataFrame(
 )
 
 
-# In[ ]:
+# In[12]:
 
 
 for i in pos_samby_permutations:
-    # print(i)
     tmp = df.copy()
     # get only the rows with the current permutation
     tmp = tmp[tmp["Metadata_labels"].isin(i)]
@@ -313,7 +312,7 @@ results_df.to_csv(regular_feat_map_path, index=False)
 
 # ### mAP analysis for shuffled data (Feature space)
 
-# In[ ]:
+# In[13]:
 
 
 results_df = pd.DataFrame(
@@ -330,11 +329,10 @@ results_df = pd.DataFrame(
 )
 
 
-# In[ ]:
+# In[14]:
 
 
 for i in pos_samby_permutations:
-    # print(i)
     tmp = df.copy()
     # get only the rows with the current permutation
     tmp = tmp[tmp["Metadata_labels"].isin(i)]

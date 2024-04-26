@@ -73,7 +73,7 @@ SHUFFLE = ast.literal_eval(SHUFFLE)
 print(CELL_TYPE, MODEL_NAME, SHUFFLE)
 
 
-# In[4]:
+# In[3]:
 
 
 ml_configs_file = pathlib.Path("../../MLP_utils/multi_class_config.toml").resolve(
@@ -103,7 +103,7 @@ with open(class_weights_file_path, "r") as f:
 print(class_weights)
 
 
-# In[5]:
+# In[4]:
 
 
 # Import Data
@@ -121,7 +121,7 @@ df_no_fs_path = pathlib.Path(
 df_no_fs = pd.read_parquet(df_no_fs_path)
 
 
-# In[6]:
+# In[7]:
 
 
 df1["Metadata_Nuclei_Location_Center_X"] = df_no_fs["Nuclei_Location_Center_X"]
@@ -139,7 +139,7 @@ df1["Metadata_Cytoplasm_AreaShape_BoundingBoxMinimum_Y"] = df_no_fs[
     "Cytoplasm_AreaShape_BoundingBoxMinimum_Y"
 ]
 
-df1["Metadata_Site"] = df_no_fs["Metadata_Site"]
+df1["Metadata_Site"] = df_no_fs["Image_Metadata_Site"]
 
 del df_no_fs
 gc.collect()

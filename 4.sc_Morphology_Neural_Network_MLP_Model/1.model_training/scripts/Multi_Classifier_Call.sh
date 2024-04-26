@@ -14,7 +14,7 @@ module load anaconda
 
 conda activate Interstellar_python
 
-cell_types=( SHSY5Y PBMC )
+cell_types=(  PBMC SHSY5Y )
 model_names=( MultiClass_MLP )
 shuffles=( True False )
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
@@ -32,6 +32,5 @@ model_name=${model_names[$model_name_idx]}
 command="python train_multiclass_model.py"
 
 $command --CELL_TYPE "$cell_type" --MODEL_NAME "$model_name" --SHUFFLE "$shuffle"
-
 
 echo "Done"

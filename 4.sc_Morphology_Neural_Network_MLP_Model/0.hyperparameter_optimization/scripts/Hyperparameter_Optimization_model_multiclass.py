@@ -6,7 +6,7 @@
 # ### Being a binary model this notebook will be limited to predicting one class 1 or 0, yes or no.
 # ### Here I will be predicting if a cell received a treatment or not
 
-# In[1]:
+# In[ ]:
 
 
 import pathlib
@@ -22,7 +22,6 @@ from sklearn import preprocessing
 
 sys.path.append("../..")
 
-import argparse
 
 from MLP_utils.parameters import Parameters
 from MLP_utils.utils import (
@@ -42,32 +41,40 @@ from sklearn.model_selection import train_test_split
 sys.path.append("../../..")
 from utils.utils import df_stats
 
-# In[2]:
+# In[ ]:
 
 
-# set up the parser
-parser = argparse.ArgumentParser(description="Run hyperparameter optimization")
-parser.add_argument(
-    "--cell_type",
-    type=str,
-    default="all",
-    help="Cell type to run hyperparameter optimization for",
-)
-parser.add_argument(
-    "--model_name",
-    type=str,
-    default="all",
-    help="Model name to run hyperparameter optimization for",
-)
+# # set up the parser
+# parser = argparse.ArgumentParser(description="Run hyperparameter optimization")
+# parser.add_argument(
+#     "--cell_type",
+#     type=str,
+#     default="all",
+#     help="Cell type to run hyperparameter optimization for",
+# )
+# parser.add_argument(
+#     "--model_name",
+#     type=str,
+#     default="all",
+#     help="Model name to run hyperparameter optimization for",
+# )
 
-# parse arguments
-args = parser.parse_args()
+# # parse arguments
+# args = parser.parse_args()
 
-CELL_TYPE = args.cell_type
-MODEL_NAME = args.model_name
+# CELL_TYPE = args.cell_type
+# MODEL_NAME = args.model_name
 
 
-# In[4]:
+# In[ ]:
+
+
+CELL_TYPE = "PBMC"
+MODEL_NAME = "MultiClass_MLP"
+SHUFFLE = False
+
+
+# In[ ]:
 
 
 ml_configs_file = pathlib.Path("../../MLP_utils/multi_class_config.toml").resolve(
@@ -84,7 +91,7 @@ MODEL_TYPE = mlp_params.MODEL_TYPE
 HYPERPARAMETER_BATCH_SIZE = mlp_params.HYPERPARAMETER_BATCH_SIZE
 
 
-# In[5]:
+# In[ ]:
 
 
 # Import Data
@@ -97,7 +104,7 @@ file_path = pathlib.Path(
 df1 = pd.read_parquet(file_path)
 
 
-# In[6]:
+# In[ ]:
 
 
 # get paths for toml files
@@ -112,7 +119,7 @@ ground_truth = toml.load(ground_truth_file_path)
 treatment_splits = toml.load(treatment_splits_file_path)
 
 
-# In[7]:
+# In[ ]:
 
 
 # get information from toml files
@@ -123,7 +130,7 @@ test_split_100 = treatment_splits["splits"]["data_splits_100"]
 test_split_75 = treatment_splits["splits"]["data_splits_75"]
 
 
-# In[8]:
+# In[ ]:
 
 
 np.random.seed(0)
@@ -139,42 +146,36 @@ else:
     print("Data Subset Is Off")
 
 
-# In[9]:
+# In[ ]:
 
 
 # add apoptosis, pyroptosis and healthy columns to dataframe
-df1["apoptosis"] = df1.apply(
-    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    in apoptosis_groups_list,
-    axis=1,
+df1["apoptosis"] = df1["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
+    apoptosis_groups_list
 )
-df1["pyroptosis"] = df1.apply(
-    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    in pyroptosis_groups_list,
-    axis=1,
+df1["pyroptosis"] = df1["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
+    pyroptosis_groups_list
 )
-df1["healthy"] = df1.apply(
-    lambda row: row["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
-    in healthy_groups_list,
-    axis=1,
+df1["healthy"] = df1["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].isin(
+    healthy_groups_list
 )
 
 # merge apoptosis, pyroptosis, and healthy columns into one column
-df1["labels"] = df1.apply(
-    lambda row: "apoptosis"
-    if row["apoptosis"]
-    else "pyroptosis"
-    if row["pyroptosis"]
-    else "healthy",
-    axis=1,
-)
+conditions = [
+    (df1["apoptosis"] == True),
+    (df1["pyroptosis"] == True),
+    (df1["healthy"] == True),
+]
+choices = ["apoptosis", "pyroptosis", "healthy"]
+df1["labels"] = np.select(conditions, choices, default="healthy")
+
 # drop apoptosis, pyroptosis, and healthy columns
 df1.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 
 # ### Split said data
 
-# In[10]:
+# In[ ]:
 
 
 # randomly select wells to hold out for testing one per treatment group
@@ -195,7 +196,7 @@ print(
 )
 
 
-# In[11]:
+# In[ ]:
 
 
 # variable test and train set splits
@@ -218,7 +219,7 @@ test_set_50 = df[
 print(treatment_holdout.shape, test_set_75.shape, test_set_50.shape)
 
 
-# In[12]:
+# In[ ]:
 
 
 # get the train test splits from each group
@@ -256,7 +257,7 @@ print(
 print(f"Shape for the holdout set: {df_holdout.shape}")
 
 
-# In[13]:
+# In[ ]:
 
 
 treatment_holdout
@@ -285,7 +286,7 @@ print(
 )
 
 
-# In[14]:
+# In[ ]:
 
 
 # get the indexes for the training and testing sets
@@ -297,7 +298,7 @@ treatment_holdout_index = treatment_holdout.index
 df_holdout_index = df_holdout.index
 
 
-# In[15]:
+# In[ ]:
 
 
 print(
@@ -316,7 +317,7 @@ print(
 )
 
 
-# In[16]:
+# In[ ]:
 
 
 # create pandas dataframe with all indexes and their respective labels, stratified by phenotypic class
@@ -337,13 +338,13 @@ index_data = pd.DataFrame(index_data)
 index_data
 
 
-# In[17]:
+# In[ ]:
 
 
 index_data["label"].unique()
 
 
-# In[18]:
+# In[ ]:
 
 
 save_path = pathlib.Path(f"../indexes/{CELL_TYPE}/multi_class/")
@@ -353,7 +354,7 @@ print(save_path)
 save_path.mkdir(parents=True, exist_ok=True)
 
 
-# In[19]:
+# In[ ]:
 
 
 # save indexes as tsv file
@@ -367,7 +368,7 @@ index_data.to_csv(
 # ##### Classification Models:
 # Comment out code if using regression
 
-# In[20]:
+# In[ ]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -378,7 +379,7 @@ df_descriptive = df1[df_metadata]
 df_values = df1.drop(columns=df_metadata)
 
 
-# In[21]:
+# In[ ]:
 
 
 # get the class weights for the loss function to account for class imbalance
@@ -402,7 +403,7 @@ with open(f"{class_weights_file}/class_weights.txt", "w") as filehandle:
         filehandle.write("%s\n" % listitem)
 
 
-# In[22]:
+# In[ ]:
 
 
 # Creating label encoder
@@ -422,7 +423,7 @@ df_values_Y.unique()
 
 # #### Split Data - All Models can proceed through this point
 
-# In[23]:
+# In[ ]:
 
 
 # split into train and test sets from indexes previously defined
@@ -440,14 +441,14 @@ Y_holdout = df_values_Y.loc[df_holdout_index]
 Y_treatment_holdout = df_values_Y.loc[treatment_holdout_index]
 
 
-# In[24]:
+# In[ ]:
 
 
 mlp_params.OUT_FEATURES = len(df_values_Y.unique())
 mlp_params.OUT_FEATURES
 
 
-# In[25]:
+# In[ ]:
 
 
 Y_train = torch.tensor(Y_train.values)
@@ -481,7 +482,7 @@ X_holdout = torch.tensor(X_holdout.values)
 X_treatment_holdout = torch.tensor(X_treatment_holdout.values)
 
 
-# In[26]:
+# In[ ]:
 
 
 # produce data objects for train, val and test datasets
@@ -490,7 +491,7 @@ val_data = torch.utils.data.TensorDataset(X_val, Y_val)
 test_data = torch.utils.data.TensorDataset(X_test, Y_test)
 
 
-# In[27]:
+# In[ ]:
 
 
 mlp_params.IN_FEATURES = X_train.shape[1]
@@ -514,7 +515,7 @@ else:
 print(mlp_params.MODEL_TYPE)
 
 
-# In[28]:
+# In[ ]:
 
 
 # convert data class into a dataloader to be compatible with pytorch
@@ -526,26 +527,25 @@ valid_loader = torch.utils.data.DataLoader(
 )
 
 
-# In[29]:
+# In[ ]:
 
 
 mlp_params.OUT_FEATURES
 
 
-# In[30]:
+# In[ ]:
 
 
 # check device
 print(mlp_params.DEVICE)
 
 
-# In[31]:
+# In[ ]:
 
 
 # no accuracy function must be loss for regression
 if mlp_params.MODEL_TYPE == "Regression":
     mlp_params.METRIC = "loss"
-    pass
 
 
 # wrap the objective function inside of a lambda function to pass args...
@@ -577,7 +577,7 @@ objective_model_optimizer(
 )
 
 
-# In[32]:
+# In[ ]:
 
 
 # create graph directory for this model
@@ -595,7 +595,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[33]:
+# In[ ]:
 
 
 # create graph directory for this model
@@ -612,7 +612,7 @@ fig.write_image(pathlib.Path(f"{graph_path}.png"))
 fig.show()
 
 
-# In[34]:
+# In[ ]:
 
 
 param_dict = extract_best_trial_params(

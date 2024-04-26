@@ -101,6 +101,11 @@ file_path = pathlib.Path(
     f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm.parquet"
 ).resolve(strict=True)
 
+# output file path for labeled data
+output_file_path = pathlib.Path(
+    f"../../../data/{mlp_params.CELL_TYPE}_preprocessed_sc_norm_labeled.parquet"
+).resolve()
+
 df1 = pd.read_parquet(file_path)
 
 
@@ -134,6 +139,7 @@ test_split_75 = treatment_splits["splits"]["data_splits_75"]
 
 
 np.random.seed(0)
+print(df1.shape)
 if mlp_params.DATA_SUBSET_OPTION == "True":
     df1 = df1.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose").apply(
         lambda x: x.sample(n=mlp_params.DATA_SUBSET_NUMBER, random_state=0)
@@ -171,6 +177,9 @@ df1["labels"] = np.select(conditions, choices, default="healthy")
 
 # drop apoptosis, pyroptosis, and healthy columns
 df1.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
+
+# save labeled data
+df1.to_parquet(output_file_path)
 
 
 # ### Split said data

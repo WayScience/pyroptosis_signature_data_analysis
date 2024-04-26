@@ -25,14 +25,14 @@ celltype = "PBMC"
 
 
 # Set Path
-path = pathlib.Path(f"../data/{celltype}_preprocessed_sc_norm.parquet")
+path = pathlib.Path(f"../../data/{celltype}_preprocessed_sc_norm.parquet")
 
 
 # In[4]:
 
 
 # import data
-df = pq.read_table(path).to_pandas()
+df = pd.read_parquet(path)
 
 
 # In[5]:
@@ -47,7 +47,7 @@ subset_df = df[
     ]
 ]
 
-subset_df_path = pathlib.Path(f"./results/{celltype}_cell_counts.parquet")
+subset_df_path = pathlib.Path(f"../results/{celltype}_cell_counts.parquet")
 # if path does not exist, create it
 subset_df_path.parent.mkdir(parents=True, exist_ok=True)
 subset_df.to_parquet(subset_df_path)
@@ -71,12 +71,12 @@ plt.xticks(rotation=45)
 plt.title("Number of single cells per treatment")
 
 # if path does not exist, create it
-pathlib.Path(f"Figures/cell_counts_plate2/{celltype}").mkdir(
+pathlib.Path(f"../Figures/cell_counts_plate2/{celltype}").mkdir(
     parents=True, exist_ok=True
 )
 # save figure
 plt.savefig(
-    f"Figures/cell_counts_plate2/{celltype}/Number_of_single_cells_per_treatment.png",
+    f"../Figures/cell_counts_plate2/{celltype}/Number_of_single_cells_per_treatment.png",
     bbox_inches="tight",
 )
 plt.show()
@@ -87,7 +87,7 @@ plt.close()
 
 
 # if path does not exist, create it
-pathlib.Path(f"Figures/cell_counts_plate2/{celltype}").mkdir(
+pathlib.Path(f"../Figures/cell_counts_plate2/{celltype}").mkdir(
     parents=True, exist_ok=True
 )
 
@@ -108,7 +108,7 @@ for i in df["Metadata_Treatment"].unique():
     plt.title(f"Number of single cells per {i}")
 
     plt.savefig(
-        f"Figures/cell_counts_plate2/{celltype}/Number_of_single_cells_per_{i}.png",
+        f"../Figures/cell_counts_plate2/{celltype}/Number_of_single_cells_per_{i}.png",
         bbox_inches="tight",
     )
     plt.show()

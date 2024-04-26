@@ -2,19 +2,19 @@
 
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --mem=500G
+#SBATCH --mem=800G
 #SBATCH --partition=amem
 #SBATCH --account=amc-general
 #SBATCH --qos=mem
 #SBATCH --time=72:00:00
 #SBATCH --output=sample-%j.out
-#SBATCH --array=1-2%2
+#SBATCH --array=1
 
 module load anaconda
 
 conda activate Interstellar_python
 
-cell_types=( PBMC )
+cell_types=( PBMC SHSY5Y )
 model_names=( MultiClass_MLP )
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb

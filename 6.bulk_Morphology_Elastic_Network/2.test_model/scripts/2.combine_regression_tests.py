@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[1]:
 
 
 import argparse
@@ -9,7 +9,7 @@ import pathlib
 
 import pandas as pd
 
-# In[ ]:
+# In[2]:
 
 
 argparser = argparse.ArgumentParser()
@@ -20,7 +20,7 @@ args = argparser.parse_args()
 cell_type = args.cell_type
 
 
-# In[3]:
+# In[ ]:
 
 
 results_dir_path = pathlib.Path(

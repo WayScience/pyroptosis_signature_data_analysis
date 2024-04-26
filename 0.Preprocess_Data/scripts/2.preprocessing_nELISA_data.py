@@ -19,7 +19,7 @@ from sklearn import preprocessing
 
 
 # Parameters
-cell_type = "PBMC"
+cell_type = "SHSY5Y"
 
 
 # In[3]:
@@ -272,6 +272,30 @@ analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
 # In[16]:
 
 
+analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
+    "oneb_Treatment_Dose_Inhibitor_Dose"
+].str.replace("media_ctr_0.0_0_Media_ctr_0.0_0", "Media")
+
+analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
+    "oneb_Treatment_Dose_Inhibitor_Dose"
+].str.replace("media_ctr_0.0_0_Media_0.0_0", "Media")
+
+analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
+    "oneb_Treatment_Dose_Inhibitor_Dose"
+].str.replace(
+    "Flagellin_0.100_ug_per_ml_DMSO_0.0_%", "Flagellin_0.100_ug_per_ml_DMSO_0.025_%"
+)
+
+analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"] = analysis_df[
+    "oneb_Treatment_Dose_Inhibitor_Dose"
+].str.replace(
+    "Flagellin_1.000_ug_per_ml_DMSO_0.0_%", "Flagellin_1.000_ug_per_ml_DMSO_0.025_%"
+)
+
+
+# In[17]:
+
+
 # need to convert to strings to save as parquet
 # if the column is an object then convert it to a string
 for column in analysis_df.columns:
@@ -279,7 +303,13 @@ for column in analysis_df.columns:
         analysis_df[column] = analysis_df[column].astype(str)
 
 
-# In[17]:
+# In[18]:
+
+
+print(len(analysis_df["oneb_Treatment_Dose_Inhibitor_Dose"].unique()))
+
+
+# In[19]:
 
 
 analysis_df.to_parquet(preprocessing_path)

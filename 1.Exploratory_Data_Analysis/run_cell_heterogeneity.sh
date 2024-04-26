@@ -11,6 +11,8 @@ module load anaconda
 
 conda activate Interstellar
 
+cd notebooks/
+
 papermill 6.heterogeneity_analysis.ipynb 6.heterogeneity_analysis.ipynb -p cell_type "SHSY5Y"
 papermill 6.heterogeneity_analysis.ipynb 6.heterogeneity_analysis.ipynb -p cell_type "PBMC"
 

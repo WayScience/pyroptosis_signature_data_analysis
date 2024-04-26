@@ -3,7 +3,7 @@
 
 # ## Plate 2
 
-# In[1]:
+# In[ ]:
 
 
 import itertools
@@ -17,7 +17,7 @@ import seaborn as sns
 import toml
 import umap
 
-# In[2]:
+# In[ ]:
 
 
 # Parameters
@@ -25,7 +25,7 @@ cell_type = "PBMC"
 sample = False
 
 
-# In[3]:
+# In[ ]:
 
 
 # read in toml file
@@ -39,7 +39,7 @@ print(len(list_of_treatments))
 print(list_of_treatments)
 
 
-# In[4]:
+# In[ ]:
 
 
 # Set path to parquet file
@@ -50,18 +50,21 @@ path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet").reso
 df = pq.read_table(path).to_pandas()
 
 
-# In[5]:
+# In[ ]:
 
 
-# subsample the data
-n = 100
-# Assuming df is your DataFrame and 'column_name' is the column you want to subsample by
-df = df.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose").apply(
-    lambda x: x.sample(n)
-)
+if sample:
+    # subsample the data
+    n = 100
+    # Assuming df is your DataFrame and 'column_name' is the column you want to subsample by
+    df = df.groupby("oneb_Metadata_Treatment_Dose_Inhibitor_Dose").apply(
+        lambda x: x.sample(n)
+    )
+else:
+    pass
 
 
-# In[6]:
+# In[ ]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -71,7 +74,7 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[7]:
+# In[ ]:
 
 
 # set umap parameters
@@ -82,11 +85,10 @@ umap_params = umap.UMAP(
     init="random",
     metric="cosine",
     random_state=0,
-    n_jobs=-1,
 )
 
 
-# In[8]:
+# In[ ]:
 
 
 # fit and transform data for umap
@@ -96,7 +98,7 @@ df_values["umap_1"] = proj_2d[:, 0]
 df_values["umap_2"] = proj_2d[:, 1]
 
 
-# In[9]:
+# In[ ]:
 
 
 df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
@@ -104,7 +106,7 @@ df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
 ]
 
 
-# In[10]:
+# In[ ]:
 
 
 # randomize the rows of the dataframe to plot the order of the data evenly
@@ -124,7 +126,7 @@ df_values_path.parent.mkdir(parents=True, exist_ok=True)
 df_values.to_parquet(df_values_path)
 
 
-# In[11]:
+# In[ ]:
 
 
 # Figure Showing UMAP of Clusters vs Treatment

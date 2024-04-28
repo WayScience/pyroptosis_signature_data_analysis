@@ -1,10 +1,12 @@
+[![DOI](https://zenodo.org/badge/611024034.svg)](https://zenodo.org/doi/10.5281/zenodo.11075332)
+
 # pyroptosis_signature_data_analysis
-Analysis Repository for the Interstellar project. For data processing for this project please see [pyroptosis_signature](https://github.com/WayScience/pyroptosis_signature)
+Analysis Repository for the Interstellar project. For data processing for this project please see [pyroptosis_signature_image_profiling](https://github.com/WayScience/pyroptosis_signature_image_profiling)
 
 ### Workflow:
 
 Cells were incubated for 1h in the inhibitors, and then incubated for 6h in each inducer.
-For more information on plate layout and experimental design please see [pyroptosis_signature](https://github.com/WayScience/pyroptosis_signature).
+For more information on plate layout and experimental design please see [pyroptosis_signature_image_profiling](https://github.com/WayScience/pyroptosis_signature_image_profiling).
 
 
 # Treatments of Interest (All in this table are with DMSO 0.025% inhibitor)
@@ -39,5 +41,3 @@ For more information on plate layout and experimental design please see [pyropto
 | LPS + Nigercin | 1 * 1 = (1) | 1ug/mL+10ug/mL         | Z-VAD-FMK  | 1               | 100uM | Induce Pyroptosis <br> Inhibit Inflamasome          |
 | LPS + Nigercin | 1 * 1 = (1) | 1ug/mL+10ug/mL        | Disulfiram | 1               | 1uM | Induce Pyroptosis <br> Inhibit Inflamasome          |
 | Disulfiram     | 3           | 0.1uM <br> 1uM <br> 2.5uM       | DMSO       | 1               | 0.025% | Pyroptosis Inhibitor          |
-
-

@@ -1,7 +1,7 @@
 [![DOI](https://zenodo.org/badge/611024034.svg)](https://zenodo.org/doi/10.5281/zenodo.11075332)
 
 # pyroptosis_signature_data_analysis
-Analysis Repository for the Interstellar project. For data processing for this project please see [pyroptosis_signature_image_profiling](https://github.com/WayScience/pyroptosis_signature_image_profiling)
+Analysis Repository for the Interstellar project. For image analysis and image-based profiling for this project, please see [pyroptosis_signature_image_profiling](https://github.com/WayScience/pyroptosis_signature_image_profiling)
 
 ### Workflow:
 

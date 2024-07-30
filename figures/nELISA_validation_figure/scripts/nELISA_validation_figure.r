@@ -42,7 +42,7 @@ text_size_2 <- 14
 validation_plot <- (
     ggplot(validation_data, aes(x = LPS_concentration , y = concentration, fill = data_type))
     + geom_boxplot()
-    + theme_minimal()
+    + theme_bw()
     + labs(
         x = "LPS Concentration (ng/mL)",
         y = "Concentration (normalized)",
@@ -106,7 +106,7 @@ text_size_2 <- 14
 validation_plot <- (
     ggplot(validation_data, aes(x = LPS_concentration , y = concentration, fill = data_type))
     + geom_boxplot()
-    + theme_minimal()
+    + theme_bw()
     + labs(
         x = "LPS Concentration (ng/mL)",
         y = "Concentration (pg/mL)",

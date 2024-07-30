@@ -9,10 +9,7 @@ import pathlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import plotly
-import plotly_express as px
 import seaborn as sns
-import umap
 
 # ## Clean Data from Nomic
 
@@ -30,6 +27,13 @@ MetaData = pd.read_csv(MetaData_input_path)
 # In[3]:
 
 
+# replace '/' with '_' in column names
+nELISA_data_all.columns = nELISA_data_all.columns.str.replace("/", "_")
+
+
+# In[4]:
+
+
 # Change the 'A1' cell format to 'A01' format
 position = []
 for i in MetaData["position"].astype(str):
@@ -41,7 +45,7 @@ MetaData["position"] = position
 MetaData.head()
 
 
-# In[4]:
+# In[5]:
 
 
 # Change column names
@@ -64,7 +68,7 @@ nELISA_data_all["plate_position"] = (
 nELISA_data_all.replace(regex=[" and "], value="_", inplace=True)
 
 
-# In[5]:
+# In[6]:
 
 
 # Seperate df out by plate
@@ -75,7 +79,7 @@ MetaData_plate_430418_430419 = MetaData.loc[
 MetaData_plate_430420 = MetaData.loc[MetaData["plate_barcode"] == "430420"]
 
 
-# In[6]:
+# In[7]:
 
 
 # seperate out by plate
@@ -88,7 +92,7 @@ nELISA_data_all_plate_430420 = nELISA_data_all.loc[
 ]
 
 
-# In[7]:
+# In[8]:
 
 
 # Merge the two dataframes for plate 430420 via concat because pandas is being a pain
@@ -110,7 +114,7 @@ plate_430420 = plate_430420[
 plate_430420.shape
 
 
-# In[8]:
+# In[9]:
 
 
 # Merge the two dataframes for plate 430418_430419
@@ -131,7 +135,7 @@ plate_430418_430419 = plate_430418_430419[
 plate_430418_430419.shape
 
 
-# In[9]:
+# In[10]:
 
 
 # seperate out by cell type
@@ -142,7 +146,7 @@ plate_430420_SH_SY5Y = plate_430420.loc[plate_430420["cell_type"] == "SH-SY5Y"]
 plate_430420_SH_SY5Y.shape
 
 
-# In[10]:
+# In[11]:
 
 
 # define output paths
@@ -151,7 +155,7 @@ nELISA_plate_430420_PBMC_path = pathlib.Path(
     "./clean/Plate2/nELISA_plate_430420_PBMC.csv"
 )
 nELISA_plate_430420_SH_SY5Y_path = pathlib.Path(
-    "./clean/Plate2/nELISA_plate_430420_SH_SY5Y.csv"
+    "./clean/Plate2/nELISA_plate_430420_SHSY5Y.csv"
 )
 nELISA_430418_430419_path = pathlib.Path(
     "./clean/Plate1/nELISA_plate_430418_430419.csv"

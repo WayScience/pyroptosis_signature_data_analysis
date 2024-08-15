@@ -76,7 +76,6 @@ death_curve_plot <- (
         strip.text = element_text(size = 20),
         legend.text = element_text(size = 18),
         legend.title = element_text(size = 20),
-        # legend.position = "none"
     )
     + scale_fill_manual(
         name = "Treatment",

@@ -3,12 +3,11 @@
 
 # # This notebook looks into the cell heterogeneity in the control treatments
 
-# In[1]:
+# In[ ]:
 
 
 import itertools
 import pathlib
-import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,21 +18,20 @@ import toml
 import umap
 from sklearn.cluster import KMeans
 
-
-# In[2]:
+# In[ ]:
 
 
 # Parameters
 cell_type = "PBMC"
 
 
-# In[3]:
+# In[ ]:
 
 
 # read in toml file
 
 # set up the path
-toml_path = pathlib.Path("./utils/params.toml")
+toml_path = pathlib.Path("../utils/params.toml")
 # read in the toml file
 params = toml.load(toml_path)
 list_of_treatments = params["list_of_treatments"]["treatments"]
@@ -41,17 +39,17 @@ print(len(list_of_treatments))
 print(list_of_treatments)
 
 
-# In[4]:
+# In[ ]:
 
 
 # Set path to parquet file
-path = pathlib.Path(f"../data/{cell_type}_preprocessed_sc_norm.parquet")
+path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
 # Read in parquet file
 df = pq.read_table(path).to_pandas()
 df
 
 
-# In[5]:
+# In[ ]:
 
 
 df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
@@ -62,7 +60,7 @@ df = df[
 df
 
 
-# In[6]:
+# In[ ]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -73,7 +71,7 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[7]:
+# In[ ]:
 
 
 # set umap parameters
@@ -87,7 +85,7 @@ umap_params = umap.UMAP(
 )
 
 
-# In[8]:
+# In[ ]:
 
 
 # fit and transform data for umap
@@ -98,7 +96,7 @@ df_values["umap_1"] = proj_2d[:, 0]
 df_values["umap_2"] = proj_2d[:, 1]
 
 
-# In[9]:
+# In[ ]:
 
 
 df_values["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
@@ -107,7 +105,7 @@ df_values["fourb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
 df_values["Metadata_Well"] = df_descriptive["Metadata_Well"]
 
 
-# In[10]:
+# In[ ]:
 
 
 # Figure Showing UMAP of Clusters vs Treatment
@@ -128,6 +126,6 @@ plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0)
 
 # if path does not exist create it
 plt.savefig(
-    f"Figures/umap_plate2/cell_heterogeneity_{cell_type}_umap.png", bbox_inches="tight"
+    f"../Figures/umap_plate2/cell_heterogeneity_{cell_type}_umap.png",
+    bbox_inches="tight",
 )
-

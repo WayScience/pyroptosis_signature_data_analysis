@@ -69,7 +69,7 @@ anova_results.head()
 # h_p = healthy vs pyroptosis
 #
 
-# In[ ]:
+# In[7]:
 
 
 # create a column that adds group1 and group2 together
@@ -99,7 +99,7 @@ a_h__h_p = np.union1d(a_h_list, h_p_list)
 a_p__h_p = np.union1d(a_p_list, h_p_list)
 
 
-# In[ ]:
+# In[8]:
 
 
 # get the unique features for each set
@@ -131,7 +131,7 @@ a_h__a_p__h_p_common = np.intersect1d(a_h__a_p__h_p_common, h_p_list)
 print(len(a_h__a_p__h_p_common))
 
 
-# In[ ]:
+# In[9]:
 
 
 # create a list of each list of features
@@ -145,7 +145,7 @@ dict_of_feature_lists["a_p__h_p_common"] = list(a_p__h_p_common)
 dict_of_feature_lists["a_h__a_p__h_p_common"] = list(a_h__a_p__h_p_common)
 
 
-# In[ ]:
+# In[10]:
 
 
 # set umap parameters
@@ -160,7 +160,7 @@ umap_params = umap.UMAP(
 )
 
 
-# In[ ]:
+# In[11]:
 
 
 final_df_dict = {}
@@ -178,7 +178,7 @@ for key, value in tqdm(dict_of_feature_lists.items()):
 final_df = pd.concat(final_df_dict.values(), ignore_index=True)
 
 
-# In[ ]:
+# In[12]:
 
 
 # write out the results

@@ -7,6 +7,8 @@ suppressWarnings(suppressPackageStartupMessages(library(argparser)))
 suppressWarnings(suppressPackageStartupMessages(library(patchwork)))
 suppressWarnings(suppressPackageStartupMessages(library(arrow)))
 suppressWarnings(suppressPackageStartupMessages(library(dplyr)))
+suppressWarnings(suppressPackageStartupMessages(library(tidyr)))
+suppressWarnings(suppressPackageStartupMessages(library(tidyverse)))
 
 # generate a platemap plot for the meta data
 # read in the platemap data
@@ -239,6 +241,8 @@ platemap_plot_inducer_dose <- (
         # title
     + ggtitle("Inducer + Dose Platemap")
     + theme(plot.title = element_text(size = 28, hjust = 0.5))
+    + theme(axis.text.x = element_text(size = 18,vjust = 0.5, hjust=1))
+    + theme(axis.text.y = element_text(size = 18, vjust = 0.5, hjust=1))
 
 )
 ggsave(inducer_well_dose_platemap, platemap_plot_inducer_dose, width=8, height=8, dpi=500)
@@ -340,6 +344,9 @@ platemap_plot_inhibitor_dose <- (
         axis.text.x = element_text(size = 16),
         axis.text.y = element_text(size = 16)
     )
+        + theme(legend.title = element_text(size = 18))
+    + theme(axis.text.x = element_text(size = 18,vjust = 0.5, hjust=1))
+    + theme(axis.text.y = element_text(size = 18, vjust = 0.5, hjust=1))
     # title
     + ggtitle("Inhibitor + Dose Platemap")
     + theme(plot.title = element_text(size = 28, hjust = 0.5))
@@ -349,20 +356,333 @@ ggsave(inhibtor_well_dose_platemap, platemap_plot_inhibitor_dose, width=width, h
 platemap_plot_inhibitor_dose
 
 
+# output figure directory
+figs_dir <- file.path("..","figures")
+# make directory if doesn't exist
+if (!dir.exists(figs_dir)) dir.create(figs_dir)
+
+cell_type <- "PBMC"
+# set the path to the cell count data
+cell_count_file_PBMC <- file.path(paste0("../../../1.Exploratory_Data_Analysis/results/",cell_type,"_cell_counts.parquet"))
+
+# Read in the cell count data
+cell_count_df_PBMC <- arrow::read_parquet(cell_count_file_PBMC)
+head(cell_count_df_PBMC)
+
+# aggregate the cell counts oneoneb_Metadata_Treatment_Dose_Inhibitor_Dose with mean and sd
+cell_count_df_agg_PBMC <- cell_count_df_PBMC %>%
+  group_by(oneb_Metadata_Treatment_Dose_Inhibitor_Dose) %>%
+  summarize(mean = mean(Metadata_number_of_singlecells), sd = sd(Metadata_number_of_singlecells), n = n(), CI = 1.96*sd/sqrt(n))
+head(cell_count_df_agg_PBMC)
+
+
+# mutate the names of each treatment
+cell_count_df_agg_PBMC <- cell_count_df_agg_PBMC %>%
+    mutate(oneb_Metadata_Treatment_Dose_Inhibitor_Dose = case_when(
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_DMSO_0.025_%' ~ "DMSO 0.1% - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_DMSO_1.000_%' ~ "DMSO 0.1% - DMSO 1.0%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_Z-VAD-FMK_100.000_uM' ~ "DMSO 0.1% - Z-VAD-FMK 100.0 uM",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_Z-VAD-FMK_30.000_uM' ~ "DMSO 0.1% - Z-VAD-FMK 30.0 uM",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Flagellin_1.000_ug_per_ml_DMSO_0.025_%' ~ "Flagellin 1.0 ug/ml - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM' ~ "Flagellin 1.0 ug/ml - Disulfiram 1.0 uM",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_0.010_ug_per_ml_DMSO_0.025_%' ~ "LPS 0.01 ug/ml - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_0.100_ug_per_ml_DMSO_0.025_%' ~ "LPS 0.1 ug/ml - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Flagellin_0.100_ug_per_ml_DMSO_0.025_%' ~ "Flagellin 0.1 ug/ml - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Disulfiram_0.100_uM_DMSO_0.025_%' ~ "Disulfiram 0.1 uM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_1.000_uM_DMSO_0.025_%' ~ "LPS 1.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_10.000_uM_DMSO_0.025_%' ~ "LPS 1.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_10.000_uM_Disulfiram_1.000_uM' ~ "LPS 1.0 ug/ml + Nigericin 10.0 uM - Disulfiram 1.0 uM",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_10.000_uM_Z-VAD-FMK_100.000_uM' ~ "LPS 1.0 ug/ml + Nigericin 10.0 uM - Z-VAD-FMK 100.0 uM",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_1.000_ug_per_ml_3.000_uM_DMSO_0.025_%' ~ "LPS 1.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_1.000_ug_per_ml_DMSO_0.025_%' ~ "LPS 1.0 ug/ml - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Disulfiram_1.000_uM_DMSO_0.025_%' ~ "Disulfiram 1.0 uM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Thapsigargin_1.000_uM_DMSO_0.025_%' ~ "Thapsigargin 1.0 uM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Topotecan_10.000_nM_DMSO_0.025_%' ~ "Topotecan 10.0 nM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_DMSO_0.025_%' ~ "LPS 10.0 ug/ml - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_Disulfiram_0.100_uM' ~ "LPS 10.0 ug/ml - Disulfiram 0.1 uM",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_Disulfiram_1.000_uM' ~ "LPS 10.0 ug/ml - Disulfiram 1.0 uM",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_Disulfiram_2.500_uM' ~ "LPS 10.0 ug/ml - Disulfiram 2.5 uM",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_10.000_ug_per_ml_Z-VAD-FMK_100.000_uM' ~ "LPS 10.0 ug/ml - Z-VAD-FMK 100.0 uM",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Thapsigargin_10.000_uM_DMSO_0.025_%' ~ "Thapsigargin 10.0 uM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_nM_DMSO_0.025_%' ~ "H2O2 100.0 nM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_100.000_ug_per_ml_1.000_uM_DMSO_0.025_%' ~ "LPS 100.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_100.000_ug_per_ml_10.000_uM_DMSO_0.025_%' ~ "LPS 100.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_Nigericin_100.000_ug_per_ml_3.000_uM_DMSO_0.025_%' ~ "LPS 100.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='LPS_100.000_ug_per_ml_DMSO_0.025_%' ~ "LPS 100.0 ug/ml - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_uM_DMSO_0.025_%' ~ "H2O2 100.0 uM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_uM_Disulfiram_1.000_uM' ~ "H2O2 100.0 uM - Disulfiram 1.0 uM",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='H2O2_100.000_uM_Z-VAD-FMK_100.000_uM' ~ "H2O2 100.0 uM - Z-VAD-FMK 100.0 uM",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Disulfiram_2.500_uM_DMSO_0.025_%' ~ "Disulfiram 2.5 uM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Topotecan_20.000_nM_DMSO_0.025_%' ~ "Topotecan 20.0 nM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Topotecan_5.000_nM_DMSO_0.025_%' ~ "Topotecan 5.0 nM - DMSO 0.025%",
+        oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='Media' ~ "Media - Media",
+    ))
+
+
+
+# split the oneb_Metadata_Treatment_Dose_Inhibitor_Dose into two columns by the " - " delimiter
+cell_count_df_agg_PBMC <- cell_count_df_agg_PBMC %>%
+    separate(oneb_Metadata_Treatment_Dose_Inhibitor_Dose, c("inducer", "inhibitor"), sep = " - ", remove = FALSE)
+# replace the inhibitor NA with Media
+cell_count_df_agg_PBMC$inhibitor <- ifelse(is.na(cell_count_df_agg_PBMC$inhibitor), "Media", cell_count_df_agg_PBMC$inhibitor)
+
+
+cell_count_df_agg_PBMC$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(cell_count_df_agg_PBMC$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, levels = c(
+    'Media - Media',
+    'DMSO 0.1% - DMSO 0.025%',
+    'DMSO 0.1% - DMSO 1.0%',
+
+    'Disulfiram 0.1 uM - DMSO 0.025%',
+    'Disulfiram 1.0 uM - DMSO 0.025%',
+    'Disulfiram 2.5 uM - DMSO 0.025%',
+
+    'DMSO 0.1% - Z-VAD-FMK 30.0 uM' ,
+    'DMSO 0.1% - Z-VAD-FMK 100.0 uM' ,
+
+    'Flagellin 0.1 ug/ml - DMSO 0.025%'  ,
+    'Flagellin 1.0 ug/ml - DMSO 0.025%' ,
+    'Flagellin 1.0 ug/ml - Disulfiram 1.0 uM'  ,
+
+
+    'H2O2 100.0 nM - DMSO 0.025%'   ,
+    'H2O2 100.0 uM - DMSO 0.025%'   ,
+    'H2O2 100.0 uM - Disulfiram 1.0 uM'   ,
+    'H2O2 100.0 uM - Z-VAD-FMK 100.0 uM'  ,
+
+
+
+    'LPS 0.01 ug/ml - DMSO 0.025%'  ,
+    'LPS 0.1 ug/ml - DMSO 0.025%'  ,
+    'LPS 1.0 ug/ml - DMSO 0.025%'  ,
+    'LPS 10.0 ug/ml - DMSO 0.025%' ,
+
+    'LPS 10.0 ug/ml - Disulfiram 0.1 uM'  ,
+    'LPS 10.0 ug/ml - Disulfiram 1.0 uM'  ,
+    'LPS 10.0 ug/ml - Disulfiram 2.5 uM'  ,
+    'LPS 10.0 ug/ml - Z-VAD-FMK 100.0 uM' ,
+
+    'LPS 100.0 ug/ml - DMSO 0.025%'   ,
+    'LPS 1.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%' ,
+    'LPS 1.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%'  ,
+    'LPS 1.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%'  ,
+
+    'LPS 1.0 ug/ml + Nigericin 10.0 uM - Disulfiram 1.0 uM'  ,
+    'LPS 1.0 ug/ml + Nigericin 10.0 uM - Z-VAD-FMK 100.0 uM'  ,
+
+
+    'LPS 100.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%'   ,
+    'LPS 100.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%'  ,
+    'LPS 100.0 ug/ml + Nigericin 10.0 uM - DMSO 0.025%'  ,
+
+
+    'Thapsigargin 1.0 uM - DMSO 0.025%'  ,
+    'Thapsigargin 10.0 uM - DMSO 0.025%',
+    'Topotecan 5.0 nM - DMSO 0.025%',
+    'Topotecan 10.0 nM - DMSO 0.025%' ,
+    'Topotecan 20.0 nM - DMSO 0.025%'
+)
+)
+
+# set plot dimensions
+width <- 20
+height <- 10
+options(repr.plot.width = width, repr.plot.height = height)
+# plot the data in a barplot
+cell_count_bar <- (
+    ggplot(
+        data = cell_count_df_agg_PBMC,
+        aes(
+            x = oneb_Metadata_Treatment_Dose_Inhibitor_Dose,
+            y = mean,
+            fill = oneb_Metadata_Treatment_Dose_Inhibitor_Dose,
+        )
+    )
+    + geom_bar(stat = "identity", position = "dodge")
+    # add scatter plot points for each inhibitor mean value with error bars
+    + theme_bw()
+    # rotate the x axis labels
+    + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    # add error bars
+    + geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.2)
+       + theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1))
+
+        + theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1))
+            + theme(
+         legend.text = element_text(size = 16),
+        legend.title = element_text(size = 20, hjust = 0.5))
+    # remove x axis ticks
+    + theme(axis.text.x = element_blank())
+    # change the legend title
+    + labs(fill = "Treatment", y = "Cell Count")
+    # change legend title position to top
+    + theme(legend.title.position = "top")
+    + theme(legend.position = "bottom")
+    # remove the x axis label
+    + theme(axis.title.x = element_blank())
+    # set the legend columns to 4
+    + guides(fill = guide_legend(ncol = 3))
+    # remove the title
+    + theme(plot.title = element_blank())
+    # change the y axis text size
+    + theme(axis.text.y = element_text(size = 20))
+    + theme(axis.title.y = element_text(size = 24))
+
+)
+cell_count_bar
+# save the plot
+ggsave(
+    filename = file.path(figs_dir,paste0(cell_type, "_cell_count_barplot.png")),
+    plot = cell_count_bar,
+    width = width,
+    height = height,
+    units = "in"
+)
+
+head(cell_count_df_agg_PBMC)
+
+# Read in the cell count data
+cell_count_df_PBMC <- arrow::read_parquet(cell_count_file_PBMC)
+# aggregate the cell counts oneoneb_Metadata_Treatment_Dose_Inhibitor_Dose with mean and sd
+cell_count_df_well_PBMC <- cell_count_df_PBMC %>%
+  group_by(Metadata_Well, oneb_Metadata_Treatment_Dose_Inhibitor_Dose) %>%
+  summarize(mean = mean(Metadata_number_of_singlecells))
+# rename mean to n
+cell_count_df_well_PBMC <- rename(cell_count_df_well_PBMC, n = mean)
+
+head(cell_count_df_well_PBMC)
+
+# load the SHSY5Y cell count data
+cell_count_file_shsy5y <- file.path(paste0("../../../1.Exploratory_Data_Analysis/results/SHSY5Y_cell_counts.parquet"))
+cell_count_df_shsy5y <- arrow::read_parquet(cell_count_file_shsy5y)
+# get the counts for each well
+cell_count_df_shsy5y_well <- cell_count_df_shsy5y %>%
+  group_by(Metadata_Well,oneb_Metadata_Treatment_Dose_Inhibitor_Dose) %>%
+  summarize(mean = mean(Metadata_number_of_singlecells))
+# rename mean to n
+cell_count_df_shsy5y_well <- rename(cell_count_df_shsy5y_well, n = mean)
+head(cell_count_df_shsy5y_well)
+
+# get the min max normalized counts for each cell type in a new column
+cell_count_df_well_PBMC$cell_type <- "PBMC"
+cell_count_df_shsy5y_well$cell_type <- "SHSY5Y"
+cell_count_df_well_PBMC$cell_count_norm <- (cell_count_df_well_PBMC$n - min(cell_count_df_well_PBMC$n))/(max(cell_count_df_well_PBMC$n) - min(cell_count_df_well_PBMC$n))
+cell_count_df_shsy5y_well$cell_count_norm <- (cell_count_df_shsy5y_well$n - min(cell_count_df_shsy5y_well$n))/(max(cell_count_df_shsy5y_well$n) - min(cell_count_df_shsy5y_well$n))
+
+# merge the PBMC and SHSY5Y cell count data
+all_count_data <- rbind(cell_count_df_well_PBMC, cell_count_df_shsy5y_well)
+head(all_count_data)
+
+# plate visualization using plate tools
+
+# set plot dimensions
+width <- 4
+height <- 3
+options(repr.plot.width = width, repr.plot.height = height)
+
+suppressWarnings({
+plate_replicate_gg_count_raw <-(
+    platetools::raw_map(
+        data = all_count_data$n,
+        well = all_count_data$Metadata_Well,
+        plate = 384,
+        size = 8
+    )
+    + theme_dark()
+        + theme(
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.text = element_text(size = 18),
+        # increase legend length
+        legend.key.width = unit(2, "cm"),
+        )
+    + theme(legend.title = element_text(size = 18))
+    + theme(axis.text.x = element_text(size = 18,vjust = 0.5, hjust=1))
+    + theme(axis.text.y = element_text(size = 18, vjust = 0.5, hjust=1))
+    + ggplot2::scale_fill_gradient(
+        name = "Cell count  ",
+        low = "lightgreen",
+        high = "darkgreen",
+        limits = c(0, max(all_count_data$n))
+    )
+    + labs(title = "Raw Cell Count")
+    + theme(title = element_text(size = 18, hjust = 0.5))
+
+)
+})
+
+plate_replicate_gg_treatment_min_max <-(
+    platetools::raw_map(
+        data = all_count_data$cell_count_norm,
+        well = all_count_data$Metadata_Well,
+        plate = 384,
+        size = 8,
+
+    )
+    + theme_dark()
+    + theme(
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.text = element_text(size = 18),
+        # increase legend length
+        legend.key.width = unit(2, "cm"),
+        )
+    + theme(legend.title = element_text(size = 18))
+    + theme(axis.text.x = element_text(size = 18,vjust = 0.5, hjust=1))
+    + theme(axis.text.y = element_text(size = 18, vjust = 0.5, hjust=1))
+    # padding between the legend and legend title
+    + theme(legend.margin = margin(t = 0, r = 2, b = 0, l = 2, unit = "cm"))
+
+    + ggplot2::scale_fill_gradient(
+        name = "Cell count  \n(min-max)   ",
+        low = "lightgreen",
+        high = "darkgreen",
+        limits = c(0, max(all_count_data$cell_count_norm))
+    )
+    + labs(title = "Min-Max Normalized Cell Count")
+    + theme(title = element_text(size = 18, hjust = 0.5,vjust = 0.5))
+
+)
+# save the plots
+ggsave(
+    filename = file.path(figs_dir,paste0(cell_type, "_cell_count_plate_raw.png")),
+    plot = plate_replicate_gg_count_raw,
+    width = width,
+    height = height,
+    units = "in"
+)
+ggsave(
+    filename = file.path(figs_dir,paste0(cell_type, "_cell_count_plate_min_max.png")),
+    plot = plate_replicate_gg_treatment_min_max,
+    width = width,
+    height = height,
+    units = "in"
+)
+
+
+width <- 17
+height <- 6
+options(repr.plot.width = width, repr.plot.height = height)
+cell_counts_plots <- plate_replicate_gg_count_raw + plate_replicate_gg_treatment_min_max
+cell_counts_plots
+
 # pathwork for platemaps
 width <- 17
-height <- 16
+height <- 23
 options(repr.plot.width = width, repr.plot.height = height)
 
 layout <- c(
     area(t=1, b=1, l=1, r=1),
-    area(t=2, b=2, l=1, r=1)
+    area(t=2, b=2, l=1, r=1),
+    area(t=3, b=3, l=1, r=1)
 )
 
 patch_plot <- (
     platemap_plot_inhibitor_dose
     + platemap_plot_inducer_dose
+    + wrap_elements(full = cell_counts_plots)
     + plot_layout(design = layout)
+    + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
+
 )
 patch_plot
 # set save path for patchwork plot

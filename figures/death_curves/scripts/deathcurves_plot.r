@@ -17,7 +17,7 @@ head(death_df)
 # death percentage
 # drop the NA values
 death_df <- death_df[!is.na(death_df$Dead_cells),]
-death_df$percentage_dead_cells <- death_df$Dead_cells/(death_df$Dead_cells + death_df$Live_cells)	*100
+death_df$percentage_dead_cells <- death_df$Dead_cells/(death_df$Dead_cells + death_df$Live_cells)*100
 death_df$treatment <- paste0(death_df$Compound," ",death_df$Dose," ",death_df$dose_unit, " ",death_df$time, " ", death_df$time_unit)
 # aggregate data by treatment
 death_df_agg <- death_df %>% group_by(treatment, Compound, dose_unit) %>% summarise(mean_death = mean(percentage_dead_cells), sd_death = sd(percentage_dead_cells), time = mean(time), dose = mean(Dose))
@@ -25,15 +25,6 @@ death_df_agg <- death_df %>% group_by(treatment, Compound, dose_unit) %>% summar
 death_df_agg$dose <- factor(death_df_agg$dose,levels = c("0","0.1","1","10"))
 death_df_agg$treatment <- paste0(death_df_agg$Compound," ",death_df_agg$dose, " ",death_df_agg$dose_unit)
 # factorize treatment
-unique(death_df_agg$treatment)
-death_df_agg$treatment <- factor(death_df_agg$treatment,levels = c(
-    'Media 0 ',
-    'DMSO 0.1 %',
-    'LPS 1 ug/mL',
-    'LPS 10 ug/mL',
-    'Thapsi 1 uM',
-    'Thapsi 10 uM'
-))
 unique(death_df_agg$treatment)
 
 # gsub
@@ -96,10 +87,7 @@ ggsave(oputput_figure_path, plot = death_curve_plot, width = width, height = hei
 death_curve_plot
 
 # zoom in the plot
-death_curve_plot <- (
-    death_curve_plot
-    + ylim(0, 50)
-)
+death_curve_plot <- (death_curve_plot + ylim(0, 50))
 death_curve_plot
 oputput_figure_zoomed_path <- file.path(output_path,"death_curve_zoomed.png")
 ggsave(oputput_figure_zoomed_path, plot = death_curve_plot, width = width, height = height, units = "in")

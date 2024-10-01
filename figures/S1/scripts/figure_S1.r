@@ -241,8 +241,8 @@ platemap_plot_inducer_dose <- (
         # title
     + ggtitle("Inducer + Dose Platemap")
     + theme(plot.title = element_text(size = 28, hjust = 0.5))
-    + theme(axis.text.x = element_text(size = 18,vjust = 0.5, hjust=1))
-    + theme(axis.text.y = element_text(size = 18, vjust = 0.5, hjust=1))
+    + theme(axis.text.x = element_text(size = 12,vjust = 0.5, hjust=0.5))
+    + theme(axis.text.y = element_text(size = 12, vjust = 0.5, hjust=0.5))
 
 )
 ggsave(inducer_well_dose_platemap, platemap_plot_inducer_dose, width=8, height=8, dpi=500)
@@ -286,8 +286,6 @@ platemap_df$inhibitor_conc <- factor(
     'Z-VAD-FMK 100 µM'
     )
 )
-
-
 
 width <- 17
 height <- 6
@@ -340,13 +338,9 @@ platemap_plot_inhibitor_dose <- (
             )
         )
     # x axis ticks larger
-    + theme(
-        axis.text.x = element_text(size = 16),
-        axis.text.y = element_text(size = 16)
-    )
-        + theme(legend.title = element_text(size = 18))
-    + theme(axis.text.x = element_text(size = 18,vjust = 0.5, hjust=1))
-    + theme(axis.text.y = element_text(size = 18, vjust = 0.5, hjust=1))
+    + theme(legend.title = element_text(size = 18))
+    + theme(axis.text.x = element_text(size = 12,vjust = 0.5, hjust=0.5))
+    + theme(axis.text.y = element_text(size = 12, vjust = 0.5, hjust=0.5))
     # title
     + ggtitle("Inhibitor + Dose Platemap")
     + theme(plot.title = element_text(size = 28, hjust = 0.5))
@@ -546,7 +540,7 @@ cell_count_df_PBMC <- arrow::read_parquet(cell_count_file_PBMC)
 cell_count_df_well_PBMC <- cell_count_df_PBMC %>%
   group_by(Metadata_Well, oneb_Metadata_Treatment_Dose_Inhibitor_Dose) %>%
   summarize(mean = mean(Metadata_number_of_singlecells))
-# rename mean to n
+# rename mean to n where n is the count of cells per well
 cell_count_df_well_PBMC <- rename(cell_count_df_well_PBMC, n = mean)
 
 head(cell_count_df_well_PBMC)
@@ -558,7 +552,7 @@ cell_count_df_shsy5y <- arrow::read_parquet(cell_count_file_shsy5y)
 cell_count_df_shsy5y_well <- cell_count_df_shsy5y %>%
   group_by(Metadata_Well,oneb_Metadata_Treatment_Dose_Inhibitor_Dose) %>%
   summarize(mean = mean(Metadata_number_of_singlecells))
-# rename mean to n
+# rename mean to n where n is the count of cells per well
 cell_count_df_shsy5y_well <- rename(cell_count_df_shsy5y_well, n = mean)
 head(cell_count_df_shsy5y_well)
 
@@ -585,7 +579,7 @@ plate_replicate_gg_count_raw <-(
         data = all_count_data$n,
         well = all_count_data$Metadata_Well,
         plate = 384,
-        size = 8
+        size = 10
     )
     + theme_dark()
         + theme(
@@ -596,8 +590,8 @@ plate_replicate_gg_count_raw <-(
         legend.key.width = unit(2, "cm"),
         )
     + theme(legend.title = element_text(size = 18))
-    + theme(axis.text.x = element_text(size = 18,vjust = 0.5, hjust=1))
-    + theme(axis.text.y = element_text(size = 18, vjust = 0.5, hjust=1))
+    + theme(axis.text.x = element_text(size = 12,vjust = 0.5, hjust=0.5))
+    + theme(axis.text.y = element_text(size = 12, vjust = 0.5, hjust=0.5))
     + ggplot2::scale_fill_gradient(
         name = "Cell count  ",
         low = "lightgreen",
@@ -615,7 +609,7 @@ plate_replicate_gg_treatment_min_max <-(
         data = all_count_data$cell_count_norm,
         well = all_count_data$Metadata_Well,
         plate = 384,
-        size = 8,
+        size = 10
 
     )
     + theme_dark()
@@ -627,8 +621,8 @@ plate_replicate_gg_treatment_min_max <-(
         legend.key.width = unit(2, "cm"),
         )
     + theme(legend.title = element_text(size = 18))
-    + theme(axis.text.x = element_text(size = 18,vjust = 0.5, hjust=1))
-    + theme(axis.text.y = element_text(size = 18, vjust = 0.5, hjust=1))
+    + theme(axis.text.x = element_text(size = 12,vjust = 0.5, hjust=0.5))
+    + theme(axis.text.y = element_text(size = 12, vjust = 0.5, hjust=0.5))
     # padding between the legend and legend title
     + theme(legend.margin = margin(t = 0, r = 2, b = 0, l = 2, unit = "cm"))
 

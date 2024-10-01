@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
+import argparse
 import pathlib
 import warnings
 
@@ -26,21 +27,15 @@ from statsmodels.stats.multicomp import pairwise_tukeyhsd
 # In[ ]:
 
 
-cell_type = "SHSY5Y"
+# parse command line arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("--cell_type", help="cell type to analyze", type=str, default="all")
+
+args = parser.parse_args()
+cell_type = args.cell_type
 
 
 # In[ ]:
-
-
-# # parse command line arguments
-# parser = argparse.ArgumentParser()
-# parser.add_argument("--cell_type", help="cell type to analyze", type=str, default="all")
-
-# args = parser.parse_args()
-# cell_type = args.cell_type
-
-
-# In[4]:
 
 
 # Import Data
@@ -54,7 +49,7 @@ output_file = pathlib.Path(f"../features/{cell_type}_feature_index.txt")
 output_file.parent.mkdir(parents=True, exist_ok=True)
 
 
-# In[5]:
+# In[ ]:
 
 
 df_metadata = df.filter(regex="Metadata")

@@ -24,11 +24,15 @@ cell_type=${cell_types[$cell_type_idx]}
 
 cd scripts
 
-command="python 0.split_data_regression.py"
 
 echo $cell_type
+command1="python 0.split_data_regression.py"
+command2="python 1.get_cytokine_list.py"
+command3="python 2.LOCO_data_split.py"
 
-$command --cell_type "$cell_type"
+$command1 --cell_type "$cell_type"
+$command2
+$command3 --cell_type "$cell_type"
 
 cd ../
 

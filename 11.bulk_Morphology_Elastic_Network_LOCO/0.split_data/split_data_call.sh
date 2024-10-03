@@ -3,16 +3,15 @@
 
 #SBATCH --nodes=1
 #SBATCH --ntasks=2
-#SBATCH --mem=300G
-#SBATCH --partition=amem
-#SBATCH --qos=mem
-#SBATCH --time=24:00:00
+#SBATCH --partition=amilan
+#SBATCH --qos=normal
+#SBATCH --time=30:00
 #SBATCH --output=sample-%j.out
-#SBATCH --array=1
+#SBATCH --array=1-2%2
 
 module load anaconda
 
-conda activate Interstellar
+conda activate Interstellar_python
 
 # define the search parameters
 cell_types=( "PBMC" "SHSY5Y" )
@@ -31,5 +30,6 @@ echo $cell_type
 
 $command --cell_type "$cell_type"
 
-
 cd ../
+
+echo "Complete"

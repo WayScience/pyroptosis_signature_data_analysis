@@ -2,10 +2,10 @@
 # This script is used to train the regression models for the elastic network
 
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
+#SBATCH --mem=24G
 #SBATCH --partition=amilan
 #SBATCH --qos=normal
-#SBATCH --time=15:00
+#SBATCH --time=30:00
 #SBATCH --output=sample_train-%j.out
 #SBATCH --array=1-2%1
 
@@ -19,7 +19,8 @@ conda activate Interstellar_python
 # get the args
 cell_type=$1
 shuffle=$2
-feature_columns=$3
+feature_combinations_key=$3
+feature_combinations_file=$4
 
 # get the array of cytokines
 filename="../0.split_data/cytokine_list/cytokine_list.txt"
@@ -41,7 +42,7 @@ command="python 1.train_regression_multi_output.py"
 
 echo "$cell_type $shuffle $cytokine"
 
-$command --cell_type "$cell_type" --shuffle "$shuffle" --cytokine "$cytokine" --feature_columns "$feature_columns"
+$command --cell_type "$cell_type" --shuffle "$shuffle" --cytokine "$cytokine" --feature_combinations_key "$feature_combinations_key" --feature_combinations_file "$feature_combinations_file"
 
 cd ../
 

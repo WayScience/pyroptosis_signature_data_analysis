@@ -19,17 +19,12 @@ conda init bash
 conda activate Interstellar_python
 
 # get the array of cytokiens
-feature_combination_file="../0.split_data/results/feature_combinations_PBMC.toml"
+feature_combination_file="../../0.split_data/results/feature_combinations_PBMC.toml"
+feature_combination_key_file="../../0.split_data/results/feature_combinations_keys_PBMC.txt"
 
 # get all of the feature combinations
-# feature cominations array
-feature_combinations=()
-for combination in $(tomlq '. | keys' $feature_combination_file | jq -r '.[]'); do
-    echo $combination
-    output=$(tomlq -r ".$combination[]" "$feature_combination_file")
-    python_list=$(echo "$output" | awk '{printf "%s", ($0 ~ /^[^"]*$/ ? "\""$0"\"" : $0) (NR==NF ? "" : ", ")}' | sed 's/^/[/; s/$/]/')
-    feature_combinations+=( "$python_list" )
-done
+# read all lines of the file to an array
+readarray -t feature_combination_keys < $feature_combination_key_file
 
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=./scripts/ ./notebooks/*.ipynb
@@ -41,10 +36,10 @@ cell_types=( SHSY5Y PBMC )
 job_id=$((SLURM_ARRAY_TASK_ID - 1))
 shuffle_idx=$((job_id % ${#shuffles[@]}))
 cell_type_idx=$(((job_id / ${#shuffles[@]}) % ${#cell_types[@]}))
-feature_combination_idx=$(((job_id / ${#shuffles[@]} / ${#cell_types[@]}) % ${#feature_combinations[@]}))
+feature_combination_keys_idx=$(((job_id / ${#shuffles[@]} / ${#cell_types[@]}) % ${#feature_combination_keys[@]}))
 
 shuffle=${shuffles[$shuffle_idx]}
 cell_type=${cell_types[$cell_type_idx]}
-feature_combination=${feature_combinations[$feature_combination_idx]}
+feature_combination=${feature_combination_keys[$feature_combination_keys_idx]}
 
-sbatch train_regression_call.sh $cell_type $shuffle $feature_combination
+sbatch train_regression_call.sh $cell_type $shuffle $feature_combination $feature_combination_file

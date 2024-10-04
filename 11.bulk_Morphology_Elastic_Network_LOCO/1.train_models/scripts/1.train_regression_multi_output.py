@@ -5,7 +5,6 @@
 
 
 import argparse
-import ast
 import itertools
 import pathlib
 import warnings
@@ -30,28 +29,27 @@ from sklearn.model_selection import (
 )
 from sklearn.utils import parallel_backend
 
-
 # In[2]:
 
 
-# argparser = argparse.ArgumentParser()
-# argparser.add_argument("--cell_type", type=str, default="all")
-# argparser.add_argument("--shuffle", type=str, default=False)
-# argparser.add_argument("--cytokine", type=str, default="cytokine")
-# argparser.add_argument("--feature_columns", type=str, default="all")
+argparser = argparse.ArgumentParser()
+argparser.add_argument("--cell_type", type=str, default="all")
+argparser.add_argument("--shuffle", type=str, default=False)
+argparser.add_argument("--cytokine", type=str, default="cytokine")
+argparser.add_argument("--feature_columns", type=str, default="all")
 
-# args = argparser.parse_args()
+args = argparser.parse_args()
 
-# cell_type = args.cell_type
-# shuffle = args.shuffle
-# cytokine = args.cytokine
-# feature_columns = args.feature_columns
+cell_type = args.cell_type
+shuffle = args.shuffle
+cytokine = args.cytokine
+feature_columns = args.feature_columns
 
 
-cell_type = "PBMC"
-cytokine = "IL-1 beta [NSU]"
-shuffle = "False"
-feature_columns = []
+# cell_type = "PBMC"
+# cytokine = "IL-1 beta [NSU]"
+# shuffle = "False"
+# feature_columns = []
 
 print(cell_type, shuffle, cytokine)
 if shuffle == "True":
@@ -102,7 +100,7 @@ data_path = pathlib.Path(
 
 # dataframe with only the labeled data we want (exclude certain phenotypic classes)
 data_df = pd.read_parquet(data_path)
-data_df = data_df[columns]
+data_df = data_df[feature_columns]
 
 data_split_indexes = pd.read_csv(data_split_path, sep="\t")
 
@@ -216,4 +214,3 @@ with open(config_copy_path, "w") as f:
     f.write(f"nomic={nomic}\n")
     f.write(f"cell_type='{cell_type}'\n")
     f.write(f"feature=all\n")
-

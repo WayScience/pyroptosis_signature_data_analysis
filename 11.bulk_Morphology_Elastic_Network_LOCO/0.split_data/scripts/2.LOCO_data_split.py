@@ -1,21 +1,27 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[3]:
 
 
+import argparse
 import pathlib
 
 import pandas as pd
 import toml
 
-# In[2]:
+# In[4]:
 
 
-cell_type = "PBMC"
+argparser = argparse.ArgumentParser()
+argparser.add_argument("--cell_type", default="all")
+
+args = argparser.parse_args()
+
+cell_type = args.cell_type
 
 
-# In[3]:
+# In[5]:
 
 
 # set path to the import data
@@ -31,7 +37,7 @@ data_df = pd.read_parquet(data_path)
 data_df.head()
 
 
-# In[4]:
+# In[6]:
 
 
 # get all of the features
@@ -78,7 +84,7 @@ for feature in features:
                 other_features.append(feature)
 
 
-# In[5]:
+# In[7]:
 
 
 print(f"nuclei_features: {len(nuclei_features)}")
@@ -201,5 +207,9 @@ toml_path = pathlib.Path(f"../results/feature_combinations_{cell_type}.toml")
 with open(toml_path, "w") as f:
     toml.dump(dict_of_feature_combinations, f)
 
-
-# In[ ]:
+# write the keys to a txt file with each key on a new line
+# this is for easy retrieval of the keys in bash
+txt_path = pathlib.Path("../results/feature_combinations_keys.txt")
+with open(txt_path, "w") as f:
+    for key in dict_of_feature_combinations:
+        f.write(f"{key}\n")

@@ -11,6 +11,7 @@ import pandas as pd
 # In[2]:
 
 
+# only need one since all the files are in the same directory
 cell_type = "PBMC"
 
 

@@ -4,6 +4,7 @@
 # In[1]:
 
 
+import argparse
 import itertools
 import pathlib
 
@@ -19,14 +20,12 @@ from sklearn.model_selection import GridSearchCV, StratifiedKFold, train_test_sp
 # In[2]:
 
 
-# argparser = argparse.ArgumentParser()
-# argparser.add_argument("--cell_type", default="all")
+argparser = argparse.ArgumentParser()
+argparser.add_argument("--cell_type", default="all")
 
-# args = argparser.parse_args()
+args = argparser.parse_args()
 
-# cell_type = args.cell_type
-
-cell_type = "PBMC"
+cell_type = args.cell_type
 
 
 # In[3]:

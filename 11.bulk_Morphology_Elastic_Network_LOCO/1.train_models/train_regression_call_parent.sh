@@ -19,8 +19,7 @@ conda init bash
 conda activate Interstellar_python
 
 # get the array of cytokiens
-feature_combination_file="../../0.split_data/results/feature_combinations_PBMC.toml"
-feature_combination_key_file="../../0.split_data/results/feature_combinations_keys_PBMC.txt"
+feature_combination_file="../../0.split_data/results/feature_combinations.toml"
 
 # get all of the feature combinations
 # read all lines of the file to an array
@@ -42,4 +41,4 @@ shuffle=${shuffles[$shuffle_idx]}
 cell_type=${cell_types[$cell_type_idx]}
 feature_combination=${feature_combination_keys[$feature_combination_keys_idx]}
 
-sbatch train_regression_call.sh $cell_type $shuffle $feature_combination $feature_combination_file
+sbatch train_regression_call.sh $cell_type $shuffle $feature_combination

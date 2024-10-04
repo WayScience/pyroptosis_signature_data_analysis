@@ -42,7 +42,7 @@ command="python 1.train_regression_multi_output.py"
 
 echo "$cell_type $shuffle $cytokine"
 
-$command --cell_type "$cell_type" --shuffle "$shuffle" --cytokine "$cytokine" --feature_combinations_key "$feature_combinations_key" --feature_combinations_file "$feature_combinations_file"
+$command --cell_type "$cell_type" --shuffle "$shuffle" --cytokine "$cytokine" --feature_combinations_key "$feature_combinations_key"
 
 cd ../
 

@@ -5,6 +5,7 @@
 
 
 import argparse
+import ast
 import itertools
 import pathlib
 import warnings
@@ -29,6 +30,7 @@ from sklearn.model_selection import (
 )
 from sklearn.utils import parallel_backend
 
+
 # In[2]:
 
 
@@ -36,29 +38,33 @@ argparser = argparse.ArgumentParser()
 argparser.add_argument("--cell_type", type=str, default="all")
 argparser.add_argument("--shuffle", type=str, default=False)
 argparser.add_argument("--cytokine", type=str, default="cytokine")
-argparser.add_argument("--feature_columns", type=str, default="all")
+argparser.add_argument("--feature_combinations_key", type=str, default="all")
 
 args = argparser.parse_args()
 
 cell_type = args.cell_type
 shuffle = args.shuffle
 cytokine = args.cytokine
-feature_columns = args.feature_columns
+feature_combinations_key = args.feature_combinations_key
 
 
 # cell_type = "PBMC"
 # cytokine = "IL-1 beta [NSU]"
 # shuffle = "False"
-# feature_columns = []
+# feature_combinations_key = "CorrDNA"
 
-print(cell_type, shuffle, cytokine)
+
 if shuffle == "True":
     shuffle = True
 elif shuffle == "False":
     shuffle = False
 else:
     raise ValueError("shuffle must be True or False")
+
+print(f"cell_type: {cell_type}")
+print(f"cytokine: {cytokine}")
 print(f"shuffle: {shuffle}")
+print(f"feature_combinations_key: {feature_combinations_key}")
 
 
 # In[3]:
@@ -90,17 +96,27 @@ MODEL_TYPE = "regression"
 # load training data from indexes and features dataframe
 data_split_path = pathlib.Path(
     f"../../0.split_data/indexes/{cell_type}/regression/aggregated_sc_and_nomic_data_split_indexes.tsv"
-)
-feature_combinations_path = pathlib.Path(
+).resolve(strict=True)
+
+feature_combinations_file_path = pathlib.Path(
     f"../../0.split_data/results/feature_combinations_{cell_type}.toml"
-).resolve()
+).resolve(strict=True)
+
 data_path = pathlib.Path(
     f"../../../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
-)
+).resolve(strict=True)
+
+feature_combination_key_file = pathlib.Path(
+    f"../../0.split_data/results/feature_combinations_keys_{cell_type}.txt"
+).resolve(strict=True)
+
+# load the feature combinations file
+feature_combinations = toml.load(feature_combinations_file_path)
+feature_combinations_columns = feature_combinations[feature_combinations_key]
 
 # dataframe with only the labeled data we want (exclude certain phenotypic classes)
 data_df = pd.read_parquet(data_path)
-data_df = data_df[feature_columns]
+data_df = data_df[feature_combinations_columns]
 
 data_split_indexes = pd.read_csv(data_split_path, sep="\t")
 
@@ -122,7 +138,10 @@ labeled_data = training_data["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"]
 data_y_cols = data_x.filter(regex="NSU").columns
 train_y = training_data[data_y_cols]
 train_x = data_x.drop(data_y_cols, axis=1)
-train_x = train_x.drop(columns="oneb_Treatment_Dose_Inhibitor_Dose")
+# drop the oneb_Treatment_Dose_Inhibitor_Dose column if it exists
+if "oneb_Treatment_Dose_Inhibitor_Dose" in train_x.columns:
+
+    train_x = train_x.drop(columns="oneb_Treatment_Dose_Inhibitor_Dose")
 loo = LeaveOneOut()
 loo.get_n_splits(train_y)
 
@@ -136,12 +155,12 @@ model = ElasticNetCV(
     fit_intercept=True,
     selection="random",
 )
-# train model on training data on all combinations of model types, feature types, and phenotypic classes
 
 
 # In[8]:
 
 
+# train model on training data on all combinations of model types, feature types, and phenotypic classes
 if shuffle == "shuffled_baseline":
     print("Shuffling data")
     for column in train_x:
@@ -185,12 +204,12 @@ pathlib.Path(results_dir).mkdir(parents=True, exist_ok=True)
 if shuffle == "shuffled_baseline":
     dump(
         model,
-        f"{results_dir}/{cytokine}_shuffled_baseline__all_nomic.joblib",
+        f"{results_dir}/{cytokine}_{feature_combinations_key}_shuffled_baseline__all_nomic.joblib",
     )
 elif shuffle == "final":
     dump(
         model,
-        f"{results_dir}/{cytokine}_final__all_nomic.joblib",
+        f"{results_dir}/{cytokine}_{feature_combinations_key}_final__all_nomic.joblib",
     )
 else:
     print("Error")
@@ -199,10 +218,12 @@ else:
 # use pathlib
 if shuffle == "shuffled_baseline":
     config_copy_path = pathlib.Path(
-        f"{results_dir}/{cytokine}_shuffled_baseline__all_nomic.toml"
+        f"{results_dir}/{cytokine}_{feature_combinations_key}_shuffled_baseline__all_nomic.toml"
     )
 elif shuffle == "final":
-    config_copy_path = pathlib.Path(f"{results_dir}/{cytokine}_final__all_nomic.toml")
+    config_copy_path = pathlib.Path(
+        f"{results_dir}/{cytokine}_{feature_combinations_key}_final__all_nomic.toml"
+    )
 else:
     print("Error")
 
@@ -213,4 +234,7 @@ with open(config_copy_path, "w") as f:
     f.write(f"aggregation={aggregation}\n")
     f.write(f"nomic={nomic}\n")
     f.write(f"cell_type='{cell_type}'\n")
-    f.write(f"feature=all\n")
+    f.write(f"cytokine='{cytokine}'\n")
+    f.write(f"feature_combinations_key='{feature_combinations_key}'\n")
+    f.write(f"feature_combinations_file='{feature_combinations_file}'\n")
+

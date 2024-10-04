@@ -2,19 +2,21 @@
 # This script is used to train the regression models for the elastic network
 
 #SBATCH --nodes=1
-#SBATCH --ntasks=16
+#SBATCH --ntasks=1
 #SBATCH --partition=amilan
-#SBATCH --qos=long
-#SBATCH --time=72:00:00
-#SBATCH --output=sample-%j.out
-#SBATCH --array=1-128%16
+#SBATCH --qos=normal
+#SBATCH --time=10:00
+#SBATCH --output=sample_parent-%j.out
+#SBATCH --array=1-2%2
 
 # 32 channel combination * 2 cell types * 2 shuffles = 128
 # run the array at 16 tasks per node at one node for 72 hours
 
 module load anaconda
 
-conda activate Interstellar
+conda init bash
+
+conda activate Interstellar_python
 
 # get the array of cytokiens
 feature_combination_file="../0.split_data/results/feature_combinations_PBMC.toml"
@@ -24,15 +26,13 @@ feature_combination_file="../0.split_data/results/feature_combinations_PBMC.toml
 feature_combinations=()
 for combination in $(tomlq '. | keys' $feature_combination_file | jq -r '.[]'); do
     echo $combination
-    echo tomlq -r ".$combination[]" $feature_combination_file
     output=$(tomlq -r ".$combination[]" "$feature_combination_file")
     python_list=$(echo "$output" | awk '{printf "%s", ($0 ~ /^[^"]*$/ ? "\""$0"\"" : $0) (NR==NF ? "" : ", ")}' | sed 's/^/[/; s/$/]/')
-    echo $python_list
     feature_combinations+=( "$python_list" )
 done
 
 
-jupyter nbconvert --to=script --FilesWriter.build_directory=. ../notebooks/*.ipynb
+jupyter nbconvert --to=script --FilesWriter.build_directory=./scripts/ ./notebooks/*.ipynb
 
 shuffles=( True False )
 cell_types=( SHSY5Y PBMC )
@@ -47,4 +47,4 @@ shuffle=${shuffles[$shuffle_idx]}
 cell_type=${cell_types[$cell_type_idx]}
 feature_combination=${feature_combinations[$feature_combination_idx]}
 
-sbatch train_regression_call_parent.sh $cell_type $shuffle $feature_combination
+sbatch train_regression_call.sh $cell_type $shuffle $feature_combination

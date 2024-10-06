@@ -5,9 +5,9 @@
 #SBATCH --ntasks=1
 #SBATCH --partition=amilan
 #SBATCH --qos=normal
-#SBATCH --time=10:00
+#SBATCH --time=1:00:00
 #SBATCH --output=sample_parent-%j.out
-#SBATCH --array=1-2%2
+#SBATCH --array=1-128
 
 # 32 channel combination * 2 cell types * 2 shuffles = 128
 # run the array at 16 tasks per node at one node for 72 hours
@@ -19,7 +19,7 @@ conda init bash
 conda activate Interstellar_python
 
 # get the array of cytokiens
-feature_combination_file="../../0.split_data/results/feature_combinations.toml"
+feature_combination_key_file="../0.split_data/results/feature_combinations_keys.txt"
 
 # get all of the feature combinations
 # read all lines of the file to an array

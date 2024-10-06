@@ -2,12 +2,12 @@
 # This script is used to train the regression models for the elastic network
 
 #SBATCH --nodes=1
-#SBATCH --mem=24G
+#SBATCH --mem=250M
 #SBATCH --partition=amilan
 #SBATCH --qos=normal
-#SBATCH --time=30:00
+#SBATCH --time=1:30:00
 #SBATCH --output=sample_train-%j.out
-#SBATCH --array=1-2%1
+#SBATCH --array=1-187%25
 
 # 1 cell type * 1 shuffle type * 187 cytokines = 187 per child script
 # run the array at 50 tasks per node at one node for 15 minutes

@@ -107,7 +107,7 @@ data_path = pathlib.Path(
 ).resolve(strict=True)
 
 feature_combination_key_file = pathlib.Path(
-    f"../../0.split_data/results/feature_combinations_keys_{cell_type}.txt"
+    f"../../0.split_data/results/feature_combinations_keys.txt"
 ).resolve(strict=True)
 
 # load the feature combinations file
@@ -236,5 +236,4 @@ with open(config_copy_path, "w") as f:
     f.write(f"cell_type='{cell_type}'\n")
     f.write(f"cytokine='{cytokine}'\n")
     f.write(f"feature_combinations_key='{feature_combinations_key}'\n")
-    f.write(f"feature_combinations_file='{feature_combinations_file}'\n")
 

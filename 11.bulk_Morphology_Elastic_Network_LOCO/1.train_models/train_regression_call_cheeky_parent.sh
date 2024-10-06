@@ -54,7 +54,7 @@ do
                     number_of_jobs=$(squeue -u $USER | wc -l)
                 done
 
-                sbatch train_regression_call_cheeky_child.sh $cell_type $shuffle $feature_cmbination ${cytokine}
+                sbatch train_regression_call_cheeky_child.sh "$cell_type" "$shuffle" "$feature_combination" "$cytokine"
 		echo "$cell_type $shuffle $feature_combination '${cytokine}'"
 	    done
         done

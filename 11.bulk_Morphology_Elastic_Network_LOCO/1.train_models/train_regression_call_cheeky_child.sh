@@ -19,28 +19,15 @@ conda activate Interstellar_python
 cell_type=$1
 shuffle=$2
 feature_combinations_key=$3
+cytokine=$4
 
-# get the array of cytokines
-filename="../0.split_data/cytokine_list/cytokine_list.txt"
-# read all lines of the file to an array
-readarray -t cytokine_array < $filename
+echo "$cell_type $shuffle $feature_combination_keys $cytokine"
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=./scripts/ ./notebooks/*.ipynb
 
-# calculate the number of jobs
-# calculate the number of jobs
-job_id=$((SLURM_ARRAY_TASK_ID - 1))
-cytokine_idx=$(((job_id % ${#cytokine_array[@]})))
-
-cytokine=${cytokine_array[$cytokine_idx]}
-
 cd scripts/
 
-command="python 1.train_regression_multi_output.py"
-
-echo "$cell_type $shuffle $cytokine"
-
-$command --cell_type "$cell_type" --shuffle "$shuffle" --cytokine "$cytokine" --feature_combinations_key "$feature_combinations_key"
+#python 1.train_regression_multi_output.py --cell_type "$cell_type" --shuffle "$shuffle" --cytokine "$cytokine" --feature_combinations_key "$feature_combinations_key"
 
 cd ../
 

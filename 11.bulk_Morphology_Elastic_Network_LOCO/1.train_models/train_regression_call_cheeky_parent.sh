@@ -35,8 +35,8 @@ shuffles=( True False )
 cell_types=( SHSY5Y PBMC )
 
 # get the first element of the array for testing
-cytokine_array=${cytokine_array[0]}
-feature_combination_keys=${feature_combination_keys[0]}
+#cytokine_array=${cytokine_array[0]}
+#feature_combination_keys=${feature_combination_keys[0]}
 
 for cell_type in "${cell_types[@]}"
 do
@@ -46,20 +46,19 @@ do
         do
             for cytokine in "${cytokine_array[@]}"
             do
-                echo "$cell_type $shuffle $feature_combination $cytokine"
 
                 # get the number of jobs for the user
                 number_of_jobs=$(squeue -u $USER | wc -l)
                 while [ $number_of_jobs -gt 2 ]; do
-                    sleep 5s
+                    sleep 1s
                     number_of_jobs=$(squeue -u $USER | wc -l)
                 done
 
-                sbatch train_regression_call.sh $cell_type $shuffle $feature_combination $cytokine
-            done
+                sbatch train_regression_call_cheeky_child.sh $cell_type $shuffle $feature_cmbination ${cytokine}
+		echo "$cell_type $shuffle $feature_combination '${cytokine}'"
+	    done
         done
     done
 done
 
-
-# sbatch train_regression_call.sh $cell_type $shuffle $feature_combination
+echo "Array complete"

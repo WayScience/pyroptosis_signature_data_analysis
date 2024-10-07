@@ -62,6 +62,11 @@ while IFS= read -r line; do
     status=$(sacct -j "$job_id" --format=State --noheader | awk 'NR==1{print $1}')
     echo "Job ID: $job_id"
     echo "Status: $status"
+    echo "Cell type: $cell_type"
+    echo "Shuffle: $shuffle"
+    echo "Feature combination: $feature_combination"
+    echo "Cytokine: $cytokine"
+    echo "---------------------------------"
     # Display the status of the job
     # Check if the job has completed successfully or failed
     if [[ "$status" == "COMPLETED" ]]; then
@@ -69,13 +74,13 @@ while IFS= read -r line; do
         echo "$job_id" >> "$completed_jobs_file"
     elif [[ "$status" == "FAILED" ]]; then
         failed_counter=$((failed_counter+1))
-        echo "$job_id" >> "$failed_jobs_file"
+        echo " '$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> "$failed_jobs_file"
     elif [[ "$status" == "TIMEOUT" ]]; then
         timeout_counter=$((timeout_counter+1))
-        echo "$job_id" >> "$timeout_jobs_file"
+        echo " '$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> "$timeout_jobs_file"
     else
         other_counter=$((other_counter+1))
-        echo "$job_id" >> "$other_jobs_file"
+        echo " '$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> "$other_jobs_file"
     fi
 done < "$jids_file"
 

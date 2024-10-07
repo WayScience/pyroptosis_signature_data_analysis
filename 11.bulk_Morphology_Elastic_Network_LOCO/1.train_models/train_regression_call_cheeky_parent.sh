@@ -51,7 +51,7 @@ do
 
                 # get the number of jobs for the user
                 number_of_jobs=$(squeue -u $USER | wc -l)
-                while [ $number_of_jobs -gt 990 ]; do
+                while [ $number_of_jobs -gt 3 ]; do
                     sleep 1s
                     number_of_jobs=$(squeue -u $USER | wc -l)
                 done
@@ -60,13 +60,19 @@ do
 		        echo "$cell_type $shuffle $feature_combination '${cytokine}'"
                 # append the job id to the file
                 job_id=$(echo $job_id | awk '{print $4}')
+<<<<<<< HEAD
                 echo " '$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> job_ids.txt
+=======
+                echo "$job_id" >> job_ids.txt
+>>>>>>> 06fcbbf9 (testing)
 	        done
         done
     done
 done
 
 echo "Array complete"
+
+sbatch check_job_status.sh
 
 # end this job once reaching this point
 exit 0

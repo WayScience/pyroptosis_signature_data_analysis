@@ -37,17 +37,17 @@ for job_id in "${job_ids[@]}"; do
     echo "$status"
     # Check if the job has completed successfully or failed
     if [[ "$status" == "COMPLETED" ]]; then
-    completed_counter=$((completed_counter+1))
-    echo "$job_id" >> $completed_jobs_file
+        completed_counter=$((completed_counter+1))
+        echo "$job_id" >> $completed_jobs_file
     elif [[ "$status" == "FAILED" ]]; then
-    failed_counter=$((failed_counter+1))
-    echo "$job_id" >> $failed_jobs_file
+        failed_counter=$((failed_counter+1))
+        echo "$job_id" >> $failed_jobs_file
     elif [[ "$status" == "TIMEOUT" ]]; then
-    timeout_counter=$((timeout_counter+1))
-    echo "$job_id" >> $timeout_jobs_file
+        timeout_counter=$((timeout_counter+1))
+        echo "$job_id" >> $timeout_jobs_file
     else
-    other_counter=$((other_counter+1))
-    echo "$job_id" >> $other_jobs_file
+        other_counter=$((other_counter+1))
+        echo "$job_id" >> $other_jobs_file
     fi
 done
 

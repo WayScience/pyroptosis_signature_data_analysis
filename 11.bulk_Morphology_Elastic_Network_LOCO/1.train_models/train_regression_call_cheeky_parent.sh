@@ -59,6 +59,7 @@ do
                 job_id=$(sbatch train_regression_call_cheeky_child.sh "$cell_type" "$shuffle" "$feature_combination" "$cytokine")
 		        echo "$cell_type $shuffle $feature_combination '${cytokine}'"
                 # append the job id to the file
+                job_id=$(echo $job_id | awk '{print $4}')
                 "$job_id \n" >> job_ids.txt
 	        done
         done

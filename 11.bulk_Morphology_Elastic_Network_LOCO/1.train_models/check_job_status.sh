@@ -44,17 +44,16 @@ for job_id in "${job_ids[@]}"; do
     # Check if the job has completed successfully or failed
     if [[ "$status" == "COMPLETED" ]]; then
     completed_counter=$((completed_counter+1))
-    $job_id >> $completed_jobs_file
+    echo "$job_id" >> $completed_jobs_file
     elif [[ "$status" == "FAILED" ]]; then
     failed_counter=$((failed_counter+1))
-    $job_id >> $failed_jobs_file
+    echo "$job_id" >> $failed_jobs_file
     elif [[ "$status" == "TIMEOUT" ]]; then
     timeout_counter=$((timeout_counter+1))
-    $job_id >> $timeout_jobs_file
+    echo "$job_id" >> $timeout_jobs_file
     else
     other_counter=$((other_counter+1))
-    echo "Job $job_id is still in progress or in another state: $status"
-    $job_id >> $other_jobs_file
+    echo "$job_id" >> $other_jobs_file
     fi
 done
 

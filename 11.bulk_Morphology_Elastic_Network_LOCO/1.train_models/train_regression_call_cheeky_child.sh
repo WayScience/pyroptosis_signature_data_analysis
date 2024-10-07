@@ -26,8 +26,7 @@ echo "$cell_type $shuffle $feature_combination_key $cytokine"
 jupyter nbconvert --to=script --FilesWriter.build_directory=./scripts/ ./notebooks/*.ipynb
 
 cd scripts/
-
-#python 1.train_regression_multi_output.py --cell_type "$cell_type" --shuffle "$shuffle" --cytokine "$cytokine" --feature_combinations_key "$feature_combinations_key"
+python 1.train_regression_multi_output.py --cell_type "$cell_type" --shuffle "$shuffle" --cytokine "$cytokine" --feature_combinations_key "$feature_combinations_key"
 
 cd ../
 

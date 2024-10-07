@@ -8,13 +8,10 @@
 #SBATCH --time=24:00:00
 #SBATCH --output=sample_parent-%j.out
 
-
 # 32 channel combination * 2 cell types * 2 shuffles * 187 cytokines = 23936
 
 module load anaconda
-
 conda init bash
-
 conda activate Interstellar_python
 
 # get the array of cytokiens
@@ -54,7 +51,7 @@ do
 
                 # get the number of jobs for the user
                 number_of_jobs=$(squeue -u $USER | wc -l)
-                while [ $number_of_jobs -gt 2 ]; do
+                while [ $number_of_jobs -gt 990 ]; do
                     sleep 1s
                     number_of_jobs=$(squeue -u $USER | wc -l)
                 done

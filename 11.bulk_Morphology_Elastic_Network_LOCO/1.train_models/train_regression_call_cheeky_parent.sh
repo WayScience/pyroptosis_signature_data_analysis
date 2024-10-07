@@ -5,7 +5,7 @@
 #SBATCH --ntasks=1
 #SBATCH --partition=amilan
 #SBATCH --qos=long
-#SBATCH --time=96:00:00
+#SBATCH --time=24:00:00
 #SBATCH --output=sample_parent-%j.out
 
 
@@ -34,9 +34,14 @@ jupyter nbconvert --to=script --FilesWriter.build_directory=./scripts/ ./noteboo
 shuffles=( True False )
 cell_types=( SHSY5Y PBMC )
 
-# get the first element of the array for testing
-#cytokine_array=${cytokine_array[0]}
-#feature_combination_keys=${feature_combination_keys[0]}
+# for testing purposes get the first 2 cytokines
+# and the first 2 feature combinations
+cytokine_array=( "${cytokine_array[@]:0:2}" )
+feature_combination_keys=( "${feature_combination_keys[@]:0:2}" )
+
+
+# make a file to store the job ids
+touch job_ids.txt
 
 for cell_type in "${cell_types[@]}"
 do
@@ -54,11 +59,16 @@ do
                     number_of_jobs=$(squeue -u $USER | wc -l)
                 done
 
-                sbatch train_regression_call_cheeky_child.sh "$cell_type" "$shuffle" "$feature_combination" "$cytokine"
-		echo "$cell_type $shuffle $feature_combination '${cytokine}'"
-	    done
+                job_id=$(sbatch train_regression_call_cheeky_child.sh "$cell_type" "$shuffle" "$feature_combination" "$cytokine")
+		        echo "$cell_type $shuffle $feature_combination '${cytokine}'"
+                # append the job id to the file
+                "$job_id \n" >> job_ids.txt
+	        done
         done
     done
 done
 
 echo "Array complete"
+
+# end this job once reaching this point
+exit 0

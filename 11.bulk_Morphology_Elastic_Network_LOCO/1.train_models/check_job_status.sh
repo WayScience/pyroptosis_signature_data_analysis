@@ -32,15 +32,9 @@ other_counter=0
 for job_id in "${job_ids[@]}"; do
     total_counter=$((total_counter+1))
     status=$(sacct -j "$job_id" --format=State --noheader | awk '{print $1}')
-    # Check if sacct returns any result
-    if [ -z "$status" ]; then
-    echo "Job $job_id not found."
-    $job_id >> $other_jobs_file
-    continue
-    fi
 
     # Display the status of the job
-    echo "Job $job_id status: $status"
+    echo "$status"
     # Check if the job has completed successfully or failed
     if [[ "$status" == "COMPLETED" ]]; then
     completed_counter=$((completed_counter+1))

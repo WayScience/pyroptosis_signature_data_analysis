@@ -60,7 +60,7 @@ do
 		        echo "$cell_type $shuffle $feature_combination '${cytokine}'"
                 # append the job id to the file
                 job_id=$(echo $job_id | awk '{print $4}')
-                "$job_id \n" >> job_ids.txt
+                echo " '$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> job_ids.txt
 	        done
         done
     done

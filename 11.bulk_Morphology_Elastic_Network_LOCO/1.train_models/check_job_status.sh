@@ -8,6 +8,9 @@
 #SBATCH --time=5:00
 #SBATCH --output=job_status_check-%j.out
 
+
+remove_files="False"
+
 # get the file with the job ids
 jids_file="job_ids.txt"
 
@@ -16,11 +19,30 @@ completed_jobs_file="completed_jobs.txt"
 failed_jobs_file="failed_jobs.txt"
 timeout_jobs_file="timeout_jobs.txt"
 other_jobs_file="other_jobs.txt"
-touch $completed_jobs_file $failed_jobs_file $timeout_jobs_file $other_jobs_file
+
+if remove_files == "True"; then
+    # check if the files exist, delete them if they do
+    # create if they do not exist
+    if [ -f "$completed_jobs_file" ]; then
+        rm $completed_jobs_file
+    fi
+    if [ -f "$failed_jobs_file" ]; then
+        rm $failed_jobs_file
+    fi
+    if [ -f "$timeout_jobs_file" ]; then
+        rm $timeout_jobs_file
+    fi
+    if [ -f "$other_jobs_file" ]; then
+        rm $other_jobs_file
+    fi
+fi
+
+[[ ! -f "$completed_jobs_file" ]] && touch $completed_jobs_file
+[[ ! -f "$failed_jobs_file" ]] && touch $failed_jobs_file
+[[ ! -f "$timeout_jobs_file" ]] && touch $timeout_jobs_file
+[[ ! -f "$other_jobs_file" ]] && touch $other_jobs_file
 
 
-# read all lines of the file to an array
-readarray -t job_ids < $jids_file
 
 # counters
 total_counter=0
@@ -29,7 +51,17 @@ failed_counter=0
 timeout_counter=0
 other_counter=0
 
-for job_id in "${job_ids[@]}"; do
+# read all lines of the file to an array
+readarray -t job_ids < $jids_file
+
+while IFS= read -r line; do
+    # Assuming the line contains job_id, cell_type, shuffle, feature_combination, cytokine
+    job_id=$(echo "$line" | awk '{print $1}')
+    cell_type=$(echo "$line" | awk '{print $2}')
+    shuffle=$(echo "$line" | awk '{print $3}')
+    feature_combination=$(echo "$line" | awk '{print $4}')
+    cytokine=$(echo "$line" | awk '{print $5}')
+
     total_counter=$((total_counter+1))
     status=$(sacct -j "$job_id" --format=State --noheader | awk '{print $1}')
 

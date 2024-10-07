@@ -4,7 +4,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --partition=amilan
-#SBATCH --qos=long
+#SBATCH --qos=normal
 #SBATCH --time=24:00:00
 #SBATCH --output=sample_parent-%j.out
 
@@ -51,7 +51,7 @@ do
 
                 # get the number of jobs for the user
                 number_of_jobs=$(squeue -u $USER | wc -l)
-                while [ $number_of_jobs -gt 3 ]; do
+                while [ $number_of_jobs -gt 32 ]; do
                     sleep 1s
                     number_of_jobs=$(squeue -u $USER | wc -l)
                 done
@@ -60,11 +60,7 @@ do
 		        echo "$cell_type $shuffle $feature_combination '${cytokine}'"
                 # append the job id to the file
                 job_id=$(echo $job_id | awk '{print $4}')
-<<<<<<< HEAD
                 echo " '$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> job_ids.txt
-=======
-                echo "$job_id" >> job_ids.txt
->>>>>>> 06fcbbf9 (testing)
 	        done
         done
     done

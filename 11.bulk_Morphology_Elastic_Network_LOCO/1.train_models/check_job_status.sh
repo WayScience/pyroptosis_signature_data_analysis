@@ -8,33 +8,29 @@
 #SBATCH --time=5:00
 #SBATCH --output=job_status_check-%j.out
 
-
-remove_files="False"
-
 # get the file with the job ids
 jids_file="job_ids.txt"
 
 # define each job status file to be created
-completed_jobs_file="completed_jobs.txt"
-failed_jobs_file="failed_jobs.txt"
-timeout_jobs_file="timeout_jobs.txt"
-other_jobs_file="other_jobs.txt"
+completed_jobs_file="list_completed_jobs.txt"
+failed_jobs_file="list_failed_jobs.txt"
+timeout_jobs_file="lsit_timeout_jobs.txt"
+other_jobs_file="list_other_jobs.txt"
 
-if remove_files == "True"; then
-    # check if the files exist, delete them if they do
-    # create if they do not exist
-    if [ -f "$completed_jobs_file" ]; then
-        rm $completed_jobs_file
-    fi
-    if [ -f "$failed_jobs_file" ]; then
-        rm $failed_jobs_file
-    fi
-    if [ -f "$timeout_jobs_file" ]; then
-        rm $timeout_jobs_file
-    fi
-    if [ -f "$other_jobs_file" ]; then
-        rm $other_jobs_file
-    fi
+
+# check if the files exist, delete them if they do
+# create if they do not exist
+if [ -f "$completed_jobs_file" ]; then
+    rm $completed_jobs_file
+fi
+if [ -f "$failed_jobs_file" ]; then
+    rm $failed_jobs_file
+fi
+if [ -f "$timeout_jobs_file" ]; then
+    rm $timeout_jobs_file
+fi
+if [ -f "$other_jobs_file" ]; then
+    rm $other_jobs_file
 fi
 
 [[ ! -f "$completed_jobs_file" ]] && touch $completed_jobs_file

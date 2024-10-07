@@ -77,7 +77,7 @@ while IFS= read -r line; do
         other_counter=$((other_counter+1))
         echo "$job_id" >> "$other_jobs_file"
     fi
-done
+done < "$jids_file"
 
 echo "Total jobs: $total_counter"
 echo "Completed jobs: $completed_counter"

@@ -14,7 +14,7 @@ jids_file="job_ids.txt"
 # define each job status file to be created
 completed_jobs_file="list_completed_jobs.txt"
 failed_jobs_file="list_failed_jobs.txt"
-timeout_jobs_file="lsit_timeout_jobs.txt"
+timeout_jobs_file="list_timeout_jobs.txt"
 other_jobs_file="list_other_jobs.txt"
 
 
@@ -89,5 +89,8 @@ echo "Completed jobs: $completed_counter"
 echo "Failed jobs: $failed_counter"
 echo "Timeout jobs: $timeout_counter"
 echo "Other jobs: $other_counter"
+
+#remove the job_ids file
+rm $jids_file
 
 echo "Completed job status check"

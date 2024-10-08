@@ -34,7 +34,7 @@ while IFS= read -r line; do
         number_of_jobs=$(squeue -u $USER | wc -l)
     done
     # resubmit the job
-    new_jid=$(sbatch --parsable --time=2:00:00 train_regression_call_cheeky_child.sh $cell_type $shuffle $feature_combination $cytokine)
+    new_jid=$(sbatch --parsable --time=2:00:00 train_regression_call_cheeky_child.sh "$cell_type" "$shuffle" "$feature_combination" "$cytokine")
     echo "'$new_jid' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> $jids_file
 done < $timeout_jobs_file
 

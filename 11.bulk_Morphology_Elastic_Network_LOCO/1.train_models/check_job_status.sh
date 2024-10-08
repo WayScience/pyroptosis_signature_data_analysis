@@ -47,16 +47,21 @@ failed_counter=0
 timeout_counter=0
 other_counter=0
 
-# read all lines of the file to an array
-readarray -t job_ids < $jids_file
-
 while IFS= read -r line; do
+    echo $line
     # Assuming the line contains job_id, cell_type, shuffle, feature_combination, cytokine
     job_id=$(echo "$line" | awk '{print $1}')
     cell_type=$(echo "$line" | awk '{print $2}')
     shuffle=$(echo "$line" | awk '{print $3}')
     feature_combination=$(echo "$line" | awk '{print $4}')
     cytokine=$(echo "$line" | awk '{print $5}')
+
+    job_id=$(echo "$line" | awk -F"'" '{print $2}')
+    cell_type=$(echo "$line" | awk -F"'" '{print $4}')
+    shuffle=$(echo "$line" | awk -F"'" '{print $6}')
+    feature_combination=$(echo "$line" | awk -F"'" '{print $8}')
+    cytokine=$(echo "$line" | awk -F"'" '{print $10}')
+
 
     total_counter=$((total_counter+1))
     status=$(sacct -j "$job_id" --format=State --noheader | awk 'NR==1{print $1}')
@@ -74,13 +79,13 @@ while IFS= read -r line; do
         echo "$job_id" >> "$completed_jobs_file"
     elif [[ "$status" == "FAILED" ]]; then
         failed_counter=$((failed_counter+1))
-        echo " '$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> "$failed_jobs_file"
+        echo "'$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> "$failed_jobs_file"
     elif [[ "$status" == "TIMEOUT" ]]; then
         timeout_counter=$((timeout_counter+1))
-        echo " '$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> "$timeout_jobs_file"
+        echo "'$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> "$timeout_jobs_file"
     else
         other_counter=$((other_counter+1))
-        echo " '$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> "$other_jobs_file"
+        echo "'$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> "$other_jobs_file"
     fi
 done < "$jids_file"
 

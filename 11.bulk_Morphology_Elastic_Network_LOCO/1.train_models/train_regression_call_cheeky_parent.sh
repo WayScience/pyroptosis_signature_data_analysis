@@ -33,9 +33,10 @@ cell_types=( SHSY5Y PBMC )
 
 # for testing purposes get the first 2 cytokines
 # and the first 2 feature combinations
-cytokine_array=( "${cytokine_array[@]:0:2}" )
-feature_combination_keys=( "${feature_combination_keys[@]:0:2}" )
-
+cytokine_array=( "${cytokine_array[@]:0:1}" )
+feature_combination_keys=( "${feature_combination_keys[@]:0:1}" )
+shuffles=( False )
+cell_types=( SHSY5Y )
 
 # make a file to store the job ids
 touch job_ids.txt
@@ -67,8 +68,6 @@ do
 done
 
 echo "Array complete"
-
-sbatch check_job_status.sh
 
 # end this job once reaching this point
 exit 0

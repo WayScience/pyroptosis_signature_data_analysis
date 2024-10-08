@@ -21,7 +21,7 @@ shuffle=$2
 feature_combinations_key=$3
 cytokine=$4
 
-echo "$cell_type $shuffle $feature_combination_key $cytokine"
+echo "$cell_type $shuffle $feature_combinations_key $cytokine"
 
 jupyter nbconvert --to=script --FilesWriter.build_directory=./scripts/ ./notebooks/*.ipynb
 

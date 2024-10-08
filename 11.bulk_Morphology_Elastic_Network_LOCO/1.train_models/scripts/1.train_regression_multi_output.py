@@ -47,6 +47,11 @@ shuffle = args.shuffle
 cytokine = args.cytokine
 feature_combinations_key = args.feature_combinations_key
 
+cell_type = ast.literal_eval(cell_type).astype(str)
+shuffle = ast.literal_eval(shuffle).astype(bool)
+cytokine = ast.literal_eval(cytokine).astype(str)
+feature_combinations_key = ast.literal_eval(feature_combinations_key).astype(str)
+
 
 # cell_type = "PBMC"
 # cytokine = "IL-1 beta [NSU]"

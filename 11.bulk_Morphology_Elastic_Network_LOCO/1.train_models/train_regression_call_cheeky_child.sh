@@ -5,7 +5,7 @@
 #SBATCH --mem=250M
 #SBATCH --partition=amilan
 #SBATCH --qos=normal
-#SBATCH --time=00:00:10
+#SBATCH --time=00:30:00
 #SBATCH --output=sample_train-%j.out
 
 # 1 cell type * 1 shuffle type * 187 cytokines = 187 per child script

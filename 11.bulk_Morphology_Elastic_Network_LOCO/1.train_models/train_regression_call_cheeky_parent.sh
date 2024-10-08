@@ -31,13 +31,6 @@ jupyter nbconvert --to=script --FilesWriter.build_directory=./scripts/ ./noteboo
 shuffles=( True False )
 cell_types=( SHSY5Y PBMC )
 
-# for testing purposes get the first 2 cytokines
-# and the first 2 feature combinations
-cytokine_array=( "${cytokine_array[@]:0:1}" )
-feature_combination_keys=( "${feature_combination_keys[@]:0:1}" )
-shuffles=( False )
-cell_types=( SHSY5Y )
-
 # make a file to store the job ids
 touch job_ids.txt
 
@@ -52,7 +45,7 @@ do
 
                 # get the number of jobs for the user
                 number_of_jobs=$(squeue -u $USER | wc -l)
-                while [ $number_of_jobs -gt 32 ]; do
+                while [ $number_of_jobs -gt 990 ]; do
                     sleep 1s
                     number_of_jobs=$(squeue -u $USER | wc -l)
                 done

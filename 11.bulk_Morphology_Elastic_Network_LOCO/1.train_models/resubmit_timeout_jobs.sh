@@ -5,7 +5,7 @@
 #SBATCH --ntasks=1
 #SBATCH --partition=amilan
 #SBATCH --qos=normal
-#SBATCH --time=24:00:00
+#SBATCH --time=1:00:00
 #SBATCH --output=sample_resub-%j.out
 
 jids_file="job_ids.txt"

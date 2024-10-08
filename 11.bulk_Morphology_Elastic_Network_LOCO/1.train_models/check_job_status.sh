@@ -5,7 +5,7 @@
 #SBATCH --ntasks=1
 #SBATCH --partition=amilan
 #SBATCH --qos=normal
-#SBATCH --time=5:00
+#SBATCH --time=15:00
 #SBATCH --output=job_status_check-%j.out
 
 # get the file with the job ids
@@ -50,12 +50,6 @@ other_counter=0
 while IFS= read -r line; do
     echo $line
     # Assuming the line contains job_id, cell_type, shuffle, feature_combination, cytokine
-    job_id=$(echo "$line" | awk '{print $1}')
-    cell_type=$(echo "$line" | awk '{print $2}')
-    shuffle=$(echo "$line" | awk '{print $3}')
-    feature_combination=$(echo "$line" | awk '{print $4}')
-    cytokine=$(echo "$line" | awk '{print $5}')
-
     job_id=$(echo "$line" | awk -F"'" '{print $2}')
     cell_type=$(echo "$line" | awk -F"'" '{print $4}')
     shuffle=$(echo "$line" | awk -F"'" '{print $6}')

@@ -5,8 +5,8 @@
 #SBATCH --ntasks=1
 #SBATCH --partition=amilan
 #SBATCH --qos=normal
-#SBATCH --time=15:00
-#SBATCH --output=job_status_check-%j.out
+#SBATCH --time=1:00:00
+#SBATCH --output=status_job_check-%j.out
 
 # get the file with the job ids
 jids_file="job_ids.txt"
@@ -59,13 +59,6 @@ while IFS= read -r line; do
 
     total_counter=$((total_counter+1))
     status=$(sacct -j "$job_id" --format=State --noheader | awk 'NR==1{print $1}')
-    echo "Job ID: $job_id"
-    echo "Status: $status"
-    echo "Cell type: $cell_type"
-    echo "Shuffle: $shuffle"
-    echo "Feature combination: $feature_combination"
-    echo "Cytokine: $cytokine"
-    echo "---------------------------------"
     # Display the status of the job
     # Check if the job has completed successfully or failed
     if [[ "$status" == "COMPLETED" ]]; then
@@ -83,11 +76,15 @@ while IFS= read -r line; do
     fi
 done < "$jids_file"
 
-echo "Total jobs: $total_counter"
+echo "Total input jobs: $total_counter"
 echo "Completed jobs: $completed_counter"
 echo "Failed jobs: $failed_counter"
 echo "Timeout jobs: $timeout_counter"
 echo "Other jobs: $other_counter"
+
+# add the counters up
+total_jobs=$((completed_counter+failed_counter+timeout_counter+other_counter))
+echo "Total output jobs: $total_jobs"
 
 #remove the job_ids file
 rm $jids_file

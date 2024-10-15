@@ -38,11 +38,11 @@ while IFS= read -r line; do
     echo " '$cell_type' '$shuffle' '$feature_combination' '$cytokine'"
     # get the number of jobs for the user
     number_of_jobs=$(squeue -u $USER | wc -l)
-    while [ $number_of_jobs -gt 3 ]; do
+    while [ $number_of_jobs -gt 990 ]; do
         sleep 1s
         number_of_jobs=$(squeue -u $USER | wc -l)
     done
-    resubmit the job
+    # resubmit the job
     new_jid=$(sbatch train_regression_call_cheeky_child.sh "$cell_type" "$shuffle" "$feature_combination" "$cytokine")
     new_jid=$(echo $new_jid | awk '{print $4}')
     echo "'$new_jid' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> $jids_file

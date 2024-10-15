@@ -8,8 +8,24 @@
 #SBATCH --time=72:00:00
 #SBATCH --output=sample_resub-%j.out
 
+
+module load anaconda
+conda init bash
+conda activate Interstellar_python
+
+jupyter nbconvert --to=script --FilesWriter.build_directory=./scripts/ ./notebooks/*.ipynb
+
+cd models/
+ls regression/PBMC/aggregated_with_nomic/ > PBMC.txt
+ls regression/SHSY5Y/aggregated_with_nomic/ > SHSY5Y.txt
+
+
+cd ../scripts
+python check_which_models_need_to_run.py
+cd ../
+
 manual_jobs_file="manual_jobs.txt"
-jids_file="jop_ids.txt"
+jids_file="job_ids.txt"
 
 # read all lines of the file to an array
 while IFS= read -r line; do
@@ -22,7 +38,7 @@ while IFS= read -r line; do
     echo " '$cell_type' '$shuffle' '$feature_combination' '$cytokine'"
     get the number of jobs for the user
     number_of_jobs=$(squeue -u $USER | wc -l)
-    while [ $number_of_jobs -gt 990 ]; do
+    while [ $number_of_jobs -gt 3 ]; do
         sleep 1s
         number_of_jobs=$(squeue -u $USER | wc -l)
     done

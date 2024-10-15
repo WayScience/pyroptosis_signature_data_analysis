@@ -8,33 +8,29 @@
 #SBATCH --time=72:00:00
 #SBATCH --output=sample_resub-%j.out
 
-jids_file="job_ids.txt"
-touch $jids_file
-timeout_jobs_file="list_timeout_jobs.txt"
+manual_jobs_file="manual_jobs.txt"
+jids_file="jop_ids.txt"
 
 # read all lines of the file to an array
 while IFS= read -r line; do
     # Assuming the line contains job_id, cell_type, shuffle, feature_combination, cytokine
     echo $line
-    job_id=$(echo "$line" | awk -F"'" '{print $2}')
-    cell_type=$(echo "$line" | awk -F"'" '{print $4}')
-    shuffle=$(echo "$line" | awk -F"'" '{print $6}')
-    feature_combination=$(echo "$line" | awk -F"'" '{print $8}')
-    cytokine=$(echo "$line" | awk -F"'" '{print $10}')
-    echo "'$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'"
-    # get the number of jobs for the user
+    cell_type=$(echo "$line" | awk -F"'" '{print $2}')
+    shuffle=$(echo "$line" | awk -F"'" '{print $4}')
+    feature_combination=$(echo "$line" | awk -F"'" '{print $6}')
+    cytokine=$(echo "$line" | awk -F"'" '{print $8}')
+    echo " '$cell_type' '$shuffle' '$feature_combination' '$cytokine'"
+    get the number of jobs for the user
     number_of_jobs=$(squeue -u $USER | wc -l)
     while [ $number_of_jobs -gt 990 ]; do
         sleep 1s
         number_of_jobs=$(squeue -u $USER | wc -l)
     done
-    # resubmit the job
+    resubmit the job
     new_jid=$(sbatch train_regression_call_cheeky_child.sh "$cell_type" "$shuffle" "$feature_combination" "$cytokine")
     new_jid=$(echo $new_jid | awk '{print $4}')
     echo "'$new_jid' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> $jids_file
-done < $timeout_jobs_file
-
-rm $timeout_jobs_file
+done < $manual_jobs_file
 
 
 echo "Jobs resubmitted"

@@ -31,6 +31,8 @@ jupyter nbconvert --to=script --FilesWriter.build_directory=./scripts/ ./noteboo
 shuffles=( True False )
 cell_types=( SHSY5Y PBMC )
 
+jobs_submitted_counter=0
+
 # make a file to store the job ids
 touch job_ids.txt
 
@@ -55,10 +57,13 @@ do
                 # append the job id to the file
                 job_id=$(echo $job_id | awk '{print $4}')
                 echo " '$job_id' '$cell_type' '$shuffle' '$feature_combination' '$cytokine'" >> job_ids.txt
-	        done
+	        let jobs_submitted_counter++
+	    done
         done
     done
 done
+
+echo "$jobs_submitted_counter"
 
 echo "Array complete"
 

@@ -36,7 +36,7 @@ while IFS= read -r line; do
     feature_combination=$(echo "$line" | awk -F"'" '{print $6}')
     cytokine=$(echo "$line" | awk -F"'" '{print $8}')
     echo " '$cell_type' '$shuffle' '$feature_combination' '$cytokine'"
-    get the number of jobs for the user
+    # get the number of jobs for the user
     number_of_jobs=$(squeue -u $USER | wc -l)
     while [ $number_of_jobs -gt 3 ]; do
         sleep 1s

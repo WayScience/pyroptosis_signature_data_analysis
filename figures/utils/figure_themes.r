@@ -211,3 +211,11 @@ colors_3 <- c(
     'Thapsigargin 10.0 uM' = colorgrad8[2]
 )
 
+death_curve_colors <- c(
+    'Media' = colorgrad1[1],
+    'DMSO 0.1%' = colorgrad1[4],
+    'LPS 1.0 ug/mL' = colorgrad2[3],
+    'LPS 10.0 ug/mL' = colorgrad2[4],
+    'Thapsigargin 1.0 uM' = colorgrad8[1],
+    'Thapsigargin 10.0 uM' = colorgrad8[2]
+)

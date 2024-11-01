@@ -6,7 +6,7 @@ suppressPackageStartupMessages(suppressWarnings(library(platetools)))
 cell_type <- "PBMC"
 
 # set the path to the cell count data
-cell_count_file <- file.path(paste0("./results/",cell_type,"_cell_counts.parquet"))
+cell_count_file <- file.path(paste0("../results/",cell_type,"_cell_counts.parquet"))
 
 # Read in the cell count data
 cell_count_df <- arrow::read_parquet(cell_count_file)
@@ -94,5 +94,3 @@ plate_replicate_gg_treatment_legend <- plate_replicate_gg_treatment + guides(fil
 plate_replicate_gg_treatment <- plate_replicate_gg_treatment + theme(legend.position = "none")
 plate_replicate_gg_treatment
 plate_replicate_gg_treatment_legend
-
-

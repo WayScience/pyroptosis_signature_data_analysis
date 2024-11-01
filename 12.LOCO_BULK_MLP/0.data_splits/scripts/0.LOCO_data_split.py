@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# This notebook performs data splits on the wells on the bulk data.
+
 # In[1]:
 
 
@@ -108,7 +110,7 @@ assert len(features) == len(nuclei_features) + len(pm_features) + len(
 
 # create the combinations of features
 # out of 5 channels, we can have 0, 1, 2, 3, 4, or 5 channels
-# even with 0 channels, we still have the non channel features
+# even with 0 channels, we still have the non channel features (object-based)
 # these are areshape features
 # set the feature combination lists
 dict_of_feature_combinations = {
@@ -166,7 +168,7 @@ dict_of_feature_combinations = {
     + other_features
     + correlation_features,
 }
-
+# loop through each feature combination and add the metadata features
 for combination in dict_of_feature_combinations:
     if combination == "No_channels":
         temp_correlation_features = other_features

@@ -6,7 +6,7 @@ conda activate Interstellar_python
 
 cell_type=$1
 model_name=$2
-convert=False
+convert=True
 
 if [ "$convert" = True ]; then
     jupyter nbconvert --to=script --FilesWriter.build_directory=scripts/ notebooks/*.ipynb

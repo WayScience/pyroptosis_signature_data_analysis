@@ -11,29 +11,30 @@ import pathlib
 import numpy as np
 import pandas as pd
 
-# In[2]:
+# In[ ]:
 
 
 # Parameters
 cell_type = "PBMC"
 aggregation = True
-nomic = True
+fs = False
+nomic = False
 
 
-# In[3]:
+# In[ ]:
 
 
 if aggregation and nomic:
     aggregated_data_path = pathlib.Path(
-        f"../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
+        f"../../data/{cell_type}_preprocessed_sc_norm_aggregated_nomic.parquet"
     )
 elif not aggregation and nomic:
     aggregated_data_path = pathlib.Path(
-        f"../data/{cell_type}_preprocessed_sc_norm_nomic.parquet"
+        f"../../data/{cell_type}_preprocessed_sc_norm_nomic.parquet"
     )
 elif aggregation and not nomic:
     aggregated_data_path = pathlib.Path(
-        f"../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
+        f"../../data/{cell_type}_preprocessed_sc_norm_aggregated.parquet"
     )
 elif not aggregation and not nomic:
     pass
@@ -41,10 +42,14 @@ else:
     raise ValueError("Wrong parameters")
 
 
-# In[4]:
+# In[ ]:
 
 
-path = pathlib.Path(f"../data/{cell_type}_preprocessed_sc_norm.parquet")
+if fs:
+    path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
+else:
+    path = pathlib.Path(f"../../data/{cell_type}_sc_norm.parquet")
+
 
 data_df = pd.read_parquet(path)
 
@@ -53,7 +58,7 @@ data_df.head()
 if nomic:
     # import nomic data
     nomic_df_path = pathlib.Path(
-        f"../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_clean.parquet"
+        f"../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_{cell_type}_clean.parquet"
     )
     df_nomic = pd.read_parquet(nomic_df_path)
 
@@ -70,7 +75,7 @@ else:
     raise ValueError("Nomic data not imported")
 
 
-# In[5]:
+# In[ ]:
 
 
 # subset each column that contains metadata
@@ -87,7 +92,7 @@ metadata_well = metadata[
 data_df = pd.merge(data, metadata_well, left_index=True, right_index=True)
 
 
-# In[6]:
+# In[ ]:
 
 
 if nomic:
@@ -103,7 +108,7 @@ if nomic:
     )
 
 
-# In[7]:
+# In[ ]:
 
 
 if aggregation and nomic:
@@ -171,10 +176,23 @@ elif not aggregation and nomic:
 elif aggregation == False and nomic == False:
     pass
 else:
-    raise ValueError("Wrong parameters nomica and/or aggregation not defined")
+    raise ValueError("Wrong parameters nomic and/or aggregation not defined")
 
 
-# In[8]:
+# In[ ]:
+
+
+print(len(data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique()))
+print(data_df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].unique())
+
+
+# In[ ]:
+
+
+print(len(data_df["Metadata_Well"].unique()))
+
+
+# In[ ]:
 
 
 # save the data

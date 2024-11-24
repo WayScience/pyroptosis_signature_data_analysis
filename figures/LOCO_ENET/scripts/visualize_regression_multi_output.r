@@ -80,21 +80,19 @@ unique(df$channel_feature_combinations_key)
 
 
 df$channel_feature_combinations_key <- gsub('All_channels', "All Channels", df$channel_feature_combinations_key)
-df$channel_feature_combinations_key <- gsub('CorrDNA_CorrGasdermin_CorrMito_CorrER', "- PM", df$channel_feature_combinations_key)
-df$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrGasdermin_CorrER' , "- Mito", df$channel_feature_combinations_key)
-df$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrGasdermin_CorrMito' , "- ER", df$channel_feature_combinations_key)
-df$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrMito_CorrER' , "- GSDM", df$channel_feature_combinations_key)
-df$channel_feature_combinations_key <- gsub('CorrPM_CorrGasdermin_CorrMito_CorrER' , "- DNA", df$channel_feature_combinations_key)
+df$channel_feature_combinations_key <- gsub('CorrDNA_CorrGasdermin_CorrMito_CorrER', "PM removed", df$channel_feature_combinations_key)
+df$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrGasdermin_CorrER' , "Mito removed", df$channel_feature_combinations_key)
+df$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrGasdermin_CorrMito' , "ER removed", df$channel_feature_combinations_key)
+df$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrMito_CorrER' , "GSDM removed", df$channel_feature_combinations_key)
+df$channel_feature_combinations_key <- gsub('CorrPM_CorrGasdermin_CorrMito_CorrER' , "DNA removed", df$channel_feature_combinations_key)
 # make the channel_feature_combinations_key a factor
 df$channel_feature_combinations_key <- factor(df$channel_feature_combinations_key, levels = c(
-    "All Channels", "- DNA","- ER", "- GSDM", "- Mito",  "- PM"
+    "All Channels", "GSDM removed", "DNA removed","ER removed", "Mito removed",  "PM removed"
 )
 )
 
-
-
-width=7
-height=5
+width <- 10
+height <- 10
 options(repr.plot.width=width, repr.plot.height=height)
 # set output path
 global_prediction_trend_path <- file.path(paste0(enet_cp_fig_path,"global_prediction_trend.png"))
@@ -113,7 +111,7 @@ global_prediction_trend_scatter <- (
     + labs(title="Global Prediction Trends of Cytokine Concentrations")
     # add y=x line
     + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
-    + facet_wrap(~channel_feature_combinations_key, ncol=3)
+    + facet_grid(shuffle_plus_data_split~channel_feature_combinations_key)
     + ggplot2::coord_fixed()
     + ylim(0, 1)
     + xlim(0, 1)
@@ -128,6 +126,10 @@ global_prediction_trend_scatter <- (
     # change legend title text
     + labs(color="Model")
     + figure_theme
+    + theme(panel.spacing = unit(2, "lines"))
+    + theme(legend.position = "bottom")
+    # make the legend have two columns of keys
+    + guides(color = guide_legend(ncol=2))
 
 
 )
@@ -136,18 +138,21 @@ global_prediction_trend_scatter <- (
 ggsave(global_prediction_trend_path, global_prediction_trend_scatter, width=width, height=height, dpi=600)
 global_prediction_trend_scatter
 
-
+width <- 5
+height <- 5
 global_prediction_trend_line <- (
-    ggplot(df, aes(x=actual_value, y=predicted_value, col=shuffle))
+    ggplot(df, aes(x=actual_value, y=predicted_value, col=shuffle_plus_data_split))
+    + facet_wrap(~channel_feature_combinations_key, ncol=3)
     # add geom smooth with each line being a different color
-    + geom_smooth(method="lm", se=TRUE, alpha=0.5, size=0.5, aes(col=shuffle_plus_data_split))
+    # + geom_line(aes(group=shuffle_plus_data_split), size=0.5)
+    + geom_smooth(method="lm", se=TRUE, alpha=0.5, linewidth=0.8, aes(col=shuffle_plus_data_split))
     # make colors different for each line
-    + scale_fill_gradientn(colours = viridis(10))
+    # + scale_fill_gradient(colours = viridis(10))
     + labs(x="Actual", y="Predicted", color="Model")
     + theme_bw()
     # add y=x line
     + geom_abline(intercept = 0, slope = 1, linetype="dashed", color="black")
-    + facet_wrap(~channel_feature_combinations_key, ncol=3)
+
     + ylim(0, 1)
     + xlim(0, 1)
     # change the x axis ticks to 0, 0,5, 1
@@ -156,12 +161,14 @@ global_prediction_trend_line <- (
     + ggplot2::coord_fixed()
     + figure_theme
     # change the x tick size
-    + theme(axis.text.x = element_text(size=14))
+    # + theme(axis.text.x = element_text(size=14))
     + theme(legend.position = "bottom")
     # make the legend have two columns of keys
     + guides(color = guide_legend(ncol=2))
+    + theme(panel.spacing = unit(2, "lines"))
+
 )
-ggsave(global_prediction_trend_path, global_prediction_trend_line, width=5, height=5, dpi=600)
+ggsave(global_prediction_trend_path, global_prediction_trend_line, width=width, height=height, dpi=600)
 global_prediction_trend_line
 
 enet_cp_fig <- file.path(paste0(enet_cp_fig_path,"Predicted_vs_Actual_all_cytokines.pdf"))
@@ -243,16 +250,15 @@ df_var <- df_var %>% filter(
 unique(df_var$channel_feature_combinations_key)
 
 
-
 df_var$channel_feature_combinations_key <- gsub('All_channels', "All Channels", df_var$channel_feature_combinations_key)
-df_var$channel_feature_combinations_key <- gsub('CorrDNA_CorrGasdermin_CorrMito_CorrER', "- PM", df_var$channel_feature_combinations_key)
-df_var$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrGasdermin_CorrER' , "- Mito", df_var$channel_feature_combinations_key)
-df_var$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrGasdermin_CorrMito' , "- ER", df_var$channel_feature_combinations_key)
-df_var$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrMito_CorrER' , "- GSDM", df_var$channel_feature_combinations_key)
-df_var$channel_feature_combinations_key <- gsub('CorrPM_CorrGasdermin_CorrMito_CorrER' , "- DNA", df_var$channel_feature_combinations_key)
+df_var$channel_feature_combinations_key <- gsub('CorrDNA_CorrGasdermin_CorrMito_CorrER', "PM removed", df_var$channel_feature_combinations_key)
+df_var$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrGasdermin_CorrER' , "Mito removed", df_var$channel_feature_combinations_key)
+df_var$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrGasdermin_CorrMito' , "ER removed", df_var$channel_feature_combinations_key)
+df_var$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrMito_CorrER' , "GSDM removed", df_var$channel_feature_combinations_key)
+df_var$channel_feature_combinations_key <- gsub('CorrPM_CorrGasdermin_CorrMito_CorrER' , "DNA removed", df_var$channel_feature_combinations_key)
 # make the channel_feature_combinations_key a factor
 df_var$channel_feature_combinations_key <- factor(df_var$channel_feature_combinations_key, levels = c(
-    "All Channels", "- DNA","- ER", "- GSDM", "- Mito",  "- PM"
+    "All Channels", "GSDM removed", "DNA removed","ER removed", "Mito removed",  "PM removed"
 )
 )
 
@@ -301,7 +307,9 @@ ggsave(global_variance_r2_path, variance_r2_plot, width=width, height=height, dp
 variance_r2_plot
 
 
-
+width <- 10
+height <- 8
+options(repr.plot.width=width, repr.plot.height=height)
 local_variance_r2_path <- file.path(paste0(enet_cp_fig_path,"local_variance_r2.png"))
 local_variance_r2_legend_path <- file.path(paste0(enet_cp_fig_path,"local_variance_r2_legend.png"))
 # if path does not exist, create it
@@ -312,30 +320,29 @@ if (!file.exists(dirname(global_prediction_trend_path))) {
 # same plot but only in the positive quadrant
 variance_r2_plot <- (
     ggplot(df_var, aes(x=r2, y=actual_value, col=shuffle_plus_data_split))
-    + geom_point(size=3)
+    + geom_point(size=1, alpha=0.7)
     + labs(x="R2 score", y="Explained Variance")
     + theme_bw()
-    + xlim(0, max(df_var$r2))
+    + scale_x_continuous(breaks = seq(0, 1, by = 0.5), limits=c(0, 1))
+    # + xlim(0, max(df_var$r2))
     + ylim(0, max(df_var$actual_value))
-    # change the x and y axis text size
-    + theme(
-        axis.text.x = element_text(size=13),
-        axis.text.y = element_text(size=13),
-        legend.text=element_text(size=16),
-        axis.title=element_text(size=16),
-        legend.title=element_text(size=16)
-    )
+
 
     # make legend points bigger
     + guides(
-        colour = guide_legend(override.aes = list(size=3)),
-        shape = guide_legend(override.aes = list(size=3))
+        colour = guide_legend(ncol=2, override.aes = list(size=3, alpha=1)),
+        shape = guide_legend(override.aes = list(size=3)),
+
     )
     + figure_theme
+    + theme(
+    legend.title=element_text(size=18)
+    )
     + facet_wrap(~channel_feature_combinations_key, ncol=3)
-    + labs(color="Model")
+    + labs(color="Model", size=18)
     + theme(legend.position = "bottom")
-    + guides(color = guide_legend(ncol=2))
+    + theme(panel.spacing = unit(2, "lines"))
+
 )
 ggsave(local_variance_r2_path, variance_r2_plot, width=width, height=height, dpi=600)
 variance_r2_plot
@@ -367,14 +374,14 @@ df_stats <- df_stats %>% filter(
 )
 
 df_stats$channel_feature_combinations_key <- gsub('All_channels', "All Channels", df_stats$channel_feature_combinations_key)
-df_stats$channel_feature_combinations_key <- gsub('CorrDNA_CorrGasdermin_CorrMito_CorrER', "- PM", df_stats$channel_feature_combinations_key)
-df_stats$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrGasdermin_CorrER' , "- Mito", df_stats$channel_feature_combinations_key)
-df_stats$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrGasdermin_CorrMito' , "- ER", df_stats$channel_feature_combinations_key)
-df_stats$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrMito_CorrER' , "- GSDM", df_stats$channel_feature_combinations_key)
-df_stats$channel_feature_combinations_key <- gsub('CorrPM_CorrGasdermin_CorrMito_CorrER' , "- DNA", df_stats$channel_feature_combinations_key)
+df_stats$channel_feature_combinations_key <- gsub('CorrDNA_CorrGasdermin_CorrMito_CorrER', "PM removed", df_stats$channel_feature_combinations_key)
+df_stats$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrGasdermin_CorrER' , "Mito removed", df_stats$channel_feature_combinations_key)
+df_stats$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrGasdermin_CorrMito' , "ER removed", df_stats$channel_feature_combinations_key)
+df_stats$channel_feature_combinations_key <- gsub('CorrDNA_CorrPM_CorrMito_CorrER' , "GSDM removed", df_stats$channel_feature_combinations_key)
+df_stats$channel_feature_combinations_key <- gsub('CorrPM_CorrGasdermin_CorrMito_CorrER' , "DNA removed", df_stats$channel_feature_combinations_key)
 # make the channel_feature_combinations_key a factor
 df_stats$channel_feature_combinations_key <- factor(df_stats$channel_feature_combinations_key, levels = c(
-    "All Channels", "- DNA","- ER", "- GSDM", "- Mito",  "- PM"
+    "All Channels", "GSDM removed", "DNA removed","ER removed", "Mito removed",  "PM removed"
 )
 )
 
@@ -440,13 +447,16 @@ pred_v_actual_plot <- function(df, cytokine){
         # make kegend key background white
         + guides(color = guide_legend(override.aes = list(fill = NA)),
             linetype = guide_legend(override.aes = list(fill = NA)))
-        + theme(legend.key = element_rect(fill = "white"))
+        + theme(legend.key = element_rect(fill = "white"), axis.text.x = element_text(hjust = 0.7))
         + ggplot2::coord_fixed()
         + facet_wrap(~channel_feature_combinations_key, ncol=3)
         + theme(legend.position = "bottom")
         + guides(color = guide_legend(ncol=2))
             # change the x axis ticks to 0, 0,5, 1
-    + scale_x_continuous(breaks = seq(0, 1, by = 0.5))
+        + scale_x_continuous(breaks = seq(0, 1, by = 0.5))
+        # add spacing between the facets
+        + theme(panel.spacing = unit(2, "lines"))
+
         )
     return(p)
 }
@@ -490,14 +500,14 @@ IL1beta_a_v_p <- (
     + theme(plot.title = element_blank())
 )
 
-# resize all plots
-width <- 8
-height <- 8
-options(repr.plot.width=width, repr.plot.height=height)
-global_prediction_trend_line <- (global_prediction_trend_line)
-r2_boxplot <- (r2_boxplot)
-variance_r2_plot <- (variance_r2_plot)
-IL1beta_a_v_p <- (IL1beta_a_v_p)
+# # resize all plots
+# width <- 8
+# height <- 8
+# options(repr.plot.width=width, repr.plot.height=height)
+# global_prediction_trend_line <- (global_prediction_trend_line)
+# r2_boxplot <- (r2_boxplot)
+# variance_r2_plot <- (variance_r2_plot)
+# IL1beta_a_v_p <- (IL1beta_a_v_p)
 
 
 # pathwork layout of each plot ( letters correspond to the order in which the plots are defined below in the pathwork figure)
@@ -521,11 +531,11 @@ width <- 17
 height <- 15
 options(repr.plot.width=width, repr.plot.height=height)
 ENET_LOCO <- (
-    global_prediction_trend_line
-    + r2_boxplot
-    + variance_r2_plot
+    wrap_elements(full = global_prediction_trend_line)
+    + wrap_elements(full = r2_boxplot)
+    + wrap_elements(full = variance_r2_plot)
     + wrap_elements(full = IL1beta_a_v_p)
-    + plot_layout(design = layout, widths = c(0.8, 1))
+    + plot_layout(design = layout, widths = c(1, 1))
     # make bottom plot not align
     + plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(size = 20))
 )

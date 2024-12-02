@@ -127,34 +127,30 @@ cytokine_values$oneb_Treatment_Dose_Inhibitor_Dose <- factor(
 head(cytokine_values,2)
 
 # set plot size
-width = 15
-height = 10
-options(repr.plot.width=width, repr.plot.height=height)
-# Plot
+width = 1520
 cytokine_scatter_plot <- (
     ggplot(
         data = cytokine_values,
         aes(
             x = `IL-1 beta [NSU]`,
-            y = `TNF alpha [NSU]`,
+            y = `CCL24 [NSU]`,
             color = oneb_Treatment_Dose_Inhibitor_Dose,
         )
     )
     + geom_point(size = 5, alpha = 0.7)
     + theme_bw()
     + xlab("IL-1 beta abundance")
-    + ylab("TNF alpha abundance")
+    + ylab("CCL24 abundance")
     + xlim(-0.1, 1)
     + ylim(-0.1, 1)
     # rename legend title
     + labs(color = "Treatment", hjust = 0.5)
     + figure_theme
-        + theme(axis.text.x = element_text( vjust = 0.5, hjust=1))
-        + theme(
-         legend.text = element_text(size = 16),
+    + theme(axis.text.x = element_text( vjust = 0.5, hjust=1))
+    + theme(
+        legend.text = element_text(size = 16),
         legend.title = element_text(size = 20, hjust = 0.5))
 )
-
 
 
 # set plot size
@@ -188,17 +184,6 @@ cytokine_scatter_plot <- (
 cytokine_scatter_plot
 
 
-# set plot size
-options(repr.plot.width=10, repr.plot.height=5)
-# cytokine_scatter_plot
-from <- list(0, 0.05, -0.01, 0.08) #xmin, xmax, ymin, ymax
-to <- list(0, 0.25, 0.2, 0.45)
-cytokine_scatter_plot <- cytokine_scatter_plot + geom_magnify(# allow for small coordinates
-    from = from, to = to
-)
-cytokine_scatter_plot
-
-
 # cytokine_scatter_plot add gates
 cytokine_scatter_plot <- (
     cytokine_scatter_plot
@@ -213,101 +198,6 @@ cytokine_scatter_plot <- (
 cytokine_scatter_plot
 
 
-
-cytokine_scatter_plot1 <- (
-    ggplot(
-        data = cytokine_values,
-        aes(
-            x = `IL-1 beta [NSU]`,
-            y = `CCL24 [NSU]`,
-            color = group_treatment,
-            shape = group_treatment
-        )
-    )
-    + geom_point(size = 5, alpha = 0.7)
-    + theme_bw()
-    + xlab("IL-1 beta abundance")
-    + ylab("CCL4 alpha abundance")
-    + xlim(-0.1, 1)
-    + ylim(-0.1, 1)
-    # rename legend title
-    + labs(color = "Treatment", hjust = 0.5)
-    + figure_theme
-        + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-            + theme(
-         legend.text = element_text(size = 16),
-        legend.title = element_text(size = 20, hjust = 0.5))
-    + scale_color_manual(
-        name = "Treatment",
-        labels = c(
-        'DMSO 0.1%',
-        'Flagellin 0.1 ug/ml',
-        'Flagellin 1.0 ug/ml',
-        'LPS 0.01 ug/ml',
-        'LPS 0.1 ug/ml',
-        'LPS 1.0 ug/ml',
-        'LPS 10.0 ug/ml',
-        'LPS 100.0 ug/ml',
-        'LPS 1.0 ug/ml + Nigericin 1.0 uM',
-        'LPS 1.0 ug/ml + Nigericin 3.0 uM',
-        'LPS 1.0 ug/ml + Nigericin 10.0 uM',
-        'H2O2 100.0 nM',
-        'H2O2 100.0 uM',
-        'Thapsigargin 1.0 uM',
-        'Thapsigargin 10.0 uM'
-        ),
-        values = colors_3)
-    + scale_shape_manual(
-        name = "Treatment",
-        labels = c(
-        'DMSO 0.1%',
-        'Flagellin 0.1 ug/ml',
-        'Flagellin 1.0 ug/ml',
-        'LPS 0.01 ug/ml',
-        'LPS 0.1 ug/ml',
-        'LPS 1.0 ug/ml',
-        'LPS 10.0 ug/ml',
-        'LPS 100.0 ug/ml',
-        'LPS 1.0 ug/ml + Nigericin 1.0 uM',
-        'LPS 1.0 ug/ml + Nigericin 3.0 uM',
-        'LPS 1.0 ug/ml + Nigericin 10.0 uM',
-        'H2O2 100.0 nM',
-        'H2O2 100.0 uM',
-        'Thapsigargin 1.0 uM',
-        'Thapsigargin 10.0 uM'
-        ),
-        values = c(
-            16, 16, 16, 16, 16,
-            16, 16, 16, 16, 16,
-            16, 16, 16, 16, 16
-        )
-
-    )
-
-)
-
-options(repr.plot.width=10, repr.plot.height=5)
-# cytokine_scatter_plot
-from <- list(-0.05, 0.1, 0.1, 0.25) #xmin, xmax, ymin, ymax
-to <- list(0.25,0.45, 0.25, 0.45)
-cytokine_scatter_plot1 <- cytokine_scatter_plot1 + geom_magnify(
-    from = from, to = to
-)
-cytokine_scatter_plot1
-
-
-# cytokine_scatter_plot add gates
-cytokine_scatter_plot1 <- (
-    cytokine_scatter_plot1
-    + geom_vline(xintercept = 0.4, linetype = "dashed", color = "black", size = 1)
-    + geom_hline(yintercept = 0.5, linetype = "dashed", color = "black", size = 1)
-)
-# fix the coordinates
-cytokine_scatter_plot1 <- (
-    cytokine_scatter_plot1
-    + ggplot2::coord_fixed()
-)
-cytokine_scatter_plot1
 
 # import melted dataframes
 # Figure 2A
@@ -468,7 +358,7 @@ cytokine_bar_plot <- (
     # move legend to the bottom
     + theme(legend.position = "bottom", legend.box = "horizontal")
     # change the nunmber of rows in the legend
-    + guides(fill = guide_legend(ncol = 4))
+    + guides(fill = guide_legend(nrow = 3))
 )
 
 cytokine_bar_plot

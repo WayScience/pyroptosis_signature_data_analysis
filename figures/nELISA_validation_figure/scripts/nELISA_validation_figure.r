@@ -113,7 +113,7 @@ validation_plot <- (
         legend = "Assay"
     )
     # facet by cytokine with 2 rows
-    + facet_wrap(~cytokine, nrow = 2)
+    + facet_wrap(~cytokine, nrow = 2, scales = "free_y")
     # change size of text
     + theme(
         axis.title = element_text(size = text_size_1, hjust = 0.5),

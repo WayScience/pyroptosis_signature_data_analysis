@@ -92,7 +92,7 @@ ggsave(
     width = width,
     height = height,
     units = "in",
-    dpi = 300
+    dpi = 600
 )
 plot
 
@@ -124,6 +124,7 @@ plot <- (
         y = "Number of Publications",
         title = "Cell Death Publications Over Time until 2023"
     )
+    + xlim(min(df$year), 2024)
     # center title
     + theme(
         plot.title = element_text(

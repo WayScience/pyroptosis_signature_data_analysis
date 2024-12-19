@@ -82,7 +82,7 @@ plot <- (
         color = "Cell Death Type",
         x = "Year",
         y = "Number of Publications",
-        title = "Cell Death Publications Over Time until 2023"
+        title = "Cell Death Publications Over Time until 2024"
     )
 )
 # save the plot
@@ -122,7 +122,7 @@ plot <- (
         color = "Cell Death Type",
         x = "Year",
         y = "Number of Publications",
-        title = "Cell Death Publications Over Time until 2023"
+        title = "Cell Death Publications Over Time until 2024"
     )
     + xlim(min(df$year), 2024)
     # center title

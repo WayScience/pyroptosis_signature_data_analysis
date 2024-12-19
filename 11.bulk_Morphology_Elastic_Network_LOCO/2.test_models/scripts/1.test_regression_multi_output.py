@@ -222,9 +222,10 @@ if shuffle == "shuffled_baseline":
 predictions = model.predict(data_x)
 
 
-# In[14]:
+# In[ ]:
 
 
+# get the explained variance
 explained_variance = explained_variance_score(y_selected, predictions)
 output_metric_scores["explained_variance"] = explained_variance
 neg_mean_absolute_error = -mean_squared_error(y_selected, predictions)
@@ -237,6 +238,7 @@ output_metric_scores["treatment"] = metadata[
 ]
 output_metric_scores["well"] = metadata["Metadata_Well"].values
 df = pd.DataFrame.from_dict(output_metric_scores)
+# add the metrics to the dataframe
 df["r2"] = r2
 df["cytokine"] = cytokine
 df["data_split"] = data_split
@@ -262,9 +264,12 @@ results_df["channel_feature_combinations_key"] = feature_combinations_key
 results_df.head()
 
 
-# In[16]:
+# In[ ]:
 
 
+# drop columns that are not needed
+# and then group by cytokine, data_split, shuffle, and channel_feature_combinations_key
+# then calculate the variance
 var_df = results_df.drop(
     columns=[
         "explained_variance",

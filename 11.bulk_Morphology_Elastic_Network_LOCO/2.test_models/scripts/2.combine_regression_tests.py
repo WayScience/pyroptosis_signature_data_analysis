@@ -4,7 +4,6 @@
 # In[1]:
 
 
-import argparse
 import pathlib
 
 import pandas as pd
@@ -12,12 +11,14 @@ import pandas as pd
 # In[2]:
 
 
-argparser = argparse.ArgumentParser()
-argparser.add_argument("--cell_type", type=str, default="cell_type")
+# argparser = argparse.ArgumentParser()
+# argparser.add_argument("--cell_type", type=str, default="cell_type")
 
-args = argparser.parse_args()
+# args = argparser.parse_args()
 
-cell_type = args.cell_type
+# cell_type = args.cell_type
+
+cell_type = "PBMC"
 
 
 # In[3]:

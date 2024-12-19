@@ -122,7 +122,7 @@ cytokine_scatter_plot1 <- (
         data = cytokine_values,
         aes(
             x = `IL-1 beta [NSU]`,
-            y = `CCL24 [NSU]`,
+            y = `TNF alpha [NSU]`,
             color = group_treatment,
             shape = group_treatment
         )
@@ -130,7 +130,7 @@ cytokine_scatter_plot1 <- (
     + geom_point(size = 5, alpha = 0.7)
     + theme_bw()
     + xlab("IL-1 beta Abundance")
-    + ylab("CCL24 alpha Abundance")
+    + ylab("TNF alpha Abundance")
     + xlim(-0.1, 1)
     + ylim(-0.1, 1)
     # rename legend title
@@ -365,7 +365,7 @@ cytokine_scatter_plot1 <- (
     + geom_point(size = 5, alpha = 0.7)
     + theme_bw()
     + xlab("IL-1 beta abundance")
-    + ylab("CCL4 abundance")
+    + ylab("CCL24 abundance")
     + xlim(-0.1, 1.1)
     + ylim(-0.1, 1.1)
     # x scale breaks
@@ -1214,8 +1214,8 @@ sfig_pt1
 
 # sfig_pt2
 sfig_pt2 <- (
-    wrap_elements(full = cytokine_scatter_plot2)
-    + wrap_elements(full = cytokine_scatter_plot1)
+    wrap_elements(full = cytokine_scatter_plot1)
+    + wrap_elements(full = cytokine_scatter_plot2)
 
     + wrap_elements(full = UMAP_plot)
     + plot_layout(design = design, widths = c(0.3,15), heights = c())

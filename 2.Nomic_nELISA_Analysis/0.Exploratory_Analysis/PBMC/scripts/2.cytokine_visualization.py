@@ -55,7 +55,7 @@ output_path = pathlib.Path(
 df.to_csv(output_path, index=False)
 
 
-# In[12]:
+# In[5]:
 
 
 # plot scatter plot of all the treatment groups for IL-1 beta

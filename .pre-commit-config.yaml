@@ -1,6 +1,6 @@
 repos:
 -   repo: https://gitlab.com/vojko.pribudic.foss/pre-commit-update
-    rev: v0.6.0post1  # Insert the latest tag here
+    rev: v0.6.1       # Insert the latest tag here
     hooks:
     -   id: pre-commit-update
         args: [--exclude, black, --keep, isort]
@@ -21,7 +21,7 @@ repos:
         language_version: python3.10
 
 -   repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.9.0
+    rev: 1.9.1
     hooks:
     -   id: nbqa-isort
         additional_dependencies: [isort==5.6.4]

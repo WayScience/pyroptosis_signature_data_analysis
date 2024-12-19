@@ -54,9 +54,8 @@ image_path_columns = [
     "image_Mitochondria_crop_path",
 ]
 for path_type in image_path_columns:
-    print(path_type)
+    # print(path_type)
     for image_path in df[path_type]:
-        print(image_path)
         # open the image
         image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         # image to array
@@ -64,11 +63,12 @@ for path_type in image_path_columns:
         resolution = 3.3446  # pixels per micrometer
         # get the image size
         image_size = image_array.shape
-        if image_array.shape[1] <= 100:
+        print(image_size)
+        if image_array.shape[1] <= 500:
             scale_bar_length = 5  # um
             scale_bar_height = 1  # pixels
             padding = 3  # pixels
-        elif image_array.shape[1] > 100:
+        elif image_array.shape[1] > 500:
             scale_bar_length = 100
             scale_bar_height = 10
             padding = 10
@@ -92,3 +92,40 @@ for path_type in image_path_columns:
         # save the image with the scale bar via cv2
         cv2.imwrite(image_path, new)
 #
+
+
+# In[5]:
+
+
+image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+print(image_path)
+# image to array
+print(image)
+image_array = np.array(image)
+resolution = 3.3446  # pixels per micrometer
+# get the image size
+image_size = image_array.shape
+print(image_size)
+if image_array.shape[1] <= 500:
+    scale_bar_length = 5  # um
+    scale_bar_height = 1  # pixels
+    padding = 3  # pixels
+elif image_array.shape[1] > 500:
+    scale_bar_length = 100
+    scale_bar_height = 10
+    padding = 10
+# get the bottom right most corner based on scale 1 % of pixels
+scale_bar_x = image_size[1] - (scale_bar_length * resolution) - padding - padding
+scale_bar_y = image_size[0] - (scale_bar_height) - padding
+print(scale_bar_x, scale_bar_y)
+# draw the scale bar
+new = cv2.rectangle(
+    image_array,
+    (int(scale_bar_x), int(scale_bar_y)),
+    (image_size[1] - padding, image_size[0] - padding),
+    (255, 255, 255),
+    -1,
+)
+# show the image
+# plt.imshow(new)
+# plt.show()

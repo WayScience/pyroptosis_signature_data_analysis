@@ -107,7 +107,7 @@ composite_image_out_dir_path.mkdir(parents=True, exist_ok=True)
 #####
 
 image_dir_path = pathlib.Path(
-    "/home/lippincm/Desktop/18T/interstellar_data/70117_20230210MM1_Gasdermin514_CP_BC430856__2023-03-22T15_42_38-Measurement1/2.IC/"
+    "/home/lippincm/Desktop/18TB/interstellar_data/70117_20230210MM1_Gasdermin514_CP_BC430856__2023-03-22T15_42_38-Measurement1/2.IC/"
 ).resolve(strict=True)
 
 
@@ -443,7 +443,7 @@ image_basename_5 = "p04-ch5sk1fk1fl1_IC.tiff"
 
 
 # set constants for the loop
-radius = 50
+radius = 100
 # define the number of cells to select
 n = 5
 

@@ -54,9 +54,8 @@ image_path_columns = [
     "image_Mitochondria_crop_path",
 ]
 for path_type in image_path_columns:
-    print(path_type)
+    # print(path_type)
     for image_path in df[path_type]:
-        print(image_path)
         # open the image
         image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         # image to array
@@ -64,11 +63,12 @@ for path_type in image_path_columns:
         resolution = 3.3446  # pixels per micrometer
         # get the image size
         image_size = image_array.shape
-        if image_array.shape[1] <= 100:
+        print(image_size)
+        if image_array.shape[1] <= 500:
             scale_bar_length = 5  # um
             scale_bar_height = 1  # pixels
             padding = 3  # pixels
-        elif image_array.shape[1] > 100:
+        elif image_array.shape[1] > 500:
             scale_bar_length = 100
             scale_bar_height = 10
             padding = 10

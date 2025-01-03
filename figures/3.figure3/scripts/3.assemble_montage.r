@@ -23,17 +23,12 @@ main_df = arrow::read_parquet(main_df_path)
 unique(main_df$comparison)
 
 # split the df by comparison
-control_pyroptosis <- main_df %>% filter(comparison == "control_pyroptosis")
-apoptosis_control <- main_df %>% filter(comparison == "apoptosis_control")
-apoptosis_pyroptosis <- main_df %>% filter(comparison == "apoptosis_pyroptosis")
-length((control_pyroptosis$comparison))
-length((apoptosis_control$comparison))
-length((apoptosis_pyroptosis$comparison))
-
-# define empty dictionary
-dict_of_features = {}
-dict_of_groups = {}
-dict_of_all = {}
+control <- main_df %>% filter(group == "Control")
+apoptosis <- main_df %>% filter(group == "Apoptosis")
+pyroptosis <- main_df %>% filter(group == "Pyroptosis")
+length((control$group))
+length((apoptosis$group))
+length((pyroptosis$group))
 
 width <- 2
 height <- 2
@@ -60,205 +55,6 @@ add_title <- function(plot, title){
     plot + ggtitle(title) + theme(plot.title = element_text(size = 14, hjust = 0.5))
 }
 
-# split the feature column into separate columns
-control_pyroptosis <- control_pyroptosis %>%
-    tidyr::separate(
-        feature,
-        into = c(
-            "compartment",
-            "feature_group",
-            "measurement",
-            "channel",
-            "parameter1",
-            "parameter2"
-        ),
-        sep = "_",
-        remove = FALSE
-    ) %>%
-    dplyr::mutate(channel_cleaned = channel)
-    # Clean channel for visualization
-control_pyroptosis$channel_learned <- dplyr::recode(control_pyroptosis$channel,
-            "CorrDNA" = "Nuclei",
-            "CorrMito" = "Mito",
-            "CorrER" = "ER",
-            "CorrGasdermin" = "Gasdermin D",
-            "CorrPM" = "PM",
-            .default = "other",
-            .missing="other"
-    )
-# split the feature column into separate columns
-apoptosis_control <- apoptosis_control %>%
-    tidyr::separate(
-        feature,
-        into = c(
-            "compartment",
-            "feature_group",
-            "measurement",
-            "channel",
-            "parameter1",
-            "parameter2"
-        ),
-        sep = "_",
-        remove = FALSE
-    ) %>%
-    dplyr::mutate(channel_cleaned = channel)
-    # Clean channel for visualization
-apoptosis_control$channel_learned <- dplyr::recode(apoptosis_control$channel,
-            "CorrDNA" = "Nuclei",
-            "CorrMito" = "Mito",
-            "CorrER" = "ER",
-            "CorrGasdermin" = "Gasdermin D",
-            "CorrPM" = "PM",
-            .default = "other",
-            .missing="other"
-    )
-
-
-# split the feature column into separate columns
-apoptosis_pyroptosis <- apoptosis_pyroptosis %>%
-    tidyr::separate(
-        feature,
-        into = c(
-            "compartment",
-            "feature_group",
-            "measurement",
-            "channel",
-            "parameter1",
-            "parameter2"
-        ),
-        sep = "_",
-        remove = FALSE
-    ) %>%
-    dplyr::mutate(channel_cleaned = channel)
-    # Clean channel for visualization
-apoptosis_pyroptosis$channel_learned <- dplyr::recode(apoptosis_pyroptosis$channel,
-            "CorrDNA" = "Nuclei",
-            "CorrMito" = "Mito",
-            "CorrER" = "ER",
-            "CorrGasdermin" = "Gasdermin D",
-            "CorrPM" = "PM",
-            .default = "other",
-            .missing="other"
-    )
-
-
-# change the text in the dfs
-control_pyroptosis$comparison <- "Control vs. Pyroptosis"
-apoptosis_control$comparison <- "Apoptosis vs. Control"
-apoptosis_pyroptosis$comparison <- "Apoptosis vs. Pyroptosis"
-
-# select rows to keep in the df by index
-rows_to_keep = c(5,10,12)
-control_pyroptosis = control_pyroptosis[rows_to_keep,]
-
-# loop through the rows of the df and plot the images
-list_of_plots_control_pyroptosis <- c()
-for (i in 1:nrow(control_pyroptosis)){
-    list_of_plots_control_pyroptosis[[i]] <- get_image(control_pyroptosis, i)
-}
-
-# get the subtitle from each item in the list
-ggplot_objects_control_pyroptosis <- Map(
-    add_title,
-    plot = list_of_plots_control_pyroptosis,
-    title = (
-        paste0(control_pyroptosis$comparison, "\n",
-        control_pyroptosis$group, "\n",
-        control_pyroptosis$compartment, "\n",
-        control_pyroptosis$feature_group, "\n",
-        control_pyroptosis$measurement, "\n",
-        control_pyroptosis$channel_cleaned
-
-        )))
-
-# select rows to keep in the df by index
-rows_to_keep = c(3,9,13)
-apoptosis_control = apoptosis_control[rows_to_keep,]
-
-# loop through the rows of the df and plot the images
-list_of_plots_apoptosis_control <- c()
-for (i in 1:nrow(apoptosis_control)){
-    list_of_plots_apoptosis_control[[i]] <- get_image(apoptosis_control, i)
-}
-
-# get the subtitle from each item in the list
-ggplot_objects_apoptosis_control <- Map(
-    add_title,
-    plot = list_of_plots_apoptosis_control,
-    title = (
-        paste0(apoptosis_control$comparison, "\n",
-        apoptosis_control$group, "\n",
-        apoptosis_control$compartment, "\n",
-        apoptosis_control$feature_group, "\n",
-        apoptosis_control$measurement
-        )))
-
-
-apoptosis_pyroptosis__control <- apoptosis_pyroptosis %>% filter(group == "Control")
-apoptosis_pyroptosis__pyroptosis <- apoptosis_pyroptosis %>% filter(group == "Pyroptosis")
-apoptosis_pyroptosis__apoptosis <- apoptosis_pyroptosis %>% filter(group == "Apoptosis")
-
-control_pyroptosis__control <- control_pyroptosis %>% filter(group == "Control")
-control_pyroptosis__pyroptosis <- control_pyroptosis %>% filter(group == "Pyroptosis")
-control_pyroptosis__apoptosis <- control_pyroptosis %>% filter(group == "Apoptosis")
-
-apoptosis_control__control <- apoptosis_control %>% filter(group == "Control")
-apoptosis_control__pyroptosis <- apoptosis_control %>% filter(group == "Pyroptosis")
-apoptosis_control__apoptosis <- apoptosis_control %>% filter(group == "Apoptosis")
-
-
-list_of_plots_apoptosis_pyroptosis <- c()
-for (i in 1:nrow(apoptosis_pyroptosis)){
-    list_of_plots_apoptosis_pyroptosis[[i]] <- get_image(apoptosis_pyroptosis, i)
-}
-
-# get the subtitle from each item in the list
-ggplot_objects_apoptosis_pyroptosis <- Map(
-    add_title,
-    plot = list_of_plots_apoptosis_pyroptosis,
-    title = (
-        paste0(apoptosis_pyroptosis$comparison, "\n",
-        apoptosis_pyroptosis$group, "\n",
-        apoptosis_pyroptosis$compartment, "\n",
-        apoptosis_pyroptosis$feature_group, "\n",
-        apoptosis_pyroptosis$measurement, "\n",
-        apoptosis_pyroptosis$channel_cleaned
-
-        )))
-
-length(ggplot_objects_apoptosis_pyroptosis)
-
-width <- 17
-height <- 10
-options(repr.plot.width = width, repr.plot.height = height)
-# stich the images together
-control_pyroptosis_images <- (
-    # plot image with
-    ggplot_objects_apoptosis_pyroptosis[[3]]
-    + ggplot_objects_apoptosis_pyroptosis[[11]]
-    + ggplot_objects_apoptosis_pyroptosis[[17]]
-
-    + plot_layout(ncol = 3)
-)
-control_pyroptosis_images
-# save the image
-ggsave(
-    file.path(
-        paste0(
-            "../figures/",CELL_TYPE,"_anova_images_compisite.png"
-        )
-    ),
-    control_pyroptosis_images, width = width, height = height, dpi = 600
-)
-
-# select rows to keep in the df by index
-rows_to_keep = c(3,10,15)
-apoptosis_pyroptosis <- apoptosis_pyroptosis[rows_to_keep,]
-
-# save the df
-write.csv(apoptosis_pyroptosis, "../results/features_values.csv", row.names = FALSE)
-head(apoptosis_pyroptosis)
-
 load_image <- function(path){
     img <- png::readPNG(path)
     # Convert the image to a raster object
@@ -272,28 +68,227 @@ load_image <- function(path){
 }
 
 
-apoptosis_pyroptosis
+# split the feature column into separate columns
+control <- control %>%
+    tidyr::separate(
+        feature,
+        into = c(
+            "compartment",
+            "feature_group",
+            "measurement",
+            "channel",
+            "parameter1",
+            "parameter2"
+        ),
+        sep = "_",
+        remove = FALSE
+    ) %>%
+    dplyr::mutate(channel_cleaned = channel)
+    # Clean channel for visualization
+control$channel_learned <- dplyr::recode(control$channel,
+            "CorrDNA" = "Nuclei",
+            "CorrMito" = "Mito",
+            "CorrER" = "ER",
+            "CorrGasdermin" = "Gasdermin D",
+            "CorrPM" = "PM",
+            .default = "other",
+            .missing="other"
+    )
+# split the feature column into separate columns
+apoptosis <- apoptosis %>%
+    tidyr::separate(
+        feature,
+        into = c(
+            "compartment",
+            "feature_group",
+            "measurement",
+            "channel",
+            "parameter1",
+            "parameter2"
+        ),
+        sep = "_",
+        remove = FALSE
+    ) %>%
+    dplyr::mutate(channel_cleaned = channel)
+    # Clean channel for visualization
+apoptosis$channel_learned <- dplyr::recode(apoptosis$channel,
+            "CorrDNA" = "Nuclei",
+            "CorrMito" = "Mito",
+            "CorrER" = "ER",
+            "CorrGasdermin" = "Gasdermin D",
+            "CorrPM" = "PM",
+            .default = "other",
+            .missing="other"
+    )
 
-control_dapi_image_path <- apoptosis_pyroptosis$image_DAPI_crop_path[1]
-control_er_path <- apoptosis_pyroptosis$image_ER_crop_path[1]
-control_gasdermin_path <- apoptosis_pyroptosis$image_GasderminD_crop_path[1]
-control_pm_path <- apoptosis_pyroptosis$image_AGP_crop_path[1]
-control_mito_path <- apoptosis_pyroptosis$image_Mitochondria_crop_path[1]
-control_composite_path <- apoptosis_pyroptosis$image_compsite_crop_path[1]
 
-apoptosis_dapi_image_path <- apoptosis_pyroptosis$image_DAPI_crop_path[2]
-apoptosis_er_path <- apoptosis_pyroptosis$image_ER_crop_path[2]
-apoptosis_gasdermin_path <- apoptosis_pyroptosis$image_GasderminD_crop_path[2]
-apoptosis_pm_path <- apoptosis_pyroptosis$image_AGP_crop_path[2]
-apoptosis_mito_path <- apoptosis_pyroptosis$image_Mitochondria_crop_path[2]
-apoptosis_composite_path <- apoptosis_pyroptosis$image_compsite_crop_path[2]
+# split the feature column into separate columns
+pyroptosis <- pyroptosis %>%
+    tidyr::separate(
+        feature,
+        into = c(
+            "compartment",
+            "feature_group",
+            "measurement",
+            "channel",
+            "parameter1",
+            "parameter2"
+        ),
+        sep = "_",
+        remove = FALSE
+    ) %>%
+    dplyr::mutate(channel_cleaned = channel)
+    # Clean channel for visualization
+pyroptosis$channel_learned <- dplyr::recode(pyroptosis$channel,
+            "CorrDNA" = "Nuclei",
+            "CorrMito" = "Mito",
+            "CorrER" = "ER",
+            "CorrGasdermin" = "Gasdermin D",
+            "CorrPM" = "PM",
+            .default = "other",
+            .missing="other"
+    )
 
-pyroptosis_dapi_image_path <- apoptosis_pyroptosis$image_DAPI_crop_path[3]
-pyroptosis_er_path <- apoptosis_pyroptosis$image_ER_crop_path[3]
-pyroptosis_gasdermin_path <- apoptosis_pyroptosis$image_GasderminD_crop_path[3]
-pyroptosis_pm_path <- apoptosis_pyroptosis$image_AGP_crop_path[3]
-pyroptosis_mito_path <- apoptosis_pyroptosis$image_Mitochondria_crop_path[3]
-pyroptosis_composite_path <- apoptosis_pyroptosis$image_compsite_crop_path[3]
+print(dim(control))
+print(dim(apoptosis))
+print(dim(pyroptosis))
+
+# select rows to keep in the df by index
+# rows_to_keep = c(1,8,15)
+# control = control[rows_to_keep,]
+
+# loop through the rows of the df and plot the images
+list_of_plots_control_plot <- c()
+for (i in 1:nrow(control)){
+    list_of_plots_control_plot[[i]] <- get_image(control, i)
+}
+
+# get the subtitle from each item in the list
+ggplot_objects_control <- Map(
+    add_title,
+    plot = list_of_plots_control_plot,
+    title = (
+        paste0(control$comparison, "\n",
+        control$group, "\n",
+        control$compartment, "\n",
+        control$feature_group, "\n",
+        control$measurement, "\n",
+        control$channel_cleaned
+
+        )))
+length(ggplot_objects_control)
+width <- 17
+height <- 10
+options(repr.plot.width = width, repr.plot.height = height)
+# stich the images together
+control_images <- (
+    # plot image with
+    list_of_plots_control_plot[[1]]
+    + list_of_plots_control_plot[[2]]
+    + list_of_plots_control_plot[[3]]
+    + list_of_plots_control_plot[[4]]
+    + list_of_plots_control_plot[[5]]
+
+    + plot_layout(ncol = 3)
+)
+control_images
+
+# loop through the rows of the df and plot the images
+list_of_plots_apoptosis <- c()
+for (i in 1:nrow(apoptosis)){
+    list_of_plots_apoptosis[[i]] <- get_image(apoptosis, i)
+}
+
+# get the subtitle from each item in the list
+apoptosis_list <- Map(
+    add_title,
+    plot = list_of_plots_apoptosis,
+    title = (
+        paste0(apoptosis$comparison, "\n",
+        apoptosis$group, "\n",
+        apoptosis$compartment, "\n",
+        apoptosis$feature_group, "\n",
+        apoptosis$measurement
+        )))
+width <- 17
+height <- 10
+options(repr.plot.width = width, repr.plot.height = height)
+# stich the images together
+apoptosis_images <- (
+    # plot image with
+    list_of_plots_apoptosis[[1]]
+    + list_of_plots_apoptosis[[2]]
+    + list_of_plots_apoptosis[[3]]
+    + list_of_plots_apoptosis[[4]]
+    + list_of_plots_apoptosis[[5]]
+
+    + plot_layout(ncol = 3)
+)
+apoptosis_images
+
+list_of_plots_pyroptosis <- c()
+for (i in 1:nrow(pyroptosis)){
+    list_of_plots_pyroptosis[[i]] <- get_image(pyroptosis, i)
+}
+
+# get the subtitle from each item in the list
+ggplot_objects_pyroptosis <- Map(
+    add_title,
+    plot = list_of_plots_pyroptosis,
+    title = (
+        paste0(pyroptosis$comparison, "\n",
+        pyroptosis$group, "\n",
+        pyroptosis$compartment, "\n",
+        pyroptosis$feature_group, "\n",
+        pyroptosis$measurement, "\n",
+        pyroptosis$channel_cleaned
+
+        )))
+
+width <- 17
+height <- 10
+options(repr.plot.width = width, repr.plot.height = height)
+# stich the images together
+pyroptosis_images <- (
+    # plot image with
+    list_of_plots_pyroptosis[[1]]
+    + list_of_plots_pyroptosis[[2]]
+    + list_of_plots_pyroptosis[[3]]
+    + list_of_plots_pyroptosis[[4]]
+    + list_of_plots_pyroptosis[[5]]
+
+    + plot_layout(ncol = 3)
+)
+pyroptosis_images
+
+control_index <- 2
+apoptosis_index <- 1
+pyroptosis_index <- 4
+# get the subset
+control_subset <- control[control_index,]
+apoptosis_subset <- apoptosis[apoptosis_index,]
+pyroptosis_subset <- pyroptosis[pyroptosis_index,]
+
+control_dapi_image_path <- control$image_DAPI_crop_path[1]
+control_er_path <- control$image_ER_crop_path[1]
+control_gasdermin_path <- control$image_GasderminD_crop_path[1]
+control_pm_path <- control$image_AGP_crop_path[1]
+control_mito_path <- control$image_Mitochondria_crop_path[1]
+control_composite_path <- control$image_compsite_crop_path[1]
+
+apoptosis_dapi_image_path <- apoptosis$image_DAPI_crop_path[2]
+apoptosis_er_path <- apoptosis$image_ER_crop_path[2]
+apoptosis_gasdermin_path <- apoptosis$image_GasderminD_crop_path[2]
+apoptosis_pm_path <- apoptosis$image_AGP_crop_path[2]
+apoptosis_mito_path <- apoptosis$image_Mitochondria_crop_path[2]
+apoptosis_composite_path <- apoptosis$image_compsite_crop_path[2]
+
+pyroptosis_dapi_image_path <- pyroptosis$image_DAPI_crop_path[3]
+pyroptosis_er_path <- pyroptosis$image_ER_crop_path[3]
+pyroptosis_gasdermin_path <- pyroptosis$image_GasderminD_crop_path[3]
+pyroptosis_pm_path <- pyroptosis$image_AGP_crop_path[3]
+pyroptosis_mito_path <- pyroptosis$image_Mitochondria_crop_path[3]
+pyroptosis_composite_path <- pyroptosis$image_compsite_crop_path[3]
 
 # load images
 control_dapi_image <- load_image(control_dapi_image_path)
@@ -344,131 +339,6 @@ list_of_images <- list(
 )
 
 
-
-# import morphology data
-columns_to_import <- c("oneb_Metadata_Treatment_Dose_Inhibitor_Dose", "Cytoplasm_RadialDistribution_ZernikeMagnitude_CorrER_9_9")
-# path to the parquet file
-morphology_path <- file.path(
-    "..","..","..","data","PBMC_preprocessed_sc_norm.parquet"
-)
-
-# read in the parquet file with certain columns
-morphology_df <- arrow::read_parquet(morphology_path, col_select = all_of(columns_to_import))
-
-control_value <- apoptosis_pyroptosis$Cells_RadialDistribution_ZernikeMagnitude_CorrPM_6_4[1]
-apoptosis_value <- apoptosis_pyroptosis$Cells_RadialDistribution_ZernikeMagnitude_CorrPM_6_4[2]
-pyroptosis_value <- apoptosis_pyroptosis$Cells_RadialDistribution_ZernikeMagnitude_CorrPM_6_4[3]
-
-
-morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- ifelse(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose == "Flagellin_0.100_ug_per_ml_DMSO_0.000_%", "Flagellin_0.100_ug_per_ml_DMSO_0.025_%", morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
-morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- ifelse(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose == "media_ctr_0.0_0_Media_0_0", "media_ctr_0.0_0_Media_ctr_0.0_0", morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
-morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- ifelse(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose == "Flagellin_1.000_ug_per_ml_DMSO_0.000_%", "Flagellin_1.000_ug_per_ml_DMSO_0.0_%", morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
-morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- ifelse(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose == "Flagellin_1.000_0_Disulfiram_1.000_uM", "Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM", morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
-morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- ifelse(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose == "Flagellin_1.000_ug_per_ml_DMSO_0.000_%", "Flagellin_1.000_ug_per_ml_DMSO_0.0_%", morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
-morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- ifelse(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose == "Flagellin_1.000_0_DMSO_0.025_%", "Flagellin_1.000_ug_per_ml_DMSO_0.0_%", morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
-
-
-length(unique(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose))
-unique(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
-
-# read in the ground truth data
-data_path_ground_truth <- file.path("../../../4.sc_Morphology_Neural_Network_MLP_Model/MLP_utils/ground_truth.toml")
-ground_truth <- parseTOML(data_path_ground_truth)
-# make a a list of the treatments that are in the ground truth data
-apoptosis_ground_truth_list <- c(ground_truth$Apoptosis$apoptosis_groups_list)
-pyroptosis_ground_truth_list <- c(ground_truth$Pyroptosis$pyroptosis_groups_list)
-control_ground_truth_list <- c(ground_truth$Healthy$healthy_groups_list)
-
-control_ground_truth_list
-apoptosis_ground_truth_list
-pyroptosis_ground_truth_list
-# replace
-
-# make a new column that is the treatment group based on the ground truth data
-morphology_df$group <- ifelse(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% apoptosis_ground_truth_list, "Apoptosis",
-                                ifelse(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% pyroptosis_ground_truth_list, "Pyroptosis",
-                                       ifelse(morphology_df$oneb_Metadata_Treatment_Dose_Inhibitor_Dose %in% control_ground_truth_list, "Control", "NA")))
-# make the group column a factor
-morphology_df$group <- factor(morphology_df$group, levels = c("Control","Apoptosis", "Pyroptosis"))
-
-unique(morphology_df$group)
-
-
-head(morphology_df)
-# get only rows that contain the control or apoptosis or pyroptosis
-control_df <- morphology_df %>% filter(group == "Control")
-apoptosis_df <- morphology_df %>% filter(group == "Apoptosis")
-pyroptosis_df <- morphology_df %>% filter(group == "Pyroptosis")
-
-width <- 17
-height <- 5
-options(repr.plot.width = width, repr.plot.height = height)
-# histogram of the zernike phase correlation of gasdermin 9_1
-hist_plot_control <- (
-    ggplot(control_df, aes(x = Cytoplasm_RadialDistribution_ZernikeMagnitude_CorrER_9_9))
-    + geom_density(aes(fill = group), alpha = 0.5)
-    # change color of the fill
-    + scale_fill_manual(values = brewer.pal(3, "Dark2")[2])
-    + figure_theme
-    + labs(
-        x = "Zernike Phase of Gasdermin",
-        y = "Density",
-    )
-    # add verticle line per facet
-    + geom_vline(
-        aes(xintercept = control_value),
-        color = "black",
-        linetype = "dashed",
-
-    )
-)
-
-hist_plot_apoptosis <- (
-    ggplot(apoptosis_df, aes(x = Cytoplasm_RadialDistribution_ZernikeMagnitude_CorrER_9_9))
-    + geom_density(aes(fill = group), alpha = 0.5)
-    # change color of the fill
-    + scale_fill_manual(values = brewer.pal(3, "Dark2")[1])
-    + figure_theme
-    + labs(
-        x = "Zernike Phase of Gasdermin",
-        y = "Density",
-    )
-    # add verticle line per facet
-    + geom_vline(
-        aes(xintercept = apoptosis_value),
-        color = "black",
-        linetype = "dashed",
-
-    )
-)
-
-hist_plot_pyroptosis <- (
-    ggplot(pyroptosis_df, aes(x = Cytoplasm_RadialDistribution_ZernikeMagnitude_CorrER_9_9))
-    + geom_density(aes(fill = group), alpha = 0.5)
-    # change color of the fill
-    + scale_fill_manual(values = brewer.pal(3, "Dark2")[3])
-    + figure_theme
-    + labs(
-        x = "Zernike Phase of Gasdermin",
-        y = "Density",
-    )
-    # add verticle line per facet
-    + geom_vline(
-        aes(xintercept = pyroptosis_value),
-        color = "black",
-        linetype = "dashed",
-
-    )
-)
-
-# remove the legend
-hist_plot_control <- hist_plot_control + theme(legend.position = "none")
-hist_plot_apoptosis <- hist_plot_apoptosis + theme(legend.position = "none")
-hist_plot_pyroptosis <- hist_plot_pyroptosis + theme(legend.position = "none")
-
-hist_plot_control
-hist_plot_apoptosis
-hist_plot_pyroptosis
 
 width <- 2.5
 height <- 2.5

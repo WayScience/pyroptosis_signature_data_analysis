@@ -3,11 +3,11 @@
 
 #SBATCH --nodes=1
 #SBATCH --ntasks=20
-#SBATCH --partition=amem
-#SBATCH --qos=mem
-#SBATCH --time=48:00:00
+#SBATCH --partition=amilan
+#SBATCH --qos=normal
+#SBATCH --time=24:00:00
 #SBATCH --output=sample-%j.out
-#SBATCH --array=1-750%20
+#SBATCH --array=1-750%100
 
 module load anaconda
 

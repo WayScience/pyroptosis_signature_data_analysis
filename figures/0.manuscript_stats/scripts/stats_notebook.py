@@ -9,6 +9,7 @@ import pathlib
 
 import numpy as np
 import pandas as pd
+import pyarrow.parquet as pq
 import toml
 
 # ## Morphology Feature space stats
@@ -31,55 +32,44 @@ norm_fs_data_path = pathlib.Path(
 
 
 # load in the normalized data
-norm_data = pd.read_parquet(norm_data_path)
+# norm_data = pd.read_parquet(norm_data_path)
 
+norm_schema = pq.read_schema(norm_data_path)
 
-# In[4]:
-
-
+# get a list of column names
+norm_cols = [col.name for col in norm_schema]
+print(len(norm_cols))
 # get columns that contain Metadata
-metadata_cols = [col for col in norm_data.columns if "Metadata" in col]
-metadata_df = norm_data[metadata_cols]
-features_df = norm_data.drop(metadata_cols, axis="columns")
-print(f"metadata_df shape: {metadata_df.shape}")
-print(f"features_df shape: {features_df.shape}")
-print(f"There are {metadata_df.shape[0]} cells in the dataset")
-print(f"There are {features_df.shape[1]} features in the dataset")
+metadata_cols = [col for col in norm_cols if "Metadata" in col]
+# remove metadata columns from the list of columns
+data_cols = [col for col in norm_cols if col not in metadata_cols]
+
+print(f"There are {len(data_cols)} data columns")
+print(f"There are {len(metadata_cols)} metadata columns")
 
 
-# In[5]:
-
-
-# remove the dfs from memory
-del norm_data
-del metadata_df
-del features_df
-# collect the garbage
-gc.collect()
+# In[ ]:
 
 
 # ## Check feature selected shape
 
-# In[6]:
+# In[4]:
 
 
-# load in the feature selected data
-norm_fs_df = pd.read_parquet(norm_fs_data_path)
+norm_fs_schema = pq.read_schema(norm_fs_data_path)
+
+# get a list of column names
+norm_cols = [col.name for col in norm_schema]
+print(len(norm_cols))
 # get columns that contain Metadata
-metadata_cols = [col for col in norm_fs_df.columns if "Metadata" in col]
-metadata_df = norm_fs_df[metadata_cols]
-features_df = norm_fs_df.drop(metadata_cols, axis="columns")
-print(f"metadata_df shape: {metadata_df.shape}")
-print(f"features_df shape: {features_df.shape}")
-print(f"There are {metadata_df.shape[0]} cells in the dataset")
-print(f"There are {features_df.shape[1]} features in the dataset")
+metadata_cols = [col for col in norm_cols if "Metadata" in col]
+# remove metadata columns from the list of columns
+data_cols = [col for col in norm_cols if col not in metadata_cols]
 
-# remove the dfs from memory
-del norm_fs_df
-del metadata_df
-del features_df
-# collect the garbage
-gc.collect()
+print(f"There are {len(data_cols)} data columns")
+print(f"There are {len(metadata_cols)} metadata columns")
+
+# get columns that contain Metadata
 
 norm_fs_df_subset = pd.read_parquet(
     norm_fs_data_path,
@@ -89,12 +79,10 @@ print(norm_fs_df_subset.shape)
 norm_fs_df_subset.head()
 
 
-# In[7]:
+# In[5]:
 
 
-import toml
-
-# load in the ground truth
+# path to the ground truth file
 ground_truth_file_path = pathlib.Path(
     "../../../4.sc_Morphology_Neural_Network_MLP_Model/MLP_utils/ground_truth.toml"
 ).resolve(strict=True)
@@ -134,7 +122,7 @@ norm_fs_df_subset["labels"] = norm_fs_df_subset.apply(
 norm_fs_df_subset.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 
-# In[8]:
+# In[6]:
 
 
 # print the number of samples in each class
@@ -211,3 +199,219 @@ print(
 # sort the shuffled models by r2 score from low to high
 final_models.sort_values(by="r2", ascending=True, inplace=True)
 final_models.head()
+
+
+# ## LOCO ENET stats
+
+# In[58]:
+
+
+# set path for models performances
+model_performances_path = pathlib.Path(
+    "../../../11.bulk_Morphology_Elastic_Network_LOCO/2.test_models/results/regression/PBMC_aggregated_with_nomic/model_stats.csv"
+).resolve(strict=True)
+
+variance_r2_stats_path = pathlib.Path(
+    "../../../11.bulk_Morphology_Elastic_Network_LOCO/2.test_models/results/regression/PBMC_aggregated_with_nomic/variance_r2_stats.csv"
+).resolve(strict=True)
+
+model_performances = pd.read_csv(model_performances_path)
+print(model_performances.shape)
+model_performances.head()
+
+
+# In[59]:
+
+
+variance_r2_stats = pd.read_csv(variance_r2_stats_path)
+print(variance_r2_stats.shape)
+variance_r2_stats.head()
+
+
+# In[60]:
+
+
+# get only select keys
+model_performances = model_performances.loc[
+    model_performances["channel_feature_combinations_key"].isin(
+        [
+            "All_channels",
+            "CorrDNA_CorrGasdermin_CorrMito_CorrER",
+            "CorrDNA_CorrPM_CorrGasdermin_CorrER",
+            "CorrDNA_CorrPM_CorrGasdermin_CorrMito",
+            "CorrDNA_CorrPM_CorrMito_CorrER",
+            "CorrPM_CorrGasdermin_CorrMito_CorrER",
+        ]
+    )
+]
+# replace string values with more readable names
+model_performances["channel_feature_combinations_key"] = model_performances[
+    "channel_feature_combinations_key"
+].replace(
+    {
+        "All_channels": "All channels",
+        "CorrDNA_CorrGasdermin_CorrMito_CorrER": "PM removed",
+        "CorrDNA_CorrPM_CorrGasdermin_CorrER": "Mito removed",
+        "CorrDNA_CorrPM_CorrGasdermin_CorrMito": "ER removed",
+        "CorrDNA_CorrPM_CorrMito_CorrER": "Gasdermin removed",
+        "CorrPM_CorrGasdermin_CorrMito_CorrER": "DNA removed",
+    }
+)
+model_performances["channel_feature_combinations_key"].unique()
+
+
+# get only select keys
+variance_r2_stats = variance_r2_stats.loc[
+    variance_r2_stats["channel_feature_combinations_key"].isin(
+        [
+            "All_channels",
+            "CorrDNA_CorrGasdermin_CorrMito_CorrER",
+            "CorrDNA_CorrPM_CorrGasdermin_CorrER",
+            "CorrDNA_CorrPM_CorrGasdermin_CorrMito",
+            "CorrDNA_CorrPM_CorrMito_CorrER",
+            "CorrPM_CorrGasdermin_CorrMito_CorrER",
+        ]
+    )
+]
+
+# replace string values with more readable names
+variance_r2_stats["channel_feature_combinations_key"] = variance_r2_stats[
+    "channel_feature_combinations_key"
+].replace(
+    {
+        "All_channels": "All channels",
+        "CorrDNA_CorrGasdermin_CorrMito_CorrER": "PM removed",
+        "CorrDNA_CorrPM_CorrGasdermin_CorrER": "Mito removed",
+        "CorrDNA_CorrPM_CorrGasdermin_CorrMito": "ER removed",
+        "CorrDNA_CorrPM_CorrMito_CorrER": "Gasdermin removed",
+        "CorrPM_CorrGasdermin_CorrMito_CorrER": "DNA removed",
+    }
+)
+
+# drop the shuffled models
+model_performances = model_performances.loc[model_performances["shuffle"] == "final"]
+variance_r2_stats = variance_r2_stats.loc[variance_r2_stats["shuffle"] == "final"]
+print(model_performances.shape)
+
+print(variance_r2_stats.shape)
+
+
+# In[61]:
+
+
+model_performances
+# get the explained variance, MSE, R2 for each cytokine, data split, channel combination
+model_performances_grouped = model_performances.groupby(
+    ["cytokine", "data_split", "channel_feature_combinations_key"]
+).agg(
+    {
+        "explained_variance": "mean",
+        "neg_mean_squared_error": "mean",
+        "r2": "mean",
+    }
+)
+model_performances_grouped.reset_index(inplace=True)
+print(model_performances_grouped.shape)
+
+
+# ## Stats for 11A-C
+
+# In[63]:
+
+
+# get the global average of neg mean squared error, explained variance, and r2 for each channel combination
+channel_feature_combinations_key_global_avg = model_performances_grouped.groupby(
+    "channel_feature_combinations_key"
+).agg(
+    {
+        "explained_variance": "mean",
+        "neg_mean_squared_error": "mean",
+        "r2": "mean",
+    }
+)
+channel_feature_combinations_key_global_avg.reset_index(inplace=True)
+channel_feature_combinations_key_global_avg[
+    "percent_change_in_negMSE_compared_to_all_channels"
+] = (
+    (
+        channel_feature_combinations_key_global_avg["neg_mean_squared_error"]
+        - channel_feature_combinations_key_global_avg.loc[
+            channel_feature_combinations_key_global_avg[
+                "channel_feature_combinations_key"
+            ]
+            == "All channels",
+            "neg_mean_squared_error",
+        ].values[0]
+    )
+    / channel_feature_combinations_key_global_avg.loc[
+        channel_feature_combinations_key_global_avg["channel_feature_combinations_key"]
+        == "All channels",
+        "neg_mean_squared_error",
+    ].values[0]
+    * 100
+)
+channel_feature_combinations_key_global_avg[
+    "percent_change_in_explained_variance_compared_to_all_channels"
+] = (
+    (
+        channel_feature_combinations_key_global_avg["explained_variance"]
+        - channel_feature_combinations_key_global_avg.loc[
+            channel_feature_combinations_key_global_avg[
+                "channel_feature_combinations_key"
+            ]
+            == "All channels",
+            "explained_variance",
+        ].values[0]
+    )
+    / channel_feature_combinations_key_global_avg.loc[
+        channel_feature_combinations_key_global_avg["channel_feature_combinations_key"]
+        == "All channels",
+        "explained_variance",
+    ].values[0]
+    * 100
+)
+channel_feature_combinations_key_global_avg[
+    "percent_change_in_r2_compared_to_all_channels"
+] = (
+    (
+        channel_feature_combinations_key_global_avg["r2"]
+        - channel_feature_combinations_key_global_avg.loc[
+            channel_feature_combinations_key_global_avg[
+                "channel_feature_combinations_key"
+            ]
+            == "All channels",
+            "r2",
+        ].values[0]
+    )
+    / channel_feature_combinations_key_global_avg.loc[
+        channel_feature_combinations_key_global_avg["channel_feature_combinations_key"]
+        == "All channels",
+        "r2",
+    ].values[0]
+    * 100
+)
+channel_feature_combinations_key_global_avg
+
+
+# In[64]:
+
+
+# get the min and max r2 values for each channel combination
+channel_feature_combinations_key_min_max = model_performances_grouped.groupby(
+    "channel_feature_combinations_key"
+).agg(
+    {
+        "r2": ["min", "max"],
+    }
+)
+channel_feature_combinations_key_min_max.reset_index(inplace=True)
+channel_feature_combinations_key_min_max
+
+
+# In[ ]:
+
+
+# subset for IL-1beta across all channel combinations
+IL1beta_model_performances = model_performances_grouped.loc[
+    model_performances_grouped["cytokine"] == "IL-1beta"
+]

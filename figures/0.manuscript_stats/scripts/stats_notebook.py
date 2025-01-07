@@ -300,7 +300,7 @@ print(variance_r2_stats.shape)
 
 
 model_performances
-# # get the explained variance, MSE, R2 for each cytokine, data split, channel combination
+# get the explained variance, MSE, R2 for each cytokine, data split, channel combination
 model_performances_grouped = model_performances.groupby(
     ["cytokine", "data_split", "channel_feature_combinations_key"]
 ).agg(

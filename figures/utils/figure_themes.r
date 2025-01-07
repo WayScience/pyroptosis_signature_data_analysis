@@ -222,23 +222,28 @@ death_curve_colors <- c(
     'Thapsigargin 10.0 uM' = colorgrad8[2]
 )
 
-colors_4 <- c(
-    'Media' = colorgrad10[1],
-    'DMSO 0.025%' = colorgrad10[2],
-    'DMSO 1.0%' = colorgrad10[3],
-    'Disulfiram 0.1 uM' = colorgrad10[4],
-    'Disulfiram 1.0 uM' = colorgrad10[5],
-    'Disulfiram 2.5 uM' = colorgrad10[6],
-    'Z-VAD-FMK 30.0 uM' = colorgrad10[7],
-    'Z-VAD-FMK 100.0 uM' = colorgrad10[8]
-)
-
 inhibitor_color_pallete <- c(
+    "#41BDBF",
+    "#4B7F80",
     "#648FFF",
-    "#6490FE",
-    "#3E4454",
 
     "#785EF0",
-    "#DC267F",
-    "#FFB000",
+    "#8064FE",
+    "#423E54",
+
+    "#FE6100",
+    "#FE9F64"
 )
+
+colors_4 <- c(
+    'Media' = inhibitor_color_pallete[1],
+    'DMSO 0.025%' = inhibitor_color_pallete[2],
+    'DMSO 1.0%' = inhibitor_color_pallete[3],
+    'Disulfiram 0.1 uM' = inhibitor_color_pallete[4],
+    'Disulfiram 1.0 uM' = inhibitor_color_pallete[5],
+    'Disulfiram 2.5 uM' = inhibitor_color_pallete[6],
+    'Z-VAD-FMK 30.0 uM' = inhibitor_color_pallete[7],
+    'Z-VAD-FMK 100.0 uM' = inhibitor_color_pallete[8]
+)
+
+

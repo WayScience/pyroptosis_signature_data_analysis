@@ -82,7 +82,7 @@ norm_fs_df_subset.head()
 # In[5]:
 
 
-# paht to the ground truth file
+# path to the ground truth file
 ground_truth_file_path = pathlib.Path(
     "../../../4.sc_Morphology_Neural_Network_MLP_Model/MLP_utils/ground_truth.toml"
 ).resolve(strict=True)

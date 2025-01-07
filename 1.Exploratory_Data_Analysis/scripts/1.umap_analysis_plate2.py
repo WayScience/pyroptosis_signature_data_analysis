@@ -3,7 +3,7 @@
 
 # ## Plate 2
 
-# In[ ]:
+# In[1]:
 
 
 import itertools
@@ -17,7 +17,7 @@ import seaborn as sns
 import toml
 import umap
 
-# In[ ]:
+# In[2]:
 
 
 # Parameters
@@ -25,7 +25,7 @@ cell_type = "PBMC"
 sample = False
 
 
-# In[ ]:
+# In[3]:
 
 
 # read in toml file
@@ -39,7 +39,7 @@ print(len(list_of_treatments))
 print(list_of_treatments)
 
 
-# In[ ]:
+# In[4]:
 
 
 # Set path to parquet file
@@ -50,7 +50,7 @@ path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet").reso
 df = pq.read_table(path).to_pandas()
 
 
-# In[ ]:
+# In[5]:
 
 
 if sample:
@@ -64,7 +64,7 @@ else:
     pass
 
 
-# In[ ]:
+# In[6]:
 
 
 # Code snippet for metadata extraction by Jenna Tomkinson
@@ -74,7 +74,7 @@ df_descriptive = df[df_metadata]
 df_values = df.drop(columns=df_metadata)
 
 
-# In[ ]:
+# In[7]:
 
 
 # set umap parameters
@@ -88,29 +88,18 @@ umap_params = umap.UMAP(
 )
 
 
-# In[ ]:
+# In[8]:
 
 
 # fit and transform data for umap
 proj_2d = umap_params.fit_transform(df_values)
 # add umap coordinates to dataframe of metadata and raw data
-df_values["umap_1"] = proj_2d[:, 0]
-df_values["umap_2"] = proj_2d[:, 1]
+df_descriptive["umap_1"] = proj_2d[:, 0]
+df_descriptive["umap_2"] = proj_2d[:, 1]
 
 
-# In[ ]:
+# In[9]:
 
-
-df_values["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = df_descriptive[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-]
-
-
-# In[ ]:
-
-
-# randomize the rows of the dataframe to plot the order of the data evenly
-df_values = df_values.sample(frac=1, random_state=0)
 
 if sample:
     df_values_path = pathlib.Path(
@@ -123,23 +112,4 @@ else:
 # if path does not exist create it
 df_values_path.parent.mkdir(parents=True, exist_ok=True)
 # save the dataframe as a parquet file
-df_values.to_parquet(df_values_path)
-
-
-# In[ ]:
-
-
-# Figure Showing UMAP of Clusters vs Treatment
-# figure size set
-plt.figure(figsize=(10, 10))
-sns.scatterplot(
-    data=df_values,
-    x="umap_1",
-    y="umap_2",
-    hue="oneb_Metadata_Treatment_Dose_Inhibitor_Dose",
-    legend="full",
-    alpha=0.3,
-)
-plt.title("Visualized on umap")
-plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0)
-plt.show()
+df_descriptive.to_parquet(df_values_path)

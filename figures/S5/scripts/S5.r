@@ -17,7 +17,7 @@ suppressPackageStartupMessages(suppressWarnings(library(VennDiagram))) # venn di
 suppressPackageStartupMessages(suppressWarnings(library(tidyverse))) # data manipulation
 suppressPackageStartupMessages(suppressWarnings(library(ggvenn))) # venn diagram
 suppressPackageStartupMessages(suppressWarnings(library(grid))) # grid
-suppressPackageStartupMessages(suppressWarnings(library(Polychrome)))
+suppressPackageStartupMessages(suppressWarnings(library(Polychrome))) # color palette
 
 source("../../utils/figure_themes.r")
 
@@ -32,10 +32,11 @@ if(!dir.exists(figure_dir)){
 }
 
 cell_umap_path <- file.path(paste0(
-    "../","../","../","1.Exploratory_Data_Analysis/results/",cell_type,"_umap_values_morphology_sample_100.parquet"
+    "../","../","../","1.Exploratory_Data_Analysis/results/",cell_type,"_umap_values_morphology_all_cells.parquet"
 ))
 
 cell_umap <- arrow::read_parquet(cell_umap_path)
+print(paste0("Number of cells: ",nrow(cell_umap)))
 
 
 # Load data
@@ -48,9 +49,6 @@ ground_truth <- parseTOML(data_path_ground_truth)
 apoptosis_ground_truth_list <- c(ground_truth$Apoptosis$apoptosis_groups_list)
 pyroptosis_ground_truth_list <- c(ground_truth$Pyroptosis$pyroptosis_groups_list)
 control_ground_truth_list <- c(ground_truth$Healthy$healthy_groups_list)
-
-pyroptosis_ground_truth_list
-control_ground_truth_list
 
 
 
@@ -72,7 +70,6 @@ cell_umap$group <- factor(cell_umap$group, levels = c("Control","Apoptosis", "Py
 
 
 # mutate the names of each treatment
-
 cell_umap <- cell_umap %>%
     mutate(oneb_Metadata_Treatment_Dose_Inhibitor_Dose = case_when(
         oneb_Metadata_Treatment_Dose_Inhibitor_Dose =='DMSO_0.100_%_DMSO_0.025_%' ~ "DMSO 0.1% - DMSO 0.025%",
@@ -119,15 +116,13 @@ cell_umap <- cell_umap %>%
     # replace Media ctr 0.0 0 with Media
 cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- gsub("Media ctr 0.0 0", "Media", cell_umap$oneb_Metadata_Treatment_Dose_Inhibitor_Dose)
 
-head(cell_umap)
+
 # split the oneb_Metadata_Treatment_Dose_Inhibitor_Dose into two columns by the " - " delimiter
 cell_umap <- cell_umap %>%
     separate(oneb_Metadata_Treatment_Dose_Inhibitor_Dose, c("inducer", "inhibitor"), sep = " - ", remove = FALSE)
 
-unique(cell_umap$inducer)
 # replace the inhibitor NA with Media
 cell_umap$inhibitor <- ifelse(is.na(cell_umap$inhibitor), "Media", cell_umap$inhibitor)
-unique(cell_umap$inhibitor)
 
 # make the group_treatment column a factor
 cell_umap$inducer <- factor(
@@ -186,23 +181,20 @@ cell_umap$inhibitor <- factor(
     )
 )
 
-
-
-
 # set plot size
 width <- 17
 height <- 15
 options(repr.plot.width = width, repr.plot.height = height)
-umap_plot_all <- (
+cell_umap <- cell_umap %>% sample_frac(1)
+umap_plot_inducers <- (
     ggplot(cell_umap, aes(x = umap_1, y = umap_2))
 
     + geom_point(
         aes(
             color = inducer,
-            shape = inhibitor
         ),
-        size = 4,
-        alpha = 0.7
+        size = 0.25,
+        alpha = 0.1
     )
     + theme_bw()
     + figure_theme
@@ -251,7 +243,46 @@ umap_plot_all <- (
             'Topotecan 20.0 nM'
         ),
         values = colors)
-    + scale_shape_manual(
+
+    + theme(legend.position = "bottom")
+    + theme(legend.title.position = "top")
+
+    # set the legend columns to 4
+    # change legend alpha
+    + guides(color = guide_legend(ncol = 3, override.aes = list(alpha = 1, size = 5)))
+    + labs(
+        x = "UMAP 0",
+        y = "UMAP 1"
+    )
+)
+umap_plot_inducers
+
+
+# set plot size
+width <- 17
+height <- 15
+options(repr.plot.width = width, repr.plot.height = height)
+cell_umap <- cell_umap %>% sample_frac(1)
+umap_plot_inhibitors <- (
+    ggplot(cell_umap, aes(x = umap_1, y = umap_2))
+
+    + geom_point(
+        aes(
+            color = inhibitor,
+        ),
+        size = 0.25,
+        alpha = 0.1
+    )
+    + theme_bw()
+    + figure_theme
+
+    # rename legend title
+    + figure_theme
+        + theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1))
+            + theme(
+        legend.text = element_text(size = 16),
+        legend.title = element_text(size = 20, hjust = 0.5))
+    + scale_color_manual(
         name = "Inhibitor",
         labels = c(
             'Media',
@@ -264,30 +295,54 @@ umap_plot_all <- (
 
             'Z-VAD-FMK 30.0 uM',
             'Z-VAD-FMK 100.0 uM'
-
         ),
-        values = shapes
-    )
+        values = colors_4)
+
     + theme(legend.position = "bottom")
+    + theme(legend.title.position = "top")
     # set the legend columns to 4
     # change legend alpha
     + guides(color = guide_legend(ncol = 3, override.aes = list(alpha = 1, size = 5)))
-    + guides(shape = guide_legend(ncol = 1, override.aes = list(alpha = 1, size = 5)))
     + labs(
-        x = "UMAP 1",
-        y = "UMAP 2"
+        x = "UMAP 0",
+        y = "UMAP 1"
     )
 )
-umap_plot_all
-# save plot
+umap_plot_inhibitors
+
+
+layout <- c(
+    area(t=1, b=2, l=1, r=2),
+    area(t=1, b=2, l=3, r=4)
+)
+
+# patch work the plots together
+# set plot size
+width <- 20
+height <- 14
+options(repr.plot.width=width, repr.plot.height=height, units = "in", dpi = 600)
+
+figs5 <- (
+    # wrap_elements(full = umap_plot_inducers)
+    # + wrap_elements(full = umap_plot_inhibitors)
+    umap_plot_inducers
+    + umap_plot_inhibitors
+
+    + plot_layout(design = layout, heights = c(1, 1), widths = c(1, 1))
+    # make bottom plot not align
+    + plot_annotation(tag_levels = list(c("A", "B"))) & theme(plot.tag = element_text(size = 20))
+
+)
 ggsave(
     filename = file.path("..","figures", "S5.png"),
-    plot = umap_plot_all,
+    plot = figs5,
     width = width,
     height = height,
     units = "in",
     dpi = 600
 )
+
+figs5
 
 
 sessionInfo()

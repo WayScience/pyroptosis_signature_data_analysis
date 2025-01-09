@@ -82,6 +82,8 @@ colorgrad7 <- colorRampPalette(c("cyan", "darkcyan"))(4)
 colorgrad8 <- colorRampPalette(c("#ebb676", "darkorange"))(2)
 # col 9 - 3 hues
 colorgrad9 <- colorRampPalette(c("magenta", "#833b83"))(3)
+# col 10 - 8 hues preferably purple
+colorgrad10 <- colorRampPalette(c("purple", "darkblue"))(8)
 
 colors <- c(
     'Media' = colorgrad1[1],
@@ -219,3 +221,29 @@ death_curve_colors <- c(
     'Thapsigargin 1.0 uM' = colorgrad8[1],
     'Thapsigargin 10.0 uM' = colorgrad8[2]
 )
+
+inhibitor_color_pallete <- c(
+    "#41BDBF",
+    "#4B7F80",
+    "#648FFF",
+
+    "#785EF0",
+    "#8064FE",
+    "#423E54",
+
+    "#FE6100",
+    "#FE9F64"
+)
+
+colors_4 <- c(
+    'Media' = inhibitor_color_pallete[1],
+    'DMSO 0.025%' = inhibitor_color_pallete[2],
+    'DMSO 1.0%' = inhibitor_color_pallete[3],
+    'Disulfiram 0.1 uM' = inhibitor_color_pallete[4],
+    'Disulfiram 1.0 uM' = inhibitor_color_pallete[5],
+    'Disulfiram 2.5 uM' = inhibitor_color_pallete[6],
+    'Z-VAD-FMK 30.0 uM' = inhibitor_color_pallete[7],
+    'Z-VAD-FMK 100.0 uM' = inhibitor_color_pallete[8]
+)
+
+

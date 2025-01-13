@@ -1,173 +1,205 @@
-library(ggplot2)
+suppressPackageStartupMessages(suppressWarnings(library(ggplot2))) # plotting
+suppressPackageStartupMessages(suppressWarnings(library(dplyr))) # data manipulation
+suppressPackageStartupMessages(suppressWarnings(library(argparser))) # command line arguments
+suppressPackageStartupMessages(suppressWarnings(library(patchwork))) # plot patchwork
+suppressPackageStartupMessages(suppressWarnings(library(reshape2))) # data manipulation
+suppressPackageStartupMessages(suppressWarnings(library(ggridges))) # ridgeline plots
+suppressPackageStartupMessages(suppressWarnings(library(RColorBrewer))) # color palettes
+suppressPackageStartupMessages(suppressWarnings(library(cowplot))) # ggplot2 drawing
 
-apoptosis <- read.csv("../data/apoptosis_results.csv", header = TRUE, sep = ",")
-pyroptosis <- read.csv("../data/pyroptosis_results.csv", header = TRUE, sep = ",")
-necrosis <- read.csv("../data/necrosis_results.csv", header = TRUE, sep = ",")
-ferroptosis <- read.csv("../data/ferroptosis_results.csv", header = TRUE, sep = ",")
-autophagy <- read.csv("../data/autophagy_results.csv", header = TRUE, sep = ",")
 
-apoptosis$label <- "Apoptosis"
-pyroptosis$label <- "Pyroptosis"
-necrosis$label <- "Necrosis"
-ferroptosis$label <- "Ferroptosis"
-autophagy$label <- "Autophagy"
+source("../../utils/figure_themes.r")
 
-# create output directory
-outdir <- file.path("..","figures")
 
-# create output directory if it doesn't exist
-if(!dir.exists(outdir)) dir.create(outdir)
+model_name <- "MultiClass_MLP"
+cell_type <- "PBMC"
 
-# remove the first row of each data frame
-apoptosis <- apoptosis[-1,]
-pyroptosis <- pyroptosis[-1,]
-necrosis <- necrosis[-1,]
-ferroptosis <- ferroptosis[-1,]
-autophagy <- autophagy[-1,]
-
-# make the row names a column
-apoptosis$year <- rownames(apoptosis)
-pyroptosis$year <- rownames(pyroptosis)
-necrosis$year <- rownames(necrosis)
-ferroptosis$year <- rownames(ferroptosis)
-autophagy$year <- rownames(autophagy)
-
-# # removve the row names
-rownames(apoptosis) <- NULL
-rownames(pyroptosis) <- NULL
-rownames(necrosis) <- NULL
-rownames(ferroptosis) <- NULL
-rownames(autophagy) <- NULL
-
-# # rename the columns
-colnames(apoptosis) <- c("count", "label", "year")
-colnames(pyroptosis) <- c("count", "label", "year")
-colnames(necrosis) <- c("count", "label", "year")
-colnames(ferroptosis) <- c("count", "label", "year")
-colnames(autophagy) <- c("count", "label", "year")
-
-# # combine the data frames
-df <- rbind(apoptosis, pyroptosis, necrosis, ferroptosis, autophagy)
-# sort the data frame by year
-# make the year a integer
-df$year <- as.integer(df$year)
-# make the count a integer
-df$count <- as.integer(df$count)
-
-# remove 2024 data
-df <- df[df$year != 2024,]
-
-head(df)
-
-width <- 10
-height <- 5
-# set the size of the plot
-options(repr.plot.width = width, repr.plot.height = height)
-# plot
-plot <- (
-    ggplot(
-        data = df,
-        aes(
-            x = year,
-            y = count,
-            color = label
-        )
-    )
-    + geom_path(
-        size = 1.5
-    )
-    + theme_bw()
-    # make the legend title different
-    + labs(
-        color = "Cell Death Type",
-        x = "Year",
-        y = "Number of Publications",
-        title = "Cell Death Publications Over Time until 2024"
+# load in the probabilities
+treatment_holdout_probabilities_path <- file.path(
+    paste0(
+        "../../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/probabilities.parquet"
     )
 )
+# read in the data from the parquet file
+probabilities <- arrow::read_parquet(
+    treatment_holdout_probabilities_path
+)
+head(probabilities,2)
+
+unique(probabilities$data_split)
+unique(probabilities$shuffle)
+
+# replace label_true value 1 with Control
+probabilities$label_true <- gsub("1", "Control", probabilities$label_true)
+# replace label_true value 2 with pyroptosis
+probabilities$label_true <- gsub("2", "Pyroptosis", probabilities$label_true)
+# replace label_true value 0 with apoptosis
+probabilities$label_true <- gsub("0", "Apoptosis", probabilities$label_true)
+
+# replace label_pred value 1 with Control
+probabilities$label_pred <- gsub("1", "Control", probabilities$label_pred)
+# replace label_pred value 2 with pyroptosis
+probabilities$label_pred <- gsub("2", "Pyroptosis", probabilities$label_pred)
+# replace label_pred value 0 with apoptosis
+probabilities$label_pred <- gsub("0", "Apoptosis", probabilities$label_pred)
+
+# replace shuffled value TRUE with Shuffled
+probabilities$shuffle <- gsub("TRUE", "Shuffled", probabilities$shuffle)
+# replace shuffled value FALSE with Not Shuffled
+probabilities$shuffle <- gsub("FALSE", "Not Shuffled", probabilities$shuffle)
+
+# replace data_split value treatment_holdout with Treatment Holdout
+probabilities$data_split <- gsub("treatment_holdout", "Treatment holdout", probabilities$data_split)
+# remove treatment holdout rows
+probabilities <- probabilities[!grepl("Treatment holdout", probabilities$data_split),]
+# replace data_split value holdout with Holdout
+probabilities$data_split <- gsub("holdout", "Holdout well", probabilities$data_split)
+# replace training value train with Training
+probabilities$data_split <- gsub("train", "Training", probabilities$data_split)
+# replace testing value test with Testing
+probabilities$data_split <- gsub("testing", "Testing", probabilities$data_split)
+# replace validation value validation with Validation
+probabilities$data_split <- gsub("validation", "Validation", probabilities$data_split)
+
+
+head(probabilities, 2)
+unique(probabilities$shuffle)
+
+unique(probabilities$data_split)
+
+# change the label columns to be factors
+probabilities$label_true <- factor(probabilities$label_true , levels = c(
+    "Control", "Apoptosis", "Pyroptosis"
+))
+probabilities$label_pred <- factor(probabilities$label_pred , levels = c(
+    "Pyroptosis", "Apoptosis", "Control"
+))
+# change the data_split column to be a factor
+probabilities$data_split <- factor(probabilities$data_split, levels = c(
+    "Training", "Validation", "Testing", "Holdout well"
+))
+# change the shuffled_data column to be a factor
+probabilities$shuffle <- factor(probabilities$shuffle, levels = c(
+    "Not Shuffled", "Shuffled"
+))
+
+unique(probabilities$data_split)
+
+height <- 5
+width <- 15
+options(repr.plot.width = width, repr.plot.height = height)
+ridge_plot_control <- (
+    ggplot(probabilities, aes(x = control_prob, y = label_pred, fill = label_true, group = label_pred))
+    + geom_density_ridges(
+        aes(fill = label_pred), alpha = 0.7, scale = 3, rel_min_height = 0.01
+    )
+    # change color of the density ridges
+    + scale_fill_manual(values = c(
+        "Control" = brewer.pal(3, "Dark2")[2],
+        "Apoptosis" = brewer.pal(3, "Dark2")[1],
+        "Pyroptosis" = brewer.pal(3, "Dark2")[3]
+    ))
+
+
+    + facet_grid(shuffle~data_split, scales = "free_y")
+    + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
+    + scale_x_continuous(breaks = seq(0, 1, 0.5))
+    + labs(title = "Control Prediction Probability", y = "Predicted Class",fill = "True Class")
+    + labs()
+    + theme_bw()
+    + figure_theme
+    # no legend
+    + theme(legend.position = "none")
+    + theme(plot.title = element_text(size = 20, hjust = 0.5))
+    # remove x axis label
+    + theme(axis.title.x = element_blank())
+)
+ridge_plot_control
+
+
+ridge_plot_apoptosis <- (
+    ggplot(probabilities, aes(x = apoptosis_prob, y = label_pred, fill = label_true, group = label_pred))
+    + geom_density_ridges(
+        aes(fill = label_pred), alpha = 0.7, scale = 3, rel_min_height = 0.01
+    )
+    + scale_fill_manual(values = c(
+        "Control" = brewer.pal(3, "Dark2")[2],
+        "Apoptosis" = brewer.pal(3, "Dark2")[1],
+        "Pyroptosis" = brewer.pal(3, "Dark2")[3]
+    ))
+    + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
+    + facet_grid(shuffle~data_split, scales = "free_y")
+    + scale_x_continuous(breaks = seq(0, 1, 0.5))
+    + labs(title = "Apoptosis Prediction Probability", y = "Predicted Class",fill = "True Class")
+    + labs()
+    + theme_bw()
+    + figure_theme
+    # remove legend
+    + theme(legend.position = "none")
+    + theme(plot.title = element_text(size = 20, hjust = 0.5))
+    # remove x axis label
+    + theme(axis.title.x = element_blank())
+)
+ridge_plot_apoptosis
+
+ridge_plot_pyroptosis <- (
+    ggplot(probabilities, aes(x = pyroptosis_prob, y = label_pred, fill = label_true, group = label_pred))
+    + geom_density_ridges(
+        aes(fill = label_pred), alpha = 0.7, scale = 3, rel_min_height = 0.01
+    )
+    + scale_fill_manual(values = c(
+        "Control" = brewer.pal(3, "Dark2")[2],
+        "Apoptosis" = brewer.pal(3, "Dark2")[1],
+        "Pyroptosis" = brewer.pal(3, "Dark2")[3]
+    ))
+    + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
+    + facet_grid(shuffle~data_split, scales = "free_y")+ scale_x_continuous(breaks = seq(0, 1, 0.5))
+    + scale_x_continuous(breaks = seq(0, 1, 0.5))
+    + labs(title = "Pyroptosis Prediction Probability", y = "Predicted Class",fill = "True Class")
+    + labs()
+    + theme_bw()
+    + figure_theme
+    # make title larger
+    + theme(plot.title = element_text(size = 20, hjust = 0.5))
+    + theme(legend.position = "bottom", legend.direction = "horizontal")
+    # remove x axis label
+    + theme(axis.title.x = element_blank())
+    # add vertical line at 1
+    # change legend label order
+    + guides(fill = guide_legend(reverse = TRUE))
+)
+ridge_plot_pyroptosis
+
+
+# if dir does not exist create it
+if(!dir.exists("../figures")){
+    dir.create("../figures")
+}
+
+# patch the plots together via the patchwork package
+layout <- c(
+    area(t=1, b=2, l=1, r=1), # A
+    area(t=3, b=4, l=1, r=1), # B
+    area(t=5, b=6, l=1, r=1)  # C
+)
+# set plot size
+width <- 17
+height <- 17
+options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
+figS14 <- (
+    ridge_plot_control
+    + ridge_plot_apoptosis
+    + ridge_plot_pyroptosis
+    + plot_layout(design = layout)
+    + plot_annotation(tag_levels = "A") &  theme(plot.tag = element_text(size = 20))
+)
+figS14
 # save the plot
 ggsave(
-    filename = "../figures/cell_death_over_time.png",
-    plot = plot,
+    filename = paste0("../figures/","S14",".png"),
+    plot = figS14,
     width = width,
     height = height,
     units = "in",
     dpi = 600
 )
-plot
-
-# remove all points before 1950
-df <- df[df$year >= 1990,]
-
-width <- 10
-height <- 5
-# set the size of the plot
-options(repr.plot.width = width, repr.plot.height = height)
-# plot
-plot <- (
-    ggplot(
-        data = df,
-        aes(
-            x = year,
-            y = count,
-            color = label
-        )
-    )
-    + geom_path(
-        size = 1.5
-    )
-    + theme_bw()
-    # make the legend title different
-    + labs(
-        color = "Cell Death Type",
-        x = "Year",
-        y = "Number of Publications",
-        title = "Cell Death Publications Over Time until 2024"
-    )
-    + xlim(min(df$year), 2024)
-    # center title
-    + theme(
-        plot.title = element_text(
-            size = 20,
-            hjust = 0.5
-        )
-        # x axis text
-        , axis.text.x = element_text(
-            size = 16
-        )
-        # y axis text
-        , axis.text.y = element_text(
-            size = 16
-        )
-        # x axis title
-        , axis.title.x = element_text(
-            size = 18
-        )
-        # y axis title
-        , axis.title.y = element_text(
-            size = 18
-        )
-    )
-    # legend text
-    + theme(
-        legend.text = element_text(
-            size = 16
-        )
-    )
-    # legend title
-    + theme(
-        legend.title = element_text(
-            size = 18
-        )
-    )
-)
-# save the plot
-ggsave(
-    filename = "../figures/cell_death_over_time_1990.png",
-    plot = plot,
-    width = width,
-    height = height,
-    units = "in",
-    dpi = 600
-)
-plot

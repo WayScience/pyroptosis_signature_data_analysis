@@ -75,7 +75,6 @@ df <- df %>% filter(
         "CorrPM_CorrGasdermin_CorrMito_CorrER"
     )
 )
-unique(df$channel_feature_combinations_key)
 
 
 
@@ -117,11 +116,6 @@ global_prediction_trend_scatter <- (
     + xlim(0, 1)
     # change the x axis ticks to 0, 0,5, 1
     + scale_x_continuous(breaks = seq(0, 1, by = 0.5))
-    # # make the facet labels more readable
-    # + theme(strip.text.x = element_text(size = 12, angle = 0))
-    # # make the legend title bigger
-    # + theme(legend.title=element_text(size=18), legend.text=element_text(size=14))
-    # + theme(axis.text.x = element_text(size=14), axis.text.y = element_text(size=14))
 
     # change legend title text
     + labs(color="Model")
@@ -144,10 +138,8 @@ global_prediction_trend_line <- (
     ggplot(df, aes(x=actual_value, y=predicted_value, col=shuffle_plus_data_split))
     + facet_wrap(~channel_feature_combinations_key, ncol=3)
     # add geom smooth with each line being a different color
-    # + geom_line(aes(group=shuffle_plus_data_split), size=0.5)
     + geom_smooth(method="lm", se=TRUE, alpha=0.5, linewidth=0.8, aes(col=shuffle_plus_data_split))
     # make colors different for each line
-    # + scale_fill_gradient(colours = viridis(10))
     + labs(x="Actual", y="Predicted", color="Model")
     + theme_bw()
     # add y=x line
@@ -161,7 +153,6 @@ global_prediction_trend_line <- (
     + ggplot2::coord_fixed()
     + figure_theme
     # change the x tick size
-    # + theme(axis.text.x = element_text(size=14))
     + theme(legend.position = "bottom")
     # make the legend have two columns of keys
     + guides(color = guide_legend(ncol=2))
@@ -545,8 +536,7 @@ global_prediction_trend_line <- (
     # remove the title
     + theme(plot.title = element_blank())
 )
-# r2_boxplot
-# variance_r2_plot
+
 IL1beta_a_v_p <- (
     IL1beta_a_v_p
     # remove the title
@@ -577,7 +567,6 @@ options(repr.plot.width=width, repr.plot.height=height)
 ENET_LOCO <- (
     wrap_elements(full = performance_changes_plot)
 
-    # wrap_elements(full = global_prediction_trend_line)
 
     + wrap_elements(full = r2_boxplot)
     + wrap_elements(full = variance_r2_plot)

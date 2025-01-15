@@ -32,8 +32,6 @@ norm_fs_data_path = pathlib.Path(
 
 
 # load in the normalized data
-# norm_data = pd.read_parquet(norm_data_path)
-
 norm_schema = pq.read_schema(norm_data_path)
 
 # get a list of column names
@@ -46,9 +44,6 @@ data_cols = [col for col in norm_cols if col not in metadata_cols]
 
 print(f"There are {len(data_cols)} data columns")
 print(f"There are {len(metadata_cols)} metadata columns")
-
-
-# In[ ]:
 
 
 # ## Check feature selected shape
@@ -131,7 +126,7 @@ print(norm_fs_df_subset["labels"].value_counts())
 
 # ## Stats for the Elastic Net models
 
-# In[9]:
+# In[7]:
 
 
 # set path for models performances
@@ -142,7 +137,7 @@ model_performances_path = pathlib.Path(
 model_performances = pd.read_csv(model_performances_path)
 
 
-# In[10]:
+# In[8]:
 
 
 # drop uneeded columns
@@ -161,7 +156,7 @@ print(model_performances.shape)
 model_performances.head()
 
 
-# In[11]:
+# In[9]:
 
 
 # split the shuffled and final model performances
@@ -171,7 +166,7 @@ print(suffled_models.shape)
 print(final_models.shape)
 
 
-# In[12]:
+# In[10]:
 
 
 # sort the final models by r2 score
@@ -179,7 +174,7 @@ final_models.sort_values(by="r2", ascending=False, inplace=True)
 final_models.head()
 
 
-# In[13]:
+# In[11]:
 
 
 # get the percentage of models that are above the threshold
@@ -193,7 +188,7 @@ print(
 )
 
 
-# In[14]:
+# In[12]:
 
 
 # sort the shuffled models by r2 score from low to high
@@ -203,7 +198,7 @@ final_models.head()
 
 # ## LOCO ENET stats
 
-# In[58]:
+# In[13]:
 
 
 # set path for models performances
@@ -220,7 +215,7 @@ print(model_performances.shape)
 model_performances.head()
 
 
-# In[59]:
+# In[14]:
 
 
 variance_r2_stats = pd.read_csv(variance_r2_stats_path)
@@ -228,7 +223,7 @@ print(variance_r2_stats.shape)
 variance_r2_stats.head()
 
 
-# In[60]:
+# In[15]:
 
 
 # get only select keys
@@ -296,7 +291,7 @@ print(model_performances.shape)
 print(variance_r2_stats.shape)
 
 
-# In[61]:
+# In[16]:
 
 
 model_performances
@@ -316,12 +311,12 @@ print(model_performances_grouped.shape)
 
 # ## Stats for 11A-C
 
-# In[63]:
+# In[17]:
 
 
 # get the global average of neg mean squared error, explained variance, and r2 for each channel combination
 channel_feature_combinations_key_global_avg = model_performances_grouped.groupby(
-    "channel_feature_combinations_key"
+    "channel_feature_combinations_key",
 ).agg(
     {
         "explained_variance": "mean",
@@ -329,6 +324,8 @@ channel_feature_combinations_key_global_avg = model_performances_grouped.groupby
         "r2": "mean",
     }
 )
+
+# get the average of the explained variance, MSE, and R2 for each channel combination
 channel_feature_combinations_key_global_avg.reset_index(inplace=True)
 channel_feature_combinations_key_global_avg[
     "percent_change_in_negMSE_compared_to_all_channels"
@@ -393,7 +390,19 @@ channel_feature_combinations_key_global_avg[
 channel_feature_combinations_key_global_avg
 
 
-# In[64]:
+# In[18]:
+
+
+# save the model performances
+model_performances_path = pathlib.Path("../results").resolve()
+model_performances_path.mkdir(parents=True, exist_ok=True)
+model_performances_file_path = model_performances_path / "model_performances.csv"
+channel_feature_combinations_key_global_avg.to_csv(
+    model_performances_file_path, index=False
+)
+
+
+# In[19]:
 
 
 # get the min and max r2 values for each channel combination
@@ -408,10 +417,11 @@ channel_feature_combinations_key_min_max.reset_index(inplace=True)
 channel_feature_combinations_key_min_max
 
 
-# In[ ]:
+# In[20]:
 
 
 # subset for IL-1beta across all channel combinations
 IL1beta_model_performances = model_performances_grouped.loc[
     model_performances_grouped["cytokine"] == "IL-1beta"
 ]
+IL1beta_model_performances

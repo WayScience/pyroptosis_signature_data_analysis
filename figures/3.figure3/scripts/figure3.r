@@ -299,13 +299,15 @@ a_h__a_p__h_p_common_plot <- a_h__a_p__h_p_common_plot + labs(title = "Common Fe
 
 
 cell_umap_path <- file.path(paste0(
-    # "../","../","../","1.Exploratory_Data_Analysis/results/",cell_type,"_umap_values_morphology_sample_100.parquet"
     "../","../","../","1.Exploratory_Data_Analysis/results/",cell_type,"_umap_values_morphology_all_cells.parquet"
 
 ))
 
 cell_umap <- arrow::read_parquet(cell_umap_path)
 print(paste0("Number of cells: ",nrow(cell_umap)))
+
+# subset the cells for trial of plots
+# cell_umap <- cell_umap %>% sample_n(1000)
 
 # Load data
 data_path_cytokine_values <- file.path("../../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_PBMC_clean.parquet")
@@ -432,8 +434,8 @@ umap_plot_death_type <- (
         aes(
             color = group,
         ),
-        size = 0.25,
-        alpha = 0.1
+        size = 0.05,
+        alpha = 0.01
     )
     + theme_bw()
     + figure_theme
@@ -481,12 +483,120 @@ umap_plot_death_type <- (
             brewer.pal(3, "Dark2")[1],
             brewer.pal(3, "Dark2")[3]
         ))
-
+    # move the legend to the inside of the plot
+    + theme(
+        legend.position=c(.80,.85),
+        legend.text = element_text(size = 18)
+    )
 )
 # remove the title
 umap_plot_death_type <- umap_plot_death_type + theme(plot.title = element_blank())
 umap_plot_death_type
 
+
+# get the background data for the umap plot
+df_background_control <- cell_umap
+df_background_control$group <- "Control"
+df_background_apoptosis <- cell_umap
+df_background_apoptosis$group <- "Apoptosis"
+df_background_pyroptosis <- cell_umap
+df_background_pyroptosis$group <- "Pyroptosis"
+
+# combine the dataframes
+df_background <- rbind(df_background_control, df_background_apoptosis, df_background_pyroptosis)
+
+cell_umap$group <- factor(cell_umap$group, levels = c("Control","Apoptosis","Pyroptosis"))
+unique(cell_umap$group)
+
+# set plot size
+width <- 8
+height <- 8
+options(repr.plot.width = width, repr.plot.height = height)
+cell_umap <- cell_umap %>% sample_frac(1)
+umap_plot_death_type_facet <- (
+    cell_umap %>% ggplot( aes(x = umap_1, y = umap_2))
+
+    + geom_point(
+        data = df_background,
+        color = "lightgray",
+        size = 1,
+        alpha = 0.9
+    )
+    + geom_point(
+        aes(
+            color = group,
+        ),
+        size = 0.005,
+        alpha = 0.01
+    )
+    + theme_bw()
+    + figure_theme
+
+    + scale_color_manual(
+        name = "Treatment",
+        labels = c(
+        'Control',
+        'Apoptosis',
+        'Pyroptosis'
+        ),
+        values = c(
+            brewer.pal(3, "Dark2")[2],
+            brewer.pal(3, "Dark2")[1],
+            brewer.pal(3, "Dark2")[3]
+        ))
+    # move the legend to the inside of the plot
+    + theme(
+        legend.position="none"
+    )
+
+
+
+    + labs(
+        x = "UMAP 0",
+        y = "UMAP 1",
+        color = "Treatment",
+    )
+    + ggtitle(
+        paste0(
+            cell_type,
+            " UMAP"
+        ),
+    )
+    # changae the order of the facets
+
+
+
+
+
+    + facet_wrap(group~., scales = "free", ncol = 1)
+
+)
+# remove the title
+umap_plot_death_type_facet <- umap_plot_death_type_facet + theme(plot.title = element_blank())
+umap_plot_death_type_facet
+
+
+# combine the raw umap and the facet umap using patchwork
+layout <- c(
+    area(t=1, b=2, l=1, r=3),
+    area(t=1, b=2, l=4, r=5)
+
+)
+
+# patch work the plots together
+# set plot size
+width <- 18
+height <- 12
+options(repr.plot.width=width, repr.plot.height=height, units = "in", dpi = 600)
+
+
+combined_umap_plot <- (
+    wrap_elements(full = umap_plot_death_type)
+    + wrap_elements(full = umap_plot_death_type_facet)
+    + plot_layout(design = layout)
+)
+
+combined_umap_plot
 
 # change bar plot title colours to match the venn diagram
 
@@ -615,10 +725,10 @@ apoptosis_df <- morphology_df %>% filter(group == "Apoptosis")
 pyroptosis_df <- morphology_df %>% filter(group == "Pyroptosis")
 
 layout <- c(
-    area(t=1, b=3, l=1, r=4),
-    area(t=4, b=5, l=1, r=2),
-    area(t=4, b=5, l=3, r=4),
-    area(t=6, b=7, l=1, r=4)
+    area(t=1, b=3, l=1, r=5),
+    area(t=4, b=5, l=1, r=3.5),
+    area(t=4, b=5, l=4, r=5),
+    area(t=6, b=7, l=1, r=5)
 )
 
 # patch work the plots together
@@ -630,11 +740,11 @@ options(repr.plot.width=width, repr.plot.height=height, units = "in", dpi = 600)
 fig3 <- (
     wrap_elements(full = montage)
     # montage
-    + umap_plot_death_type
-    + venn_diagram_image
-    + wrap_elements(full = sub_figure3)
-    # + sub_figure3
-    + plot_layout(design = layout, widths = c(8,8 ))
+    + wrap_elements(full = combined_umap_plot)
+    + wrap_elements(full = venn_diagram_image)
+    # + wrap_elements(full = sub_figure3)
+    + sub_figure3
+    + plot_layout(design = layout)
     # make bottom plot not align
     + plot_annotation(tag_levels = list(c("A", "B", "C"))) & theme(plot.tag = element_text(size = 20))
 
@@ -649,6 +759,5 @@ ggsave(
 )
 
 fig3
-
 
 sessionInfo()

@@ -487,6 +487,59 @@ IL1beta_a_v_p
 TNFalpha_a_v_p
 
 
+# load the model performance data
+performance_file_path <- file.path(
+    paste0("../../0.manuscript_stats/results/model_performances.csv")
+)
+performance_df <- read.csv(performance_file_path)
+# remove All channels from the channel_featiure_combinations_key
+performance_df <- filter(performance_df, channel_feature_combinations_key != "All channels")
+# refactor the channel_feature_combinations_key
+performance_df$channel_feature_combinations_key <- performance_df$channel_feature_combinations_key %>%
+    gsub("DNA removed", "DNA", .) %>%
+    gsub("ER removed", "ER", .) %>%
+    gsub("Gasdermin removed", "GSDM", .) %>%
+    gsub("Mito removed", "Mito", .) %>%
+    gsub("PM removed", "PM", .) %>%
+    factor(levels = c("DNA", "ER", "GSDM", "Mito", "PM"))
+head(performance_df)
+
+# get a monotonic color palette of 6 colors
+channel_pallette <- c(
+    "#0000AB", # Nuclei (blue)
+    "#00D55B", # ER (green)
+    "#FFFF00", # Gasdermin D (yellow)
+    "#C90000", # Mito (Red)
+    "#B000B0" # AGP (purple
+    )
+
+# plot the performance changes
+performance_changes_plot <- (
+    ggplot(data=performance_df, aes(x=channel_feature_combinations_key, y=abs(percent_change_in_negMSE_compared_to_all_channels),fill=channel_feature_combinations_key))
+    + geom_bar(stat="identity",alpha=0.7)
+    + labs(
+        x="Channel Feature Combinations",
+        y="Percent increase in MSE of LOCO model\n(Higher MSE is worse performing model)"
+        )
+    # change the legend title
+    + labs(fill="Channel Removed")
+    + figure_theme
+    # remove the legend
+    + theme(legend.position="none")
+    # change the colour palette
+    + scale_fill_manual(values=c(
+
+        channel_pallette[1],
+        channel_pallette[2],
+        channel_pallette[3],
+        channel_pallette[4],
+        channel_pallette[5]
+
+    ))
+
+)
+performance_changes_plot
+
 global_prediction_trend_line <- (
     global_prediction_trend_line
     # remove the title
@@ -499,15 +552,6 @@ IL1beta_a_v_p <- (
     # remove the title
     + theme(plot.title = element_blank())
 )
-
-# # resize all plots
-# width <- 8
-# height <- 8
-# options(repr.plot.width=width, repr.plot.height=height)
-# global_prediction_trend_line <- (global_prediction_trend_line)
-# r2_boxplot <- (r2_boxplot)
-# variance_r2_plot <- (variance_r2_plot)
-# IL1beta_a_v_p <- (IL1beta_a_v_p)
 
 
 # pathwork layout of each plot ( letters correspond to the order in which the plots are defined below in the pathwork figure)
@@ -531,7 +575,10 @@ width <- 17
 height <- 15
 options(repr.plot.width=width, repr.plot.height=height)
 ENET_LOCO <- (
-    wrap_elements(full = global_prediction_trend_line)
+    wrap_elements(full = performance_changes_plot)
+
+    # wrap_elements(full = global_prediction_trend_line)
+
     + wrap_elements(full = r2_boxplot)
     + wrap_elements(full = variance_r2_plot)
     + wrap_elements(full = IL1beta_a_v_p)

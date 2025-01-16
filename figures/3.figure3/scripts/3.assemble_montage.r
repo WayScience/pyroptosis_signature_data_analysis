@@ -26,9 +26,6 @@ unique(main_df$comparison)
 control <- main_df %>% filter(group == "Control")
 apoptosis <- main_df %>% filter(group == "Apoptosis")
 pyroptosis <- main_df %>% filter(group == "Pyroptosis")
-length((control$group))
-length((apoptosis$group))
-length((pyroptosis$group))
 
 width <- 2
 height <- 2
@@ -149,10 +146,6 @@ pyroptosis$channel_learned <- dplyr::recode(pyroptosis$channel,
             .missing="other"
     )
 
-print(dim(control))
-print(dim(apoptosis))
-print(dim(pyroptosis))
-
 # select rows to keep in the df by index
 # rows_to_keep = c(1,8,15)
 # control = control[rows_to_keep,]
@@ -176,7 +169,6 @@ ggplot_objects_control <- Map(
         control$channel_cleaned
 
         )))
-length(ggplot_objects_control)
 width <- 17
 height <- 10
 options(repr.plot.width = width, repr.plot.height = height)

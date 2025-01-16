@@ -519,8 +519,8 @@ umap_plot_death_type_facet <- (
     + geom_point(
         data = df_background,
         color = "lightgray",
-        size = 1,
-        alpha = 0.9
+        size = 0.005,
+        alpha = 0.01
     )
     + geom_point(
         aes(

@@ -35,7 +35,7 @@ pd.set_option("display.max_columns", None)
 df.head()
 
 
-# In[4]:
+# In[ ]:
 
 
 df.columns
@@ -54,7 +54,6 @@ image_path_columns = [
     "image_Mitochondria_crop_path",
 ]
 for path_type in image_path_columns:
-    # print(path_type)
     for image_path in df[path_type]:
         # open the image
         image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
@@ -63,7 +62,6 @@ for path_type in image_path_columns:
         resolution = 3.3446  # pixels per micrometer
         # get the image size
         image_size = image_array.shape
-        print(image_size)
         if image_array.shape[1] <= 500:
             scale_bar_length = 5  # um
             scale_bar_height = 1  # pixels
@@ -77,7 +75,6 @@ for path_type in image_path_columns:
             image_size[1] - (scale_bar_length * resolution) - padding - padding
         )
         scale_bar_y = image_size[0] - (scale_bar_height) - padding
-        print(scale_bar_x, scale_bar_y)
         # draw the scale bar
         new = cv2.rectangle(
             image_array,
@@ -86,9 +83,5 @@ for path_type in image_path_columns:
             (255, 255, 255),
             -1,
         )
-        # show the image
-        # plt.imshow(new)
-        # plt.show()
         # save the image with the scale bar via cv2
         cv2.imwrite(image_path, new)
-#

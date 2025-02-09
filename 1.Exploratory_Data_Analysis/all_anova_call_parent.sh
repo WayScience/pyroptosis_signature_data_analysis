@@ -2,7 +2,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --partition=amilan
-#SBATCH --qos=noraml
+#SBATCH --qos=normal
 #SBATCH --output=anova_parent-%j.out
 #SBATCH --time=1:00:00
 

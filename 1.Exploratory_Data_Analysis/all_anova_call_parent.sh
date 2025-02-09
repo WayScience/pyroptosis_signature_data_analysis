@@ -21,7 +21,7 @@ cd ../ || exit
 
 CELL_TYPE="PBMC"
 
-filename="../features/${CELL_TYPE}_feature_index.txt"
+filename="./features/${CELL_TYPE}_feature_index.txt"
 # read all lines of the file to an array
 readarray -t features < $filename
 

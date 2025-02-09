@@ -12,13 +12,14 @@ readarray -t features < $filename
 
 echo "Cell type: $CELL_TYPE"
 
-cd scripts/
+cd scripts/ || exit
 
 # loop through the array
 for feature in "${features[@]}"; do
     echo "Feature: $feature"
     time python 8.1_anova_all_groupings.py --feature $feature --cell_type $CELL_TYPE
+    time python 8.1_anova_all_groupings.py --feature $feature --cell_type $CELL_TYPE --shuffle_labels
 done
 
-cd ../
+cd ../ || exit
 echo "All features submitted for ANOVA analysis"

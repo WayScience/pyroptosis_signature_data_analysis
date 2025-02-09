@@ -43,11 +43,17 @@ parser.add_argument(
     type=str,
     help="feature to run ANOVA and Tukey's HSD on",
 )
-
+parser.add_argument(
+    "-s",
+    "--shuffle_labels",
+    action="store_true",
+    help="Shuffle labels to create a null distribution",
+)
 # parse arguments from command line
 args = parser.parse_args()
 cell_type = args.cell_type
 feature = args.feature
+shuffle_labels = args.shuffle_labels
 
 
 # In[3]:
@@ -75,6 +81,17 @@ df = pd.read_parquet(file_path, columns=Metadata_columns)
 # In[5]:
 
 
+df.head()
+if shuffle_labels:
+    df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = np.random.permutation(
+        df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].values
+    )
+df.head()
+
+
+# In[6]:
+
+
 # get 10% of the data from each well.
 df = (
     df.groupby("Metadata_Well")
@@ -84,7 +101,7 @@ df = (
 print(df.shape)
 
 
-# In[6]:
+# In[7]:
 
 
 # toml file path
@@ -127,7 +144,7 @@ df["labels"] = df.apply(
 df.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 
-# In[7]:
+# In[8]:
 
 
 df_metadata = df.filter(regex="Metadata")
@@ -137,7 +154,7 @@ df_data["Metadata_number_of_singlecells"] = df_metadata[
 ]
 
 
-# In[8]:
+# In[9]:
 
 
 # anova for each feature in the dataframe with posthoc tukey test to determine which groups are different from each other
@@ -156,7 +173,7 @@ posthoc = pairwise_tukeyhsd(
 lst.append([posthoc, feature])
 
 
-# In[ ]:
+# In[10]:
 
 
 tukey_df = pd.DataFrame()
@@ -183,9 +200,14 @@ tukey_df["p-adj_abs"] = abs(tukey_df["p-adj"])
 # make new column that states if the relationship is positive or negative
 tukey_df["pos_neg"] = np.where(tukey_df["p-adj"] > 0, "positive", "negative")
 # order the features by p-adj value
+tukey_df = tukey_df.sort_values(by="p-adj_abs", ascending=False)
+if shuffle_labels:
+    tukey_df["shuffled"] = True
+else:
+    tukey_df["shuffled"] = False
 
 
-# In[ ]:
+# In[11]:
 
 
 # save the dataframe as a parquet file

@@ -16,6 +16,9 @@ jupyter nbconvert --to=script --FilesWriter.build_directory=scripts/ notebooks/*
 # change the directory to the scripts directory
 cd scripts/ || exit
 
+python 8.0_create_feature_index.py --cell_type "PBMC"
+cd ../ || exit
+
 CELL_TYPE="PBMC"
 
 filename="../features/${CELL_TYPE}_feature_index.txt"
@@ -39,5 +42,4 @@ for feature in "${features[@]}"; do
     done
 done
 
-cd ../ || exit
 echo "All features submitted for ANOVA analysis"

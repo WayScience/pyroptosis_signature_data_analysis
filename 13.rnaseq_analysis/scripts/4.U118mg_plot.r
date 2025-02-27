@@ -43,9 +43,7 @@ options(repr.plot.width=width, repr.plot.height=height)
 # plot the histogram of the mean fpkm for each gene
 all_genes_plot <- (
     ggplot(merged_dataset, aes(x=fpkm, fill=hgnc_symbol))
-    # + geom_histogram(bins=30, position="dodge", alpha=0.5)
     + geom_density(alpha=0.5)
-    # + facet_wrap(~hgnc_symbol, scales="free")
     + theme_bw()
     + theme(legend.position="inside", legend.position.inside = c(0.9, 0.9))
     + labs(x="FPKM", y="Frequency",color="Gene")
@@ -78,9 +76,7 @@ options(repr.plot.width=width, repr.plot.height=height)
 # plot the histogram of the mean fpkm for each gene
 p <- (
     ggplot(merged_dataset, aes(x=fpkm, fill=hgnc_symbol))
-    # + geom_histogram(bins=30, position="dodge", alpha=0.5)
     + geom_density(alpha=0.5)
-    # + facet_wrap(~hgnc_symbol, scales="free")
     + theme_minimal()
     + theme(legend.position="inside", legend.position.inside = c(0.9, 0.9))
     + labs(x="FPKM", y="Frequency",color="Gene")

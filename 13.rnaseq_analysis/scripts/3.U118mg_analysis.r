@@ -83,9 +83,6 @@ entrezgene_id_list$entrezgene_id
 # merge the two datasets on the entrezgene_id column
 merged_dataset <- merge(merged_dataset, entrezgene_id_list, by="entrezgene_id")
 
-# normalize all genes via FPKM
-# get the gene lengths
-
 # get the counts
 # define the fpkm for each column that begins with GSM
 for (i in 1:ncol(merged_dataset)) {

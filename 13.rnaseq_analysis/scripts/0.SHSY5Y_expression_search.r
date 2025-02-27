@@ -34,7 +34,6 @@ merged_dataset <- merge(merged_dataset, lookup, by.x="GeneID", by.y="entrezgene_
 head(merged_dataset)
 
 
-# get some of the columns
 dataset1 <- data.frame(merged_dataset$GeneID, merged_dataset$hgnc_symbol, merged_dataset$transcript_length, merged_dataset$GSM1937035, merged_dataset$GSM1937037)
 dataset2 <- data.frame(merged_dataset$GeneID, merged_dataset$hgnc_symbol, merged_dataset$transcript_length, merged_dataset$GSM5742788, merged_dataset$GSM5742789, merged_dataset$GSM5742790, merged_dataset$GSM5742791, merged_dataset$GSM5742792, merged_dataset$GSM5742793, merged_dataset$GSM5742794, merged_dataset$GSM5742795, merged_dataset$GSM5742796)
 # rename the columns to remove merged_dataset. prefix
@@ -42,9 +41,6 @@ colnames(dataset1) <- c("ensembl_gene_id",		"hgnc_symbol",	"transcript_length", 
 colnames(dataset2) <- c("ensembl_gene_id",		"hgnc_symbol",	"transcript_length", "GSM5742788", "GSM5742789", "GSM5742790", "GSM5742791", "GSM5742792", "GSM5742793", "GSM5742794", "GSM5742795", "GSM5742796")
 head(dataset1)
 head(dataset2)
-
-# normalize all genes via FPKM
-# get the gene lengths
 
 # get the counts
 # define the fpkm for each column that begins with GSM

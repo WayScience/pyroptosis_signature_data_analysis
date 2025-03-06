@@ -4,7 +4,6 @@
 # In[1]:
 
 
-import argparse
 import pathlib
 import warnings
 
@@ -20,34 +19,38 @@ from statsmodels.stats.multicomp import pairwise_tukeyhsd
 # In[2]:
 
 
-# set up command line argument parser
-parser = argparse.ArgumentParser(
-    description="Run ANOVA and Tukey's HSD on all groupings"
-)
-parser.add_argument(
-    "-c",
-    "--cell_type",
-    type=str,
-    help="Cell type to run ANOVA and Tukey's HSD on",
-)
+# # set up command line argument parser
+# parser = argparse.ArgumentParser(
+#     description="Run ANOVA and Tukey's HSD on all groupings"
+# )
+# parser.add_argument(
+#     "-c",
+#     "--cell_type",
+#     type=str,
+#     help="Cell type to run ANOVA and Tukey's HSD on",
+# )
 
-parser.add_argument(
-    "-f",
-    "--feature",
-    type=str,
-    help="feature to run ANOVA and Tukey's HSD on",
-)
-parser.add_argument(
-    "-s",
-    "--shuffle_labels",
-    action="store_true",
-    help="Shuffle labels to create a null distribution",
-)
-# parse arguments from command line
-args = parser.parse_args()
-cell_type = args.cell_type
-feature = args.feature
-shuffle_labels = args.shuffle_labels
+# parser.add_argument(
+#     "-f",
+#     "--feature",
+#     type=str,
+#     help="feature to run ANOVA and Tukey's HSD on",
+# )
+# parser.add_argument(
+#     "-s",
+#     "--shuffle_labels",
+#     action="store_true",
+#     help="Shuffle labels to create a null distribution",
+# )
+# # parse arguments from command line
+# args = parser.parse_args()
+# cell_type = args.cell_type
+# feature = args.feature
+# shuffle_labels = args.shuffle_labels
+
+cell_type = "PBMC"
+feature = "Cytoplasm_AreaShape_Compactness"
+shuffle_labels = False
 
 
 # In[3]:
@@ -62,7 +65,7 @@ Metadata_columns = [
 Metadata_columns = Metadata_columns + [feature]
 
 
-# In[15]:
+# In[4]:
 
 
 # Import Data
@@ -70,29 +73,6 @@ Metadata_columns = Metadata_columns + [feature]
 file_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
 # df = pd.read_parquet(file_path, columns=Metadata_columns)
 df = pd.read_parquet(file_path, columns=Metadata_columns)
-
-
-# In[17]:
-
-
-# get 10% of the data from each well.
-df = (
-    df.groupby("Metadata_Well")
-    .apply(lambda x: x.sample(frac=0.1, random_state=0))
-    .reset_index(drop=True)
-)
-print(df.shape)
-
-
-# In[16]:
-
-
-df.head()
-if shuffle_labels:
-    df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = np.random.permutation(
-        df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].values
-    )
-df.head()
 
 
 # In[18]:
@@ -136,6 +116,29 @@ df["labels"] = df.apply(
 )
 # drop apoptosis, pyroptosis, and healthy columns
 df.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
+
+
+# In[ ]:
+
+
+# get 10% of the data from each well.
+df = (
+    df.groupby("Metadata_Well")
+    .apply(lambda x: x.sample(frac=0.1, random_state=0))
+    .reset_index(drop=True)
+)
+print(df.shape)
+
+
+# In[ ]:
+
+
+df.head()
+if shuffle_labels:
+    df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = np.random.permutation(
+        df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].values
+    )
+df.head()
 
 
 # In[19]:
@@ -201,7 +204,7 @@ else:
     tukey_df["shuffled"] = False
 
 
-# In[22]:
+# In[ ]:
 
 
 # save the dataframe as a parquet file

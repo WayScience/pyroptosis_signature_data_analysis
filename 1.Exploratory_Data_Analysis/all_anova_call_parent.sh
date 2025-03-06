@@ -32,10 +32,11 @@ NUM_SLURMS=$(squeue -u $USER | wc -l)
 # loop through the array
 for feature in "${features[@]}"; do
     for shuffle in "${shuffles[@]}"; do
+        NUM_SLURMS=$(squeue -u $USER | wc -l)
         echo "Feature: $feature" "Cell type: $CELL_TYPE" "Shuffle: $shuffle"
         # check if the number of slurms is less than 30
         while [ "$NUM_SLURMS" -gt 995 ]; do
-           sleep 1s
+            sleep 1s
             NUM_SLURMS=$(squeue -u $USER | wc -l)
         done
         sbatch all_anova_call_child.sh $feature $CELL_TYPE $shuffle

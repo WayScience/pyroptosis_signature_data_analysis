@@ -4,6 +4,7 @@
 # In[1]:
 
 
+import argparse
 import pathlib
 import warnings
 
@@ -11,19 +12,12 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import toml
-from matplotlib import rcParams
-from tqdm import tqdm
-
-# create a venn diagram of the features that are significant in all conditions
 
 warnings.filterwarnings("ignore")
-import argparse
-
-from pycytominer.cyto_utils import infer_cp_features
 from statsmodels.formula.api import ols
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
-# In[ ]:
+# In[2]:
 
 
 # set up command line argument parser
@@ -68,7 +62,7 @@ Metadata_columns = [
 Metadata_columns = Metadata_columns + [feature]
 
 
-# In[4]:
+# In[15]:
 
 
 # Import Data
@@ -78,18 +72,7 @@ file_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
 df = pd.read_parquet(file_path, columns=Metadata_columns)
 
 
-# In[5]:
-
-
-df.head()
-if shuffle_labels:
-    df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = np.random.permutation(
-        df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].values
-    )
-df.head()
-
-
-# In[6]:
+# In[17]:
 
 
 # get 10% of the data from each well.
@@ -101,7 +84,18 @@ df = (
 print(df.shape)
 
 
-# In[7]:
+# In[16]:
+
+
+df.head()
+if shuffle_labels:
+    df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = np.random.permutation(
+        df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].values
+    )
+df.head()
+
+
+# In[18]:
 
 
 # toml file path
@@ -144,7 +138,7 @@ df["labels"] = df.apply(
 df.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 
-# In[8]:
+# In[19]:
 
 
 df_metadata = df.filter(regex="Metadata")
@@ -154,7 +148,7 @@ df_data["Metadata_number_of_singlecells"] = df_metadata[
 ]
 
 
-# In[9]:
+# In[20]:
 
 
 # anova for each feature in the dataframe with posthoc tukey test to determine which groups are different from each other
@@ -173,7 +167,7 @@ posthoc = pairwise_tukeyhsd(
 lst.append([posthoc, feature])
 
 
-# In[10]:
+# In[21]:
 
 
 tukey_df = pd.DataFrame()
@@ -207,15 +201,16 @@ else:
     tukey_df["shuffled"] = False
 
 
-# In[11]:
+# In[22]:
 
 
 # save the dataframe as a parquet file
 anova_results_path = pathlib.Path(
-    f"../results/{cell_type}/{feature}_anova_results_all_treatments.parquet"
+    f"../results/{cell_type}/{feature}_{shuffle_labels}_anova_results_all_treatments.parquet"
 )
 # if the directory does not exist, create it
 if not anova_results_path.parent.exists():
     anova_results_path.parent.mkdir(parents=True)
 # save the dataframe as a parquet file
 tukey_df.to_parquet(anova_results_path)
+tukey_df.head()

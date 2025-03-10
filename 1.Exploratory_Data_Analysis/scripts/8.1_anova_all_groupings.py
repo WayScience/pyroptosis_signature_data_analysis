@@ -4,6 +4,7 @@
 # In[1]:
 
 
+import argparse
 import pathlib
 import warnings
 
@@ -19,38 +20,34 @@ from statsmodels.stats.multicomp import pairwise_tukeyhsd
 # In[2]:
 
 
-# # set up command line argument parser
-# parser = argparse.ArgumentParser(
-#     description="Run ANOVA and Tukey's HSD on all groupings"
-# )
-# parser.add_argument(
-#     "-c",
-#     "--cell_type",
-#     type=str,
-#     help="Cell type to run ANOVA and Tukey's HSD on",
-# )
+# set up command line argument parser
+parser = argparse.ArgumentParser(
+    description="Run ANOVA and Tukey's HSD on all groupings"
+)
+parser.add_argument(
+    "-c",
+    "--cell_type",
+    type=str,
+    help="Cell type to run ANOVA and Tukey's HSD on",
+)
 
-# parser.add_argument(
-#     "-f",
-#     "--feature",
-#     type=str,
-#     help="feature to run ANOVA and Tukey's HSD on",
-# )
-# parser.add_argument(
-#     "-s",
-#     "--shuffle_labels",
-#     action="store_true",
-#     help="Shuffle labels to create a null distribution",
-# )
-# # parse arguments from command line
-# args = parser.parse_args()
-# cell_type = args.cell_type
-# feature = args.feature
-# shuffle_labels = args.shuffle_labels
-
-cell_type = "PBMC"
-feature = "Cytoplasm_AreaShape_Compactness"
-shuffle_labels = False
+parser.add_argument(
+    "-f",
+    "--feature",
+    type=str,
+    help="feature to run ANOVA and Tukey's HSD on",
+)
+parser.add_argument(
+    "-s",
+    "--shuffle_labels",
+    action="store_true",
+    help="Shuffle labels to create a null distribution",
+)
+# parse arguments from command line
+args = parser.parse_args()
+cell_type = args.cell_type
+feature = args.feature
+shuffle_labels = args.shuffle_labels
 
 
 # In[3]:
@@ -75,7 +72,19 @@ file_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
 df = pd.read_parquet(file_path, columns=Metadata_columns)
 
 
-# In[18]:
+# In[5]:
+
+
+# get 10% of the data from each well.
+df = (
+    df.groupby("Metadata_Well")
+    .apply(lambda x: x.sample(frac=0.1, random_state=0))
+    .reset_index(drop=True)
+)
+print(df.shape)
+
+
+# In[6]:
 
 
 # toml file path
@@ -118,49 +127,45 @@ df["labels"] = df.apply(
 df.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 
 
-# In[ ]:
+# In[7]:
 
 
-# get 10% of the data from each well.
-df = (
-    df.groupby("Metadata_Well")
-    .apply(lambda x: x.sample(frac=0.1, random_state=0))
-    .reset_index(drop=True)
-)
-print(df.shape)
-
-
-# In[ ]:
-
-
-df.head()
-if shuffle_labels:
-    df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"] = np.random.permutation(
-        df["oneb_Metadata_Treatment_Dose_Inhibitor_Dose"].values
-    )
+# show the data prior to shuffle
 df.head()
 
 
-# In[19]:
+# In[8]:
+
+
+if shuffle_labels is True:
+    df["labels"] = np.random.permutation(df["labels"].values)
+
+
+# In[9]:
+
+
+# and after shuffle
+df.head()
+
+
+# In[10]:
 
 
 df_metadata = df.filter(regex="Metadata")
 df_data = df.drop(df_metadata.columns, axis=1)
-df_data["Metadata_number_of_singlecells"] = df_metadata[
-    "Metadata_number_of_singlecells"
-]
 
 
-# In[20]:
+# In[11]:
 
 
 # anova for each feature in the dataframe with posthoc tukey test to determine which groups are different from each other
 lst = []
 
 
-formula = f"{feature} ~ C(labels) + C(Metadata_number_of_singlecells)"
+formula = f"{feature} ~ C(labels)"
 model = ols(formula, df_data).fit()
 aov_table = sm.stats.anova_lm(model, typ=2)
+
 posthoc = pairwise_tukeyhsd(
     df_data[feature],
     df_data["labels"],
@@ -170,16 +175,17 @@ posthoc = pairwise_tukeyhsd(
 lst.append([posthoc, feature])
 
 
-# In[21]:
+# In[12]:
 
 
 tukey_df = pd.DataFrame()
+tukey_df_list = []
 for i in lst:
     j = pd.DataFrame(i[0]._results_table.data[1:])
     j["features"] = np.repeat(i[1], len(j))
-    tukey_df = pd.concat([tukey_df, j], axis=0)
+    tukey_df_list.append(j)
+tukey_df = pd.concat(tukey_df_list)
 
-    np.repeat(i[1], len(j))
 
 tukey_df.columns = [
     "group1",
@@ -204,7 +210,7 @@ else:
     tukey_df["shuffled"] = False
 
 
-# In[ ]:
+# In[13]:
 
 
 # save the dataframe as a parquet file

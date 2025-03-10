@@ -47,14 +47,17 @@ anova_results_path = file.path(paste0(
 ))
 # read in path
 anova_results = arrow::read_parquet(anova_results_path)
+anova_results_shuffled = anova_results %>% filter(shuffled == TRUE)
+anova_results = anova_results %>% filter(shuffled == FALSE)
 
+head(anova_results)
 
 # create a column that adds group1 and group2 together
 anova_results$group = paste0(anova_results$group1,"_",anova_results$group2)
 
 
 # filter out rows that have p-adj_abs > 0.05
-anova_results = anova_results %>% filter(`p-adj_abs` < 0.05)
+anova_results = anova_results %>% filter(`p-adj_fdr_bh` < 0.001)
 
 
 # change the group names to replace healhty with    control
@@ -106,14 +109,12 @@ venn_diagram_plot <- venn.diagram(
     cat.cex = 0.8,
     cat.fontface = "bold",
     cat.default.pos = "outer",
-    cat.pos = c(-26, 23, 0),
-    cat.dist = c(-0.03, -0.03, -0.39),
+    cat.pos = c(-75, 50, 0),
+    cat.dist = c(-0.05, 0.1, -0.075),
     cat.fontfamily = "sans",
-    rotation = 1
+    rotation = 2
 
 )
-
-
 # Set the directory path
 directory <- "../figures"
 # List all files in the directory

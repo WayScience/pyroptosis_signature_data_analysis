@@ -4,7 +4,6 @@
 # In[1]:
 
 
-import argparse
 import pathlib
 
 import pandas as pd
@@ -12,27 +11,29 @@ import pandas as pd
 # In[2]:
 
 
-argparser = argparse.ArgumentParser()
-argparser.add_argument("--cell_type", type=str, default="cell_type")
+# argparser = argparse.ArgumentParser()
+# argparser.add_argument("--cell_type", type=str, default="cell_type")
 
-args = argparser.parse_args()
+# args = argparser.parse_args()
 
-cell_type = args.cell_type
+# cell_type = args.cell_type
+
+cell_type = "PBMC"
 
 
-# In[ ]:
+# In[3]:
 
 
 results_dir_path = pathlib.Path(
-    f"../results/regression/{cell_type}/aggregated_with_nomic/"
+    f"../results/regression/{cell_type}_aggregated_with_nomic/"
 ).resolve(strict=True)
 
 model_stats_final_output_path = pathlib.Path(
-    f"../results/regression/{cell_type}/aggregated_with_nomic/model_stats.csv"
+    f"../results/regression/{cell_type}_aggregated_with_nomic/model_stats.csv"
 )
 
 variance_r2_stats_final_output_path = pathlib.Path(
-    f"../results/regression/{cell_type}/aggregated_with_nomic/variance_r2_stats.csv"
+    f"../results/regression/{cell_type}_aggregated_with_nomic/variance_r2_stats.csv"
 )
 
 # get a list of all the files that contain "model_stats" in the name
@@ -54,7 +55,22 @@ model_stats_df.to_csv(model_stats_final_output_path, index=False)
 variance_r2_stats_df.to_csv(variance_r2_stats_final_output_path, index=False)
 
 
-# In[ ]:
+# In[4]:
 
 
 print("Completed!")
+
+
+# In[5]:
+
+
+model_stats_df.head()
+
+
+# In[6]:
+
+
+model_stats_df["data_split"].unique()
+
+
+# In[ ]:

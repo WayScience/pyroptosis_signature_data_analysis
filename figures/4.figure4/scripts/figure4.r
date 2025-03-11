@@ -24,11 +24,11 @@ cell_type <- "PBMC"
 
 # set the path to the data files
 df_stats_path <- file.path(
-    paste0("../../../6.bulk_Morphology_Elastic_Network/2.test_model/results/regression/",cell_type,"/aggregated_with_nomic/model_stats.csv"
+    paste0("../../../6.bulk_Morphology_Elastic_Network/2.test_model/results/regression/",cell_type,"_aggregated_with_nomic/model_stats.csv"
     )
     )
 df_variance_path <- file.path(
-    paste0("../../../6.bulk_Morphology_Elastic_Network/2.test_model/results/regression/",cell_type,"/aggregated_with_nomic/variance_r2_stats.csv"
+    paste0("../../../6.bulk_Morphology_Elastic_Network/2.test_model/results/regression/",cell_type,"_aggregated_with_nomic/variance_r2_stats.csv"
     )
 )
 
@@ -124,11 +124,12 @@ plot(legend)
 
 df_stats$shuffle_plus_data_split <- paste0(df_stats$shuffle, "_", df_stats$data_split)
 # replace 'final_test_data' with 'Final + Test' and 'final_train_data' with 'Final + Train'
+unique(df_stats$shuffle_plus_data_split)
 df_stats$shuffle_plus_data_split <- gsub("final_test_data", "Final (Test)", df_stats$shuffle_plus_data_split)
 df_stats$shuffle_plus_data_split <- gsub("final_train_data", "Final (Train)", df_stats$shuffle_plus_data_split)
 df_stats$shuffle_plus_data_split <- gsub("shuffled_baseline_test_data", "Shuffled (Test)", df_stats$shuffle_plus_data_split)
 df_stats$shuffle_plus_data_split <- gsub("shuffled_baseline_train_data", "Shuffled (Train)", df_stats$shuffle_plus_data_split)
-
+unique(df_stats$shuffle_plus_data_split)
 
 options(repr.plot.width=6, repr.plot.height=5)
 # set output path
@@ -200,6 +201,8 @@ pred_v_actual_plot <- function(df, cytokine){
 }
 
 
+head(df_stats$shuffle_plus_data_split)
+
 # df_stats factor levels
 df_stats$shuffle_plus_data_split <- factor(
     df_stats$shuffle_plus_data_split,
@@ -210,6 +213,10 @@ df_stats$shuffle_plus_data_split <- factor(
         "Shuffled (Test)"
     )
 )
+
+
+head(df_stats)
+
 
 enet_cp_fig <- file.path(paste0(enet_cp_fig_path,"Predicted_vs_Actual_all_cytokines.png"))
 # set plot size
@@ -258,7 +265,8 @@ tmp_df <- aggregate(mean_log10_neg_mean_absolute_error ~ shuffle + data_split, t
 tmp_df <- cbind(tmp_df, tmp_df$mean_log10_neg_mean_absolute_error)
 # drop the log10_neg_mean_absolute_error column by name
 tmp_df <- tmp_df[, !names(tmp_df) %in% c('mean_log10_neg_mean_absolute_error')]
-# split the mean_log10_neg_mean_absolute_error column into two columns
+
+
 
 model_performance_il1b <- (
     ggplot(tmp_df, aes(x=data_split, y=mean, fill=shuffle))
@@ -278,7 +286,7 @@ head(df_stats)
 # calculate the se of each metric for each shuffle, data_split, and cytokine in R
 agg_df <- aggregate(r2 ~ shuffle_plus_data_split, df_stats, function(x) c(mean = mean(x), sd = sd(x)))
 # split the log10_neg_mean_absolute_error column into two columns
-agg_df <- cbind(agg_df, agg_df$r2)
+agg_df <- cbind(df_stats, df_stats$r2)
 # remove the log10_neg_mean_absolute_error column by name
 agg_df <- agg_df[, !names(agg_df) %in% c('r2')]
 # rename the columns
@@ -843,13 +851,14 @@ row_ha_2 <- rowAnnotation(
     annotation_name_side = "bottom",
     annotation_name_gp = gpar(fontsize = 16),
     col = list(
-            Feature_Type = c(
-            "AreaShape" = brewer.pal(6, "Dark2")[1],
-            "Correlation" = brewer.pal(6, "Dark2")[2],
-            "Granularity" = brewer.pal(6, "Dark2")[3],
-            "Neighbors" =  brewer.pal(6, "Dark2")[4],
-            "RadialDistribution" = brewer.pal(6, "Dark2")[5],
-            "Texture" = brewer.pal(6, "Dark2")[6]
+            FeatureType = c(
+            "AreaShape" = brewer.pal(7, "Dark2")[1],
+            "Correlation" = brewer.pal(7, "Dark2")[2],
+            "Granularity" = brewer.pal(7, "Dark2")[3],
+            "Intensity" = brewer.pal(7, "Dark2")[4],
+            "Neighbors" =  brewer.pal(7, "Dark2")[5],
+            "RadialDistribution" = brewer.pal(7, "Dark2")[6],
+            "Texture" = brewer.pal(7, "Dark2")[7]
         )
     )
 )
@@ -952,160 +961,17 @@ model_performance_il1b <- model_performance_il1b + theme(plot.title = element_bl
 il1beta_final_plot <- il1beta_final_plot + theme(plot.title = element_blank())
 # model_heatmap <- model_heatmap + theme(plot.title = element_blank())
 
-# set path to the data morphology
-# class
-reg_df_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_regular_class.csv")
-shuffled_morphology_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_shuffled_feature_space_class.csv")
-# treatment
-reg_df_morphology_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_regular_treatment.csv")
-shuffled_morphology_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","mAP_scores_shuffled_feature_space_treatment.csv")
+map_df_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology_secretome_comparison.parquet")
 
-# set path to the secretome data
-# class
-reg_df_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_regular_class.csv")
-shuffled_secretome_class_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_shuffled_feature_space_class.csv")
-# treatment
-reg_df_secretome_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_regular_treatment.csv")
-shuffled_secretome_treatment_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","mAP_scores_shuffled_feature_space_treatment.csv")
+map_df <- arrow::read_parquet(map_df_path)
 
-# read in the data
-reg_df_morphology_class <- read.csv(reg_df_morphology_class_path)
-shuffled_morphology_class <- read.csv(shuffled_morphology_class_path)
-
-reg_df_morphology_treatment <- read.csv(reg_df_morphology_treatment_path)
-shuffled_morphology_treatment <- read.csv(shuffled_morphology_treatment_path)
-
-reg_df_secretome_class <- read.csv(reg_df_secretome_class_path)
-shuffled_secretome_class <- read.csv(shuffled_secretome_class_path)
-
-reg_df_secretome_treatment <- read.csv(reg_df_secretome_treatment_path)
-shuffled_secretome_treatment <- read.csv(shuffled_secretome_treatment_path)
-
-levels_list <- c(
-    'Media',
-    'DMSO_0.100_%_DMSO_0.025_%',
-    'DMSO_0.100_%_DMSO_1.000_%',
-    'DMSO_0.100_%_Z-VAD-FMK_30.000_uM',
-    'DMSO_0.100_%_Z-VAD-FMK_100.000_uM',
-
-    'Disulfiram_0.100_uM_DMSO_0.025_%',
-    'Disulfiram_1.000_uM_DMSO_0.025_%',
-    'Disulfiram_2.500_uM_DMSO_0.025_%',
-
-    'Flagellin_0.100_ug_per_ml_DMSO_0.025_%',
-    'Flagellin_1.000_ug_per_ml_DMSO_0.025_%',
-    'Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM',
-
-    'LPS_0.010_ug_per_ml_DMSO_0.025_%',
-    'LPS_0.100_ug_per_ml_DMSO_0.025_%',
-    'LPS_1.000_ug_per_ml_DMSO_0.025_%',
-
-    'LPS_Nigericin_1.000_ug_per_ml_1.000_uM_DMSO_0.025_%',
-    'LPS_Nigericin_1.000_ug_per_ml_3.000_uM_DMSO_0.025_%',
-    'LPS_Nigericin_1.000_ug_per_ml_10.000_uM_DMSO_0.025_%',
-    'LPS_Nigericin_1.000_ug_per_ml_10.000_uM_Disulfiram_1.000_uM',
-    'LPS_Nigericin_1.000_ug_per_ml_10.000_uM_Z-VAD-FMK_100.000_uM',
-
-    'LPS_10.000_ug_per_ml_DMSO_0.025_%',
-    'LPS_10.000_ug_per_ml_Disulfiram_0.100_uM',
-    'LPS_10.000_ug_per_ml_Disulfiram_1.000_uM',
-    'LPS_10.000_ug_per_ml_Disulfiram_2.500_uM',
-    'LPS_10.000_ug_per_ml_Z-VAD-FMK_100.000_uM',
-
-    'LPS_100.000_ug_per_ml_DMSO_0.025_%',
-    'LPS_Nigericin_100.000_ug_per_ml_1.000_uM_DMSO_0.025_%',
-    'LPS_Nigericin_100.000_ug_per_ml_3.000_uM_DMSO_0.025_%',
-    'LPS_Nigericin_100.000_ug_per_ml_10.000_uM_DMSO_0.025_%',
-
-    'H2O2_100.000_nM_DMSO_0.025_%',
-    'H2O2_100.000_uM_DMSO_0.025_%',
-    'H2O2_100.000_uM_Disulfiram_1.000_uM',
-    'H2O2_100.000_uM_Z-VAD-FMK_100.000_uM',
-    'Thapsigargin_1.000_uM_DMSO_0.025_%',
-    'Thapsigargin_10.000_uM_DMSO_0.025_%',
-
-    'Topotecan_5.000_nM_DMSO_0.025_%',
-    'Topotecan_10.000_nM_DMSO_0.025_%',
-    'Topotecan_20.000_nM_DMSO_0.025_%'
-)
-
-# combine the dataframes
-all_df_morphology_class <- rbind(reg_df_morphology_class, shuffled_morphology_class)
-all_df_morphology_treatment <- rbind(reg_df_morphology_treatment, shuffled_morphology_treatment)
-all_df_secretome_class <- rbind(reg_df_secretome_class, shuffled_secretome_class)
-all_df_secretome_treatment <- rbind(reg_df_secretome_treatment, shuffled_secretome_treatment)
-
-all_df_morphology_class$shuffled <- gsub("shuffled", "Shuffled", all_df_morphology_class$shuffled)
-all_df_morphology_class$shuffled <- gsub("non-Shuffled", "Non-shuffled", all_df_morphology_class$shuffled)
-all_df_morphology_class$shuffled <- factor(all_df_morphology_class$shuffled, levels = c( "Non-shuffled", "Shuffled"))
-all_df_morphology_class$Metadata_labels <- factor(all_df_morphology_class$Metadata_labels, levels = c("Control", "Apoptosis", "Pyroptosis"))
-
-all_df_secretome_class$shuffled <- gsub("shuffled", "Shuffled", all_df_secretome_class$shuffled)
-all_df_secretome_class$shuffled <- gsub("non-Shuffled", "Non-shuffled", all_df_secretome_class$shuffled)
-all_df_secretome_class$shuffled <- factor(all_df_secretome_class$shuffled, levels = c( "Non-shuffled", "Shuffled"))
-
-all_df_morphology_treatment$shuffled <- gsub("shuffled", "Shuffled", all_df_morphology_treatment$shuffled)
-all_df_morphology_treatment$shuffled <- gsub("non-Shuffled", "Non-shuffled", all_df_morphology_treatment$shuffled)
-all_df_morphology_treatment$shuffled <- factor(all_df_morphology_treatment$shuffled, levels = c( "Non-shuffled", "Shuffled"))
-all_df_morphology_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(all_df_morphology_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, levels = levels_list)
-
-all_df_secretome_treatment$shuffled <- gsub("shuffled", "Shuffled", all_df_secretome_treatment$shuffled)
-all_df_secretome_treatment$shuffled <- gsub("non-Shuffled", "Non-shuffled", all_df_secretome_treatment$shuffled)
-all_df_secretome_treatment$shuffled <- factor(all_df_secretome_treatment$shuffled, levels = c( "Non-shuffled", "Shuffled"))
-all_df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose <- factor(all_df_secretome_treatment$oneb_Metadata_Treatment_Dose_Inhibitor_Dose, levels = levels_list)
-
-# cobine the dfs
-# get the average precision, shuffled, and Metadata_labels columns by name
-subset_morphology_treatment <- all_df_morphology_treatment[,c("average_precision", "shuffled", "Metadata_labels","oneb_Metadata_Treatment_Dose_Inhibitor_Dose")]
-# rename the average_precision column to moprhology_ap
-colnames(subset_morphology_treatment)[colnames(subset_morphology_treatment)=="average_precision"] <- "morphology_ap"
-
-# get the average precision, shuffled, and Metadata_labels columns by name
-subset_secretome_treatment <- all_df_secretome_treatment[,c("average_precision", "shuffled", "Metadata_labels","oneb_Metadata_Treatment_Dose_Inhibitor_Dose")]
-# rename the average_precision column to secretome_ap
-colnames(subset_secretome_treatment)[colnames(subset_secretome_treatment)=="average_precision"] <- "secretome_ap"
-
-# merge the dataframes
-merged_df <- merge(subset_morphology_treatment, subset_secretome_treatment, by=c("shuffled", "Metadata_labels", "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"))
-head(merged_df)
-
-# aggregate the data by shuffled and Metadata_labels
-merged_agg <- aggregate(. ~ shuffled + Metadata_labels, data=merged_df, FUN=mean)
-# combine the shuffled and Metadata_labels columns
-merged_agg$group <- paste(merged_agg$shuffled, merged_agg$Metadata_labels, sep="_")
-# change the text in the group column
-merged_agg$group <- gsub("Non-shuffled Control", "Non-shuffled\nControl", merged_agg$group)
-merged_agg$group <- gsub("Shuffled Control", "Shuffled\nControl", merged_agg$group)
-merged_agg$group <- gsub("Non-shuffled_Apoptosis", "Non-shuffled\nApoptosis", merged_agg$group)
-merged_agg$group <- gsub("Shuffled Apoptosis", "Shuffled\nApoptosis", merged_agg$group)
-merged_agg$group <- gsub("Non-shuffled Pyroptosis", "Non-shuffled\nPyroptosis", merged_agg$group)
-merged_agg$group <- gsub("Shuffled Pyroptosis", "Shuffled\nPyroptosis", merged_agg$group)
-# make the group column a factor
-merged_agg$group <- factor(
-    merged_agg$group,
-    levels = c(
-        "Non-shuffled\nControl",
-        "Shuffled features\nControl",
-        "Shuffled phenotypes\nControl",
-
-        "Non-shuffled\nApoptosis",
-        "Shuffled features\nApoptosis",
-        "Shuffled phenotypes\nApoptosis",
-
-        "Non-shuffled\nPyroptosis",
-        "Shuffled features\nPyroptosis",
-        "Shuffled phenotypes\nPyroptosis"))
-
-merged_agg
-
-# aggregate the data by shuffled and oneb_Metadata_Treatment_Dose_Inhibitor_Dose and shuffled
-merged_agg <- aggregate(. ~ shuffled + oneb_Metadata_Treatment_Dose_Inhibitor_Dose + Metadata_labels, data=merged_df, FUN=mean)
 # scatter plot
 scatter_compare_treatment <- (
-    ggplot(merged_agg, aes(x=morphology_ap, y=secretome_ap, col = Metadata_labels, shape=shuffled))
-    + geom_point(size=3, alpha=0.7)
+    ggplot(map_df, aes(x=mAP_moprhology, y=mAP_secretome, col = Metadata_labels, shape=shuffled))
+    + geom_point(size=3, alpha=0.5)
     + labs(x="Morphology mAP score", y="Secretome mAP score")
     + theme_bw()
+    + ggtitle("Comparison of mAP scores")
     + ylim(0,1)
     + xlim(0,1)
     # Change the legend title
@@ -1135,8 +1001,6 @@ scatter_compare_treatment <- (
     + figure_theme
     # add y = x line
     + geom_abline(intercept = 0, slope = 1, linetype="dashed", color = "black")
-    # fix the coord
-    + ggplot2::coord_fixed(ratio = 1)
 )
 scatter_compare_treatment
 

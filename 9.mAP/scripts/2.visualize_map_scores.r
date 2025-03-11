@@ -1,25 +1,18 @@
 suppressPackageStartupMessages(suppressWarnings(library(ggplot2)))
-suppressPackageStartupMessages(suppressWarnings(library(argparser)))
-suppressPackageStartupMessages(suppressWarnings(library(dplyr)))
-suppressPackageStartupMessages(suppressWarnings(library(cowplot)))
 suppressPackageStartupMessages(suppressWarnings(library(RColorBrewer)))
-suppressPackageStartupMessages(suppressWarnings(library(patchwork)))
+suppressPackageStartupMessages(suppressWarnings(library(dplyr)))
 suppressPackageStartupMessages(suppressWarnings(library(tidyr)))
 suppressPackageStartupMessages(suppressWarnings(library(arrow)))
-
-# load in theme
-source("../../utils/figure_themes.r")
-
-cell_type <- "PBMC"
+source("../../figures/utils/figure_themes.r")
 
 # set path to the data morphology
 
-morphology_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","activity_map.parquet")
-shuffled_morphology_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology","activity_map_shuffled.parquet")
+morphology_path <- file.path("..","data","processed","mAP_scores","morphology","activity_map.parquet")
+shuffled_morphology_path <- file.path("..","data","processed","mAP_scores","morphology","activity_map_shuffled.parquet")
 # set path to the secretome data
 
-secretome_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","activity_map.parquet")
-shuffled_secretome_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","secretome","activity_map_shuffled.parquet")
+secretome_path <- file.path("..","data","processed","mAP_scores","secretome","activity_map.parquet")
+shuffled_secretome_path <- file.path("..","data","processed","mAP_scores","secretome","activity_map_shuffled.parquet")
 
 df_morphology <- arrow::read_parquet(morphology_path) %>%
     dplyr::mutate(shuffled = "Non-shuffled") %>%
@@ -50,6 +43,22 @@ df_shuffled_secretome <- arrow::read_parquet(shuffled_secretome_path) %>%
 
 df <- dplyr::bind_rows(df_morphology, df_shuffled_morphology, df_secretome, df_shuffled_secretome)
 head(df)
+
+# split out the morphology and secretome data
+morphology_data <- df %>% dplyr::filter(data_type == "Morphology")
+secretome_data <- df %>% dplyr::filter(data_type == "Secretome")
+# rename the mean_average_precision column to specifcy morphology
+morphology_data <- morphology_data %>% dplyr::rename(mAP_moprhology = mean_average_precision)
+secretome_data <- secretome_data %>% dplyr::rename(mAP_secretome = mean_average_precision)
+# drop the data_type column
+morphology_data <- morphology_data %>% dplyr::select(-data_type)
+secretome_data <- secretome_data %>% dplyr::select(-data_type)
+# merge the data together to plot
+df <- merge(morphology_data, secretome_data,by = c("Metadata_Treatment", "Metadata_labels", "shuffled"))
+
+
+head(morphology_data)
+head(secretome_data)
 
 levels_list <- c(
     'Media',
@@ -99,21 +108,51 @@ levels_list <- c(
     'Topotecan_20.000_nM_DMSO_0.025_%'
 )
 
-# split out the morphology and secretome data
-morphology_data <- df %>% dplyr::filter(data_type == "Morphology")
-secretome_data <- df %>% dplyr::filter(data_type == "Secretome")
-# rename the mean_average_precision column to specifcy morphology
-morphology_data <- morphology_data %>% dplyr::rename(mAP_moprhology = mean_average_precision)
-secretome_data <- secretome_data %>% dplyr::rename(mAP_secretome = mean_average_precision)
-# drop the data_type column
-morphology_data <- morphology_data %>% dplyr::select(-data_type)
-secretome_data <- secretome_data %>% dplyr::select(-data_type)
-# merge the data together to plot
-df <- merge(morphology_data, secretome_data,by = c("Metadata_Treatment", "Metadata_labels", "shuffled"))
-
-
 df$Metadata_labels <- factor(df$Metadata_labels, levels = c("Control", "Apoptosis", "Pyroptosis"))
 df$Metadata_Treatment <- factor(df$Metadata_Treatment, levels =levels_list)
+
+head(df)
+
+# scatter plot
+scatter_compare_treatment <- (
+    ggplot(df, aes(x=mAP_moprhology, y=mAP_secretome, col = Metadata_labels, shape=shuffled))
+    + geom_point(size=3, alpha=0.5)
+    + labs(x="Morphology mAP score", y="Secretome mAP score")
+    + theme_bw()
+    + ggtitle("Comparison of mAP scores")
+    + ylim(0,1)
+    + xlim(0,1)
+    # Change the legend title
+    # change the legend shape
+    + scale_shape_manual(
+        name="Shuffle type",
+        labels=c(
+            "Non-shuffled",
+            "Shuffled features",
+            "Shuffled phenotypes"
+        ),
+        values=c(19, 17, 15)
+    )
+    + scale_color_manual(
+        name="Class",
+        labels=c(
+            "Control",
+            "Apoptosis",
+            "Pyroptosis"
+        ),
+        values=c(
+            brewer.pal(3, "Dark2")[2],
+            brewer.pal(3, "Dark2")[1],
+            brewer.pal(3, "Dark2")[3]
+    )
+)
+    + figure_theme
+    # add y = x line
+    + geom_abline(intercept = 0, slope = 1, linetype="dashed", color = "black")
+)
+scatter_compare_treatment
+
+head(df)
 
 df <- df %>%
     mutate(Metadata_Treatment = case_when(
@@ -228,15 +267,19 @@ df$inhibitor <- factor(
 )
 head(df)
 
+# save the df to as parquet for plotting later on
+arrow::write_parquet(df, file.path("..","data","processed","mAP_scores","morphology_secretome_comparison.parquet"))
+
 width <- 15
 height <- 15
 options(repr.plot.width=width, repr.plot.height=height)
 # scatter plot with fill being the treatment dose
 scatter_by_treatment <- (
     ggplot(df, aes(x=mAP_moprhology, y=mAP_secretome, col = inducer, shape=inhibitor))
-    + geom_point(size=4, alpha=0.7)
+    + geom_point(size=3, alpha=1)
     + labs(x="Morphology mAP score", y="Secretome mAP score")
     + theme_bw()
+    + ggtitle("Comparison of mAP scores")
     + ylim(0,1)
     + xlim(0,1)
     + figure_theme
@@ -298,50 +341,10 @@ scatter_by_treatment <- (
         values = shapes
     )
     # make the legend 1 column
-    + guides(
-        color = guide_legend(ncol = 3),
-        shape = guide_legend(ncol = 1))
+    + guides(color = guide_legend(ncol = 1), shape = guide_legend(ncol = 1))
     + ggplot2::coord_fixed()
-    + facet_grid(~shuffled)
-    + theme(
-        legend.position = "bottom",
-        legend.title.position = "top",
-        legend.title = element_text(size = 18, hjust = 0.5,face = "bold")
-    )
+    + facet_grid(shuffled~.)
     # add y = x line
     + geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black")
 )
 scatter_by_treatment
-
-# if dir does not exist create it
-if(!dir.exists("../figures")){
-    dir.create("../figures")
-}
-
-width <- 17
-height <- 14
-options(repr.plot.width = width, repr.plot.height = height)
-
-layout <- c(
-    area(t=1, b=2, l=1, r=2) # A
-)
-
-
-figure <- (
-    # move the plot left a bit
-    wrap_elements(scatter_by_treatment)
-    + plot_layout(design = layout, heights = c(1, 0.5, 3))
-    + plot_annotation(tag_levels = "A")  & theme(plot.tag = element_text(size = 20))
-
-)
-
-png(filename = file.path(paste0(
-    "../",
-    "figures/",
-    cell_type,
-    "S7.png")), width = width, height = height, units = "in", res = 600
-)
-figure
-dev.off()
-figure
-

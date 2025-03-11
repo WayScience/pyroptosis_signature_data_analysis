@@ -137,8 +137,10 @@ df.head()
 # In[8]:
 
 
+np.random.seed(0)
 if shuffle_labels is True:
-    df["labels"] = np.random.permutation(df["labels"].values)
+    for col in df.columns:
+        df[col] = np.random.permutation(df[col].values)
 
 
 # In[9]:

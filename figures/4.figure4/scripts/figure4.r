@@ -45,8 +45,6 @@ df_stats <- read.csv(df_stats_path)
 df_variance <- read.csv(df_variance_path)
 
 
-head(df_stats)
-head(df_variance)
 # remove '[]' from the string in the column
 df_variance$r2 <- gsub("\\[|\\]", "", df_variance$r2)
 # set the column as numeric
@@ -124,12 +122,10 @@ plot(legend)
 
 df_stats$shuffle_plus_data_split <- paste0(df_stats$shuffle, "_", df_stats$data_split)
 # replace 'final_test_data' with 'Final + Test' and 'final_train_data' with 'Final + Train'
-unique(df_stats$shuffle_plus_data_split)
 df_stats$shuffle_plus_data_split <- gsub("final_test_data", "Final (Test)", df_stats$shuffle_plus_data_split)
 df_stats$shuffle_plus_data_split <- gsub("final_train_data", "Final (Train)", df_stats$shuffle_plus_data_split)
 df_stats$shuffle_plus_data_split <- gsub("shuffled_baseline_test_data", "Shuffled (Test)", df_stats$shuffle_plus_data_split)
 df_stats$shuffle_plus_data_split <- gsub("shuffled_baseline_train_data", "Shuffled (Train)", df_stats$shuffle_plus_data_split)
-unique(df_stats$shuffle_plus_data_split)
 
 options(repr.plot.width=6, repr.plot.height=5)
 # set output path
@@ -201,8 +197,6 @@ pred_v_actual_plot <- function(df, cytokine){
 }
 
 
-head(df_stats$shuffle_plus_data_split)
-
 # df_stats factor levels
 df_stats$shuffle_plus_data_split <- factor(
     df_stats$shuffle_plus_data_split,
@@ -214,8 +208,6 @@ df_stats$shuffle_plus_data_split <- factor(
     )
 )
 
-
-head(df_stats)
 
 
 enet_cp_fig <- file.path(paste0(enet_cp_fig_path,"Predicted_vs_Actual_all_cytokines.png"))
@@ -280,8 +272,6 @@ model_performance_il1b <- (
 )
 model_performance_il1b
 
-
-head(df_stats)
 
 # calculate the se of each metric for each shuffle, data_split, and cytokine in R
 agg_df <- aggregate(r2 ~ shuffle_plus_data_split, df_stats, function(x) c(mean = mean(x), sd = sd(x)))
@@ -959,7 +949,7 @@ variance_r2_plot_local <- variance_r2_plot_local + theme(plot.title = element_bl
 IL1beta_a_v_p <- IL1beta_a_v_p + theme(plot.title = element_blank())
 model_performance_il1b <- model_performance_il1b + theme(plot.title = element_blank())
 il1beta_final_plot <- il1beta_final_plot + theme(plot.title = element_blank())
-# model_heatmap <- model_heatmap + theme(plot.title = element_blank())
+
 
 map_df_path <- file.path("..","..","..","9.mAP","data","processed","mAP_scores","morphology_secretome_comparison.parquet")
 
@@ -999,6 +989,7 @@ scatter_compare_treatment <- (
     )
 )
     + figure_theme
+    + ggplot2::coord_fixed(ratio = 1)
     # add y = x line
     + geom_abline(intercept = 0, slope = 1, linetype="dashed", color = "black")
 )

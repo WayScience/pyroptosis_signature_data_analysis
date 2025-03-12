@@ -56,10 +56,6 @@ secretome_data <- secretome_data %>% dplyr::select(-data_type)
 # merge the data together to plot
 df <- merge(morphology_data, secretome_data,by = c("Metadata_Treatment", "Metadata_labels", "shuffled"))
 
-
-head(morphology_data)
-head(secretome_data)
-
 levels_list <- c(
     'Media',
     'DMSO_0.100_%_DMSO_0.025_%',
@@ -111,8 +107,6 @@ levels_list <- c(
 df$Metadata_labels <- factor(df$Metadata_labels, levels = c("Control", "Apoptosis", "Pyroptosis"))
 df$Metadata_Treatment <- factor(df$Metadata_Treatment, levels =levels_list)
 
-head(df)
-
 # scatter plot
 scatter_compare_treatment <- (
     ggplot(df, aes(x=mAP_moprhology, y=mAP_secretome, col = Metadata_labels, shape=shuffled))
@@ -151,8 +145,6 @@ scatter_compare_treatment <- (
     + geom_abline(intercept = 0, slope = 1, linetype="dashed", color = "black")
 )
 scatter_compare_treatment
-
-head(df)
 
 df <- df %>%
     mutate(Metadata_Treatment = case_when(
@@ -204,10 +196,8 @@ df$Metadata_Treatment <- gsub("Media ctr 0.0 0", "Media", df$Metadata_Treatment)
 df <- df %>%
     separate(Metadata_Treatment, c("inducer", "inhibitor"), sep = " - ", remove = FALSE)
 
-unique(df$inducer)
 # replace the inhibitor NA with Media
 df$inhibitor <- ifelse(is.na(df$inhibitor), "Media", df$inhibitor)
-unique(df$inhibitor)
 
 # make the group_treatment column a factor
 df$inducer <- factor(

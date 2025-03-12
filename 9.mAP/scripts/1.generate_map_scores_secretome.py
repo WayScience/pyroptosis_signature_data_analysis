@@ -48,7 +48,7 @@ apoptosis_ground_truth = ground_truth["Apoptosis"]["apoptosis_groups_list"]
 pyroptosis_ground_truth = ground_truth["Pyroptosis"]["pyroptosis_groups_list"]
 control_ground_truth = ground_truth["Healthy"]["healthy_groups_list"]
 
-map_out_dir = pathlib.Path("../data/processed/mAP_scores/morphology/")
+map_out_dir = pathlib.Path("../data/processed/mAP_scores/secretome/")
 map_out_dir.mkdir(exist_ok=True, parents=True)
 
 
@@ -56,13 +56,14 @@ map_out_dir.mkdir(exist_ok=True, parents=True)
 
 
 agg_data = pathlib.Path(
-    "../../data/PBMC_preprocessed_sc_norm_aggregated.parquet"
+    "../../data/PBMC_preprocessed_sc_norm_aggregated_nomic.parquet"
 ).resolve(strict=True)
 df = pd.read_parquet(agg_data)
 # rename oneb_Metadata_Treatment_Dose_Inhibitor_Dose to Metadata_Treatment
 df = df.rename(
     columns={"oneb_Metadata_Treatment_Dose_Inhibitor_Dose": "Metadata_Treatment"}
 )
+df = df.filter(regex="Metadata|NSU")
 df.head()
 
 

@@ -247,3 +247,36 @@ colors_4 <- c(
 )
 
 
+colors_5 <- c(
+    'Media' = colorgrad1[1],
+    'DMSO 0.1%' = colorgrad1[2],
+
+    'Flagellin 0.1 ug/ml'= colorgrad5[1],
+    'Flagellin 1.0 ug/ml' = colorgrad5[2],
+
+    'LPS 0.01 ug/ml' = colorgrad2[1],
+    'LPS 0.1 ug/ml' = colorgrad2[2],
+    'LPS 1.0 ug/ml' = colorgrad2[3],
+    'LPS 10.0 ug/ml' = colorgrad2[4],
+    'LPS 100.0 ug/ml' = colorgrad2[5],
+    'LPS 1.0 ug/ml + Nigericin 1.0 uM' = colorgrad2[6],
+    'LPS 1.0 ug/ml + Nigericin 3.0 uM' = colorgrad2[7],
+    'LPS 1.0 ug/ml + Nigericin 10.0 uM' = colorgrad2[8],
+    'LPS 100.0 ug/ml + Nigericin 1.0 uM' = colorgrad2[9],
+    'LPS 100.0 ug/ml + Nigericin 3.0 uM' = colorgrad2[10],
+    'LPS 100.0 ug/ml + Nigericin 10.0 uM' = colorgrad2[11],
+
+    'H2O2 100.0 nM'  = colorgrad7[1],
+    'H2O2 100.0 uM' = colorgrad7[2],
+
+    'Disulfiram 0.1 uM' = colorgrad4[3],
+    'Disulfiram 1.0 uM' = colorgrad4[4],
+    'Disulfiram 2.5 uM' = colorgrad4[5],
+
+    'Thapsigargin 1.0 uM' = colorgrad8[1],
+    'Thapsigargin 10.0 uM' = colorgrad8[2],
+
+    'Topotecan 5.0 nM' = colorgrad9[1],
+    'Topotecan 10.0 nM' = colorgrad9[2],
+    'Topotecan 20.0 nM' = colorgrad9[3]
+)

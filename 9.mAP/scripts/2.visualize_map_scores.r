@@ -312,7 +312,7 @@ scatter_by_treatment <- (
             'Topotecan 10.0 nM',
             'Topotecan 20.0 nM'
         ),
-        values = colors)
+        values = colors_5)
     + scale_shape_manual(
         name = "Inhibitor",
         labels = c(

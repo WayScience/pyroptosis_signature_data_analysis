@@ -189,7 +189,7 @@ class GetChannelCorrelations:
         dict_of_correlations = {}
 
         index = 0
-        for channel1, channel2 in itertools.combinations(self.channels, 2):
+        for channel1, channel2 in itertools.permutations(self.channels, 2):
             c1_array = np.array(
                 bulk_profile_long[bulk_profile_long["channel"] == channel1][
                     "feature_value"
@@ -244,15 +244,22 @@ class GetChannelCorrelations:
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 df_list = []
-for file in tqdm.tqdm(plates_dict):
-    get_corr = GetChannelCorrelations(
-        profile_df=pd.read_parquet(file),
-        channels=plates_dict[file]["channels"],
-        compartments=["Cytoplasm", "Nuclei", "Cell"],
-    )
-    corr_df = get_corr.call_all_class_methods()
-    corr_df["plate"] = file.stem
-    df_list.append(corr_df)
+for file in plates_dict:
+    for well in tqdm.tqdm(
+        pd.read_parquet(file, columns=["Metadata_Well"])["Metadata_Well"].unique(),
+        desc="Wells",
+    ):
+        get_corr = GetChannelCorrelations(
+            profile_df=pd.read_parquet(file).loc[
+                pd.read_parquet(file)["Metadata_Well"] == well
+            ],
+            channels=plates_dict[file]["channels"],
+            compartments=["Cytoplasm", "Nuclei", "Cell"],
+        )
+        corr_df = get_corr.call_all_class_methods()
+        corr_df["plate"] = file.stem
+        corr_df["well"] = well
+        df_list.append(corr_df)
 
 
 # In[5]:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
+# In[1]:
 
 
 import argparse
@@ -16,7 +16,7 @@ import pandas as pd
 from sklearn.metrics import explained_variance_score, mean_squared_error, r2_score
 from sklearn.utils import parallel_backend
 
-# In[ ]:
+# In[2]:
 
 
 argparser = argparse.ArgumentParser()
@@ -31,8 +31,12 @@ shuffle = ast.literal_eval(args.shuffle)
 cytokine = args.cytokine
 print(cell_type, shuffle, cytokine)
 
+# cell_type = "PBMC"
+# shuffle = False
+# cytokine = "XCL1 (Lymphotactin) [NSU]"
 
-# In[ ]:
+
+# In[3]:
 
 
 # Parameters
@@ -40,7 +44,7 @@ aggregation = True
 nomic = True
 
 
-# In[ ]:
+# In[4]:
 
 
 # set shuffle value
@@ -50,13 +54,13 @@ else:
     shuffle = "final"
 
 
-# In[ ]:
+# In[5]:
 
 
 MODEL_TYPE = "regression"
 
 
-# In[ ]:
+# In[6]:
 
 
 # load training data from indexes and features dataframe
@@ -73,7 +77,7 @@ data_df = pd.read_parquet(data_path)
 data_split_indexes = pd.read_csv(data_split_path, sep="\t")
 
 
-# In[ ]:
+# In[7]:
 
 
 # rename column that contain the treatment dose to be a metadata column
@@ -85,14 +89,14 @@ data_df.rename(
 )
 
 
-# In[ ]:
+# In[8]:
 
 
 # remove duplicate columns
 data_df = data_df.loc[:, ~data_df.columns.duplicated()]
 
 
-# In[ ]:
+# In[9]:
 
 
 # select tht indexes for the training and test set
@@ -100,7 +104,7 @@ train_indexes = data_split_indexes.loc[data_split_indexes["label"] == "train"]
 test_indexes = data_split_indexes.loc[data_split_indexes["label"] == "test"]
 
 
-# In[ ]:
+# In[10]:
 
 
 # subset data_df by indexes in data_split_indexes
@@ -108,7 +112,7 @@ training_data = data_df.loc[train_indexes["labeled_data_index"]]
 testing_data = data_df.loc[test_indexes["labeled_data_index"]]
 
 
-# In[ ]:
+# In[11]:
 
 
 # define metadata columns
@@ -135,29 +139,29 @@ test_data_y = testing_data[test_data_y_cols]
 test_data_x = test_data_x.drop(test_data_y_cols, axis=1)
 
 
-# In[ ]:
+# In[12]:
 
 
 print(train_data_x.shape, train_data_y.shape, test_data_x.shape, test_data_y.shape)
 
 
-# In[ ]:
+# In[13]:
 
 
 # set model path from parameters
 if (aggregation == True) and (nomic == True):
-    model_path = pathlib.Path(f"models/regression/{cell_type}/aggregated_with_nomic/")
+    model_path = pathlib.Path(f"models/regression/{cell_type}_aggregated_with_nomic/")
 elif (aggregation == True) and (nomic == False):
-    model_path = pathlib.Path(f"models/regression/{cell_type}/aggregated/")
+    model_path = pathlib.Path(f"models/regression/{cell_type}_aggregated/")
 elif (aggregation == False) and (nomic == True):
-    model_path = pathlib.Path(f"models/regression/{cell_type}/sc_with_nomic/")
+    model_path = pathlib.Path(f"models/regression/{cell_type}_sc_with_nomic/")
 elif (aggregation == False) and (nomic == False):
-    model_path = pathlib.Path(f"models/regression/{cell_type}/sc/")
+    model_path = pathlib.Path(f"models/regression/{cell_type}_sc/")
 else:
     print("Error")
 
 
-# In[ ]:
+# In[14]:
 
 
 data_dict = {
@@ -176,14 +180,14 @@ data_dict = {
 }
 
 
-# In[ ]:
+# In[15]:
 
 
 # list of metrics to use
 output_metric_scores = {}
 
 
-# In[ ]:
+# In[16]:
 
 
 # blank df for concatenated results
@@ -207,71 +211,74 @@ results_df = pd.DataFrame(
 )
 
 
-# In[ ]:
+# In[17]:
 
 
-data_x = test_data_x
-data_y = test_data_y
-metadata = metadata_test
-data_split = "test"
-if shuffle == "shuffled_baseline":
-    model = joblib.load(
-        f"../../1.train_models/{model_path}/{cytokine}_shuffled_baseline__all_nomic.joblib"
-    )
-elif shuffle == "final":
-    model = joblib.load(
-        f"../../1.train_models/{model_path}/{cytokine}_final__all_nomic.joblib"
-    )
-else:
-    print("Error")
+list_of_dfs = []
+for data_split in data_dict.keys():
+    data_x = data_dict[data_split]["data_x"]
+    data_y = data_dict[data_split]["data_y"]
+    col_names = data_dict[data_split]["col_names"]
+    metadata = data_dict[data_split]["metadata"]
 
-# get the cytokine column of choice
-y_selected = data_y[cytokine]
+    if shuffle == "shuffled_baseline":
+        model = joblib.load(
+            f"../../1.train_models/{model_path}/{cytokine}_shuffled_baseline__all_nomic.joblib"
+        )
+    elif shuffle == "final":
+        model = joblib.load(
+            f"../../1.train_models/{model_path}/{cytokine}_final__all_nomic.joblib"
+        )
+    else:
+        print("Error")
 
-if shuffle == "shuffled_baseline":
-    for column in data_x:
-        np.random.shuffle(data_x[column].values)
+    # get the cytokine column of choice
+    y_selected = data_y[cytokine]
 
-# get predictions
-predictions = model.predict(data_x)
+    if shuffle == "shuffled_baseline":
+        for column in data_x:
+            np.random.shuffle(data_x[column].values)
 
-explained_variance = explained_variance_score(y_selected, predictions)
-output_metric_scores["explained_variance"] = explained_variance
-neg_mean_absolute_error = -mean_squared_error(y_selected, predictions)
-output_metric_scores["neg_mean_absolute_error"] = neg_mean_absolute_error
-neg_mean_squared_error = -mean_squared_error(y_selected, predictions)
-output_metric_scores["neg_mean_squared_error"] = neg_mean_squared_error
-r2 = r2_score(y_selected, predictions)
-output_metric_scores["treatment"] = metadata[
-    "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
-]
-output_metric_scores["well"] = metadata["Metadata_Well"].values
-df = pd.DataFrame.from_dict(output_metric_scores)
-df["r2"] = r2
-df["cytokine"] = cytokine
-df["data_split"] = data_split
-df["shuffle"] = shuffle
-df["predicted_value"] = predictions
-df["actual_value"] = y_selected
-df["log10_neg_mean_absolute_error"] = -np.log10(-df["neg_mean_absolute_error"])
-df["log10_neg_mean_squared_error"] = -np.log10(-df["neg_mean_squared_error"])
-df["log10_explained_variance"] = -np.log10(df["explained_variance"])
+    # get predictions
+    predictions = model.predict(data_x)
 
-# replace "[NSU]" with """
-df["cytokine"] = df["cytokine"].replace("[ \[\]NSU]", "", regex=True)
-df["cytokine"] = df["cytokine"].replace(" ", "_", regex=True)
+    explained_variance = explained_variance_score(y_selected, predictions)
+    output_metric_scores["explained_variance"] = explained_variance
+    neg_mean_absolute_error = -mean_squared_error(y_selected, predictions)
+    output_metric_scores["neg_mean_absolute_error"] = neg_mean_absolute_error
+    neg_mean_squared_error = -mean_squared_error(y_selected, predictions)
+    output_metric_scores["neg_mean_squared_error"] = neg_mean_squared_error
+    r2 = r2_score(y_selected, predictions)
+    output_metric_scores["treatment"] = metadata[
+        "oneb_Metadata_Treatment_Dose_Inhibitor_Dose"
+    ]
+    output_metric_scores["well"] = metadata["Metadata_Well"].values
+    df = pd.DataFrame.from_dict(output_metric_scores)
+    df["r2"] = r2
+    df["cytokine"] = cytokine
+    df["data_split"] = data_split
+    df["shuffle"] = shuffle
+    df["predicted_value"] = predictions
+    df["actual_value"] = y_selected
+    df["log10_neg_mean_absolute_error"] = -np.log10(-df["neg_mean_absolute_error"])
+    df["log10_neg_mean_squared_error"] = -np.log10(-df["neg_mean_squared_error"])
+    df["log10_explained_variance"] = -np.log10(df["explained_variance"])
 
-# concat the dataframes
-results_df = pd.concat([results_df, df], axis=0)
+    # replace "[NSU]" with """
+    df["cytokine"] = df["cytokine"].replace("[ \[\]NSU]", "", regex=True)
+    df["cytokine"] = df["cytokine"].replace(" ", "_", regex=True)
+    list_of_dfs.append(df)
+    # concat the dataframes
+results_df = pd.concat(list_of_dfs, axis=0)
 
 
-# In[ ]:
+# In[18]:
 
 
 results_df.head()
 
 
-# In[ ]:
+# In[19]:
 
 
 var_df = results_df.drop(
@@ -299,26 +306,26 @@ var_df.reset_index(inplace=True)
 var_df.head()
 
 
-# In[ ]:
+# In[20]:
 
 
 # set model path from parameters
 if (aggregation == True) and (nomic == True):
     results_path = pathlib.Path(
-        f"../results/regression/{cell_type}/aggregated_with_nomic/"
+        f"../results/regression/{cell_type}_aggregated_with_nomic/"
     )
 elif (aggregation == True) and (nomic == False):
-    results_path = pathlib.Path(f"../results/regression/{cell_type}/aggregated/")
+    results_path = pathlib.Path(f"../results/regression/{cell_type}_aggregated/")
 elif (aggregation == False) and (nomic == True):
-    results_path = pathlib.Path(f"../results/regression/{cell_type}/sc_with_nomic/")
+    results_path = pathlib.Path(f"../results/regression/{cell_type}_sc_with_nomic/")
 elif (aggregation == False) and (nomic == False):
-    results_path = pathlib.Path(f"../results/regression/{cell_type}/sc/")
+    results_path = pathlib.Path(f"../results/regression/{cell_type}_sc/")
 else:
     print("Error")
 pathlib.Path(results_path).mkdir(parents=True, exist_ok=True)
 
 
-# In[ ]:
+# In[21]:
 
 
 # check if the model training metrics file exists

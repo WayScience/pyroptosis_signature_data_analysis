@@ -13,14 +13,18 @@ cd scripts || exit # change to the scripts directory but exit if it fails
 
 # run the .py files (the map analysis)
 
+python 0.generate_map_scores_morphology.py --shuffle
 python 0.generate_map_scores_morphology.py
-python 1.aggregate_map_scores_morphology.py
-python 2.generate_map_scores_secretome.py
-python 3.aggregate_map_scores_secretome.py
-python 4.generate_map_scores_morphology_treatment.py
-python 5.aggregate_map_scores_morphology_treatment.py
-python 6.generate_map_scores_secretome_treatment.py
-python 7.aggregate_map_scores_secretome_treatment.py
+python 1.generate_map_scores_secretome.py --shuffle
+python 1.generate_map_scores_secretome.py
+
+conda deactivate
+
+conda activate Interstellar_R
+
+Rscript 2.visualize_map_scores.r
+
+conda deactivate
 
 # move back to the main directory
 cd ../ || exit

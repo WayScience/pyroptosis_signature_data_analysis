@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# This notebook which is run as a script for each feature is used to compute the ANOVA and Tuket HSD test for the feature specified.
+# We perform the ANOVA across death types and then perform the Tukey HSD test to see which death types are significantly different from each other.
+
 # In[1]:
 
 
@@ -163,24 +166,23 @@ df_data = df.drop(df_metadata.columns, axis=1)
 # anova for each feature in the dataframe with posthoc tukey test to determine which groups are different from each other
 lst = []
 
-
 formula = f"{feature} ~ C(labels)"
 model = ols(formula, df_data).fit()
-aov_table = sm.stats.anova_lm(model, typ=2)
+aov_table = sm.stats.anova_lm(
+    model, typ=2
+)  # type 2 for unbalanced data and no regard for order
 
-posthoc = pairwise_tukeyhsd(
+posthoc = pairwise_tukeyhsd(  # posthoc tukey test independent observations, and normal distribution of data
     df_data[feature],
     df_data["labels"],
     alpha=0.001,
 )
-# print(posthoc)
 lst.append([posthoc, feature])
 
 
 # In[12]:
 
 
-tukey_df = pd.DataFrame()
 tukey_df_list = []
 for i in lst:
     j = pd.DataFrame(i[0]._results_table.data[1:])

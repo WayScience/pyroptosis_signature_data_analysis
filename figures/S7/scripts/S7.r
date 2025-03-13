@@ -113,8 +113,10 @@ df <- merge(morphology_data, secretome_data,by = c("Metadata_Treatment", "Metada
 
 
 df$Metadata_labels <- factor(df$Metadata_labels, levels = c("Control", "Apoptosis", "Pyroptosis"))
-df$Metadata_Treatment <- factor(df$Metadata_Treatment, levels =levels_list)
+# df$Metadata_Treatment <- factor(df$Metadata_Treatment, levels =levels_list)
 
+length(unique(df$Metadata_Treatment))
+unique(df$Metadata_Treatment)
 df <- df %>%
     mutate(Metadata_Treatment = case_when(
         Metadata_Treatment =='DMSO_0.100_%_DMSO_0.025_%' ~ "DMSO 0.1% - DMSO 0.025%",
@@ -125,7 +127,7 @@ df <- df %>%
         Metadata_Treatment =='Flagellin_1.000_ug_per_ml_Disulfiram_1.000_uM' ~ "Flagellin 1.0 ug/ml - Disulfiram 1.0 uM",
         Metadata_Treatment =='LPS_0.010_ug_per_ml_DMSO_0.025_%' ~ "LPS 0.01 ug/ml - DMSO 0.025%",
         Metadata_Treatment =='LPS_0.100_ug_per_ml_DMSO_0.025_%' ~ "LPS 0.1 ug/ml - DMSO 0.025%",
-        Metadata_Treatment =='Flagellin_0.100_ug_per_ml_DMSO_0.0_%' ~ "Flagellin 0.1 ug/ml - DMSO 0.0%",
+        # Metadata_Treatment =='Flagellin_0.100_ug_per_ml_DMSO_0.0_%' ~ "Flagellin 0.1 ug/ml - DMSO 0.0%",
         Metadata_Treatment =='Flagellin_0.100_ug_per_ml_DMSO_0.025_%' ~ "Flagellin 0.1 ug/ml - DMSO 0.025%",
         Metadata_Treatment =='Disulfiram_0.100_uM_DMSO_0.025_%' ~ "Disulfiram 0.1 uM - DMSO 0.025%",
         Metadata_Treatment =='LPS_Nigericin_1.000_ug_per_ml_1.000_uM_DMSO_0.025_%' ~ "LPS 1.0 ug/ml + Nigericin 1.0 uM - DMSO 0.025%",
@@ -134,7 +136,7 @@ df <- df %>%
         Metadata_Treatment =='LPS_Nigericin_1.000_ug_per_ml_10.000_uM_Z-VAD-FMK_100.000_uM' ~ "LPS 1.0 ug/ml + Nigericin 10.0 uM - Z-VAD-FMK 100.0 uM",
         Metadata_Treatment =='LPS_Nigericin_1.000_ug_per_ml_3.000_uM_DMSO_0.025_%' ~ "LPS 1.0 ug/ml + Nigericin 3.0 uM - DMSO 0.025%",
         Metadata_Treatment =='LPS_1.000_ug_per_ml_DMSO_0.025_%' ~ "LPS 1.0 ug/ml - DMSO 0.025%",
-        Metadata_Treatment =='Flagellin_1.000_ug_per_ml_DMSO_0.0_%' ~ "Flagellin 1.0 ug/ml - DMSO 0.025%",
+        # Metadata_Treatment =='Flagellin_1.000_ug_per_ml_DMSO_0.0_%' ~ "Flagellin 1.0 ug/ml - DMSO 0.025%",
         Metadata_Treatment =='Disulfiram_1.000_uM_DMSO_0.025_%' ~ "Disulfiram 1.0 uM - DMSO 0.025%",
         Metadata_Treatment =='Thapsigargin_1.000_uM_DMSO_0.025_%' ~ "Thapsigargin 1.0 uM - DMSO 0.025%",
         Metadata_Treatment =='Topotecan_10.000_nM_DMSO_0.025_%' ~ "Topotecan 10.0 nM - DMSO 0.025%",
@@ -155,11 +157,15 @@ df <- df %>%
         Metadata_Treatment =='Disulfiram_2.500_uM_DMSO_0.025_%' ~ "Disulfiram 2.5 uM - DMSO 0.025%",
         Metadata_Treatment =='Topotecan_20.000_nM_DMSO_0.025_%' ~ "Topotecan 20.0 nM - DMSO 0.025%",
         Metadata_Treatment =='Topotecan_5.000_nM_DMSO_0.025_%' ~ "Topotecan 5.0 nM - DMSO 0.025%",
-        Metadata_Treatment =='media_ctr_0.0_0_Media_ctr_0.0_0' ~ "Media ctr 0.0 0",
-        Metadata_Treatment =='media_ctr_0.0_0_Media_0.0_0' ~ "Media ctr 0.0 0"
+        Metadata_Treatment =='Media' ~ "Media",
+        # Metadata_Treatment =='media_ctr_0.0_0_Media_ctr_0.0_0' ~ "Media",
+        # Metadata_Treatment =='media_ctr_0.0_0_Media_0.0_0' ~ "Media"
     ))
     # replace Media ctr 0.0 0 with Media
-df$Metadata_Treatment <- gsub("Media ctr 0.0 0", "Media", df$Metadata_Treatment)
+length(unique(df$Metadata_Treatment))
+
+unique(df$Metadata_Treatment)
+
 
 # split the Metadata_Treatment into two columns by the " - " delimiter
 df <- df %>%
@@ -176,34 +182,26 @@ df$inducer <- factor(
     levels = c(
         'Media',
         'DMSO 0.1%',
-
         'Flagellin 0.1 ug/ml',
         'Flagellin 1.0 ug/ml',
-
         'LPS 0.01 ug/ml',
         'LPS 0.1 ug/ml',
         'LPS 1.0 ug/ml',
         'LPS 10.0 ug/ml',
         'LPS 100.0 ug/ml',
-
         'LPS 1.0 ug/ml + Nigericin 1.0 uM',
         'LPS 1.0 ug/ml + Nigericin 3.0 uM',
         'LPS 1.0 ug/ml + Nigericin 10.0 uM',
-
         'LPS 100.0 ug/ml + Nigericin 1.0 uM',
         'LPS 100.0 ug/ml + Nigericin 3.0 uM',
         'LPS 100.0 ug/ml + Nigericin 10.0 uM',
-
         'H2O2 100.0 nM',
         'H2O2 100.0 uM',
-
         'Disulfiram 0.1 uM',
         'Disulfiram 1.0 uM',
         'Disulfiram 2.5 uM',
-
         'Thapsigargin 1.0 uM',
         'Thapsigargin 10.0 uM',
-
         'Topotecan 5.0 nM',
         'Topotecan 10.0 nM',
         'Topotecan 20.0 nM'
@@ -227,6 +225,7 @@ df$inhibitor <- factor(
     )
 )
 head(df)
+unique(df$inducer)
 
 width <- 15
 height <- 15
@@ -279,7 +278,7 @@ scatter_by_treatment <- (
             'Topotecan 10.0 nM',
             'Topotecan 20.0 nM'
         ),
-        values = colors)
+        values = colors_5)
     + scale_shape_manual(
         name = "Inhibitor",
         labels = c(

@@ -149,7 +149,33 @@ activity_map = map.mean_average_precision(
 activity_map["-log10(p-value)"] = -activity_map["corrected_p_value"].apply(np.log10)
 # flatten the multi-index columns to make it easier to work with
 activity_map.reset_index(inplace=True)
-activity_map.head()
+# add apoptosis, pyroptosis and healthy columns to dataframe
+activity_map["Apoptosis"] = activity_map.apply(
+    lambda row: row["Metadata_Treatment"] in apoptosis_ground_truth,
+    axis=1,
+)
+activity_map["Pyroptosis"] = activity_map.apply(
+    lambda row: row["Metadata_Treatment"] in pyroptosis_ground_truth,
+    axis=1,
+)
+activity_map["Control"] = activity_map.apply(
+    lambda row: row["Metadata_Treatment"] in control_ground_truth,
+    axis=1,
+)
+
+# merge apoptosis, pyroptosis, and healthy columns into one column
+activity_map["Metadata_labels"] = activity_map.apply(
+    lambda row: "Apoptosis"
+    if row["Apoptosis"]
+    else "Pyroptosis"
+    if row["Pyroptosis"]
+    else "Control",
+    axis=1,
+)
+metadata_labels = activity_map.pop("Metadata_labels")
+activity_map.insert(1, "Metadata_labels", metadata_labels)
+# # drop apoptosis, pyroptosis, and healthy columns
+activity_map.drop(columns=["Apoptosis", "Pyroptosis", "Control"], inplace=True)
 
 
 # In[10]:

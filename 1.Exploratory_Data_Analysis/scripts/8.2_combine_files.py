@@ -9,6 +9,7 @@ import pathlib
 
 import numpy as np
 import pandas as pd
+from statsmodels.stats.multitest import multipletests
 
 # In[2]:
 
@@ -45,19 +46,27 @@ output_file_path = pathlib.Path(f"../results/{cell_type}_combined.parquet")
 # get list of files in directory
 file_list = [x for x in data_dir.iterdir() if x.is_file()]
 
+list_of_dfs = []
 # loop through files
 for file in file_list:
     tmp_df = pd.read_parquet(file)
-    final_df = pd.concat([final_df, tmp_df])
-    # del the tmp_df to save memory
-    del tmp_df
-    # run garbage collection to free up memory
-    gc.collect()
+    list_of_dfs.append(tmp_df)
+final_df = pd.concat(list_of_dfs, ignore_index=True)
 
 final_df.shape
 
 
 # In[5]:
+
+
+# correct for multiple testing
+final_df["reject"], final_df["p-adj_fdr_bh"], _, _ = multipletests(
+    final_df["p-adj"], alpha=0.001, method="fdr_bh"
+)
+final_df.head()
+
+
+# In[6]:
 
 
 # save the final_df

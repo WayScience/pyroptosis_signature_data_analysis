@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# This notebook which is run as a script for each feature is used to compute the ANOVA and Tuket HSD test for the feature specified.
+# We perform the ANOVA across death types and then perform the Tukey HSD test to see which death types are significantly different from each other.
+
 # In[1]:
 
 
+import argparse
 import pathlib
 import warnings
 
@@ -11,19 +15,12 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import toml
-from matplotlib import rcParams
-from tqdm import tqdm
-
-# create a venn diagram of the features that are significant in all conditions
 
 warnings.filterwarnings("ignore")
-import argparse
-
-from pycytominer.cyto_utils import infer_cp_features
 from statsmodels.formula.api import ols
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
-# In[ ]:
+# In[2]:
 
 
 # set up command line argument parser
@@ -43,11 +40,17 @@ parser.add_argument(
     type=str,
     help="feature to run ANOVA and Tukey's HSD on",
 )
-
+parser.add_argument(
+    "-s",
+    "--shuffle_labels",
+    action="store_true",
+    help="Shuffle labels to create a null distribution",
+)
 # parse arguments from command line
 args = parser.parse_args()
 cell_type = args.cell_type
 feature = args.feature
+shuffle_labels = args.shuffle_labels
 
 
 # In[3]:
@@ -130,42 +133,63 @@ df.drop(columns=["apoptosis", "pyroptosis", "healthy"], inplace=True)
 # In[7]:
 
 
-df_metadata = df.filter(regex="Metadata")
-df_data = df.drop(df_metadata.columns, axis=1)
-df_data["Metadata_number_of_singlecells"] = df_metadata[
-    "Metadata_number_of_singlecells"
-]
+# show the data prior to shuffle
+df.head()
 
 
 # In[8]:
 
 
+np.random.seed(0)
+if shuffle_labels is True:
+    for col in df.columns:
+        df[col] = np.random.permutation(df[col].values)
+
+
+# In[9]:
+
+
+# and after shuffle
+df.head()
+
+
+# In[10]:
+
+
+df_metadata = df.filter(regex="Metadata")
+df_data = df.drop(df_metadata.columns, axis=1)
+
+
+# In[11]:
+
+
 # anova for each feature in the dataframe with posthoc tukey test to determine which groups are different from each other
 lst = []
 
-
-formula = f"{feature} ~ C(labels) + C(Metadata_number_of_singlecells)"
+formula = f"{feature} ~ C(labels)"
 model = ols(formula, df_data).fit()
-aov_table = sm.stats.anova_lm(model, typ=2)
-posthoc = pairwise_tukeyhsd(
+aov_table = sm.stats.anova_lm(
+    model, typ=2
+)  # type 2 for unbalanced data and no regard for order
+
+posthoc = pairwise_tukeyhsd(  # posthoc tukey test independent observations, and normal distribution of data
     df_data[feature],
     df_data["labels"],
     alpha=0.001,
 )
-# print(posthoc)
 lst.append([posthoc, feature])
 
 
-# In[ ]:
+# In[12]:
 
 
-tukey_df = pd.DataFrame()
+tukey_df_list = []
 for i in lst:
     j = pd.DataFrame(i[0]._results_table.data[1:])
     j["features"] = np.repeat(i[1], len(j))
-    tukey_df = pd.concat([tukey_df, j], axis=0)
+    tukey_df_list.append(j)
+tukey_df = pd.concat(tukey_df_list)
 
-    np.repeat(i[1], len(j))
 
 tukey_df.columns = [
     "group1",
@@ -183,17 +207,23 @@ tukey_df["p-adj_abs"] = abs(tukey_df["p-adj"])
 # make new column that states if the relationship is positive or negative
 tukey_df["pos_neg"] = np.where(tukey_df["p-adj"] > 0, "positive", "negative")
 # order the features by p-adj value
+tukey_df = tukey_df.sort_values(by="p-adj_abs", ascending=False)
+if shuffle_labels:
+    tukey_df["shuffled"] = True
+else:
+    tukey_df["shuffled"] = False
 
 
-# In[ ]:
+# In[13]:
 
 
 # save the dataframe as a parquet file
 anova_results_path = pathlib.Path(
-    f"../results/{cell_type}/{feature}_anova_results_all_treatments.parquet"
+    f"../results/{cell_type}/{feature}_{shuffle_labels}_anova_results_all_treatments.parquet"
 )
 # if the directory does not exist, create it
 if not anova_results_path.parent.exists():
     anova_results_path.parent.mkdir(parents=True)
 # save the dataframe as a parquet file
 tukey_df.to_parquet(anova_results_path)
+tukey_df.head()

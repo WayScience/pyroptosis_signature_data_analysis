@@ -6,23 +6,8 @@
 
 import argparse
 import pathlib
-import warnings
 
-import numpy as np
-import pandas as pd
-import statsmodels.api as sm
-import toml
-from matplotlib import rcParams
-from tqdm import tqdm
-
-rcParams.update({"figure.autolayout": True})
-
-# create a venn diagram of the features that are significant in all conditions
-
-warnings.filterwarnings("ignore")
-from pycytominer.cyto_utils import infer_cp_features
-from statsmodels.formula.api import ols
-from statsmodels.stats.multicomp import pairwise_tukeyhsd
+import pyarrow.parquet as pq
 
 # In[ ]:
 
@@ -35,13 +20,19 @@ args = parser.parse_args()
 cell_type = args.cell_type
 
 
-# In[ ]:
+# In[3]:
 
 
 # Import Data
 # set data file path under pathlib path for multi-system use
 file_path = pathlib.Path(f"../../data/{cell_type}_preprocessed_sc_norm.parquet")
-df = pd.read_parquet(file_path)
+columns_list = pq.read_schema(file_path).names
+columns_list = [x for x in columns_list if "Metadata" not in x]
+columns_list = [x for x in columns_list if "__index_level_0__" not in x]
+
+
+# In[4]:
+
 
 # index output for features
 output_file = pathlib.Path(f"../features/{cell_type}_feature_index.txt")
@@ -49,17 +40,10 @@ output_file = pathlib.Path(f"../features/{cell_type}_feature_index.txt")
 output_file.parent.mkdir(parents=True, exist_ok=True)
 
 
-# In[ ]:
+# In[5]:
 
-
-df_metadata = df.filter(regex="Metadata")
-df_data = df.drop(df_metadata.columns, axis=1)
-df_data["Metadata_number_of_singlecells"] = df_metadata[
-    "Metadata_number_of_singlecells"
-]
-cp_features = infer_cp_features(df)
 
 # write each feature to a file
 with open(output_file, "w") as f:
-    for item in cp_features:
+    for item in columns_list:
         f.write("%s\n" % item)

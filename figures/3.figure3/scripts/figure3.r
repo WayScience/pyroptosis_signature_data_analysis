@@ -106,11 +106,11 @@ venn_diagram_plot <- venn.diagram(
     fontfamily = "sans",
 
     # Set names
-    cat.cex = 0.8,
+    cat.cex = 0.9,
     cat.fontface = "bold",
     cat.default.pos = "outer",
-    cat.pos = c(-75, 50, 0),
-    cat.dist = c(-0.05, 0.1, -0.075),
+    cat.pos = c(-83, 55, 0),
+    cat.dist = c(-0.050, 0.1, -0.075),
     cat.fontfamily = "sans",
     rotation = 2
 
@@ -123,8 +123,6 @@ files <- list.files(directory, full.names = TRUE)
 log_files <- files[grep(".log$", files)]
 # Remove the log files
 file.remove(log_files)
-
-
 # read in the venn diagram from PNG
 venn_diagram_image_path = file.path(paste0("../figures/",cell_type,"_venn_diagram.png"))
 venn_diagram_image = png::readPNG(venn_diagram_image_path)
@@ -136,6 +134,8 @@ venn_diagram_image <- (
         xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf
     )
     + theme_void()
+    + ggtitle("Differential morphology features \nacross pairwise comparisons")
+    + theme(plot.title = element_text(size = 20, hjust = 0.5))
 )
 # get the type of the object
 class(venn_diagram_image)
@@ -290,13 +290,13 @@ a_p__h_p_common_plot <- unique_feature_plot_function(anova_results_channels, a_p
 a_h__a_p__h_p_common_plot <- unique_feature_plot_function(anova_results_channels, a_h__a_p__h_p_common)
 
 # add titles to each plot
-a_h_unique_plot <- a_h_unique_plot + labs(title = "Apoptosis vs Control")
-a_p_unique_plot <- a_p_unique_plot + labs(title = "Apoptosis vs Pyroptosis")
-h_p_unique_plot <- h_p_unique_plot + labs(title = "Control vs Pyroptosis")
-a_h__a_p_common_plot <- a_h__a_p_common_plot + labs(title = "Common Features in Apoptosis vs Control and Apoptosis vs Pyroptosis")
-a_h__h_p_common_plot <- a_h__h_p_common_plot + labs(title = "Common Features in Apoptosis vs Control and Control vs Pyroptosis")
-a_p__h_p_common_plot <- a_p__h_p_common_plot + labs(title = "Common Features in Apoptosis vs Pyroptosis and Control vs Pyroptosis")
-a_h__a_p__h_p_common_plot <- a_h__a_p__h_p_common_plot + labs(title = "Common Features in Apoptosis vs Control, Apoptosis vs Pyroptosis and Control vs Pyroptosis")
+a_h_unique_plot <- a_h_unique_plot + labs(title = "Unique differential features for \nApoptosis vs Control")
+a_p_unique_plot <- a_p_unique_plot + labs(title = "Unique differential features for \nApoptosis vs Pyroptosis")
+h_p_unique_plot <- h_p_unique_plot + labs(title = "Unique differential features for \nControl vs Pyroptosis")
+a_h__a_p_common_plot <- a_h__a_p_common_plot + labs(title = "Common features in Apoptosis vs Control and Apoptosis vs Pyroptosis")
+a_h__h_p_common_plot <- a_h__h_p_common_plot + labs(title = "Common features in Apoptosis vs Control and Control vs Pyroptosis")
+a_p__h_p_common_plot <- a_p__h_p_common_plot + labs(title = "Common features in Apoptosis vs Pyroptosis and Control vs Pyroptosis")
+a_h__a_p__h_p_common_plot <- a_h__a_p__h_p_common_plot + labs(title = "Shared differential features for \nall pairwise comparisons")
 
 
 cell_umap_path <- file.path(paste0(
@@ -306,9 +306,6 @@ cell_umap_path <- file.path(paste0(
 
 cell_umap <- arrow::read_parquet(cell_umap_path)
 print(paste0("Number of cells: ",nrow(cell_umap)))
-
-# subset the cells for trial of plots
-# cell_umap <- cell_umap %>% sample_n(1000)
 
 # Load data
 data_path_cytokine_values <- file.path("../../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_PBMC_clean.parquet")
@@ -611,7 +608,7 @@ a_h_unique_plot <- a_h_unique_plot + theme(
 
     ),
     axis.title.x = element_blank()
-)
+) + labs(title = "Channel distribution of\n253 unique differential features\n for Apoptosis vs Control")
 a_p_unique_plot <- a_p_unique_plot + theme(
     plot.title = element_text(
         color=brewer.pal(3, "Dark2")[2],
@@ -622,7 +619,7 @@ a_p_unique_plot <- a_p_unique_plot + theme(
 
     ),
     axis.title.x = element_blank()
-)
+) + labs(title = "Channel distribution of\n3 unique differential features\n for Apoptosis vs Pyroptosis")
 h_p_unique_plot <- h_p_unique_plot + theme(
     plot.title = element_text(
         color=brewer.pal(3, "Dark2")[3],
@@ -633,10 +630,8 @@ h_p_unique_plot <- h_p_unique_plot + theme(
 
     ),
     axis.title.x = element_blank()
-)
-a_h__a_p__h_p_common_plot <- a_h__a_p__h_p_common_plot + ggtitle(
-    "All Different Features"
-) + theme(
+) + labs(title = "Channel distribution of\n121 unique differential features\n for Control vs Pyroptosis")
+a_h__a_p__h_p_common_plot <- a_h__a_p__h_p_common_plot + theme(
     plot.title = element_text(
         color="black",
         size=14,
@@ -646,8 +641,9 @@ a_h__a_p__h_p_common_plot <- a_h__a_p__h_p_common_plot + ggtitle(
 
     ),
     axis.title.x = element_blank()
+) + labs(title = "Channel distribution of\n53 unique differential features\n for all pairwise comparisons")
 
-)
+a_h__a_p__h_p_common_plot
 
 # patch work plot of the venn diagram and bar plots
 
@@ -747,7 +743,7 @@ fig3 <- (
     + sub_figure3
     + plot_layout(design = layout)
     # make bottom plot not align
-    + plot_annotation(tag_levels = list(c("A", "B", "C"))) & theme(plot.tag = element_text(size = 20))
+    + plot_annotation(tag_levels = list(c("A", "B", "C", "D", "E", "F", "G"))) & theme(plot.tag = element_text(size = 20))
 
 )
 ggsave(

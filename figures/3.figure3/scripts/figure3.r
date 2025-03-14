@@ -608,7 +608,7 @@ a_h_unique_plot <- a_h_unique_plot + theme(
 
     ),
     axis.title.x = element_blank()
-)
+) + labs(title = "Channel distribution of\n253 unique differential features\n for Apoptosis vs Control")
 a_p_unique_plot <- a_p_unique_plot + theme(
     plot.title = element_text(
         color=brewer.pal(3, "Dark2")[2],
@@ -619,7 +619,7 @@ a_p_unique_plot <- a_p_unique_plot + theme(
 
     ),
     axis.title.x = element_blank()
-)
+) + labs(title = "Channel distribution of\n3 unique differential features\n for Apoptosis vs Pyroptosis")
 h_p_unique_plot <- h_p_unique_plot + theme(
     plot.title = element_text(
         color=brewer.pal(3, "Dark2")[3],
@@ -630,7 +630,7 @@ h_p_unique_plot <- h_p_unique_plot + theme(
 
     ),
     axis.title.x = element_blank()
-)
+) + labs(title = "Channel distribution of\n121 unique differential features\n for Control vs Pyroptosis")
 a_h__a_p__h_p_common_plot <- a_h__a_p__h_p_common_plot + theme(
     plot.title = element_text(
         color="black",
@@ -641,8 +641,9 @@ a_h__a_p__h_p_common_plot <- a_h__a_p__h_p_common_plot + theme(
 
     ),
     axis.title.x = element_blank()
+) + labs(title = "Channel distribution of\n53 unique differential features\n for all pairwise comparisons")
 
-)
+a_h__a_p__h_p_common_plot
 
 # patch work plot of the venn diagram and bar plots
 

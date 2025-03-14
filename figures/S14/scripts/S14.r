@@ -6,200 +6,130 @@ suppressPackageStartupMessages(suppressWarnings(library(reshape2))) # data manip
 suppressPackageStartupMessages(suppressWarnings(library(ggridges))) # ridgeline plots
 suppressPackageStartupMessages(suppressWarnings(library(RColorBrewer))) # color palettes
 suppressPackageStartupMessages(suppressWarnings(library(cowplot))) # ggplot2 drawing
-
+suppressPackageStartupMessages(suppressWarnings(library(ggplotify))) # ggplot2 drawing
 
 source("../../utils/figure_themes.r")
 
 
-model_name <- "MultiClass_MLP"
 cell_type <- "PBMC"
+model_name <- "MultiClass_MLP"
 
-# load in the probabilities
-treatment_holdout_probabilities_path <- file.path(
-    paste0(
-        "../../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/probabilities.parquet"
-    )
-)
-# read in the data from the parquet file
-probabilities <- arrow::read_parquet(
-    treatment_holdout_probabilities_path
-)
-head(probabilities,2)
-
-unique(probabilities$data_split)
-unique(probabilities$shuffle)
-
-# replace label_true value 1 with Control
-probabilities$label_true <- gsub("1", "Control", probabilities$label_true)
-# replace label_true value 2 with pyroptosis
-probabilities$label_true <- gsub("2", "Pyroptosis", probabilities$label_true)
-# replace label_true value 0 with apoptosis
-probabilities$label_true <- gsub("0", "Apoptosis", probabilities$label_true)
-
-# replace label_pred value 1 with Control
-probabilities$label_pred <- gsub("1", "Control", probabilities$label_pred)
-# replace label_pred value 2 with pyroptosis
-probabilities$label_pred <- gsub("2", "Pyroptosis", probabilities$label_pred)
-# replace label_pred value 0 with apoptosis
-probabilities$label_pred <- gsub("0", "Apoptosis", probabilities$label_pred)
-
-# replace shuffled value TRUE with Shuffled
-probabilities$shuffle <- gsub("TRUE", "Shuffled", probabilities$shuffle)
-# replace shuffled value FALSE with Not Shuffled
-probabilities$shuffle <- gsub("FALSE", "Not Shuffled", probabilities$shuffle)
-
-# replace data_split value treatment_holdout with Treatment Holdout
-probabilities$data_split <- gsub("treatment_holdout", "Treatment holdout", probabilities$data_split)
-# remove treatment holdout rows
-probabilities <- probabilities[!grepl("Treatment holdout", probabilities$data_split),]
-# replace data_split value holdout with Holdout
-probabilities$data_split <- gsub("holdout", "Holdout well", probabilities$data_split)
-# replace training value train with Training
-probabilities$data_split <- gsub("train", "Training", probabilities$data_split)
-# replace testing value test with Testing
-probabilities$data_split <- gsub("testing", "Testing", probabilities$data_split)
-# replace validation value validation with Validation
-probabilities$data_split <- gsub("validation", "Validation", probabilities$data_split)
-
-
-head(probabilities, 2)
-unique(probabilities$shuffle)
-
-unique(probabilities$data_split)
-
-# change the label columns to be factors
-probabilities$label_true <- factor(probabilities$label_true , levels = c(
-    "Control", "Apoptosis", "Pyroptosis"
-))
-probabilities$label_pred <- factor(probabilities$label_pred , levels = c(
-    "Pyroptosis", "Apoptosis", "Control"
-))
-# change the data_split column to be a factor
-probabilities$data_split <- factor(probabilities$data_split, levels = c(
-    "Training", "Validation", "Testing", "Holdout well"
-))
-# change the shuffled_data column to be a factor
-probabilities$shuffle <- factor(probabilities$shuffle, levels = c(
-    "Not Shuffled", "Shuffled"
+# set file path for importing the data
+training_metrics_file <- file.path(paste0(
+    "../../../4.sc_Morphology_Neural_Network_MLP_Model/results/Multi_Class/",model_name,"/",cell_type,"/training_metrics.parquet"
 ))
 
-unique(probabilities$data_split)
 
-height <- 5
-width <- 15
-options(repr.plot.width = width, repr.plot.height = height)
-ridge_plot_control <- (
-    ggplot(probabilities, aes(x = control_prob, y = label_pred, fill = label_true, group = label_pred))
-    + geom_density_ridges(
-        aes(fill = label_pred), alpha = 0.7, scale = 3, rel_min_height = 0.01
+# set output file path for graphs
+f1_plot_path <- file.path(paste0(
+    "../figures","/f1_score.png"
+))
+
+
+# make the output directory if it doesn't exist
+dir.create(file.path(paste0(
+    "../figures/"
+)), showWarnings = FALSE, recursive = TRUE)
+
+
+
+# read in the data
+training_metrics <- arrow::read_parquet(training_metrics_file)
+
+
+support <- training_metrics[training_metrics$metric == "support",]
+# get apoptosis, healthy, and pyroptosis support rows in one df
+support <- support[support$label %in% c("apoptosis", "healthy", "pyroptosis"),]
+
+
+# get the rows that contain the F1 scores
+f1_scores <- training_metrics[training_metrics$metric == "f1-score",]
+# remove the rows that contain the macro and weighted averages
+f1_scores <- f1_scores[!grepl("macro avg", f1_scores$label),]
+f1_scores <- f1_scores[!grepl("weighted avg", f1_scores$label),]
+# muatate the label column for multiple cases
+f1_scores$label <- gsub("healthy", "Control", f1_scores$label)
+f1_scores$label <- gsub("apoptosis", "Apoptosis", f1_scores$label)
+f1_scores$label <- gsub("pyroptosis", "Pyroptosis", f1_scores$label)
+# mutate the data type column
+f1_scores$group <- gsub("train", "Training", f1_scores$group)
+f1_scores$group <- gsub("test", "Testing", f1_scores$group)
+f1_scores$group <- gsub("validation", "Validation", f1_scores$group)
+f1_scores$group <- gsub("treatment_holdout", "Treatment Holdout", f1_scores$group)
+f1_scores$group <- gsub("holdout", "Well holdout", f1_scores$group)
+# factorize the group column
+f1_scores$group <- factor(f1_scores$group, levels = c(
+    "Training", "Validation", "Testing","Treatment Holdout", "Well holdout"
+))
+# mutate the shuffled_data column
+f1_scores$shuffle <- gsub("TRUE", "Shuffled", f1_scores$shuffle)
+f1_scores$shuffle <- gsub("FALSE", "Not Shuffled", f1_scores$shuffle)
+# cbind the support column to the f1_scores df
+f1_scores <- cbind(f1_scores, support$value)
+# rename the support column
+colnames(f1_scores)[colnames(f1_scores) == "support$value"] <- "support"
+# divide the support by 10,000 to get the number of cells
+f1_scores$support <- f1_scores$support / 10000
+# round the support column to 2 decimal places
+f1_scores$support <- round(f1_scores$support, 2)
+
+
+# make the label a factor so that the order is preserved
+f1_scores$label <- factor(
+    f1_scores$label, levels = c(
+        "Control", "Apoptosis", "Pyroptosis"
+        )
     )
-    # change color of the density ridges
-    + scale_fill_manual(values = c(
-        "Control" = brewer.pal(3, "Dark2")[2],
-        "Apoptosis" = brewer.pal(3, "Dark2")[1],
-        "Pyroptosis" = brewer.pal(3, "Dark2")[3]
-    ))
 
 
-    + facet_grid(shuffle~data_split, scales = "free_y")
-    + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
-    + scale_x_continuous(breaks = seq(0, 1, 0.5))
-    + labs(title = "Control Prediction Probability", y = "Predicted Class",fill = "True Class")
-    + labs()
-    + theme_bw()
-    + figure_theme
-    # no legend
-    + theme(legend.position = "none")
-    + theme(plot.title = element_text(size = 20, hjust = 0.5))
-    # remove x axis label
-    + theme(axis.title.x = element_blank())
-)
-ridge_plot_control
+head(f1_scores, 1)
 
+# remove the treatment holdout rows
+f1_scores <- f1_scores[!grepl("Treatment Holdout", f1_scores$group),]
 
-ridge_plot_apoptosis <- (
-    ggplot(probabilities, aes(x = apoptosis_prob, y = label_pred, fill = label_true, group = label_pred))
-    + geom_density_ridges(
-        aes(fill = label_pred), alpha = 0.7, scale = 3, rel_min_height = 0.01
-    )
-    + scale_fill_manual(values = c(
-        "Control" = brewer.pal(3, "Dark2")[2],
-        "Apoptosis" = brewer.pal(3, "Dark2")[1],
-        "Pyroptosis" = brewer.pal(3, "Dark2")[3]
-    ))
-    + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
-    + facet_grid(shuffle~data_split, scales = "free_y")
-    + scale_x_continuous(breaks = seq(0, 1, 0.5))
-    + labs(title = "Apoptosis Prediction Probability", y = "Predicted Class",fill = "True Class")
-    + labs()
-    + theme_bw()
-    + figure_theme
-    # remove legend
-    + theme(legend.position = "none")
-    + theme(plot.title = element_text(size = 20, hjust = 0.5))
-    # remove x axis label
-    + theme(axis.title.x = element_blank())
-)
-ridge_plot_apoptosis
+unique(f1_scores$group)
 
-ridge_plot_pyroptosis <- (
-    ggplot(probabilities, aes(x = pyroptosis_prob, y = label_pred, fill = label_true, group = label_pred))
-    + geom_density_ridges(
-        aes(fill = label_pred), alpha = 0.7, scale = 3, rel_min_height = 0.01
-    )
-    + scale_fill_manual(values = c(
-        "Control" = brewer.pal(3, "Dark2")[2],
-        "Apoptosis" = brewer.pal(3, "Dark2")[1],
-        "Pyroptosis" = brewer.pal(3, "Dark2")[3]
-    ))
-    + geom_vline(xintercept = 1, linetype = "dashed", color = "black")
-    + facet_grid(shuffle~data_split, scales = "free_y")+ scale_x_continuous(breaks = seq(0, 1, 0.5))
-    + scale_x_continuous(breaks = seq(0, 1, 0.5))
-    + labs(title = "Pyroptosis Prediction Probability", y = "Predicted Class",fill = "True Class")
-    + labs()
-    + theme_bw()
-    + figure_theme
-    # make title larger
-    + theme(plot.title = element_text(size = 20, hjust = 0.5))
-    + theme(legend.position = "bottom", legend.direction = "horizontal")
-    # remove x axis label
-    + theme(axis.title.x = element_blank())
-    # add vertical line at 1
-    # change legend label order
-    + guides(fill = guide_legend(reverse = TRUE))
-)
-ridge_plot_pyroptosis
-
-
-# if dir does not exist create it
-if(!dir.exists("../figures")){
-    dir.create("../figures")
-}
-
-# patch the plots together via the patchwork package
-layout <- c(
-    area(t=1, b=2, l=1, r=1), # A
-    area(t=3, b=4, l=1, r=1), # B
-    area(t=5, b=6, l=1, r=1)  # C
-)
 # set plot size
-width <- 17
-height <- 17
+width <- 10
+height <- 5
+options(repr.plot.width = width, repr.plot.height = height)
+# bar plot of the F1 scores
+f1_score_plot <- (
+    ggplot(f1_scores, aes(x = shuffle, y = value, fill = group))
+    + geom_bar(stat = "identity", position = "dodge")
+
+    + ylim(0, 1)
+    + facet_wrap(~label)
+    + ylab("F1 Score")
+    + xlab("Data Split")
+    # change the legend title
+    + labs(fill = "Predicted Class")
+    # change the colours
+    + scale_fill_manual(values = c(
+        "Training" = "#88F2F2",
+        "Validation" = "#056CF2",
+        "Testing" = "#A6382E",
+        "Well holdout" = "#F2A900"
+    ))
+    + figure_theme_wide
+
+)
+ggsave(f1_plot_path, f1_score_plot, width = width, height = height, dpi = 600)
+f1_score_plot
+
+
+
+# set plot size
+width <- 10
+height <- 10
 options(repr.plot.width=width, repr.plot.height=height, units = "cm", dpi = 600)
-figS14 <- (
-    ridge_plot_control
-    + ridge_plot_apoptosis
-    + ridge_plot_pyroptosis
-    + plot_layout(design = layout)
-    + plot_annotation(tag_levels = "A") &  theme(plot.tag = element_text(size = 20))
+fig14 <- (
+    f1_score_plot
+    + theme(plot.tag = element_text(size = 20))
 )
-figS14
+fig14
+
 # save the plot
-ggsave(
-    filename = paste0("../figures/","S14",".png"),
-    plot = figS14,
-    width = width,
-    height = height,
-    units = "in",
-    dpi = 600
-)
+
+ggsave("../figures/S14.png", fig12, width = width, height = height, dpi = 600)
+

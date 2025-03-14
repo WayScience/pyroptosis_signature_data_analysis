@@ -307,9 +307,6 @@ cell_umap_path <- file.path(paste0(
 cell_umap <- arrow::read_parquet(cell_umap_path)
 print(paste0("Number of cells: ",nrow(cell_umap)))
 
-# subset the cells for trial of plots
-# cell_umap <- cell_umap %>% sample_n(1000)
-
 # Load data
 data_path_cytokine_values <- file.path("../../../2.Nomic_nELISA_Analysis/Data/clean/Plate2/nELISA_plate_430420_PBMC_clean.parquet")
 cytokine_values <- arrow::read_parquet(data_path_cytokine_values)

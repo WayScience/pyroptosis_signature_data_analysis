@@ -125,6 +125,8 @@ cytokine_values$oneb_Treatment_Dose_Inhibitor_Dose <- factor(
 
 
 head(cytokine_values,2)
+# order DMSO to be plotted last
+cytokine_values <- cytokine_values[order(cytokine_values$oneb_Treatment_Dose_Inhibitor_Dose, decreasing = TRUE),]
 
 # set plot size
 width = 1520

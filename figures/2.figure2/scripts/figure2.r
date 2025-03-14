@@ -1043,7 +1043,7 @@ treatment_order <- c(
     'Thapsigargin 10.0 uM'
 )
 umap_results_selected_treatments$oneb_Treatment_Dose_Inhibitor_Dose <- factor(umap_results_selected_treatments$oneb_Treatment_Dose_Inhibitor_Dose, levels = treatment_order)
-
+umap_results_selected_treatments <- umap_results_selected_treatments[order(umap_results_selected_treatments$oneb_Treatment_Dose_Inhibitor_Dose, decreasing = TRUE),]
 
 # set the plot size
 options(repr.plot.width=35, repr.plot.height=5)

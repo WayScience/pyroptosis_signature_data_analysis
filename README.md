@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/611024034.svg)](https://zenodo.org/doi/10.5281/zenodo.11075332)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15028201.svg)](https://doi.org/10.5281/zenodo.15028201)
 
 # pyroptosis_signature_data_analysis
 Analysis Repository for the Interstellar project. For image analysis and image-based profiling for this project, please see [pyroptosis_signature_image_profiling](https://github.com/WayScience/pyroptosis_signature_image_profiling)

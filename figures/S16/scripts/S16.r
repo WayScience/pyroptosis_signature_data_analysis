@@ -55,7 +55,7 @@ df$year <- as.integer(df$year)
 df$count <- as.integer(df$count)
 
 # remove 2024 data
-df <- df[df$year != 2024,]
+df <- df[df$year != 2025,]
 
 head(df)
 
@@ -122,7 +122,7 @@ plot <- (
         color = "Cell Death Type",
         x = "Year",
         y = "Number of Publications",
-        title = "Cell Death Publications Over Time until 2024"
+        title = "Cell Death Publications Over Time until 2025"
     )
     + xlim(min(df$year), 2024)
     # center title

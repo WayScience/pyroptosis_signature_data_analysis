@@ -53,6 +53,9 @@ platemap_df$inducer2_concentration[platemap_df$inducer2_concentration == 'NA'] <
 # replace NA with ""
 platemap_df$inducer1_concentration[platemap_df$inducer1_concentration == 'NA'] <- ""
 
+# remove SHSY5Y data
+platemap_df <- platemap_df[platemap_df$cell_type == "PBMC",]
+
 
 # define save path
 platemap_path <- file.path("../figures/")
@@ -211,13 +214,8 @@ platemap_plot_inducer_dose <- (
         size = 14)
     + theme_dark()
     # fill the color by dose
-    + ggplot2::geom_point(
-            aes(shape = platemap_df$cell_type),
-            size = 5
-            )
 
-
-        + labs(fill = "Inducer + Dose", shape = "Cell Type")
+        + labs(fill = "Inducer + Dose")
         # remove shape legend from plot
         + guides(fill = guide_legend(override.aes = list(size = 12),ncol = 2))
         + guides(shape = guide_legend(override.aes = list(size = 12),nrow = 1))
@@ -229,14 +227,6 @@ platemap_plot_inducer_dose <- (
         + scale_fill_manual(
             values = colors
             )
-        # change the shape of the blank well
-        + scale_shape_manual(
-            values = c(
-                'Blank' = 0,
-                'PBMC' = 19,
-                'SH-SY5Y' = 8
-            )
-        )
         # make shape legend horizontal
         # title
     + ggtitle("Inducer + Dose Platemap")
@@ -298,14 +288,10 @@ platemap_plot_inhibitor_dose <- (
         plate = 384,
         size = 14)
     + theme_dark()
-    # fill the color by dose
-    + ggplot2::geom_point(
-        aes(shape = platemap_df$cell_type),
-        size = 5
-        )
+
         # change the size of the shapes in the legend and plot
     # 2 column legend
-    + labs(fill = "Inhibitor + Dose", shape = "Cell Type")
+    + labs(fill = "Inhibitor + Dose")
     # change legend text size for fill
 
     + guides(shape = guide_legend(override.aes = list(size = 12), nrow = 1))
@@ -328,14 +314,7 @@ platemap_plot_inhibitor_dose <- (
                 'Z-VAD-FMK 100 µM' = colorgrad6[1]
             )
         )
-        # change the shape of the blank well
-        + scale_shape_manual(
-            values = c(
-                'Blank' = 0,
-                'PBMC' = 19,
-                'SH-SY5Y' = 8
-            )
-        )
+
     # x axis ticks larger
     + theme(legend.title = element_text(size = 18))
     + theme(axis.text.x = element_text(size = 12,vjust = 0.5, hjust=0.5))
@@ -548,13 +527,12 @@ head(cell_count_df_shsy5y_well)
 
 # get the min max normalized counts for each cell type in a new column
 cell_count_df_well_PBMC$cell_type <- "PBMC"
-cell_count_df_shsy5y_well$cell_type <- "SHSY5Y"
 cell_count_df_well_PBMC$cell_count_norm <- (cell_count_df_well_PBMC$n - min(cell_count_df_well_PBMC$n))/(max(cell_count_df_well_PBMC$n) - min(cell_count_df_well_PBMC$n))
-cell_count_df_shsy5y_well$cell_count_norm <- (cell_count_df_shsy5y_well$n - min(cell_count_df_shsy5y_well$n))/(max(cell_count_df_shsy5y_well$n) - min(cell_count_df_shsy5y_well$n))
+all_count_data <- cell_count_df_well_PBMC
 
-# merge the PBMC and SHSY5Y cell count data
-all_count_data <- rbind(cell_count_df_well_PBMC, cell_count_df_shsy5y_well)
-head(all_count_data)
+# # merge the PBMC and SHSY5Y cell count data
+# all_count_data <- rbind(cell_count_df_well_PBMC, cell_count_df_shsy5y_well)
+# head(all_count_data)
 
 # plate visualization using plate tools
 
@@ -654,5 +632,5 @@ patch_plot <- (
 )
 patch_plot
 # set save path for patchwork plot
-patchwork_platemap_path <- file.path(paste0(platemap_path,"Platemaps_and_cell_counts.png"))
+patchwork_platemap_path <- file.path(paste0(platemap_path,"Platemaps_and_cell_counts_no_SHSY5Y.png"))
 ggsave(patchwork_platemap_path, patch_plot, width=width, height=height, dpi=600)
